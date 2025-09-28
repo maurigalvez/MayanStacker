@@ -1,0 +1,45 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Build Unity Project",
+            "type": "shell",
+            "command": "Unity",
+            "args": [
+                "-batchmode",
+                "-quit",
+                "-projectPath",
+                "${workspaceFolder}",
+                "-buildTarget",
+                "StandaloneWindows64",
+                "-executeMethod",
+                "BuildScript.Build"
+            ],
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Open Unity Editor",
+            "type": "shell",
+            "command": "Unity",
+            "args": [
+                "-projectPath",
+                "${workspaceFolder}"
+            ],
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared"
+            },
+            "problemMatcher": []
+        }
+    ]
+}

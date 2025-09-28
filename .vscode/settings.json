@@ -1,0 +1,38 @@
+{
+    "files.exclude": {
+        "**/.DS_Store": true,
+        "**/.git": true,
+        "**/.gitignore": true,
+        "**/.gitmodules": true,
+        "**/node_modules": true,
+        "**/Thumbs.db": true,
+        "**/Library": true,
+        "**/Temp": true,
+        "**/Logs": true,
+        "**/UserSettings": true,
+        "**/obj": true,
+        "**/Build": true,
+        "**/Builds": true
+    },
+    "files.associations": {
+        "*.compute": "hlsl",
+        "*.cginc": "hlsl",
+        "*.hlsl": "hlsl",
+        "*.shader": "hlsl"
+    },
+    "omnisharp.enableEditorConfigSupport": true,
+    "omnisharp.enableRoslynAnalyzers": true,
+    "omnisharp.enableAsyncCompletion": true,
+    "omnisharp.projectLoadTimeout": 60,
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+        "source.organizeImports": "explicit"
+    },
+    "csharp.format.enable": true,
+    "csharp.semanticHighlighting.enabled": true,
+    "dotnet.inlayHints.enableInlayHintsForParameters": true,
+    "csharp.inlayHints.enableInlayHintsForTypes": true,
+    "dotnet.completion.showCompletionItemsFromUnimportedNamespaces": true,
+    "dotnet.formatting.organizeImportsOnFormat": true,
+    "dotnet.defaultSolution": "TamalStacker.sln"
+}
