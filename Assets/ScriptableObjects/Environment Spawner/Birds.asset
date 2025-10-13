@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c2310050bf5b5fc408b433c89c88980d, type: 3}
+  m_Name: Birds
+  m_EditorClassIdentifier: Assembly-CSharp::EnvironmentAssetData
+  assetPrefab: {fileID: 0}
+  heightLabel: Ground Level
+  minStackHeight: 0
+  maxStackHeight: 0
+  spawnWeight: 1
+  minSpawnInterval: 2
+  maxSpawnInterval: 5
+  speedRange: {x: 1, y: 3}
+  despawnDistance: 15
+  yPositionOffset: 0
+  yPositionVariation: 1
+  canSpawnFromBothSides: 1
+  baseScale: {x: 1, y: 1, z: 1}
+  scaleVariation: {x: 0, y: 0, z: 0}

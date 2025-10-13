@@ -18,6 +18,16 @@ public class StackableObject : MonoBehaviour
     [SerializeField] private Color perfectLandingColor = Color.green;
     [SerializeField] private Color poorLandingColor = Color.red;
 
+    [Header("Particle Effects")]
+    [SerializeField] private ParticleSystem landingParticleEffect;
+
+    [Header("Audio Settings")]
+    [SerializeField] private AudioSource audioSource;
+    [SerializeField] private AudioClip[] landingAudioClips;
+    [SerializeField] private bool enableLandingAudio = true;
+    [SerializeField] private float pitchMin = 0.8f;
+    [SerializeField] private float pitchMax = 1.2f;
+
     [Header("Scoring")]
     [SerializeField] private float perfectLandingThreshold = 0.1f; // How close to center for perfect score
     [SerializeField] private int perfectScore = 100;
@@ -58,6 +68,16 @@ public class StackableObject : MonoBehaviour
             physicsMaterial.bounciness = bounciness;
             physicsMaterial.friction = friction;
             col.sharedMaterial = physicsMaterial;
+        }
+
+        // Set up audio source
+        if (audioSource == null)
+        {
+            audioSource = GetComponent<AudioSource>();
+            if (audioSource == null)
+            {
+                audioSource = gameObject.AddComponent<AudioSource>();
+            }
         }
 
         // Set initial color
@@ -146,6 +166,12 @@ public class StackableObject : MonoBehaviour
         }
         stackManager.AddObjectToStack(this);
 
+        // Trigger landing particle effect
+        TriggerLandingParticleEffect();
+
+        // Trigger landing audio
+        TriggerLandingAudio();
+
         // Notify listeners
         OnObjectLanded?.Invoke(this, landingAccuracy);
     }
@@ -195,6 +221,27 @@ public class StackableObject : MonoBehaviour
         // {
         //     spriteRenderer.color = normalColor;
         // }
+    }
+
+    private void TriggerLandingParticleEffect()
+    {
+        if (landingParticleEffect == null) return;
+        landingParticleEffect.Play();
+    }
+
+    private void TriggerLandingAudio()
+    {
+        if (!enableLandingAudio || audioSource == null || landingAudioClips == null || landingAudioClips.Length == 0) return;
+
+        // Select a random audio clip
+        AudioClip randomClip = landingAudioClips[Random.Range(0, landingAudioClips.Length)];
+
+        // Set random pitch within the specified range
+        float randomPitch = Random.Range(pitchMin, pitchMax);
+        audioSource.pitch = randomPitch;
+
+        // Play the audio clip
+        audioSource.PlayOneShot(randomClip);
     }
 
 

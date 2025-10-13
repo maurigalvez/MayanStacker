@@ -1,0 +1,516 @@
+# TamalStacker - Cursor AI Rules
+
+## Project-Specific Coding Standards
+
+### 🔧 Dependency Management
+
+**CRITICAL: Always use DependencyRegistry for component communication**
+
+#### ✅ DO:
+```csharp
+// In Awake - Register the component
+private void Awake()
+{
+    DependencyRegistry.Register<YourComponent>(this);
+}
+
+// In Start - Find dependencies
+private void Start()
+{
+    gameManager = DependencyRegistry.Find<GameManager>();
+    levelManager = DependencyRegistry.Find<LevelManager>();
+}
+
+// In OnDestroy - Unregister
+private void OnDestroy()
+{
+    DependencyRegistry.Unregister<YourComponent>(this);
+}
+```
+
+#### ❌ DON'T:
+```csharp
+// NEVER use these methods:
+FindObjectOfType<T>();
+FindFirstObjectByType<T>();
+FindAnyObjectByType<T>();
+FindObjectsOfType<T>();
+GameObject.Find();
+GameObject.FindWithTag();
+```
+
+**Why?** 
+- DependencyRegistry is faster and more reliable
+- Provides consistent component access across scenes
+- Avoids race conditions
+- Better for testing and debugging
+- Centralized dependency management
+
+---
+
+### 📐 Architecture Patterns
+
+#### Component Lifecycle Pattern
+
+**Consistent pattern for all manager components:**
+
+1. **Awake()** - Register with DependencyRegistry
+2. **Start()** - Find dependencies via DependencyRegistry
+3. **OnDestroy()** - Unregister from DependencyRegistry
+
+```csharp
+public class ExampleManager : MonoBehaviour
+{
+    private GameManager gameManager;
+    private UIManager uiManager;
+    
+    private void Awake()
+    {
+        // 1. Register FIRST
+        DependencyRegistry.Register<ExampleManager>(this);
+        
+        // 2. Initialize local state
+        InitializeLocalState();
+    }
+    
+    private void Start()
+    {
+        // 3. Find dependencies
+        gameManager = DependencyRegistry.Find<GameManager>();
+        uiManager = DependencyRegistry.Find<UIManager>();
+        
+        // 4. Subscribe to events
+        if (gameManager != null)
+        {
+            gameManager.OnGameStart += HandleGameStart;
+        }
+        
+        // 5. Initialize with dependencies
+        Initialize();
+    }
+    
+    private void OnDestroy()
+    {
+        // 1. Unregister FIRST
+        DependencyRegistry.Unregister<ExampleManager>(this);
+        
+        // 2. Unsubscribe from events
+        if (gameManager != null)
+        {
+            gameManager.OnGameStart -= HandleGameStart;
+        }
+        
+        // 3. Clean up resources
+        CleanupResources();
+    }
+}
+```
+
+---
+
+### 🎮 Unity-Specific Standards
+
+#### Event Handling
+```csharp
+// ✅ Always unsubscribe in OnDestroy
+private void OnDestroy()
+{
+    if (gameManager != null)
+    {
+        gameManager.OnScoreChanged -= HandleScoreChanged;
+    }
+}
+```
+
+#### Scene Persistence
+```csharp
+// ✅ For managers that persist across scenes
+private void Awake()
+{
+    DependencyRegistry.Register<GameManager>(this);
+    DontDestroyOnLoad(gameObject);
+}
+```
+
+#### Null Safety
+```csharp
+// ✅ Always check for null before using
+if (gameManager != null)
+{
+    gameManager.AddScore(points);
+}
+
+// ✅ Use null-conditional operators
+uiManager?.UpdateScore(score);
+```
+
+---
+
+### 📦 Scene Management
+
+#### Scene Transitions
+```csharp
+// ✅ Use SceneLoader for all scene changes
+SceneLoader.LoadGameScene(GameMode.InfiniteStacker);
+SceneLoader.LoadMainMenu();
+
+// ❌ Don't use Unity's SceneManager directly
+// SceneManager.LoadScene("GameScene"); // AVOID
+```
+
+#### Data Passing Between Scenes
+```csharp
+// ✅ Use SceneLoader's built-in data passing
+SceneLoader.LoadGameScene("GameScene", GameMode.StackerLevels, levelIndex: 2);
+
+// ❌ Don't use static variables or PlayerPrefs for temporary data
+```
+
+---
+
+### 🎯 Game Mode System
+
+#### Setting Game Mode
+```csharp
+// ✅ Always use GameManager.SetGameMode()
+var gameManager = DependencyRegistry.Find<GameManager>();
+gameManager.SetGameMode(GameMode.InfiniteStacker);
+
+// GameManager should have "Wait For Game Mode Selection" checked in Inspector
+```
+
+#### Checking Game Mode
+```csharp
+// ✅ Access via GameManager property
+if (gameManager.CurrentGameMode == GameMode.StackerLevels)
+{
+    // Level-specific logic
+}
+```
+
+---
+
+### 💾 Data Persistence
+
+#### Saving Data
+```csharp
+// ✅ Use PlayerPrefs with descriptive keys
+PlayerPrefs.SetInt("Level_1_Stars", stars);
+PlayerPrefs.SetFloat("MasterVolume", volume);
+PlayerPrefs.Save(); // Always call Save()
+
+// ❌ Don't use generic keys
+// PlayerPrefs.SetInt("data", value); // BAD
+```
+
+#### Loading Data
+```csharp
+// ✅ Always provide default values
+int stars = PlayerPrefs.GetInt("Level_1_Stars", 0);
+float volume = PlayerPrefs.GetFloat("MasterVolume", 1.0f);
+```
+
+---
+
+### 🎨 UI Standards
+
+#### UI Manager Pattern
+```csharp
+// ✅ UI managers should register and find dependencies
+public class UIManager : MonoBehaviour
+{
+    private GameManager gameManager;
+    
+    private void Awake()
+    {
+        DependencyRegistry.Register<UIManager>(this);
+    }
+    
+    private void Start()
+    {
+        gameManager = DependencyRegistry.Find<GameManager>();
+        
+        if (gameManager != null)
+        {
+            gameManager.OnScoreChanged += UpdateScore;
+        }
+    }
+}
+```
+
+#### Button Handlers
+```csharp
+// ✅ Clean up button listeners
+private void OnDestroy()
+{
+    if (playButton != null)
+    {
+        playButton.onClick.RemoveAllListeners();
+    }
+}
+```
+
+---
+
+### 📝 Documentation Standards
+
+#### XML Documentation
+```csharp
+// ✅ Always document public methods and properties
+/// <summary>
+/// Adds points to the current score
+/// </summary>
+/// <param name="points">The number of points to add</param>
+public void AddScore(int points)
+{
+    // Implementation
+}
+```
+
+#### Code Comments
+```csharp
+// ✅ Use clear, descriptive comments
+// Register with dependency registry for cross-scene access
+DependencyRegistry.Register<GameManager>(this);
+
+// ❌ Avoid obvious comments
+// score = 0; // Set score to zero
+```
+
+---
+
+### 🔍 Debugging
+
+#### Debug Logs
+```csharp
+// ✅ Use descriptive debug messages
+Debug.Log($"Loading level {levelIndex + 1} for {gameMode} mode");
+
+// ✅ Use appropriate log levels
+Debug.LogWarning("GameManager not found, creating new instance");
+Debug.LogError("Failed to load level data!");
+```
+
+---
+
+### 🚫 Anti-Patterns to Avoid
+
+#### 1. Direct Scene References
+```csharp
+// ❌ DON'T hardcode scene names everywhere
+SceneManager.LoadScene("GameScene");
+
+// ✅ DO use SceneLoader utility
+SceneLoader.LoadGameScene(GameMode.InfiniteStacker);
+```
+
+#### 2. Singleton Pattern (use DependencyRegistry instead)
+```csharp
+// ❌ DON'T create traditional singletons
+public static GameManager Instance { get; private set; }
+
+// ✅ DO use DependencyRegistry
+var gameManager = DependencyRegistry.Find<GameManager>();
+```
+
+#### 3. Finding Objects in Update/FixedUpdate
+```csharp
+// ❌ NEVER do this
+private void Update()
+{
+    var manager = DependencyRegistry.Find<GameManager>(); // BAD!
+}
+
+// ✅ DO cache references in Start
+private GameManager gameManager;
+private void Start()
+{
+    gameManager = DependencyRegistry.Find<GameManager>();
+}
+```
+
+#### 4. Public Fields for Configuration
+```csharp
+// ❌ Don't use public fields
+public float speed;
+
+// ✅ Use [SerializeField] private fields
+[SerializeField] private float speed = 5f;
+```
+
+---
+
+### 📚 ScriptableObject Pattern
+
+#### Level Data
+```csharp
+// ✅ Use ScriptableObjects for data
+[CreateAssetMenu(fileName = "NewLevel", menuName = "TamalStacker/Level Data")]
+public class LevelData : ScriptableObject
+{
+    public int levelNumber;
+    public int requiredStackHeight;
+    // ... more properties
+}
+```
+
+---
+
+### ⚡ Performance Guidelines
+
+#### 1. Cache Component References
+```csharp
+// ✅ Cache in Start
+private Transform cachedTransform;
+private void Start()
+{
+    cachedTransform = transform;
+}
+
+// ❌ Don't access repeatedly
+private void Update()
+{
+    transform.position = ...; // Slower
+}
+```
+
+#### 2. Use Object Pooling for Frequent Instantiation
+```csharp
+// For spawned blocks, consider using an object pool
+```
+
+#### 3. Minimize Allocations in Update
+```csharp
+// ❌ Avoid allocations in Update
+private void Update()
+{
+    string text = "Score: " + score; // Creates garbage
+}
+
+// ✅ Cache or use StringBuilder
+private StringBuilder scoreBuilder = new StringBuilder();
+```
+
+---
+
+### 🎯 Project-Specific Rules
+
+#### GameManager Configuration
+- Always check "Wait For Game Mode Selection" in Inspector
+- Always check "Auto Start After Mode Set" in Inspector
+
+#### Scene Structure
+- MainMenu scene: Independent, contains MainMenuManager
+- GameScene: Contains game logic, UIManager
+- GameManager persists across scenes
+
+#### Settings System
+- SettingsManager registers in Awake
+- Settings are applied in ApplySettings()
+- Always call SaveSettings() after changes
+
+---
+
+### ✅ Code Review Checklist
+
+Before committing code, verify:
+
+- [ ] Used DependencyRegistry.Register in Awake
+- [ ] Used DependencyRegistry.Find in Start
+- [ ] Used DependencyRegistry.Unregister in OnDestroy
+- [ ] No FindObjectOfType or similar methods
+- [ ] Event subscriptions have matching unsubscriptions
+- [ ] Null checks before using references
+- [ ] Public API has XML documentation
+- [ ] SerializeField used instead of public fields
+- [ ] No hardcoded strings for scenes/paths
+- [ ] PlayerPrefs keys are descriptive and consistent
+
+---
+
+### 🔄 When Adding New Manager Components
+
+Follow this template:
+
+```csharp
+using UnityEngine;
+
+/// <summary>
+/// Brief description of what this manager does
+/// </summary>
+public class NewManager : MonoBehaviour
+{
+    [Header("Settings")]
+    [SerializeField] private float exampleSetting = 1.0f;
+    
+    // References (found via DependencyRegistry)
+    private GameManager gameManager;
+    
+    // State
+    private bool isInitialized = false;
+    
+    private void Awake()
+    {
+        // 1. Register with DependencyRegistry
+        DependencyRegistry.Register<NewManager>(this);
+        
+        // 2. Optional: Persist across scenes if needed
+        // DontDestroyOnLoad(gameObject);
+    }
+    
+    private void Start()
+    {
+        // 1. Find dependencies
+        gameManager = DependencyRegistry.Find<GameManager>();
+        
+        // 2. Subscribe to events
+        if (gameManager != null)
+        {
+            gameManager.OnGameStart += OnGameStart;
+        }
+        
+        // 3. Initialize
+        Initialize();
+    }
+    
+    private void Initialize()
+    {
+        // Initialization logic
+        isInitialized = true;
+    }
+    
+    private void OnGameStart()
+    {
+        // Event handler
+    }
+    
+    private void OnDestroy()
+    {
+        // 1. Unregister
+        DependencyRegistry.Unregister<NewManager>(this);
+        
+        // 2. Unsubscribe from events
+        if (gameManager != null)
+        {
+            gameManager.OnGameStart -= OnGameStart;
+        }
+    }
+}
+```
+
+---
+
+## Summary
+
+**Core Principles:**
+1. ✅ Always use DependencyRegistry (Register in Awake, Find in Start, Unregister in OnDestroy)
+2. ❌ Never use FindObjectOfType or similar Unity search methods
+3. ✅ Always unsubscribe from events in OnDestroy
+4. ✅ Use SceneLoader for scene transitions
+5. ✅ Follow consistent lifecycle patterns
+6. ✅ Document public APIs with XML comments
+7. ✅ Cache references, don't search repeatedly
+8. ✅ Use null checks before accessing references
+
+**When in doubt, look at existing managers (GameManager, UIManager, LevelManager) as examples!**
+

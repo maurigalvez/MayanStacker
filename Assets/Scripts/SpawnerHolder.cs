@@ -16,6 +16,14 @@ public class SpawnerHolder : MonoBehaviour
     [SerializeField] private float rotationMultiplier = 1f; // How much the spawner rotates relative to swing
     [SerializeField] private float rotationSmoothing = 5f; // How smoothly the rotation follows the swing
 
+    [Header("Drop Recoil Settings")]
+    [SerializeField] private bool enableDropRecoil = true; // Enable recoil effect when dropping objects
+    [SerializeField] private float recoilSwingBoost = 1.5f; // How much to boost the swing speed on drop (multiplier)
+    [SerializeField] private float recoilDuration = 0.3f; // How long the recoil effect lasts in seconds
+    [SerializeField] private float recoilRotationBoost = 1.2f; // How much to boost rotation on drop (multiplier)
+    [SerializeField] private bool enableDirectionalRecoil = true; // Add directional impulse to swing on drop
+    [SerializeField] private float recoilDirectionStrength = 2f; // How much to shift the swing phase (in radians)
+
 
     [Header("Spawner Reference")]
     [SerializeField] private ObjectSpawner objectSpawner; // Reference to the spawner to move
@@ -40,6 +48,11 @@ public class SpawnerHolder : MonoBehaviour
     private Camera mainCamera;
     private float currentRotationZ = 0f;
     private float targetRotationZ = 0f;
+    private float previousRotationZ = 0f;
+    private float spawnerAngularVelocity = 0f;
+    private float recoilTimer = 0f;
+    private float originalSwingSpeed = 0f;
+    private float originalRotationMultiplier = 0f;
     private GameObject lastDroppedObject;
     private Ground ground;
 
@@ -89,6 +102,10 @@ public class SpawnerHolder : MonoBehaviour
         {
             initialSpawnerPosition = objectSpawner.transform.position;
         }
+
+        // Store original values for recoil restoration
+        originalSwingSpeed = swingSpeed;
+        originalRotationMultiplier = rotationMultiplier;
     }
 
 
@@ -103,10 +120,11 @@ public class SpawnerHolder : MonoBehaviour
             gameManager.OnGameRestart += OnGameRestart;
         }
 
-        // Subscribe to spawner events to track dropped objects
+        // Subscribe to spawner events to track dropped and spawned objects
         if (objectSpawner != null)
         {
             objectSpawner.OnObjectDropped += OnObjectDropped;
+            objectSpawner.OnObjectSpawned += OnObjectSpawned;
         }
 
         // Subscribe to stack manager events to know when objects are successfully added to stack
@@ -121,6 +139,9 @@ public class SpawnerHolder : MonoBehaviour
     private void Update()
     {
         if (objectSpawner == null) return;
+
+        // Update recoil effect
+        UpdateRecoilEffect();
 
         // Update swing motion
         UpdateSwingMotion();
@@ -137,50 +158,26 @@ public class SpawnerHolder : MonoBehaviour
         // Get object size from the ObjectSpawner
         Vector2 objectSize = objectSpawner.ObjectSize;
 
-        // Start with ground height as baseline
-        float highestPoint = groundHeight;
+        // Use the more accurate stack height calculation
+        float highestPoint = GetActualStackHeight(objectSize);
 
-        // Try to get the actual stack height from StackManager first
+        // If no objects in stack but we have a falling object, track it
         var stackManager = DependencyRegistry.Find<StackManager>();
-        if (stackManager != null && stackManager.GetStackCount() > 0)
+        if ((stackManager == null || stackManager.GetStackCount() == 0) && lastDroppedObject != null)
         {
-            // Get all stack objects and find the highest one
-            var stackObjects = stackManager.GetStackObjects();
-            foreach (var stackObj in stackObjects)
-            {
-                if (stackObj != null)
-                {
-                    BoxCollider2D collider = stackObj.Collider as BoxCollider2D;
-                    float objectHeight = collider != null ? collider.size.y : objectSize.y;
-                    float objectTop = stackObj.transform.position.y + (objectHeight * 0.5f);
-                    highestPoint = Mathf.Max(highestPoint, objectTop);
-                }
-            }
-        }
-        else if (lastDroppedObject != null)
-        {
-            // Fallback: If no stack manager or no stack objects, use the last dropped object
+            // Fallback: If no stack objects, use the last dropped object
             StackableObject stackableObj = lastDroppedObject.GetComponent<StackableObject>();
             if (stackableObj != null)
             {
-                float objectTop = 0f;
-
-                if (stackableObj.HasLanded)
-                {
-                    // Object has landed, use its final position
-                    BoxCollider2D collider = stackableObj.Collider as BoxCollider2D;
-                    float objectHeight = collider != null ? collider.size.y : objectSize.y;
-                    objectTop = lastDroppedObject.transform.position.y + (objectHeight * 0.5f);
-                }
-                else
-                {
-                    // Object is still falling, use its current position
-                    objectTop = lastDroppedObject.transform.position.y + (objectSize.y * 0.5f);
-                }
-
+                float objectTop = GetObjectTopPosition(stackableObj, objectSize);
                 highestPoint = Mathf.Max(highestPoint, objectTop);
             }
         }
+
+        // Validate the calculated height to prevent excessive values
+        // Allow for some physics settling and gaps between objects
+        float maxReasonableHeight = groundHeight + (stackManager?.GetStackCount() ?? 0) * objectSize.y * 1.2f;
+        highestPoint = Mathf.Min(highestPoint, maxReasonableHeight);
 
         // Update current stack height
         currentStackHeight = highestPoint;
@@ -195,11 +192,68 @@ public class SpawnerHolder : MonoBehaviour
         holderCenterPosition = transform.position;
     }
 
+    /// <summary>
+    /// Get the top position of an object using consistent calculation method
+    /// </summary>
+    private float GetObjectTopPosition(StackableObject stackableObj, Vector2 defaultSize)
+    {
+        if (stackableObj == null) return 0f;
+
+        // Get the actual collider size if available, otherwise use default
+        BoxCollider2D collider = stackableObj.Collider as BoxCollider2D;
+        float objectHeight = collider != null ? collider.size.y : defaultSize.y;
+
+        // Calculate the top position: center position + half height
+        // In Unity, transform.position is the center of the object
+        return stackableObj.transform.position.y + (objectHeight * 0.5f);
+    }
+
+    /// <summary>
+    /// Get the actual stack height more accurately by sorting objects by height
+    /// </summary>
+    private float GetActualStackHeight(Vector2 objectSize)
+    {
+        var stackManager = DependencyRegistry.Find<StackManager>();
+        if (stackManager == null || stackManager.GetStackCount() == 0)
+        {
+            return groundHeight;
+        }
+
+        var stackObjects = stackManager.GetStackObjects();
+        if (stackObjects.Count == 0) return groundHeight;
+
+        // Sort objects by Y position to find the actual top
+        float maxHeight = groundHeight;
+
+        foreach (var stackObj in stackObjects)
+        {
+            if (stackObj != null)
+            {
+                float objectTop = GetObjectTopPosition(stackObj, objectSize);
+                maxHeight = Mathf.Max(maxHeight, objectTop);
+            }
+        }
+
+        return maxHeight;
+    }
+
+
+    private void OnObjectSpawned(GameObject spawnedObject)
+    {
+        // Reset the recoil effect when a new object spawns
+        ResetRecoilEffect();
+    }
 
     private void OnObjectDropped(GameObject droppedObject)
     {
         // Track the last dropped object so we can follow its position
         lastDroppedObject = droppedObject;
+
+        // Apply recoil effect to the spawner holder for a natural feel
+        if (enableDropRecoil)
+        {
+            ApplyDropRecoil();
+        }
 
         // Randomize swing start angle for unpredictability
         if (randomizeStartAngle)
@@ -212,6 +266,69 @@ public class SpawnerHolder : MonoBehaviour
         if (stackableObj != null)
         {
             stackableObj.OnObjectLanded += OnObjectLanded;
+        }
+    }
+
+    private void ApplyDropRecoil()
+    {
+        // Start the recoil timer
+        recoilTimer = recoilDuration;
+
+        // Boost the swing speed temporarily
+        swingSpeed = originalSwingSpeed * recoilSwingBoost;
+
+        // Boost the rotation multiplier temporarily
+        if (enableRotation)
+        {
+            rotationMultiplier = originalRotationMultiplier * recoilRotationBoost;
+        }
+
+        // Apply directional impulse to the swing
+        if (enableDirectionalRecoil)
+        {
+            // Randomly push the swing left or right
+            float direction = Random.Range(-1f, 1f);
+            swingTime += direction * recoilDirectionStrength;
+        }
+    }
+
+    private void ResetRecoilEffect()
+    {
+        // Cancel any ongoing recoil
+        recoilTimer = 0f;
+
+        // Immediately restore original values
+        swingSpeed = originalSwingSpeed;
+        rotationMultiplier = originalRotationMultiplier;
+    }
+
+    private void UpdateRecoilEffect()
+    {
+        if (recoilTimer > 0f)
+        {
+            recoilTimer -= Time.deltaTime;
+
+            // Calculate the progress of the recoil recovery (0 = just started, 1 = finished)
+            float recoveryProgress = 1f - (recoilTimer / recoilDuration);
+
+            // Smoothly interpolate back to original values using ease-out
+            float easedProgress = 1f - Mathf.Pow(1f - recoveryProgress, 2f);
+
+            // Restore swing speed
+            swingSpeed = Mathf.Lerp(originalSwingSpeed * recoilSwingBoost, originalSwingSpeed, easedProgress);
+
+            // Restore rotation multiplier
+            if (enableRotation)
+            {
+                rotationMultiplier = Mathf.Lerp(originalRotationMultiplier * recoilRotationBoost, originalRotationMultiplier, easedProgress);
+            }
+
+            // If timer is done, ensure we're back to exact original values
+            if (recoilTimer <= 0f)
+            {
+                swingSpeed = originalSwingSpeed;
+                rotationMultiplier = originalRotationMultiplier;
+            }
         }
     }
 
@@ -326,8 +443,13 @@ public class SpawnerHolder : MonoBehaviour
         if (enableRotation)
         {
             // Smoothly interpolate to the target rotation
+            previousRotationZ = currentRotationZ;
             currentRotationZ = Mathf.LerpAngle(currentRotationZ, targetRotationZ, rotationSmoothing * Time.deltaTime);
             objectSpawner.transform.rotation = Quaternion.Euler(0f, 0f, currentRotationZ);
+
+            // Calculate angular velocity of the spawner (degrees per second)
+            float rotationDelta = Mathf.DeltaAngle(previousRotationZ, currentRotationZ);
+            spawnerAngularVelocity = rotationDelta / Time.deltaTime;
         }
 
         // Notify listeners
@@ -372,6 +494,7 @@ public class SpawnerHolder : MonoBehaviour
     public void SetSwingSpeed(float speed)
     {
         swingSpeed = Mathf.Max(0.1f, speed);
+        originalSwingSpeed = swingSpeed; // Update original value so recoil works correctly
     }
 
 
@@ -403,6 +526,7 @@ public class SpawnerHolder : MonoBehaviour
     public void SetRotationMultiplier(float multiplier)
     {
         rotationMultiplier = Mathf.Max(0f, multiplier);
+        originalRotationMultiplier = rotationMultiplier; // Update original value so recoil works correctly
     }
 
 
@@ -451,11 +575,43 @@ public class SpawnerHolder : MonoBehaviour
         swingTime = 0f;
         currentRotationZ = 0f;
         targetRotationZ = 0f;
+        previousRotationZ = 0f;
+        spawnerAngularVelocity = 0f;
         if (objectSpawner != null)
         {
             objectSpawner.transform.position = new Vector3(holderCenterPosition.x, holderCenterPosition.y, holderCenterPosition.z);
             objectSpawner.transform.rotation = Quaternion.identity;
         }
+    }
+
+    public void SetDropRecoilEnabled(bool enabled)
+    {
+        enableDropRecoil = enabled;
+    }
+
+    public void SetRecoilSwingBoost(float boost)
+    {
+        recoilSwingBoost = Mathf.Max(1f, boost);
+    }
+
+    public void SetRecoilDuration(float duration)
+    {
+        recoilDuration = Mathf.Max(0.1f, duration);
+    }
+
+    public void SetRecoilRotationBoost(float boost)
+    {
+        recoilRotationBoost = Mathf.Max(1f, boost);
+    }
+
+    public void SetDirectionalRecoilEnabled(bool enabled)
+    {
+        enableDirectionalRecoil = enabled;
+    }
+
+    public void SetRecoilDirectionStrength(float strength)
+    {
+        recoilDirectionStrength = Mathf.Max(0f, strength);
     }
 
     // Game event handlers
@@ -484,7 +640,14 @@ public class SpawnerHolder : MonoBehaviour
         currentStackHeight = groundHeight;
         currentRotationZ = 0f;
         targetRotationZ = 0f;
+        previousRotationZ = 0f;
+        spawnerAngularVelocity = 0f;
+        recoilTimer = 0f;
         lastDroppedObject = null;
+
+        // Restore original swing and rotation values
+        swingSpeed = originalSwingSpeed;
+        rotationMultiplier = originalRotationMultiplier;
 
         // Reset holder height to be above ground with consistent offset
         Vector3 holderPosition = transform.position;
@@ -513,6 +676,7 @@ public class SpawnerHolder : MonoBehaviour
         if (objectSpawner != null)
         {
             objectSpawner.OnObjectDropped -= OnObjectDropped;
+            objectSpawner.OnObjectSpawned -= OnObjectSpawned;
         }
 
         // Unsubscribe from stack manager events
@@ -565,6 +729,23 @@ public class SpawnerHolder : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Debug method to log current height calculations
+    /// </summary>
+    public void LogHeightDebugInfo()
+    {
+        var stackManager = DependencyRegistry.Find<StackManager>();
+        int stackCount = stackManager?.GetStackCount() ?? 0;
+
+        Debug.Log($"SpawnerHolder Height Debug:\n" +
+                  $"Ground Height: {groundHeight:F2}\n" +
+                  $"Current Stack Height: {currentStackHeight:F2}\n" +
+                  $"Stack Count: {stackCount}\n" +
+                  $"Consistent Height Offset: {consistentHeightOffset:F2}\n" +
+                  $"Holder Y Position: {transform.position.y:F2}\n" +
+                  $"Spawner Y Position: {objectSpawner?.transform.position.y:F2}");
+    }
+
     // Public getters
 
     public ObjectSpawner ObjectSpawner => objectSpawner;
@@ -582,4 +763,11 @@ public class SpawnerHolder : MonoBehaviour
     public float ConsistentHeightOffset => consistentHeightOffset;
     public Ground Ground => ground;
     public bool RandomizeStartAngle => randomizeStartAngle;
+    public bool EnableDropRecoil => enableDropRecoil;
+    public float RecoilSwingBoost => recoilSwingBoost;
+    public float RecoilDuration => recoilDuration;
+    public float RecoilRotationBoost => recoilRotationBoost;
+    public bool EnableDirectionalRecoil => enableDirectionalRecoil;
+    public float RecoilDirectionStrength => recoilDirectionStrength;
+    public float SpawnerAngularVelocity => spawnerAngularVelocity;
 }

@@ -13,6 +13,16 @@ public class UIManager : MonoBehaviour
     [SerializeField] private Button restartButton;
     [SerializeField] private Button quitButton;
 
+    [Header("Level Mode UI")]
+    [SerializeField] private GameObject levelCompletePanel;
+    [SerializeField] private TextMeshProUGUI levelNameText;
+    [SerializeField] private TextMeshProUGUI levelScoreText;
+    [SerializeField] private GameObject[] stars; // Array of 3 star GameObjects
+    [SerializeField] private TextMeshProUGUI levelProgressText; // Shows "Height: X/Y"
+    [SerializeField] private Button nextLevelButton;
+    [SerializeField] private Button mainMenuButton;
+    [SerializeField] private TextMeshProUGUI gameModeText;
+
     [Header("Game UI")]
     [SerializeField] private GameObject gameUI;
     [SerializeField] private TextMeshProUGUI instructionsText;
@@ -20,6 +30,14 @@ public class UIManager : MonoBehaviour
     [SerializeField] private TextMeshProUGUI landingAccuracyText;
     [SerializeField] private GameObject pointsPopupPrefab;
     [SerializeField] private Transform pointsPopupParent;
+
+    [Header("Pause Menu")]
+    [SerializeField] private GameObject pauseMenuPanel;
+    [SerializeField] private Button pauseButton;
+    [SerializeField] private Button resumeButton;
+    [SerializeField] private Button tryAgainButton;
+    [SerializeField] private Button settingsButton;
+    [SerializeField] private Button pauseMainMenuButton;
 
     [Header("Settings")]
     [SerializeField] private string scoreFormat = "Score: {0}";
@@ -31,12 +49,22 @@ public class UIManager : MonoBehaviour
     [SerializeField] private float pointsPopupDuration = 2f;
     [SerializeField] private float pointsPopupVerticalOffset = 30f;
 
+    [Header("Accuracy Text Colors")]
+    [SerializeField] private Color perfectAccuracyColor = Color.green;
+    [SerializeField] private Color goodAccuracyColor = Color.yellow;
+    [SerializeField] private Color poorAccuracyColor = Color.red;
+
     // References
     private GameManager gameManager;
     private StackManager stackManager;
+    private LevelManager levelManager;
 
     // State
     private Coroutine landingAccuracyCoroutine;
+    private bool isPaused = false;
+
+    // Events
+    public System.Action OnGameResumed;
 
     private void Awake()
     {
@@ -49,6 +77,7 @@ public class UIManager : MonoBehaviour
         // Get references
         gameManager = DependencyRegistry.Find<GameManager>();
         stackManager = DependencyRegistry.Find<StackManager>();
+        levelManager = DependencyRegistry.Find<LevelManager>();
 
         // Subscribe to game events
         if (gameManager != null)
@@ -58,12 +87,22 @@ public class UIManager : MonoBehaviour
             gameManager.OnGameStart += OnGameStart;
             gameManager.OnGameOver += OnGameOver;
             gameManager.OnGameRestart += OnGameRestart;
+            gameManager.OnGameModeChanged += OnGameModeChanged;
         }
 
         // Subscribe to stack events
         if (stackManager != null)
         {
             stackManager.OnObjectAddedToStack += OnObjectAddedToStack;
+        }
+
+        // Subscribe to level events
+        if (levelManager != null)
+        {
+            levelManager.OnLevelCompleted += OnLevelCompleted;
+            levelManager.OnLevelFailed += OnLevelFailed;
+            levelManager.OnLevelLoaded += OnLevelLoaded;
+            levelManager.OnStackHeightUpdated += UpdateLevelProgress;
         }
 
         // Set up button listeners
@@ -75,6 +114,42 @@ public class UIManager : MonoBehaviour
         if (quitButton != null)
         {
             quitButton.onClick.AddListener(QuitGame);
+        }
+
+        if (nextLevelButton != null)
+        {
+            nextLevelButton.onClick.AddListener(GoToNextLevel);
+        }
+
+        if (mainMenuButton != null)
+        {
+            mainMenuButton.onClick.AddListener(GoToMainMenu);
+        }
+
+        // Set up pause menu button listeners
+        if (pauseButton != null)
+        {
+            pauseButton.onClick.AddListener(TogglePause);
+        }
+
+        if (resumeButton != null)
+        {
+            resumeButton.onClick.AddListener(ResumeGame);
+        }
+
+        if (tryAgainButton != null)
+        {
+            tryAgainButton.onClick.AddListener(TryAgainFromPause);
+        }
+
+        if (settingsButton != null)
+        {
+            settingsButton.onClick.AddListener(OpenSettings);
+        }
+
+        if (pauseMainMenuButton != null)
+        {
+            pauseMainMenuButton.onClick.AddListener(GoToMainMenuFromPause);
         }
 
         // Initialize UI
@@ -90,11 +165,18 @@ public class UIManager : MonoBehaviour
         if (gameOverPanel != null)
             gameOverPanel.SetActive(false);
 
+        if (levelCompletePanel != null)
+            levelCompletePanel.SetActive(false);
+
+        if (pauseMenuPanel != null)
+            pauseMenuPanel.SetActive(false);
+
         // Update initial scores
         if (gameManager != null)
         {
             UpdateScore(gameManager.CurrentScore);
             UpdateHighScore(gameManager.HighScore);
+            UpdateGameModeDisplay(gameManager.CurrentGameMode);
         }
 
         // Show instructions
@@ -103,6 +185,12 @@ public class UIManager : MonoBehaviour
         // Initialize new UI elements
         UpdateStackHeight();
         HideLandingAccuracy();
+
+        // Initialize level UI if in level mode
+        if (gameManager != null && gameManager.CurrentGameMode == GameMode.StackerLevels)
+        {
+            InitializeLevelUI();
+        }
     }
 
     private void UpdateScore(int score)
@@ -223,17 +311,17 @@ public class UIManager : MonoBehaviour
         if (accuracy >= 0.9f)
         {
             landingAccuracyText.text = "PERFECT!";
-            landingAccuracyText.color = Color.green;
+            landingAccuracyText.color = perfectAccuracyColor;
         }
         else if (accuracy >= 0.6f)
         {
             landingAccuracyText.text = "GOOD";
-            landingAccuracyText.color = Color.yellow;
+            landingAccuracyText.color = goodAccuracyColor;
         }
         else
         {
             landingAccuracyText.text = "POOR";
-            landingAccuracyText.color = Color.red;
+            landingAccuracyText.color = poorAccuracyColor;
         }
 
         // Convert world position to screen position for the accuracy label
@@ -392,6 +480,280 @@ public class UIManager : MonoBehaviour
 #endif
     }
 
+    // Level Mode Methods
+
+    private void InitializeLevelUI()
+    {
+        if (levelManager == null || levelManager.CurrentLevel == null) return;
+
+        // Update level info
+        if (levelNameText != null)
+        {
+            levelNameText.text = levelManager.CurrentLevel.levelName;
+        }
+
+        UpdateLevelProgress(stackManager?.GetStackCount() ?? 0);
+    }
+
+    private void OnGameModeChanged(GameMode newMode)
+    {
+        UpdateGameModeDisplay(newMode);
+
+        if (newMode == GameMode.StackerLevels)
+        {
+            InitializeLevelUI();
+        }
+    }
+
+    private void UpdateGameModeDisplay(GameMode mode)
+    {
+        if (gameModeText != null)
+        {
+            gameModeText.text = mode == GameMode.InfiniteStacker ? "Infinite Mode" : "Level Mode";
+        }
+
+        // Show/hide level progress text based on mode
+        if (levelProgressText != null)
+        {
+            levelProgressText.gameObject.SetActive(mode == GameMode.StackerLevels);
+        }
+    }
+
+    private void OnLevelLoaded(LevelData level)
+    {
+        if (level == null) return;
+
+        if (levelNameText != null)
+        {
+            levelNameText.text = level.levelName;
+        }
+
+        UpdateLevelProgress(0);
+    }
+
+    private void UpdateLevelProgress(int currentHeight)
+    {
+        if (levelProgressText == null || levelManager == null || levelManager.CurrentLevel == null) return;
+
+        int required = levelManager.CurrentLevel.requiredStackHeight;
+        levelProgressText.text = $"Height: {currentHeight}/{required}";
+
+        // Color code the text based on progress
+        float progress = (float)currentHeight / required;
+        if (progress >= 1.0f)
+        {
+            levelProgressText.color = Color.green;
+        }
+        else if (progress >= 0.5f)
+        {
+            levelProgressText.color = Color.yellow;
+        }
+        else
+        {
+            levelProgressText.color = Color.white;
+        }
+    }
+
+    private void OnLevelCompleted(int stars, int score)
+    {
+        // Hide game UI
+        if (gameUI != null)
+            gameUI.SetActive(false);
+
+        // Show level complete panel
+        if (levelCompletePanel != null)
+        {
+            levelCompletePanel.SetActive(true);
+        }
+
+        // Update level name
+        if (levelNameText != null && levelManager != null && levelManager.CurrentLevel != null)
+        {
+            levelNameText.text = $"{levelManager.CurrentLevel.levelName} Complete!";
+        }
+
+        // Update score
+        if (levelScoreText != null)
+        {
+            levelScoreText.text = $"Score: {score}";
+        }
+
+        // Display stars
+        DisplayStars(stars);
+
+        // Show/hide next level button based on availability
+        if (nextLevelButton != null && levelManager != null)
+        {
+            bool hasNextLevel = levelManager.CurrentLevelIndex < levelManager.TotalLevels - 1;
+            nextLevelButton.gameObject.SetActive(hasNextLevel);
+        }
+    }
+
+    private void OnLevelFailed()
+    {
+        // Show game over panel in level mode
+        if (gameManager != null && gameManager.CurrentGameMode == GameMode.StackerLevels)
+        {
+            // Hide level complete panel if it was shown
+            if (levelCompletePanel != null)
+                levelCompletePanel.SetActive(false);
+
+            // Show game over panel with level-specific messaging
+            OnGameOver();
+
+            if (finalScoreText != null && levelManager != null && levelManager.CurrentLevel != null)
+            {
+                int currentHeight = stackManager?.GetStackCount() ?? 0;
+                finalScoreText.text = $"Level Failed!\nReached: {currentHeight}/{levelManager.CurrentLevel.requiredStackHeight}";
+            }
+        }
+    }
+
+    private void DisplayStars(int starCount)
+    {
+        if (stars == null || stars.Length == 0) return;
+
+        for (int i = 0; i < stars.Length; i++)
+        {
+            if (stars[i] != null)
+            {
+                // Activate star if earned
+                stars[i].SetActive(i < starCount);
+            }
+        }
+    }
+
+    private void GoToNextLevel()
+    {
+        if (levelManager != null)
+        {
+            // Hide level complete panel
+            if (levelCompletePanel != null)
+                levelCompletePanel.SetActive(false);
+
+            // Show game UI again
+            if (gameUI != null)
+                gameUI.SetActive(true);
+
+            // Load next level
+            levelManager.NextLevel();
+
+            // Restart the game
+            if (gameManager != null)
+            {
+                gameManager.RestartGame();
+            }
+        }
+    }
+
+    private void GoToMainMenu()
+    {
+        Debug.Log("Returning to Main Menu...");
+
+        // Load the main menu scene
+        SceneLoader.LoadMainMenu();
+    }
+
+    // Pause Menu Methods
+
+    /// <summary>
+    /// Toggles the pause menu on/off
+    /// </summary>
+    private void TogglePause()
+    {
+        if (isPaused)
+        {
+            ResumeGame();
+        }
+        else
+        {
+            PauseGame();
+        }
+    }
+
+    /// <summary>
+    /// Pauses the game and shows pause menu
+    /// </summary>
+    private void PauseGame()
+    {
+        isPaused = true;
+        Time.timeScale = 0f;
+
+        if (pauseMenuPanel != null)
+        {
+            pauseMenuPanel.SetActive(true);
+        }
+
+        Debug.Log("Game Paused");
+    }
+
+    /// <summary>
+    /// Resumes the game from pause menu
+    /// </summary>
+    private void ResumeGame()
+    {
+        isPaused = false;
+        Time.timeScale = 1f;
+
+        if (pauseMenuPanel != null)
+        {
+            pauseMenuPanel.SetActive(false);
+        }
+
+        // Notify listeners that game has resumed
+        OnGameResumed?.Invoke();
+
+        Debug.Log("Game Resumed");
+    }
+
+    /// <summary>
+    /// Restarts the game from pause menu
+    /// </summary>
+    private void TryAgainFromPause()
+    {
+        // Resume time first
+        Time.timeScale = 1f;
+        isPaused = false;
+
+        // Hide pause menu
+        if (pauseMenuPanel != null)
+        {
+            pauseMenuPanel.SetActive(false);
+        }
+
+        // Restart the game
+        RestartGame();
+    }
+
+    /// <summary>
+    /// Opens settings from pause menu (placeholder)
+    /// </summary>
+    private void OpenSettings()
+    {
+        Debug.Log("Opening Settings... (Not yet implemented)");
+        // TODO: Implement settings panel
+        // For now, you can add a settings panel later
+    }
+
+    /// <summary>
+    /// Returns to main menu from pause menu
+    /// </summary>
+    private void GoToMainMenuFromPause()
+    {
+        // Resume time first
+        Time.timeScale = 1f;
+        isPaused = false;
+
+        // Hide pause menu
+        if (pauseMenuPanel != null)
+        {
+            pauseMenuPanel.SetActive(false);
+        }
+
+        // Go to main menu
+        GoToMainMenu();
+    }
+
     private void OnDestroy()
     {
         // Unregister from dependency registry
@@ -405,11 +767,20 @@ public class UIManager : MonoBehaviour
             gameManager.OnGameStart -= OnGameStart;
             gameManager.OnGameOver -= OnGameOver;
             gameManager.OnGameRestart -= OnGameRestart;
+            gameManager.OnGameModeChanged -= OnGameModeChanged;
         }
 
         if (stackManager != null)
         {
             stackManager.OnObjectAddedToStack -= OnObjectAddedToStack;
+        }
+
+        if (levelManager != null)
+        {
+            levelManager.OnLevelCompleted -= OnLevelCompleted;
+            levelManager.OnLevelFailed -= OnLevelFailed;
+            levelManager.OnLevelLoaded -= OnLevelLoaded;
+            levelManager.OnStackHeightUpdated -= UpdateLevelProgress;
         }
 
         // Stop any running coroutines
@@ -427,6 +798,42 @@ public class UIManager : MonoBehaviour
         if (quitButton != null)
         {
             quitButton.onClick.RemoveListener(QuitGame);
+        }
+
+        if (nextLevelButton != null)
+        {
+            nextLevelButton.onClick.RemoveListener(GoToNextLevel);
+        }
+
+        if (mainMenuButton != null)
+        {
+            mainMenuButton.onClick.RemoveListener(GoToMainMenu);
+        }
+
+        // Remove pause menu button listeners
+        if (pauseButton != null)
+        {
+            pauseButton.onClick.RemoveListener(TogglePause);
+        }
+
+        if (resumeButton != null)
+        {
+            resumeButton.onClick.RemoveListener(ResumeGame);
+        }
+
+        if (tryAgainButton != null)
+        {
+            tryAgainButton.onClick.RemoveListener(TryAgainFromPause);
+        }
+
+        if (settingsButton != null)
+        {
+            settingsButton.onClick.RemoveListener(OpenSettings);
+        }
+
+        if (pauseMainMenuButton != null)
+        {
+            pauseMainMenuButton.onClick.RemoveListener(GoToMainMenuFromPause);
         }
     }
 }
