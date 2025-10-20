@@ -11,7 +11,7 @@ public class UIManager : MonoBehaviour
     [SerializeField] private TextMeshProUGUI finalScoreText;
     [SerializeField] private TextMeshProUGUI newHighScoreText;
     [SerializeField] private Button restartButton;
-    [SerializeField] private Button quitButton;
+    [SerializeField] private Button gameOverMainMenuButton;
 
     [Header("Level Mode UI")]
     [SerializeField] private GameObject levelCompletePanel;
@@ -65,6 +65,10 @@ public class UIManager : MonoBehaviour
 
     // Events
     public System.Action OnGameResumed;
+    public System.Action OnGamePaused;
+
+    // Public properties
+    public bool IsPaused => isPaused;
 
     private void Awake()
     {
@@ -111,9 +115,9 @@ public class UIManager : MonoBehaviour
             restartButton.onClick.AddListener(RestartGame);
         }
 
-        if (quitButton != null)
+        if (gameOverMainMenuButton != null)
         {
-            quitButton.onClick.AddListener(QuitGame);
+            gameOverMainMenuButton.onClick.AddListener(GoToMainMenu);
         }
 
         if (nextLevelButton != null)
@@ -253,6 +257,21 @@ public class UIManager : MonoBehaviour
         // Hide game over panel
         if (gameOverPanel != null)
             gameOverPanel.SetActive(false);
+
+        // Reset stack height display to zero directly (don't query StackManager as it may not be cleared yet)
+        if (stackHeightText != null)
+        {
+            stackHeightText.text = string.Format(stackHeightFormat, 0);
+        }
+
+        // Reset level progress if in level mode
+        if (levelProgressText != null && levelProgressText.gameObject.activeSelf)
+        {
+            UpdateLevelProgress(0);
+        }
+
+        // Hide landing accuracy text
+        HideLandingAccuracy();
 
         // Show instructions again
         ShowInstructions();
@@ -471,15 +490,6 @@ public class UIManager : MonoBehaviour
         }
     }
 
-    private void QuitGame()
-    {
-#if UNITY_EDITOR
-        UnityEditor.EditorApplication.isPlaying = false;
-#else
-            Application.Quit();
-#endif
-    }
-
     // Level Mode Methods
 
     private void InitializeLevelUI()
@@ -684,6 +694,9 @@ public class UIManager : MonoBehaviour
             pauseMenuPanel.SetActive(true);
         }
 
+        // Notify listeners that game has paused
+        OnGamePaused?.Invoke();
+
         Debug.Log("Game Paused");
     }
 
@@ -795,9 +808,9 @@ public class UIManager : MonoBehaviour
             restartButton.onClick.RemoveListener(RestartGame);
         }
 
-        if (quitButton != null)
+        if (gameOverMainMenuButton != null)
         {
-            quitButton.onClick.RemoveListener(QuitGame);
+            gameOverMainMenuButton.onClick.RemoveListener(GoToMainMenu);
         }
 
         if (nextLevelButton != null)

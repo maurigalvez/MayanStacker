@@ -1,6 +1,6 @@
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-using TMPro;
 
 /// <summary>
 /// Manages game settings including audio, graphics quality, and controls
@@ -78,8 +78,6 @@ public class SettingsManager : MonoBehaviour
     {
         // Register with dependency registry
         DependencyRegistry.Register<SettingsManager>(this);
-
-        DontDestroyOnLoad(gameObject);
         LoadSettings();
         ApplySettings();
     }

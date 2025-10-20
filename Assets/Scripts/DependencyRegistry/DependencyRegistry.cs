@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class DependencyRegistry : MonoBehaviour
+public class DependencyRegistry
 {
     private static DependencyRegistry _instance;
     public static DependencyRegistry Instance
@@ -11,9 +11,7 @@ public class DependencyRegistry : MonoBehaviour
         {
             if (_instance == null)
             {
-                var obj = new GameObject("DependencyRegistry");
-                _instance = obj.AddComponent<DependencyRegistry>();
-                DontDestroyOnLoad(obj);
+                _instance = new DependencyRegistry();
             }
             return _instance;
         }
@@ -50,4 +48,4 @@ public class DependencyRegistry : MonoBehaviour
         Debug.LogWarning($"Dependency of type {type} not found.");
         return null;
     }
-} 
+}

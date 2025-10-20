@@ -38,8 +38,6 @@ public class GameManager : MonoBehaviour
         // Register with dependency registry
         DependencyRegistry.Register<GameManager>(this);
 
-        // Ensure this GameManager persists across scenes
-        DontDestroyOnLoad(gameObject);
         LoadHighScore();
     }
 

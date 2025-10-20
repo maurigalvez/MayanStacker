@@ -1,5 +1,8 @@
+using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
+using UnityEngine.UI;
 
 public class InputManager : MonoBehaviour
 {
@@ -96,6 +99,10 @@ public class InputManager : MonoBehaviour
         if (gameManager == null || !gameManager.IsGameActive || gameManager.IsGameOver)
             return;
 
+        // Block input if game is paused
+        if (uiManager != null && uiManager.IsPaused)
+            return;
+
         // Block input if we just resumed from pause
         if (isInputBlocked)
             return;
@@ -115,6 +122,10 @@ public class InputManager : MonoBehaviour
         if (gameManager == null || !gameManager.IsGameActive || gameManager.IsGameOver)
             return;
 
+        // Block input if game is paused
+        if (uiManager != null && uiManager.IsPaused)
+            return;
+
         // Block input if we just resumed from pause
         if (isInputBlocked)
             return;
@@ -131,6 +142,12 @@ public class InputManager : MonoBehaviour
 
     private void ProcessInput(Vector2 screenPosition)
     {
+        // Check if pointer is over a button - if so, ignore gameplay input
+        if (IsPointerOverUI())
+        {
+            return;
+        }
+
         // Notify listeners
         OnScreenTapped?.Invoke(screenPosition);
         OnDropInput?.Invoke();
@@ -140,6 +157,59 @@ public class InputManager : MonoBehaviour
         {
             objectSpawner.DropCurrentObject();
         }
+    }
+
+    /// <summary>
+    /// Check if the pointer/touch is over a Button UI element specifically
+    /// Returns true only if touching a Button, false for other UI elements or gameplay area
+    /// </summary>
+    private bool IsPointerOverUI()
+    {
+        // Check if EventSystem exists
+        if (EventSystem.current == null)
+            return false;
+
+        Vector2 pointerPosition = Vector2.zero;
+        bool hasValidInput = false;
+
+        // Get pointer position based on input type
+        if (Touchscreen.current != null && Touchscreen.current.primaryTouch.press.isPressed)
+        {
+            pointerPosition = Touchscreen.current.primaryTouch.position.ReadValue();
+            hasValidInput = true;
+        }
+        else if (Mouse.current != null)
+        {
+            pointerPosition = Mouse.current.position.ReadValue();
+            hasValidInput = true;
+        }
+
+        if (!hasValidInput)
+            return false;
+
+        // Create PointerEventData for raycasting
+        PointerEventData pointerData = new PointerEventData(EventSystem.current)
+        {
+            position = pointerPosition
+        };
+
+        // Raycast to find UI elements under the pointer
+        List<RaycastResult> raycastResults = new List<RaycastResult>();
+        EventSystem.current.RaycastAll(pointerData, raycastResults);
+
+        // Check if any of the hit UI elements is a Button
+        foreach (RaycastResult result in raycastResults)
+        {
+            // Check if this specific GameObject has a Button component
+            if (result.gameObject.GetComponent<Button>() != null)
+            {
+                Debug.Log($"Input blocked: Pointer is over button '{result.gameObject.name}'");
+                return true;
+            }
+        }
+
+        // Not over a button - allow input
+        return false;
     }
 
     private void OnGameOver()
