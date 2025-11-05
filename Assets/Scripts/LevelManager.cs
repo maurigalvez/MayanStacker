@@ -300,6 +300,46 @@ public class LevelManager : MonoBehaviour, ILevelManager
         return new List<LevelData>(levels);
     }
 
+    /// <summary>
+    /// Reset all level progress (stars and high scores). Call this from Inspector for debugging.
+    /// </summary>
+    [ContextMenu("Reset Level Progress")]
+    public void ResetLevelProgress()
+    {
+        Debug.LogWarning("Resetting all level progress...");
+
+        // Clear in-memory dictionaries
+        levelStars.Clear();
+        levelHighScores.Clear();
+
+        // Delete all level-related PlayerPrefs
+        foreach (var level in levels)
+        {
+            int levelNumber = level.levelNumber;
+            PlayerPrefs.DeleteKey($"Level_{levelNumber}_Stars");
+            PlayerPrefs.DeleteKey($"Level_{levelNumber}_HighScore");
+        }
+
+        PlayerPrefs.Save();
+        Debug.Log("Level progress reset complete!");
+    }
+
+    /// <summary>
+    /// Reset ALL PlayerPrefs (including settings). Use with caution!
+    /// </summary>
+    [ContextMenu("Reset ALL PlayerPrefs (CAUTION)")]
+    public void ResetAllPlayerPrefs()
+    {
+        Debug.LogWarning("Resetting ALL PlayerPrefs (including settings)...");
+        PlayerPrefs.DeleteAll();
+        PlayerPrefs.Save();
+
+        // Reload progress (will be empty now)
+        LoadProgress();
+
+        Debug.Log("ALL PlayerPrefs reset complete!");
+    }
+
     private void OnDestroy()
     {
         // Unregister from dependency registry

@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -12,12 +13,14 @@ public class MainMenuManager : MonoBehaviour
     [SerializeField] private GameObject settingsPanel;
     [SerializeField] private GameObject creditsPanel;
     [SerializeField] private GameObject levelSelectionPanel;
+    [SerializeField] private GameObject codexPanel;
 
     [Header("Main Menu Buttons")]
     [SerializeField] private Button infiniteModeButton;
     [SerializeField] private Button levelModeButton;
     [SerializeField] private Button settingsButton;
     [SerializeField] private Button creditsButton;
+    [SerializeField] private Button codexButton;
 
     [Header("Settings Panel Buttons")]
     [SerializeField] private Button backFromSettingsButton;
@@ -25,12 +28,16 @@ public class MainMenuManager : MonoBehaviour
     [Header("Credits Panel Buttons")]
     [SerializeField] private Button backFromCreditsButton;
 
-    [Header("Level Selection Buttons")]
+    [Header("Codex Panel Buttons")]
+    [SerializeField] private Button backFromCodexButton;
+
+    [Header("Level Selection")]
     [SerializeField] private Button backFromLevelSelectionButton;
-    [SerializeField] private Button[] levelButtons;
+    [SerializeField] private Button goToNextLevelButton;
+    [SerializeField] private GameObject levelButtonPrefab;
+    [SerializeField] private Transform[] levelButtonContainers;
 
     [Header("UI Elements")]
-    [SerializeField] private TextMeshProUGUI titleText;
     [SerializeField] private TextMeshProUGUI versionText;
 
     [Header("Settings")]
@@ -40,6 +47,14 @@ public class MainMenuManager : MonoBehaviour
     // References
     private SettingsManager settingsManager;
     private LevelManager levelManager;
+    private CodexManager codexManager;
+    private MainMenuSoundManager soundManager;
+
+    // Spawned UI elements
+    private List<LevelButtonUI> spawnedLevelButtons = new List<LevelButtonUI>();
+
+    // State
+    private bool isFirstShow = true;
 
     private void Awake()
     {
@@ -59,6 +74,8 @@ public class MainMenuManager : MonoBehaviour
         }
 
         levelManager = DependencyRegistry.Find<LevelManager>();
+        codexManager = DependencyRegistry.Find<CodexManager>();
+        soundManager = DependencyRegistry.Find<MainMenuSoundManager>();
 
         InitializeUI();
         SetupButtonListeners();
@@ -92,6 +109,9 @@ public class MainMenuManager : MonoBehaviour
         if (creditsButton != null)
             creditsButton.onClick.AddListener(ShowCreditsPanel);
 
+        if (codexButton != null)
+            codexButton.onClick.AddListener(ShowCodexPanel);
+
         // Settings
         if (backFromSettingsButton != null)
             backFromSettingsButton.onClick.AddListener(ShowMainMenu);
@@ -100,79 +120,169 @@ public class MainMenuManager : MonoBehaviour
         if (backFromCreditsButton != null)
             backFromCreditsButton.onClick.AddListener(ShowMainMenu);
 
+        // Codex
+        if (backFromCodexButton != null)
+            backFromCodexButton.onClick.AddListener(ShowMainMenu);
+
         // Level Selection
         if (backFromLevelSelectionButton != null)
             backFromLevelSelectionButton.onClick.AddListener(ShowMainMenu);
+
+        if (goToNextLevelButton != null)
+            goToNextLevelButton.onClick.AddListener(OnGoToNextLevelClicked);
     }
 
     private void InitializeLevelSelection()
     {
-        if (levelButtons == null || levelButtons.Length == 0) return;
+        // Clear any existing buttons
+        ClearLevelButtons();
 
-        // Use level manager reference from Start()
-        // Set up level buttons
-        for (int i = 0; i < levelButtons.Length; i++)
+        // Validate requirements
+        if (levelButtonPrefab == null)
         {
-            if (levelButtons[i] == null) continue;
-
-            int levelIndex = i; // Capture for lambda
-            levelButtons[i].onClick.AddListener(() => OnLevelButtonClicked(levelIndex));
-
-            // Check if level is unlocked
-            bool isUnlocked = levelManager != null && levelManager.IsLevelUnlocked(levelIndex);
-            levelButtons[i].interactable = isUnlocked;
-
-            // Update button appearance based on unlock status
-            UpdateLevelButtonAppearance(levelButtons[i], levelIndex, isUnlocked);
+            Debug.LogError("Level button prefab is not assigned!");
+            return;
         }
+
+        if (levelButtonContainers == null || levelButtonContainers.Length == 0)
+        {
+            Debug.LogError("Level button container is not assigned!");
+            return;
+        }
+
+        if (levelManager == null)
+        {
+            Debug.LogWarning("LevelManager not found. Cannot create level buttons.");
+            return;
+        }
+
+        // Get total number of levels from LevelManager
+        int totalLevels = levelManager.TotalLevels;
+
+        // Spawn a button for each level
+        for (int i = 0; i < totalLevels; i++)
+        {
+            SpawnLevelButton(i);
+        }
+
+        // Find and highlight the next playable level
+        int nextPlayableLevelIndex = GetNextPlayableLevelIndex();
+        if (nextPlayableLevelIndex >= 0 && nextPlayableLevelIndex < spawnedLevelButtons.Count)
+        {
+            // Apply pulse animation to the next playable level
+            spawnedLevelButtons[nextPlayableLevelIndex].StartPulseAnimation();
+        }
+
+        // Update "Go to Next Level" button visibility/interactability
+        if (goToNextLevelButton != null)
+        {
+            goToNextLevelButton.interactable = (nextPlayableLevelIndex >= 0);
+        }
+
+        Debug.Log($"Created {totalLevels} level buttons dynamically");
     }
 
-    private void UpdateLevelButtonAppearance(Button levelButton, int levelIndex, bool isUnlocked)
+    /// <summary>
+    /// Spawn a single level button
+    /// </summary>
+    private void SpawnLevelButton(int levelIndex)
     {
-        // Get the button's text component
-        TextMeshProUGUI buttonText = levelButton.GetComponentInChildren<TextMeshProUGUI>();
-        if (buttonText != null)
-        {
-            if (isUnlocked)
-            {
-                buttonText.text = $"Level {levelIndex + 1}";
+        // Instantiate the button
+        GameObject buttonObj = Instantiate(levelButtonPrefab, levelButtonContainers[levelIndex]);
 
-                // Show stars if level was completed
-                if (levelManager != null)
-                {
-                    int stars = levelManager.GetLevelStars(levelIndex);
-                    if (stars > 0)
-                    {
-                        string starString = new string('★', stars);
-                        buttonText.text = $"Level {levelIndex + 1}\n{starString}";
-                    }
-                }
-            }
-            else
-            {
-                buttonText.text = "🔒";
-            }
+        // Get the LevelButtonUI component
+        LevelButtonUI levelButtonUI = buttonObj.GetComponent<LevelButtonUI>();
+        if (levelButtonUI == null)
+        {
+            Debug.LogError($"Level button prefab is missing LevelButtonUI component!");
+            Destroy(buttonObj);
+            return;
         }
 
-        // Optional: Change button color based on status
-        ColorBlock colors = levelButton.colors;
-        if (!isUnlocked)
-        {
-            colors.normalColor = new Color(0.5f, 0.5f, 0.5f, 0.5f);
-            colors.highlightedColor = colors.normalColor;
-            colors.pressedColor = colors.normalColor;
-            levelButton.colors = colors;
-        }
+        // Get level data from LevelManager
+        int levelNumber = levelIndex + 1; // Convert to 1-based
+
+        // Note: LevelManager.IsLevelUnlocked uses levelNumber (1-based), not index
+        bool isUnlocked = levelManager.IsLevelUnlocked(levelNumber);
+        int stars = levelManager.GetLevelStars(levelNumber);
+
+        // Initialize the button
+        levelButtonUI.Initialize(levelIndex, levelNumber, isUnlocked, stars);
+
+        // Add click listener
+        levelButtonUI.AddClickListener(OnLevelButtonClicked);
+
+        // Track the spawned button
+        spawnedLevelButtons.Add(levelButtonUI);
     }
+
+    /// <summary>
+    /// Clear all spawned level buttons
+    /// </summary>
+    private void ClearLevelButtons()
+    {
+        foreach (var button in spawnedLevelButtons)
+        {
+            if (button != null)
+            {
+                button.StopPulseAnimation();
+                button.ClearClickListeners();
+                Destroy(button.gameObject);
+            }
+        }
+
+        spawnedLevelButtons.Clear();
+    }
+
+    /// <summary>
+    /// Find the next playable level (first unlocked level with 0 stars)
+    /// </summary>
+    /// <returns>Level index of the next playable level, or -1 if none found</returns>
+    private int GetNextPlayableLevelIndex()
+    {
+        if (levelManager == null) return -1;
+
+        int totalLevels = levelManager.TotalLevels;
+
+        // Find the first unlocked level that hasn't been completed (0 stars)
+        for (int i = 0; i < totalLevels; i++)
+        {
+            int levelNumber = i + 1; // Convert to 1-based
+            bool isUnlocked = levelManager.IsLevelUnlocked(levelNumber);
+            int stars = levelManager.GetLevelStars(levelNumber);
+
+            if (isUnlocked && stars == 0)
+            {
+                return i; // Return the index (0-based)
+            }
+        }
+
+        // If all levels are completed, return -1
+        return -1;
+    }
+
 
     // Panel Navigation Methods
     private void ShowMainMenu()
     {
+        // Don't play sounds on first initialization
+        if (!isFirstShow)
+        {
+            soundManager?.PlayBackButton();
+            soundManager?.PlayPanelClose();
+        }
+        else
+        {
+            isFirstShow = false;
+        }
+
         SetActivePanel(mainMenuPanel);
     }
 
     private void ShowSettingsPanel()
     {
+        soundManager?.PlayButtonClick();
+        soundManager?.PlayPanelOpen();
         SetActivePanel(settingsPanel);
 
         // Initialize settings UI
@@ -184,11 +294,28 @@ public class MainMenuManager : MonoBehaviour
 
     private void ShowCreditsPanel()
     {
+        soundManager?.PlayButtonClick();
+        soundManager?.PlayPanelOpen();
         SetActivePanel(creditsPanel);
+    }
+
+    private void ShowCodexPanel()
+    {
+        soundManager?.PlayButtonClick();
+        soundManager?.PlayPanelOpen();
+        SetActivePanel(codexPanel);
+
+        // Initialize codex
+        if (codexManager != null)
+        {
+            codexManager.ShowCodex();
+        }
     }
 
     private void ShowLevelSelection()
     {
+        soundManager?.PlayLevelModeSelect();
+        soundManager?.PlayPanelOpen();
         SetActivePanel(levelSelectionPanel);
         InitializeLevelSelection(); // Refresh level states
     }
@@ -200,6 +327,13 @@ public class MainMenuManager : MonoBehaviour
         if (settingsPanel != null) settingsPanel.SetActive(false);
         if (creditsPanel != null) creditsPanel.SetActive(false);
         if (levelSelectionPanel != null) levelSelectionPanel.SetActive(false);
+        if (codexPanel != null) codexPanel.SetActive(false);
+
+        // Hide codex if switching away from it
+        if (codexManager != null && panelToShow != codexPanel)
+        {
+            codexManager.HideCodex();
+        }
 
         // Show the requested panel
         if (panelToShow != null)
@@ -211,20 +345,39 @@ public class MainMenuManager : MonoBehaviour
     // Button Click Handlers
     private void OnInfiniteModeSelected()
     {
+        soundManager?.PlayInfiniteModeSelect();
         Debug.Log("Infinite Mode selected");
         SceneLoader.LoadGameScene(gameSceneName, GameMode.InfiniteStacker);
     }
 
     private void OnLevelModeSelected()
     {
-        // Show level selection screen
+        // Show level selection screen (sound is played in ShowLevelSelection)
         ShowLevelSelection();
     }
 
     private void OnLevelButtonClicked(int levelIndex)
     {
+        soundManager?.PlayLevelButtonClick();
         Debug.Log($"Level {levelIndex + 1} selected");
         SceneLoader.LoadGameScene(gameSceneName, GameMode.StackerLevels, levelIndex);
+    }
+
+    private void OnGoToNextLevelClicked()
+    {
+        int nextLevelIndex = GetNextPlayableLevelIndex();
+
+        if (nextLevelIndex >= 0)
+        {
+            soundManager?.PlayLevelButtonClick();
+            Debug.Log($"Going to next playable level: {nextLevelIndex + 1}");
+            SceneLoader.LoadGameScene(gameSceneName, GameMode.StackerLevels, nextLevelIndex);
+        }
+        else
+        {
+            soundManager?.PlayButtonClick();
+            Debug.Log("All levels completed!");
+        }
     }
 
     private void OnDestroy()
@@ -245,23 +398,26 @@ public class MainMenuManager : MonoBehaviour
         if (creditsButton != null)
             creditsButton.onClick.RemoveAllListeners();
 
+        if (codexButton != null)
+            codexButton.onClick.RemoveAllListeners();
+
         if (backFromSettingsButton != null)
             backFromSettingsButton.onClick.RemoveAllListeners();
 
         if (backFromCreditsButton != null)
             backFromCreditsButton.onClick.RemoveAllListeners();
 
+        if (backFromCodexButton != null)
+            backFromCodexButton.onClick.RemoveAllListeners();
+
         if (backFromLevelSelectionButton != null)
             backFromLevelSelectionButton.onClick.RemoveAllListeners();
 
-        if (levelButtons != null)
-        {
-            foreach (var button in levelButtons)
-            {
-                if (button != null)
-                    button.onClick.RemoveAllListeners();
-            }
-        }
+        if (goToNextLevelButton != null)
+            goToNextLevelButton.onClick.RemoveAllListeners();
+
+        // Clean up spawned level buttons
+        ClearLevelButtons();
     }
 }
 

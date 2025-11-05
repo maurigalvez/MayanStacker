@@ -41,9 +41,6 @@ public class AudioManager : MonoBehaviour
         // Register with dependency registry
         DependencyRegistry.Register<AudioManager>(this);
 
-        // Make this persist across scenes
-        DontDestroyOnLoad(gameObject);
-
         // Create audio sources if not assigned
         if (musicSource == null)
         {

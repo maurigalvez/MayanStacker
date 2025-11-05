@@ -1,0 +1,309 @@
+===============================================
+   TAMAL STACKER - MAIN MENU UI HIERARCHY
+===============================================
+
+This is a template for creating your MainMenu scene UI.
+Copy this structure in the Unity Hierarchy.
+
+===============================================
+HIERARCHY STRUCTURE
+===============================================
+
+Canvas (Canvas Scaler: Scale With Screen Size, 1920x1080)
+│
+├── MainMenuPanel
+│   ├── Background (Image - Optional)
+│   ├── TitleText (TextMeshProUGUI)
+│   │   └── Text: "TAMAL STACKER"
+│   │   └── Font Size: 72-96
+│   │   └── Alignment: Center
+│   ├── VersionText (TextMeshProUGUI)
+│   │   └── Text: "v1.0.0"
+│   │   └── Font Size: 24
+│   │   └── Position: Bottom-right corner
+│   ├── ButtonContainer (Vertical Layout Group)
+│   │   ├── InfiniteModeButton (Button)
+│   │   │   └── Text: "INFINITE MODE"
+│   │   ├── LevelModeButton (Button)
+│   │   │   └── Text: "LEVEL MODE"
+│   │   ├── SettingsButton (Button)
+│   │   │   └── Text: "SETTINGS"
+│   │   ├── CreditsButton (Button)
+│   │   │   └── Text: "CREDITS"
+│   │   └── QuitButton (Button)
+│   │       └── Text: "QUIT"
+│
+├── LevelSelectionPanel [INACTIVE]
+│   ├── Background (Image)
+│   ├── TitleText (TextMeshProUGUI)
+│   │   └── Text: "SELECT LEVEL"
+│   ├── ScrollView (Scroll Rect)
+│   │   └── Viewport
+│   │       └── Content
+│   │           └── LevelGrid (Grid Layout Group)
+│   │               ├── LevelButton1 (Button)
+│   │               │   └── Text: "LEVEL 1"
+│   │               ├── LevelButton2 (Button)
+│   │               │   └── Text: "LEVEL 2"
+│   │               ├── LevelButton3 (Button)
+│   │               │   └── Text: "LEVEL 3"
+│   │               ├── LevelButton4 (Button)
+│   │               ├── LevelButton5 (Button)
+│   │               ├── LevelButton6 (Button)
+│   │               ├── LevelButton7 (Button)
+│   │               ├── LevelButton8 (Button)
+│   │               └── LevelButton9 (Button)
+│   └── BackButton (Button)
+│       └── Text: "BACK"
+│
+├── SettingsPanel [INACTIVE]
+│   ├── Background (Image)
+│   ├── TitleText (TextMeshProUGUI)
+│   │   └── Text: "SETTINGS"
+│   ├── ScrollView (Scroll Rect - Optional if content is long)
+│   │   └── Viewport
+│   │       └── Content (Vertical Layout Group)
+│   │           ├── AudioSection (Panel)
+│   │           │   ├── SectionTitle (TextMeshProUGUI)
+│   │           │   │   └── Text: "AUDIO"
+│   │           │   ├── MasterVolumeRow (Horizontal Layout Group)
+│   │           │   │   ├── Label (TextMeshProUGUI): "Master Volume"
+│   │           │   │   ├── MasterVolumeSlider (Slider)
+│   │           │   │   └── MasterVolumeText (TextMeshProUGUI): "100%"
+│   │           │   ├── MusicVolumeRow (Horizontal Layout Group)
+│   │           │   │   ├── Label (TextMeshProUGUI): "Music Volume"
+│   │           │   │   ├── MusicVolumeSlider (Slider)
+│   │           │   │   └── MusicVolumeText (TextMeshProUGUI): "70%"
+│   │           │   ├── SFXVolumeRow (Horizontal Layout Group)
+│   │           │   │   ├── Label (TextMeshProUGUI): "SFX Volume"
+│   │           │   │   ├── SFXVolumeSlider (Slider)
+│   │           │   │   └── SFXVolumeText (TextMeshProUGUI): "80%"
+│   │           │   └── MuteRow (Horizontal Layout Group)
+│   │           │       ├── Label (TextMeshProUGUI): "Mute"
+│   │           │       └── MuteToggle (Toggle)
+│   │           ├── GraphicsSection (Panel)
+│   │           │   ├── SectionTitle (TextMeshProUGUI)
+│   │           │   │   └── Text: "GRAPHICS"
+│   │           │   ├── QualityRow (Horizontal Layout Group)
+│   │           │   │   ├── Label (TextMeshProUGUI): "Quality"
+│   │           │   │   └── QualityDropdown (TMP_Dropdown)
+│   │           │   ├── FullscreenRow (Horizontal Layout Group)
+│   │           │   │   ├── Label (TextMeshProUGUI): "Fullscreen"
+│   │           │   │   └── FullscreenToggle (Toggle)
+│   │           │   ├── ResolutionRow (Horizontal Layout Group)
+│   │           │   │   ├── Label (TextMeshProUGUI): "Resolution"
+│   │           │   │   └── ResolutionDropdown (TMP_Dropdown)
+│   │           │   └── VSyncRow (Horizontal Layout Group)
+│   │           │       ├── Label (TextMeshProUGUI): "VSync"
+│   │           │       └── VSyncToggle (Toggle)
+│   │           └── ControlsSection (Panel)
+│   │               ├── SectionTitle (TextMeshProUGUI)
+│   │               │   └── Text: "CONTROLS"
+│   │               ├── SensitivityRow (Horizontal Layout Group)
+│   │               │   ├── Label (TextMeshProUGUI): "Sensitivity"
+│   │               │   ├── SensitivitySlider (Slider)
+│   │               │   └── SensitivityText (TextMeshProUGUI): "1.0x"
+│   │               └── InvertYRow (Horizontal Layout Group)
+│   │                   ├── Label (TextMeshProUGUI): "Invert Y-Axis"
+│   │                   └── InvertYToggle (Toggle)
+│   ├── ButtonContainer (Horizontal Layout Group)
+│   │   ├── ResetDefaultsButton (Button)
+│   │   │   └── Text: "RESET DEFAULTS"
+│   │   └── ApplyButton (Button)
+│   │       └── Text: "APPLY"
+│   └── BackButton (Button)
+│       └── Text: "BACK"
+│
+└── CreditsPanel [INACTIVE]
+    ├── Background (Image)
+    ├── TitleText (TextMeshProUGUI)
+    │   └── Text: "CREDITS"
+    ├── ScrollView (Scroll Rect)
+    │   └── Viewport
+    │       └── Content
+    │           └── CreditsText (TextMeshProUGUI)
+    │               └── Text: "Game by: [Your Name]\n
+    │                         Programming: [Your Name]\n
+    │                         Art: [Artist Name]\n
+    │                         Music: [Composer Name]\n
+    │                         Special Thanks: [Names]\n
+    │                         \nBuilt with Unity"
+    └── BackButton (Button)
+        └── Text: "BACK"
+
+===============================================
+ADDITIONAL GAMEOBJECTS
+===============================================
+
+MainMenuManager (Empty GameObject)
+├── MainMenuManager (Script Component)
+└── SettingsManager (Script Component)
+
+EventSystem (Auto-created with Canvas)
+
+===============================================
+LAYOUT SETTINGS
+===============================================
+
+Canvas:
+- Render Mode: Screen Space - Overlay
+- Canvas Scaler: Scale With Screen Size
+- Reference Resolution: 1920 x 1080
+- Match: 0.5 (Width/Height)
+
+Vertical Layout Group (for button containers):
+- Child Alignment: Middle Center
+- Child Force Expand: Width ✓
+- Spacing: 20
+- Padding: 40-40-40-40
+
+Horizontal Layout Group (for settings rows):
+- Child Alignment: Middle Left
+- Child Force Expand: Width ✓
+- Spacing: 20
+- Padding: 10-10-10-10
+
+Grid Layout Group (for level buttons):
+- Cell Size: 150 x 150
+- Spacing: 20 x 20
+- Start Corner: Upper Left
+- Start Axis: Horizontal
+- Child Alignment: Upper Left
+- Constraint: Fixed Column Count (3 or 4)
+
+===============================================
+COMPONENT SETTINGS
+===============================================
+
+Button:
+- Width: 300-400px
+- Height: 80-100px
+- Transition: Color Tint
+- Normal Color: White
+- Highlighted Color: Light Gray
+- Pressed Color: Dark Gray
+- Disabled Color: 50% opacity
+
+Slider:
+- Min Value: 0
+- Max Value: 1 (for volume)
+- Whole Numbers: Off
+- Handle Size: 20
+- Direction: Left to Right
+
+Toggle:
+- Is On: Off (default)
+- Graphic: Checkmark image
+
+Dropdown:
+- Template: Default (auto-created)
+- Item Text: TextMeshProUGUI
+- Caption Text: "Select..."
+
+===============================================
+MAINMENUMANAGER REFERENCES TO ASSIGN
+===============================================
+
+Menu Panels:
+- Main Menu Panel
+- Settings Panel
+- Credits Panel
+- Level Selection Panel
+
+Main Menu Buttons:
+- Infinite Mode Button
+- Level Mode Button
+- Settings Button
+- Credits Button
+- Quit Button
+
+Settings Panel Buttons:
+- Back From Settings Button
+
+Credits Panel Buttons:
+- Back From Credits Button
+
+Level Selection Buttons:
+- Back From Level Selection Button
+- Level Buttons[] (Array of all level buttons)
+
+UI Elements:
+- Title Text
+- Version Text
+- Infinite Mode Description
+- Level Mode Description
+
+Settings:
+- Game Scene Name: "GameScene"
+- Game Version: "1.0.0"
+
+===============================================
+SETTINGSMANAGER REFERENCES TO ASSIGN
+===============================================
+
+Audio Settings UI:
+- Master Volume Slider
+- Music Volume Slider
+- SFX Volume Slider
+- Master Volume Text
+- Music Volume Text
+- SFX Volume Text
+- Mute Toggle
+
+Graphics Settings UI:
+- Quality Dropdown
+- Fullscreen Toggle
+- Resolution Dropdown
+- VSync Toggle
+
+Control Settings UI:
+- Invert Y Axis Toggle
+- Sensitivity Slider
+- Sensitivity Text
+
+General Settings UI:
+- Reset Defaults Button
+- Apply Button
+
+Audio Sources (Optional):
+- Music Audio Source
+- SFX Audio Source
+
+===============================================
+COLOR SCHEME SUGGESTIONS
+===============================================
+
+Primary Colors:
+- Background: #1a1a2e (Dark Blue)
+- Panel Background: #16213e (Navy)
+- Accent: #0f3460 (Deep Blue)
+- Highlight: #533483 (Purple)
+
+Text Colors:
+- Title: #ffffff (White)
+- Body: #e0e0e0 (Light Gray)
+- Disabled: #808080 (Gray)
+
+Button Colors:
+- Normal: #533483 (Purple)
+- Highlighted: #6b4799 (Light Purple)
+- Pressed: #3d2563 (Dark Purple)
+- Text: #ffffff (White)
+
+===============================================
+NOTES
+===============================================
+
+1. All panels except MainMenuPanel should start INACTIVE
+2. Make sure to add Canvas and EventSystem
+3. Use TextMeshPro for all text (not legacy Text)
+4. All back buttons return to the main menu
+5. Create level buttons based on how many levels you have
+6. Assign ALL references in MainMenuManager and SettingsManager
+7. Remember to add scenes to Build Settings!
+8. Game mode buttons are now directly in the main menu (no separate selection panel)
+
+===============================================
+END OF TEMPLATE
+===============================================
+

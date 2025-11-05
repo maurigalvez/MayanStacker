@@ -13,6 +13,8 @@ public class LevelData : ScriptableObject
     [Tooltip("Display name for the level")]
     public string levelName = "Level 1";
 
+    [Tooltip("Location of the ruin (e.g., 'Chiapas, Mexico')")]
+    public string location = "";
     [TextArea(3, 5)]
     [Tooltip("Optional description of the level")]
     public string levelDescription = "";
@@ -24,15 +26,11 @@ public class LevelData : ScriptableObject
 
     [Header("Star Rating Thresholds")]
     [Tooltip("Score required for 1 star (minimum to pass)")]
-    [Min(0)]
     public int oneStarScore = 100;
-
     [Tooltip("Score required for 2 stars")]
-    [Min(0)]
     public int twoStarScore = 500;
 
     [Tooltip("Score required for 3 stars (perfect)")]
-    [Min(0)]
     public int threeStarScore = 1000;
 
     [Header("Level Settings")]
@@ -57,23 +55,6 @@ public class LevelData : ScriptableObject
             return 2;
         else
             return 3; // Perfect score!
-    }
-
-    /// <summary>
-    /// Validate the ScriptableObject data
-    /// </summary>
-    private void OnValidate()
-    {
-        // Ensure star thresholds are in ascending order
-        if (twoStarScore < oneStarScore)
-            twoStarScore = oneStarScore;
-
-        if (threeStarScore < twoStarScore)
-            threeStarScore = twoStarScore;
-
-        // Ensure required stack height is at least 1
-        if (requiredStackHeight < 1)
-            requiredStackHeight = 1;
     }
 }
 

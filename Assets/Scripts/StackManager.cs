@@ -8,9 +8,15 @@ public class StackManager : MonoBehaviour
     [SerializeField] private float balanceThreshold = 15f; // Degrees of tilt before stack falls
     [SerializeField] private float fallMargin = 1f; // Margin below ground or stack before considering fallen
     [SerializeField] private float stabilityCheckDelay = 2f; // Delay before checking stability after landing
+    [SerializeField] private float fallVelocityThreshold = -5f; // Downward velocity indicating a fall (more strict)
+    [SerializeField] private float horizontalDistanceThreshold = 8f; // Max horizontal distance from stack center
+    [SerializeField] private float stackHeightFallThreshold = 4f; // How far below stack top before considered fallen
+    [SerializeField] private float settlingTimeGracePeriod = 1.5f; // Time after landing before strict checks apply
 
     // Stack tracking
     private List<StackableObject> stackObjects = new List<StackableObject>();
+    private List<StackableObject> droppedObjects = new List<StackableObject>(); // Track all dropped objects
+    private Dictionary<StackableObject, float> landingTimes = new Dictionary<StackableObject, float>(); // Track when objects landed
     private bool isCheckingStability = false;
 
     // Ground reference
@@ -59,6 +65,91 @@ public class StackManager : MonoBehaviour
         }
     }
 
+    private void FixedUpdate()
+    {
+        // Continuously monitor dropped objects for fall conditions
+        CheckDroppedObjectsForFalls();
+    }
+
+    /// <summary>
+    /// Continuously check if any dropped objects have fallen below the threshold
+    /// </summary>
+    private void CheckDroppedObjectsForFalls()
+    {
+        if (droppedObjects.Count == 0) return;
+
+        // Don't check for game over if we only have the first block
+        // The first block can't "fall off" since there's nothing to fall from
+        if (stackObjects.Count == 0)
+        {
+            return;
+        }
+
+        // Get ground level for fall detection
+        float groundLevel = 0f;
+        if (ground != null)
+        {
+            groundLevel = ground.GetGroundTop();
+        }
+
+        // Check each dropped object - ONLY for critical failures
+        float fallThreshold = groundLevel - fallMargin * 3f; // Much more lenient - 3x the margin
+
+        foreach (StackableObject obj in droppedObjects)
+        {
+            if (obj == null) continue;
+            if (!obj.IsDropped) continue;
+
+            // Check if object is within grace period (recently landed)
+            bool inGracePeriod = false;
+            if (landingTimes.ContainsKey(obj))
+            {
+                float timeSinceLanding = Time.time - landingTimes[obj];
+                inGracePeriod = timeSinceLanding < settlingTimeGracePeriod;
+            }
+
+            // ONLY CHECK: Fallen significantly below ground threshold
+            // This is the ONLY reliable check - block has clearly fallen off the world
+            // Skip if in grace period to allow initial settling
+            if (!inGracePeriod && obj.transform.position.y < fallThreshold)
+            {
+                Debug.Log($"Game Over: Block fell below ground! Object Y: {obj.transform.position.y:F2}, Threshold: {fallThreshold:F2}");
+                TriggerStackFall();
+                return;
+            }
+
+            // SECONDARY CHECK: Block is falling fast AND far from stack
+            // Only trigger if BOTH conditions are true to avoid false positives
+            if (!inGracePeriod && obj.HasLanded && stackObjects.Count >= 2)
+            {
+                Rigidbody2D rb = obj.GetComponent<Rigidbody2D>();
+                float stackTopY = GetStackTopY();
+
+                // Must be falling fast AND be far below the stack AND far horizontally
+                bool fallingFast = rb != null && rb.linearVelocity.y < fallVelocityThreshold;
+                bool farBelowStack = obj.transform.position.y < stackTopY - stackHeightFallThreshold;
+                bool farFromCenter = Mathf.Abs(obj.transform.position.x - GetStackCenterX()) > horizontalDistanceThreshold;
+
+                // Only trigger if ALL THREE conditions are met (very conservative)
+                if (fallingFast && farBelowStack && farFromCenter)
+                {
+                    Debug.Log($"Game Over: Block clearly falling off! Velocity: {rb.linearVelocity.y:F2}, Y: {obj.transform.position.y:F2}, Stack Top: {stackTopY:F2}");
+                    TriggerStackFall();
+                    return;
+                }
+            }
+        }
+    }
+
+    /// <summary>
+    /// Register a dropped object for monitoring (called when object is dropped)
+    /// </summary>
+    public void RegisterDroppedObject(StackableObject stackableObject)
+    {
+        if (stackableObject == null || droppedObjects.Contains(stackableObject)) return;
+        droppedObjects.Add(stackableObject);
+    }
+
     /// <summary>
     /// Add an object to the stack when it lands
     /// </summary>
@@ -67,6 +158,10 @@ public class StackManager : MonoBehaviour
         if (stackableObject == null || stackObjects.Contains(stackableObject)) return;
 
         stackObjects.Add(stackableObject);
+
+        // Record landing time for grace period
+        landingTimes[stackableObject] = Time.time;
+
         OnObjectAddedToStack?.Invoke(stackableObject);
 
         // Start stability check after a delay to allow physics to settle
@@ -88,6 +183,10 @@ public class StackManager : MonoBehaviour
         {
             OnObjectRemovedFromStack?.Invoke(stackableObject);
         }
+
+        // Also remove from dropped objects list and landing times
+        droppedObjects.Remove(stackableObject);
+        landingTimes.Remove(stackableObject);
     }
 
     /// <summary>
@@ -306,8 +405,19 @@ public class StackManager : MonoBehaviour
             }
         }
 
-        // Clear the list
+        // Destroy all dropped objects
+        foreach (StackableObject obj in droppedObjects)
+        {
+            if (obj != null && obj.gameObject != null && !stackObjects.Contains(obj))
+            {
+                Destroy(obj.gameObject);
+            }
+        }
+
+        // Clear the lists
         stackObjects.Clear();
+        droppedObjects.Clear();
+        landingTimes.Clear();
     }
 
     /// <summary>
@@ -327,6 +437,81 @@ public class StackManager : MonoBehaviour
     public float GetCurrentGroundLevel()
     {
         return GetEffectiveGroundLevel();
+    }
+
+    /// <summary>
+    /// Get the horizontal center position of the stack
+    /// </summary>
+    private float GetStackCenterX()
+    {
+        if (stackObjects.Count == 0 && droppedObjects.Count == 0)
+        {
+            return 0f; // Default to world center if no objects
+        }
+
+        float totalX = 0f;
+        int count = 0;
+
+        // Use stack objects for center calculation (more stable)
+        if (stackObjects.Count > 0)
+        {
+            foreach (StackableObject obj in stackObjects)
+            {
+                if (obj != null)
+                {
+                    totalX += obj.transform.position.x;
+                    count++;
+                }
+            }
+        }
+        else if (droppedObjects.Count > 0)
+        {
+            // Fallback to dropped objects if no stack yet
+            foreach (StackableObject obj in droppedObjects)
+            {
+                if (obj != null)
+                {
+                    totalX += obj.transform.position.x;
+                    count++;
+                }
+            }
+        }
+
+        return count > 0 ? totalX / count : 0f;
+    }
+
+    /// <summary>
+    /// Get the Y position of the top of the stack
+    /// </summary>
+    private float GetStackTopY()
+    {
+        if (stackObjects.Count == 0 && droppedObjects.Count == 0)
+        {
+            // Return ground level if no objects
+            return ground != null ? ground.GetGroundTop() : 0f;
+        }
+
+        float highestY = float.MinValue;
+
+        // Check stack objects
+        foreach (StackableObject obj in stackObjects)
+        {
+            if (obj != null && obj.transform.position.y > highestY)
+            {
+                highestY = obj.transform.position.y;
+            }
+        }
+
+        // Also check dropped objects for accurate top position
+        foreach (StackableObject obj in droppedObjects)
+        {
+            if (obj != null && obj.transform.position.y > highestY)
+            {
+                highestY = obj.transform.position.y;
+            }
+        }
+
+        return highestY != float.MinValue ? highestY : (ground != null ? ground.GetGroundTop() : 0f);
     }
 
     /// <summary>

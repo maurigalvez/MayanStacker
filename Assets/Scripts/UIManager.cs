@@ -17,11 +17,16 @@ public class UIManager : MonoBehaviour
     [SerializeField] private GameObject levelCompletePanel;
     [SerializeField] private TextMeshProUGUI levelNameText;
     [SerializeField] private TextMeshProUGUI levelScoreText;
-    [SerializeField] private GameObject[] stars; // Array of 3 star GameObjects
+    [SerializeField] private Image[] stars; // Array of 3 star UI Images
     [SerializeField] private TextMeshProUGUI levelProgressText; // Shows "Height: X/Y"
     [SerializeField] private Button nextLevelButton;
+    [SerializeField] private Button retryLevelButton;
     [SerializeField] private Button mainMenuButton;
     [SerializeField] private TextMeshProUGUI gameModeText;
+
+    [Header("Star Colors")]
+    [SerializeField] private Color starInitialColor = new Color(0.3f, 0.3f, 0.3f, 1f); // Dark gray
+    [SerializeField] private Color starHighlightColor = new Color(1f, 0.84f, 0f, 1f); // Gold/yellow
 
     [Header("Game UI")]
     [SerializeField] private GameObject gameUI;
@@ -58,6 +63,7 @@ public class UIManager : MonoBehaviour
     private GameManager gameManager;
     private StackManager stackManager;
     private LevelManager levelManager;
+    private GameSoundManager gameSoundManager;
 
     // State
     private Coroutine landingAccuracyCoroutine;
@@ -82,6 +88,7 @@ public class UIManager : MonoBehaviour
         gameManager = DependencyRegistry.Find<GameManager>();
         stackManager = DependencyRegistry.Find<StackManager>();
         levelManager = DependencyRegistry.Find<LevelManager>();
+        gameSoundManager = DependencyRegistry.Find<GameSoundManager>();
 
         // Subscribe to game events
         if (gameManager != null)
@@ -123,6 +130,11 @@ public class UIManager : MonoBehaviour
         if (nextLevelButton != null)
         {
             nextLevelButton.onClick.AddListener(GoToNextLevel);
+        }
+
+        if (retryLevelButton != null)
+        {
+            retryLevelButton.onClick.AddListener(RetryLevel);
         }
 
         if (mainMenuButton != null)
@@ -484,6 +496,14 @@ public class UIManager : MonoBehaviour
 
     private void RestartGame()
     {
+        // Play retry sound when restarting from game over
+        if (gameSoundManager != null)
+        {
+            gameSoundManager.PlayRetryButtonSound();
+            // Ensure music is playing (resumes if paused, starts if stopped)
+            gameSoundManager.EnsureMusicPlaying();
+        }
+
         if (gameManager != null)
         {
             gameManager.RestartGame();
@@ -503,6 +523,25 @@ public class UIManager : MonoBehaviour
         }
 
         UpdateLevelProgress(stackManager?.GetStackCount() ?? 0);
+
+        // Initialize stars to dark color
+        InitializeStars();
+    }
+
+    /// <summary>
+    /// Initializes all stars to the initial (dark) color
+    /// </summary>
+    private void InitializeStars()
+    {
+        if (stars == null || stars.Length == 0) return;
+
+        for (int i = 0; i < stars.Length; i++)
+        {
+            if (stars[i] != null)
+            {
+                stars[i].color = starInitialColor;
+            }
+        }
     }
 
     private void OnGameModeChanged(GameMode newMode)
@@ -539,6 +578,9 @@ public class UIManager : MonoBehaviour
         }
 
         UpdateLevelProgress(0);
+
+        // Reset stars to dark color for new level
+        InitializeStars();
     }
 
     private void UpdateLevelProgress(int currentHeight)
@@ -627,8 +669,8 @@ public class UIManager : MonoBehaviour
         {
             if (stars[i] != null)
             {
-                // Activate star if earned
-                stars[i].SetActive(i < starCount);
+                // Change color based on whether star is earned
+                stars[i].color = i < starCount ? starHighlightColor : starInitialColor;
             }
         }
     }
@@ -656,9 +698,48 @@ public class UIManager : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Retries the current level in level mode
+    /// </summary>
+    private void RetryLevel()
+    {
+        if (levelManager != null)
+        {
+            // Hide level complete panel
+            if (levelCompletePanel != null)
+                levelCompletePanel.SetActive(false);
+
+            // Show game UI again
+            if (gameUI != null)
+                gameUI.SetActive(true);
+
+            // Play retry button sound and ensure music is playing
+            if (gameSoundManager != null)
+            {
+                gameSoundManager.PlayRetryButtonSound();
+                gameSoundManager.EnsureMusicPlaying();
+            }
+
+            // Restart the current level (doesn't advance)
+            levelManager.RestartLevel();
+
+            // Restart the game
+            if (gameManager != null)
+            {
+                gameManager.RestartGame();
+            }
+        }
+    }
+
     private void GoToMainMenu()
     {
         Debug.Log("Returning to Main Menu...");
+
+        // Play home button sound
+        if (gameSoundManager != null)
+        {
+            gameSoundManager.PlayHomeButtonSound();
+        }
 
         // Load the main menu scene
         SceneLoader.LoadMainMenu();
@@ -694,6 +775,13 @@ public class UIManager : MonoBehaviour
             pauseMenuPanel.SetActive(true);
         }
 
+        // Play pause sound and pause music
+        if (gameSoundManager != null)
+        {
+            gameSoundManager.PlayPauseSound();
+            gameSoundManager.PauseMusic();
+        }
+
         // Notify listeners that game has paused
         OnGamePaused?.Invoke();
 
@@ -711,6 +799,13 @@ public class UIManager : MonoBehaviour
         if (pauseMenuPanel != null)
         {
             pauseMenuPanel.SetActive(false);
+        }
+
+        // Play unpause sound and resume music
+        if (gameSoundManager != null)
+        {
+            gameSoundManager.PlayUnpauseSound();
+            gameSoundManager.ResumeMusic();
         }
 
         // Notify listeners that game has resumed
@@ -732,6 +827,13 @@ public class UIManager : MonoBehaviour
         if (pauseMenuPanel != null)
         {
             pauseMenuPanel.SetActive(false);
+        }
+
+        // Play retry button sound and ensure music is playing
+        if (gameSoundManager != null)
+        {
+            gameSoundManager.PlayRetryButtonSound();
+            gameSoundManager.EnsureMusicPlaying();
         }
 
         // Restart the game
@@ -763,8 +865,14 @@ public class UIManager : MonoBehaviour
             pauseMenuPanel.SetActive(false);
         }
 
-        // Go to main menu
-        GoToMainMenu();
+        // Play home button sound
+        if (gameSoundManager != null)
+        {
+            gameSoundManager.PlayHomeButtonSound();
+        }
+
+        // Go to main menu (don't call sound again since we already played it)
+        SceneLoader.LoadMainMenu();
     }
 
     private void OnDestroy()
@@ -816,6 +924,11 @@ public class UIManager : MonoBehaviour
         if (nextLevelButton != null)
         {
             nextLevelButton.onClick.RemoveListener(GoToNextLevel);
+        }
+
+        if (retryLevelButton != null)
+        {
+            retryLevelButton.onClick.RemoveListener(RetryLevel);
         }
 
         if (mainMenuButton != null)

@@ -113,6 +113,13 @@ public class StackableObject : MonoBehaviour
         // Add a slight random horizontal force for more interesting gameplay
         float randomForce = Random.Range(-0.5f, 0.5f);
         rb.AddForce(new Vector2(randomForce, 0), ForceMode2D.Impulse);
+
+        // Register with StackManager for fall detection monitoring
+        var stackManager = DependencyRegistry.Find<StackManager>();
+        if (stackManager != null)
+        {
+            stackManager.RegisterDroppedObject(this);
+        }
     }
 
     private void OnCollisionEnter2D(Collision2D collision)
