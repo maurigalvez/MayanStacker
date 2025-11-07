@@ -44,6 +44,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LevelManager
+  isDemoVersion: 1
+  demoMaxLevel: 5
   levels:
   - {fileID: 11400000, guid: e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6, type: 2}
   - {fileID: 11400000, guid: f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7, type: 2}
@@ -72,4 +74,4 @@ MonoBehaviour:
   - {fileID: 11400000, guid: ade93f7575473bd4187fa29a46402c7d, type: 2}
   - {fileID: 11400000, guid: 163bfced05456994f8445f032d476d83, type: 2}
   - {fileID: 11400000, guid: 34ee605a3fb6fa6408b27647ef041d5b, type: 2}
-  currentLevelIndex: 0
+  currentLevelIndex: -1

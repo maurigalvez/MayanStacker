@@ -3,9 +3,12 @@ using UnityEngine;
 /// <summary>
 /// Manages sound effects for the main menu UI, including button clicks and navigation sounds
 /// </summary>
-[RequireComponent(typeof(AudioSource))]
 public class MainMenuSoundManager : MonoBehaviour
 {
+    [Header("Audio Sources")]
+    [SerializeField] private AudioSource sfxAudioSource;
+    [SerializeField] private AudioSource musicAudioSource;
+
     [Header("Button Sound Effects")]
     [SerializeField] private AudioClip buttonClickSound;
     [SerializeField] private AudioClip buttonHoverSound;
@@ -24,9 +27,6 @@ public class MainMenuSoundManager : MonoBehaviour
     [SerializeField] private float defaultVolume = 0.7f;
     [SerializeField] private bool allowSimultaneousSounds = true;
 
-    // Audio source component
-    private AudioSource audioSource;
-
     // References
     private SettingsManager settingsManager;
 
@@ -38,16 +38,20 @@ public class MainMenuSoundManager : MonoBehaviour
         // Register with DependencyRegistry
         DependencyRegistry.Register<MainMenuSoundManager>(this);
 
-        // Get or add AudioSource component
-        audioSource = GetComponent<AudioSource>();
-        if (audioSource == null)
+        // Configure SFX AudioSource
+        if (sfxAudioSource != null)
         {
-            audioSource = gameObject.AddComponent<AudioSource>();
+            sfxAudioSource.playOnAwake = false;
+            sfxAudioSource.volume = defaultVolume;
         }
 
-        // Configure AudioSource
-        audioSource.playOnAwake = false;
-        audioSource.volume = defaultVolume;
+        // Configure Music AudioSource
+        if (musicAudioSource != null)
+        {
+            musicAudioSource.playOnAwake = false;
+            musicAudioSource.loop = true;
+            musicAudioSource.volume = defaultVolume;
+        }
     }
 
     private void Start()
@@ -62,6 +66,9 @@ public class MainMenuSoundManager : MonoBehaviour
             UpdateVolume();
         }
 
+        // Start playing music if available
+        PlayMusic();
+
         isInitialized = true;
     }
 
@@ -70,11 +77,18 @@ public class MainMenuSoundManager : MonoBehaviour
     /// </summary>
     private void UpdateVolume()
     {
-        if (settingsManager != null && audioSource != null)
+        if (settingsManager != null)
         {
             // You can adjust this to use specific volume settings from SettingsManager
             // For now, using the default volume with master volume multiplier if available
-            audioSource.volume = defaultVolume;
+            if (sfxAudioSource != null)
+            {
+                sfxAudioSource.volume = defaultVolume;
+            }
+            if (musicAudioSource != null)
+            {
+                musicAudioSource.volume = defaultVolume;
+            }
         }
     }
 
@@ -160,23 +174,23 @@ public class MainMenuSoundManager : MonoBehaviour
             return;
         }
 
-        if (audioSource == null)
+        if (sfxAudioSource == null)
         {
-            Debug.LogWarning("AudioSource component is missing!");
+            Debug.LogWarning("SFX AudioSource component is missing!");
             return;
         }
 
         if (allowSimultaneousSounds)
         {
             // Play one-shot allows multiple sounds to overlap
-            audioSource.PlayOneShot(clip);
+            sfxAudioSource.PlayOneShot(clip);
         }
         else
         {
             // Stop current sound and play new one
-            audioSource.Stop();
-            audioSource.clip = clip;
-            audioSource.Play();
+            sfxAudioSource.Stop();
+            sfxAudioSource.clip = clip;
+            sfxAudioSource.Play();
         }
     }
 
@@ -193,12 +207,12 @@ public class MainMenuSoundManager : MonoBehaviour
             return;
         }
 
-        if (clip == null || audioSource == null)
+        if (clip == null || sfxAudioSource == null)
         {
             return;
         }
 
-        audioSource.PlayOneShot(clip, volumeScale);
+        sfxAudioSource.PlayOneShot(clip, volumeScale);
     }
 
     /// <summary>
@@ -206,31 +220,85 @@ public class MainMenuSoundManager : MonoBehaviour
     /// </summary>
     public void StopAllSounds()
     {
-        if (audioSource != null)
+        if (sfxAudioSource != null)
         {
-            audioSource.Stop();
+            sfxAudioSource.Stop();
         }
     }
 
     /// <summary>
-    /// Sets the volume for UI sounds
+    /// Plays the background music
+    /// </summary>
+    public void PlayMusic()
+    {
+        if (musicAudioSource != null && !musicAudioSource.isPlaying)
+        {
+            musicAudioSource.Play();
+        }
+    }
+
+    /// <summary>
+    /// Pauses the background music
+    /// </summary>
+    public void PauseMusic()
+    {
+        if (musicAudioSource != null && musicAudioSource.isPlaying)
+        {
+            musicAudioSource.Pause();
+        }
+    }
+
+    /// <summary>
+    /// Stops the background music
+    /// </summary>
+    public void StopMusic()
+    {
+        if (musicAudioSource != null)
+        {
+            musicAudioSource.Stop();
+        }
+    }
+
+    /// <summary>
+    /// Sets the volume for SFX sounds
     /// </summary>
     /// <param name="volume">Volume value (0 to 1)</param>
-    public void SetVolume(float volume)
+    public void SetSFXVolume(float volume)
     {
-        if (audioSource != null)
+        if (sfxAudioSource != null)
         {
-            audioSource.volume = Mathf.Clamp01(volume);
+            sfxAudioSource.volume = Mathf.Clamp01(volume);
         }
     }
 
     /// <summary>
-    /// Gets the current volume
+    /// Sets the volume for background music
     /// </summary>
-    /// <returns>Current volume value (0 to 1)</returns>
-    public float GetVolume()
+    /// <param name="volume">Volume value (0 to 1)</param>
+    public void SetMusicVolume(float volume)
     {
-        return audioSource != null ? audioSource.volume : 0f;
+        if (musicAudioSource != null)
+        {
+            musicAudioSource.volume = Mathf.Clamp01(volume);
+        }
+    }
+
+    /// <summary>
+    /// Gets the current SFX volume
+    /// </summary>
+    /// <returns>Current SFX volume value (0 to 1)</returns>
+    public float GetSFXVolume()
+    {
+        return sfxAudioSource != null ? sfxAudioSource.volume : 0f;
+    }
+
+    /// <summary>
+    /// Gets the current music volume
+    /// </summary>
+    /// <returns>Current music volume value (0 to 1)</returns>
+    public float GetMusicVolume()
+    {
+        return musicAudioSource != null ? musicAudioSource.volume : 0f;
     }
 
     private void OnDestroy()
@@ -239,4 +307,5 @@ public class MainMenuSoundManager : MonoBehaviour
         DependencyRegistry.Unregister<MainMenuSoundManager>(this);
     }
 }
+
 

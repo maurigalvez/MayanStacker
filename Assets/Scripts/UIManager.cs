@@ -637,6 +637,17 @@ public class UIManager : MonoBehaviour
         if (nextLevelButton != null && levelManager != null)
         {
             bool hasNextLevel = levelManager.CurrentLevelIndex < levelManager.TotalLevels - 1;
+            
+            // In demo mode, hide next level button if we're at the demo max level
+            if (levelManager.IsDemoVersion)
+            {
+                int currentLevelNumber = levelManager.CurrentLevelIndex + 1; // Convert to 1-based
+                if (currentLevelNumber >= levelManager.DemoMaxLevel)
+                {
+                    hasNextLevel = false; // Hide next level button at demo limit
+                }
+            }
+            
             nextLevelButton.gameObject.SetActive(hasNextLevel);
         }
     }

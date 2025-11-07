@@ -338,7 +338,7 @@ GameObject:
   - component: {fileID: 1041974201}
   - component: {fileID: 1041974200}
   m_Layer: 0
-  m_Name: Main Menu Audio
+  m_Name: Main Menu Music
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -494,6 +494,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b606b7ed79f7e08418de1a517291cba7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MainMenuSoundManager
+  sfxAudioSource: {fileID: 1842219270}
+  musicAudioSource: {fileID: 1041974200}
   buttonClickSound: {fileID: 8300000, guid: f81ce32cfa2e2e04193092c76e41119a, type: 3}
   buttonHoverSound: {fileID: 0}
   backButtonSound: {fileID: 8300000, guid: 33a121df7bdea704a80b185a30171bbc, type: 3}

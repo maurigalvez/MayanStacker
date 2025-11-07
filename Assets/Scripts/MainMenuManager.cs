@@ -87,7 +87,15 @@ public class MainMenuManager : MonoBehaviour
         // Set version text
         if (versionText != null)
         {
-            versionText.text = $"v{gameVersion}";
+            string versionDisplay = $"v{gameVersion}";
+
+            // Add DEMO tag if in demo mode
+            if (levelManager != null && levelManager.IsDemoVersion)
+            {
+                versionDisplay += " BETA";
+            }
+
+            versionText.text = versionDisplay;
         }
 
         // Initialize level selection buttons

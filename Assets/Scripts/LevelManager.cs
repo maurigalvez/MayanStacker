@@ -6,11 +6,15 @@ using UnityEngine;
 /// </summary>
 public class LevelManager : MonoBehaviour, ILevelManager
 {
+    [Header("Demo Settings")]
+    [SerializeField] private bool isDemoVersion = false;
+    [SerializeField] private int demoMaxLevel = 5;
+
     [Header("Level Configuration")]
     [SerializeField] private List<LevelData> levels = new List<LevelData>();
 
     [Header("Current Level")]
-    [SerializeField] private int currentLevelIndex = 0;
+    [SerializeField] private int currentLevelIndex = -1;
 
     // Level state
     private bool isLevelComplete = false;
@@ -30,6 +34,8 @@ public class LevelManager : MonoBehaviour, ILevelManager
     public bool IsLevelComplete => isLevelComplete;
     public int EarnedStars => earnedStars;
     public int TotalLevels => levels.Count;
+    public bool IsDemoVersion => isDemoVersion;
+    public int DemoMaxLevel => demoMaxLevel;
 
     private void Awake()
     {
@@ -287,6 +293,12 @@ public class LevelManager : MonoBehaviour, ILevelManager
     {
         // First level is always unlocked
         if (levelNumber == 1) return true;
+
+        // Demo version restriction: levels beyond demoMaxLevel are locked
+        if (isDemoVersion && levelNumber > demoMaxLevel)
+        {
+            return false;
+        }
 
         // Check if previous level has at least 1 star
         return GetLevelStars(levelNumber - 1) > 0;
