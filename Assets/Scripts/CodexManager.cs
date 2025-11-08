@@ -194,11 +194,10 @@ public class CodexManager : MonoBehaviour
 
         // Get level progress data
         int levelNumber = levelData.levelNumber;
-        int stars = levelManager.GetLevelStars(levelNumber);
         int highScore = levelManager.GetLevelHighScore(levelNumber);
 
         // Initialize the entry with completion status
-        entryUI.Initialize(levelData, stars, highScore, isCompleted);
+        entryUI.Initialize(levelData, highScore, isCompleted);
 
         // Add click listener
         entryUI.AddClickListener(OnEntryClicked);

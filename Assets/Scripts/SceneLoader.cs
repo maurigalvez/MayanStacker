@@ -91,22 +91,33 @@ public static class SceneLoader
 
         Debug.Log($"Configuring GameManager: Mode={pendingGameMode.Value}, Level={pendingLevelIndex?.ToString() ?? "N/A"}");
 
-        // Set the game mode (this will start the game if autoStartAfterModeSet is true)
-        gameManager.SetGameMode(pendingGameMode.Value);
-
-        // If a specific level was requested, load it
+        // If a specific level was requested, load it first (this will also set the level number in GameManager)
         if (pendingLevelIndex.HasValue && pendingGameMode.Value == GameMode.StackerLevels)
         {
             LevelManager levelManager = DependencyRegistry.Find<LevelManager>();
             if (levelManager != null)
             {
+                // Set game mode without starting (we'll start after level is loaded)
+                gameManager.InitializeGameMode(pendingGameMode.Value);
+                
+                // Load the specific level (this calls gameManager.SetCurrentLevel internally)
                 levelManager.LoadLevel(pendingLevelIndex.Value);
                 Debug.Log($"Loaded level {pendingLevelIndex.Value + 1}");
+                
+                // Now start the game
+                gameManager.StartGame();
             }
             else
             {
                 Debug.LogWarning("LevelManager not found, couldn't load specific level!");
+                // Fallback to normal mode setting
+                gameManager.SetGameMode(pendingGameMode.Value);
             }
+        }
+        else
+        {
+            // For InfiniteStacker or when no specific level is requested
+            gameManager.SetGameMode(pendingGameMode.Value);
         }
 
         // Clear pending data

@@ -83,6 +83,13 @@ public class LevelManager : MonoBehaviour, ILevelManager
         // Apply level settings
         ApplyLevelSettings(CurrentLevel);
 
+        // Tell GameManager which level we're on for proper high score tracking
+        var gameManager = DependencyRegistry.Find<GameManager>();
+        if (gameManager != null && CurrentLevel != null)
+        {
+            gameManager.SetCurrentLevel(CurrentLevel.levelNumber);
+        }
+
         // Notify listeners
         OnLevelLoaded?.Invoke(CurrentLevel);
 
@@ -224,28 +231,29 @@ public class LevelManager : MonoBehaviour, ILevelManager
     }
 
     /// <summary>
-    /// Save level progress to PlayerPrefs
+    /// Save level progress to PlayerPrefs (stars only - high scores saved via PlayFab)
     /// </summary>
     private void SaveLevelProgress(int levelNumber, int stars, int score)
     {
-        // Update in-memory dictionaries
+        // Update stars in-memory and PlayerPrefs
         if (!levelStars.ContainsKey(levelNumber) || stars > levelStars[levelNumber])
         {
             levelStars[levelNumber] = stars;
             PlayerPrefs.SetInt($"Level_{levelNumber}_Stars", stars);
         }
 
+        // Update in-memory high score (actual saving to PlayFab is done by GameManager)
         if (!levelHighScores.ContainsKey(levelNumber) || score > levelHighScores[levelNumber])
         {
             levelHighScores[levelNumber] = score;
-            PlayerPrefs.SetInt($"Level_{levelNumber}_HighScore", score);
         }
 
         PlayerPrefs.Save();
+        Debug.Log($"Saved level {levelNumber} progress: {stars} stars");
     }
 
     /// <summary>
-    /// Load saved progress from PlayerPrefs
+    /// Load saved progress from PlayerPrefs (stars) and prepare for PlayFab high score loading
     /// </summary>
     private void LoadProgress()
     {
@@ -256,18 +264,23 @@ public class LevelManager : MonoBehaviour, ILevelManager
         {
             int levelNumber = level.levelNumber;
 
+            // Load stars from PlayerPrefs
             int savedStars = PlayerPrefs.GetInt($"Level_{levelNumber}_Stars", 0);
             if (savedStars > 0)
             {
                 levelStars[levelNumber] = savedStars;
             }
 
+            // Load high scores from PlayerPrefs as backup (PlayFab is primary source)
             int savedHighScore = PlayerPrefs.GetInt($"Level_{levelNumber}_HighScore", 0);
             if (savedHighScore > 0)
             {
                 levelHighScores[levelNumber] = savedHighScore;
             }
         }
+
+        // High scores will be loaded from PlayFab when each level is played
+        Debug.Log($"Loaded level progress: {levelStars.Count} levels with stars");
     }
 
     /// <summary>

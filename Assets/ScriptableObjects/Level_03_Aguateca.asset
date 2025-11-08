@@ -13,9 +13,15 @@ MonoBehaviour:
   m_Name: Level_03_Aguateca
   m_EditorClassIdentifier: 
   levelNumber: 3
-  levelName: Aguateca
+  levelName: Aguateca - Fortress of Petexbatun
   location: Peten, Guatemala
-  levelDescription: Stack 20 blocks with even faster swinging!
+  levelDescription: "High on a cliff above the Petexbat\xFAn Lagoon, Aguateca stood
+    as a fortified stronghold in the Late Classic period.\nIts rulers commanded both
+    warriors and scribes, leaving behind walls etched with royal pride.\n\nThe city
+    fell suddenly \u2014 attacked and abandoned in haste.\nObjects were left where
+    they lay: tools, pigments, and codex fragments, frozen in time.\n\nExcavations
+    reveal a city that valued knowledge as much as power, a rare glimpse into daily
+    elite life.\nHere, the fire of war met the ink of wisdom."
   requiredStackHeight: 20
   oneStarScore: 300
   twoStarScore: 900

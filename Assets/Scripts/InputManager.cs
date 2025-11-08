@@ -22,6 +22,7 @@ public class InputManager : MonoBehaviour
 
     // State
     private bool isInputBlocked = false;
+    private bool isPointerOverUIElement = false; // Track UI hover state continuously
 
     // Events
     public System.Action<Vector2> OnScreenTapped;
@@ -82,6 +83,13 @@ public class InputManager : MonoBehaviour
         }
     }
 
+    private void Update()
+    {
+        // Continuously check if pointer is over UI
+        // This tracks the state BEFORE any input action fires
+        isPointerOverUIElement = IsCurrentlyOverUI();
+    }
+
     private void OnEnable()
     {
         // Enable input actions
@@ -96,6 +104,15 @@ public class InputManager : MonoBehaviour
 
     private void OnDropPerformed(InputAction.CallbackContext context)
     {
+        // FIRST: Check if pointer was over UI (tracked continuously in Update)
+        if (isPointerOverUIElement)
+        {
+#if UNITY_EDITOR
+            Debug.Log("Input blocked: Pointer is over UI element (tracked state)");
+#endif
+            return;
+        }
+
         if (gameManager == null || !gameManager.IsGameActive || gameManager.IsGameOver)
             return;
 
@@ -107,18 +124,23 @@ public class InputManager : MonoBehaviour
         if (isInputBlocked)
             return;
 
-        // Get tap position if available
-        Vector2 tapPosition = Vector2.zero;
-        if (tapPositionAction != null)
-        {
-            tapPosition = tapPositionAction.ReadValue<Vector2>();
-        }
+        // Get the current screen position - use TapPosition action or current pointer position
+        Vector2 screenPosition = GetScreenPositionForInput();
 
-        ProcessInput(tapPosition);
+        ProcessInput(screenPosition);
     }
 
     private void OnTapPerformed(InputAction.CallbackContext context)
     {
+        // FIRST: Check if pointer was over UI (tracked continuously in Update)
+        if (isPointerOverUIElement)
+        {
+#if UNITY_EDITOR
+            Debug.Log("Input blocked: Pointer is over UI element (tracked state)");
+#endif
+            return;
+        }
+
         if (gameManager == null || !gameManager.IsGameActive || gameManager.IsGameOver)
             return;
 
@@ -130,21 +152,105 @@ public class InputManager : MonoBehaviour
         if (isInputBlocked)
             return;
 
-        // Get tap position
-        Vector2 tapPosition = Vector2.zero;
-        if (tapPositionAction != null)
+        // Get the current screen position - use TapPosition action or current pointer position
+        Vector2 screenPosition = GetScreenPositionForInput();
+
+        ProcessInput(screenPosition);
+    }
+
+    /// <summary>
+    /// Continuously checks if pointer/touch is currently over a UI element
+    /// Called every frame in Update to track UI hover state
+    /// </summary>
+    private bool IsCurrentlyOverUI()
+    {
+        if (EventSystem.current == null)
+            return false;
+
+        // For touch input (mobile) - check if touch is active and over UI
+        if (Touchscreen.current != null && Touchscreen.current.primaryTouch.press.isPressed)
         {
-            tapPosition = tapPositionAction.ReadValue<Vector2>();
+            int touchId = Touchscreen.current.primaryTouch.touchId.ReadValue();
+            bool isOverUI = EventSystem.current.IsPointerOverGameObject(touchId);
+#if UNITY_EDITOR
+            if (isOverUI)
+            {
+                Debug.Log($"Touch {touchId} is over UI");
+            }
+#endif
+            return isOverUI;
         }
 
-        ProcessInput(tapPosition);
+        // For mouse input (desktop/editor)
+        bool isMouseOverUI = EventSystem.current.IsPointerOverGameObject();
+#if UNITY_EDITOR
+        if (isMouseOverUI)
+            Debug.Log("Mouse is over UI");
+#endif
+        return isMouseOverUI;
+    }
+
+    /// <summary>
+    /// Gets the screen position for input processing
+    /// First tries the TapPosition action, then falls back to direct device reading
+    /// </summary>
+    private Vector2 GetScreenPositionForInput()
+    {
+        // First, try to get position from TapPosition action
+        if (tapPositionAction != null)
+        {
+            Vector2 actionPosition = tapPositionAction.ReadValue<Vector2>();
+            if (IsValidPosition(actionPosition) && actionPosition != Vector2.zero)
+            {
+#if UNITY_EDITOR
+                Debug.Log($"Got position from TapPosition action: {actionPosition}");
+#endif
+                return actionPosition;
+            }
+        }
+
+        // Fallback: Try to read directly from input devices
+        // Try touch first (for mobile)
+        if (Touchscreen.current != null)
+        {
+            var primaryTouch = Touchscreen.current.primaryTouch;
+            Vector2 touchPosition = primaryTouch.position.ReadValue();
+            if (IsValidPosition(touchPosition) && touchPosition != Vector2.zero)
+            {
+#if UNITY_EDITOR
+                Debug.Log($"Got touch position: {touchPosition}");
+#endif
+                return touchPosition;
+            }
+        }
+
+        // Fallback to mouse (for desktop/editor)
+        if (Mouse.current != null)
+        {
+            Vector2 mousePosition = Mouse.current.position.ReadValue();
+            if (IsValidPosition(mousePosition) && mousePosition != Vector2.zero)
+            {
+#if UNITY_EDITOR
+                Debug.Log($"Got mouse position: {mousePosition}");
+#endif
+                return mousePosition;
+            }
+        }
+
+#if UNITY_EDITOR
+        Debug.LogWarning("Could not get valid screen position from any input device");
+#endif
+        return Vector2.zero;
     }
 
     private void ProcessInput(Vector2 screenPosition)
     {
-        // Check if pointer is over a button - if so, ignore gameplay input
-        if (IsPointerOverUI())
+        // Block input if clicking in the top 200 pixels of the screen (UI area)
+        if (screenPosition.y > Screen.height - 200)
         {
+#if UNITY_EDITOR
+            Debug.Log($"Input blocked: Click in top UI area (y={screenPosition.y}, screen height={Screen.height})");
+#endif
             return;
         }
 
@@ -160,42 +266,61 @@ public class InputManager : MonoBehaviour
     }
 
     /// <summary>
+    /// Validates that a position is not infinity, negative infinity, or NaN
+    /// </summary>
+    private bool IsValidPosition(Vector2 position)
+    {
+        return !float.IsInfinity(position.x) &&
+               !float.IsInfinity(position.y) &&
+               !float.IsNaN(position.x) &&
+               !float.IsNaN(position.y);
+    }
+
+    /// <summary>
     /// Check if the pointer/touch is over a Button UI element specifically
     /// Returns true only if touching a Button, false for other UI elements or gameplay area
     /// </summary>
-    private bool IsPointerOverUI()
+    /// <param name="screenPosition">The screen position to check</param>
+    private bool IsPointerOverUI(Vector2 screenPosition)
     {
         // Check if EventSystem exists
         if (EventSystem.current == null)
+        {
+            Debug.LogError("EventSystem is not assigned in InputManager!");
             return false;
-
-        Vector2 pointerPosition = Vector2.zero;
-        bool hasValidInput = false;
-
-        // Get pointer position based on input type
-        if (Touchscreen.current != null && Touchscreen.current.primaryTouch.press.isPressed)
-        {
-            pointerPosition = Touchscreen.current.primaryTouch.position.ReadValue();
-            hasValidInput = true;
-        }
-        else if (Mouse.current != null)
-        {
-            pointerPosition = Mouse.current.position.ReadValue();
-            hasValidInput = true;
         }
 
-        if (!hasValidInput)
-            return false;
+        // If position is invalid or zero, use EventSystem's built-in check as fallback
+        if (!IsValidPosition(screenPosition) || screenPosition == Vector2.zero)
+        {
+#if UNITY_EDITOR
+            Debug.LogWarning($"Invalid or zero screen position: {screenPosition}, using IsPointerOverGameObject");
+#endif
+            // Use EventSystem's built-in method - it tracks the current pointer automatically
+            bool isOverUI = EventSystem.current.IsPointerOverGameObject();
+#if UNITY_EDITOR
+            Debug.Log($"IsPointerOverGameObject result: {isOverUI}");
+#endif
+            return isOverUI;
+        }
+
+#if UNITY_EDITOR
+        Debug.Log($"Checking UI at position: {screenPosition}");
+#endif
 
         // Create PointerEventData for raycasting
         PointerEventData pointerData = new PointerEventData(EventSystem.current)
         {
-            position = pointerPosition
+            position = screenPosition
         };
 
         // Raycast to find UI elements under the pointer
         List<RaycastResult> raycastResults = new List<RaycastResult>();
         EventSystem.current.RaycastAll(pointerData, raycastResults);
+
+#if UNITY_EDITOR
+        Debug.Log($"Raycast found {raycastResults.Count} UI elements");
+#endif
 
         // Check if any of the hit UI elements is a Button
         foreach (RaycastResult result in raycastResults)
@@ -203,7 +328,9 @@ public class InputManager : MonoBehaviour
             // Check if this specific GameObject has a Button component
             if (result.gameObject.GetComponent<Button>() != null)
             {
+#if UNITY_EDITOR
                 Debug.Log($"Input blocked: Pointer is over button '{result.gameObject.name}'");
+#endif
                 return true;
             }
         }

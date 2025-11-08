@@ -14,6 +14,7 @@ public class MainMenuManager : MonoBehaviour
     [SerializeField] private GameObject creditsPanel;
     [SerializeField] private GameObject levelSelectionPanel;
     [SerializeField] private GameObject codexPanel;
+    [SerializeField] private GameObject leaderboardPanel;
 
     [Header("Main Menu Buttons")]
     [SerializeField] private Button infiniteModeButton;
@@ -21,6 +22,7 @@ public class MainMenuManager : MonoBehaviour
     [SerializeField] private Button settingsButton;
     [SerializeField] private Button creditsButton;
     [SerializeField] private Button codexButton;
+    [SerializeField] private Button leaderboardButton;
 
     [Header("Settings Panel Buttons")]
     [SerializeField] private Button backFromSettingsButton;
@@ -30,6 +32,9 @@ public class MainMenuManager : MonoBehaviour
 
     [Header("Codex Panel Buttons")]
     [SerializeField] private Button backFromCodexButton;
+
+    [Header("Leaderboard Panel Buttons")]
+    [SerializeField] private Button backFromLeaderboardButton;
 
     [Header("Level Selection")]
     [SerializeField] private Button backFromLevelSelectionButton;
@@ -49,6 +54,7 @@ public class MainMenuManager : MonoBehaviour
     private LevelManager levelManager;
     private CodexManager codexManager;
     private MainMenuSoundManager soundManager;
+    private LeaderboardPanel leaderboardPanelComponent;
 
     // Spawned UI elements
     private List<LevelButtonUI> spawnedLevelButtons = new List<LevelButtonUI>();
@@ -76,6 +82,12 @@ public class MainMenuManager : MonoBehaviour
         levelManager = DependencyRegistry.Find<LevelManager>();
         codexManager = DependencyRegistry.Find<CodexManager>();
         soundManager = DependencyRegistry.Find<MainMenuSoundManager>();
+
+        // Get leaderboard panel component
+        if (leaderboardPanel != null)
+        {
+            leaderboardPanelComponent = leaderboardPanel.GetComponent<LeaderboardPanel>();
+        }
 
         InitializeUI();
         SetupButtonListeners();
@@ -120,6 +132,9 @@ public class MainMenuManager : MonoBehaviour
         if (codexButton != null)
             codexButton.onClick.AddListener(ShowCodexPanel);
 
+        if (leaderboardButton != null)
+            leaderboardButton.onClick.AddListener(ShowLeaderboardPanel);
+
         // Settings
         if (backFromSettingsButton != null)
             backFromSettingsButton.onClick.AddListener(ShowMainMenu);
@@ -131,6 +146,10 @@ public class MainMenuManager : MonoBehaviour
         // Codex
         if (backFromCodexButton != null)
             backFromCodexButton.onClick.AddListener(ShowMainMenu);
+
+        // Leaderboard
+        if (backFromLeaderboardButton != null)
+            backFromLeaderboardButton.onClick.AddListener(ShowMainMenu);
 
         // Level Selection
         if (backFromLevelSelectionButton != null)
@@ -320,6 +339,21 @@ public class MainMenuManager : MonoBehaviour
         }
     }
 
+    private void ShowLeaderboardPanel()
+    {
+        soundManager?.PlayButtonClick();
+        soundManager?.PlayPanelOpen();
+        SetActivePanel(leaderboardPanel);
+
+        // Open the leaderboard panel with mode selection visible
+        // Users can choose between Infinite Stacker or Levels mode
+        if (leaderboardPanelComponent != null)
+        {
+            // Default to Infinite Stacker mode
+            leaderboardPanelComponent.OpenPanelInfiniteMode();
+        }
+    }
+
     private void ShowLevelSelection()
     {
         soundManager?.PlayLevelModeSelect();
@@ -336,6 +370,7 @@ public class MainMenuManager : MonoBehaviour
         if (creditsPanel != null) creditsPanel.SetActive(false);
         if (levelSelectionPanel != null) levelSelectionPanel.SetActive(false);
         if (codexPanel != null) codexPanel.SetActive(false);
+        if (leaderboardPanel != null) leaderboardPanel.SetActive(false);
 
         // Hide codex if switching away from it
         if (codexManager != null && panelToShow != codexPanel)
@@ -409,6 +444,9 @@ public class MainMenuManager : MonoBehaviour
         if (codexButton != null)
             codexButton.onClick.RemoveAllListeners();
 
+        if (leaderboardButton != null)
+            leaderboardButton.onClick.RemoveAllListeners();
+
         if (backFromSettingsButton != null)
             backFromSettingsButton.onClick.RemoveAllListeners();
 
@@ -417,6 +455,9 @@ public class MainMenuManager : MonoBehaviour
 
         if (backFromCodexButton != null)
             backFromCodexButton.onClick.RemoveAllListeners();
+
+        if (backFromLeaderboardButton != null)
+            backFromLeaderboardButton.onClick.RemoveAllListeners();
 
         if (backFromLevelSelectionButton != null)
             backFromLevelSelectionButton.onClick.RemoveAllListeners();

@@ -17,9 +17,15 @@ public class ScrollView_PinchScale : MonoBehaviour, IDragHandler, IScrollHandler
     [SerializeField] private float minZoom = 0.5f;
     [SerializeField] private float maxZoom = 3f;
     [SerializeField] private float mouseScrollSensitivity = 0.1f;
+    [SerializeField] private float pinchSensitivity = 0.01f;
+
+    [Header("Debug")]
+    [SerializeField] private bool enableDebugLogs = false;
+    [SerializeField] private bool useFallbackTouchscreen = false;
 
     private float currentZoom;
     private float previousTouchDistance = 0f;
+    private bool isPinching = false;
 
     private void Start()
     {
@@ -31,22 +37,57 @@ public class ScrollView_PinchScale : MonoBehaviour, IDragHandler, IScrollHandler
         }
     }
 
+    private void Awake()
+    {
+#if UNITY_ANDROID || UNITY_IOS
+        // Enable Enhanced Touch for multi-touch support on mobile platforms only
+        if (!EnhancedTouchSupport.enabled)
+        {
+            EnhancedTouchSupport.Enable();
+            if (enableDebugLogs)
+                Debug.Log("Enhanced Touch Support Enabled");
+        }
+#endif
+    }
+
     private void OnEnable()
     {
-        // Enable Enhanced Touch for multi-touch support
-        EnhancedTouchSupport.Enable();
+#if UNITY_ANDROID || UNITY_IOS
+        if (!EnhancedTouchSupport.enabled)
+        {
+            EnhancedTouchSupport.Enable();
+            if (enableDebugLogs)
+                Debug.Log("Enhanced Touch Support Enabled in OnEnable");
+        }
+#endif
     }
 
     private void OnDisable()
     {
-        // Disable Enhanced Touch when component is disabled
-        EnhancedTouchSupport.Disable();
+#if UNITY_ANDROID || UNITY_IOS
+        // Don't disable here as it might be needed by other scripts
+        // EnhancedTouchSupport.Disable();
+#endif
     }
 
     private void Update()
     {
-        //HandlePinchZoom();
+#if UNITY_ANDROID || UNITY_IOS
+        // Handle pinch zoom on mobile platforms only
+        if (useFallbackTouchscreen)
+        {
+            HandlePinchZoomFallback();
+        }
+        else
+        {
+            HandlePinchZoom();
+        }
+#endif
+
+#if UNITY_STANDALONE || UNITY_WEBGL || UNITY_EDITOR
+        // Mouse scroll works on desktop, web, and editor only
         HandleMouseScrollWheel();
+#endif
     }
 
     /// <summary>
@@ -54,8 +95,15 @@ public class ScrollView_PinchScale : MonoBehaviour, IDragHandler, IScrollHandler
     /// </summary>
     private void HandlePinchZoom()
     {
+        int touchCount = Touch.activeTouches.Count;
+
+        if (enableDebugLogs && touchCount > 0)
+        {
+            Debug.Log($"Active touches: {touchCount}");
+        }
+
         // Check if there are exactly 2 active touches
-        if (Touch.activeTouches.Count == 2)
+        if (touchCount == 2)
         {
             Touch touchZero = Touch.activeTouches[0];
             Touch touchOne = Touch.activeTouches[1];
@@ -64,24 +112,122 @@ public class ScrollView_PinchScale : MonoBehaviour, IDragHandler, IScrollHandler
             float currentDistance = Vector2.Distance(touchZero.screenPosition, touchOne.screenPosition);
 
             // On first frame of two-touch gesture, just store the distance
-            if (touchZero.phase == UnityEngine.InputSystem.TouchPhase.Began ||
+            if (!isPinching ||
+                touchZero.phase == UnityEngine.InputSystem.TouchPhase.Began ||
                 touchOne.phase == UnityEngine.InputSystem.TouchPhase.Began)
             {
                 previousTouchDistance = currentDistance;
+                isPinching = true;
+
+                if (enableDebugLogs)
+                    Debug.Log($"Started pinch - Initial distance: {currentDistance}");
                 return;
             }
 
             // Calculate the difference in distance
             float distanceDelta = currentDistance - previousTouchDistance;
+
+            if (enableDebugLogs && Mathf.Abs(distanceDelta) > 1f)
+            {
+                Debug.Log($"Pinch distance delta: {distanceDelta}, Current: {currentDistance}, Previous: {previousTouchDistance}");
+            }
+
             previousTouchDistance = currentDistance;
 
             // Apply zoom based on distance change
-            Zoom(distanceDelta * 0.01f);
+            if (Mathf.Abs(distanceDelta) > 0.1f) // Add threshold to avoid jitter
+            {
+                Zoom(distanceDelta * pinchSensitivity);
+            }
         }
         else
         {
             // Reset previous distance when not pinching
+            if (isPinching && enableDebugLogs)
+            {
+                Debug.Log("Pinch ended");
+            }
             previousTouchDistance = 0f;
+            isPinching = false;
+        }
+    }
+
+    /// <summary>
+    /// Fallback pinch-to-zoom using Touchscreen API directly
+    /// </summary>
+    private void HandlePinchZoomFallback()
+    {
+        var touchscreen = Touchscreen.current;
+        if (touchscreen == null)
+        {
+            if (enableDebugLogs)
+                Debug.LogWarning("No touchscreen detected!");
+            return;
+        }
+
+        var touches = touchscreen.touches;
+        int activeTouchCount = 0;
+        UnityEngine.InputSystem.Controls.TouchControl touch0 = null;
+        UnityEngine.InputSystem.Controls.TouchControl touch1 = null;
+
+        // Count active touches
+        for (int i = 0; i < touches.Count; i++)
+        {
+            if (touches[i].press.isPressed)
+            {
+                if (activeTouchCount == 0)
+                    touch0 = touches[i];
+                else if (activeTouchCount == 1)
+                    touch1 = touches[i];
+
+                activeTouchCount++;
+            }
+        }
+
+        if (enableDebugLogs && activeTouchCount > 0)
+        {
+            Debug.Log($"Fallback - Active touches: {activeTouchCount}");
+        }
+
+        if (activeTouchCount == 2 && touch0 != null && touch1 != null)
+        {
+            Vector2 pos0 = touch0.position.ReadValue();
+            Vector2 pos1 = touch1.position.ReadValue();
+
+            float currentDistance = Vector2.Distance(pos0, pos1);
+
+            if (!isPinching)
+            {
+                previousTouchDistance = currentDistance;
+                isPinching = true;
+
+                if (enableDebugLogs)
+                    Debug.Log($"Fallback - Started pinch: {currentDistance}");
+                return;
+            }
+
+            float distanceDelta = currentDistance - previousTouchDistance;
+
+            if (enableDebugLogs && Mathf.Abs(distanceDelta) > 1f)
+            {
+                Debug.Log($"Fallback - Delta: {distanceDelta}");
+            }
+
+            previousTouchDistance = currentDistance;
+
+            if (Mathf.Abs(distanceDelta) > 0.1f)
+            {
+                Zoom(distanceDelta * pinchSensitivity);
+            }
+        }
+        else
+        {
+            if (isPinching && enableDebugLogs)
+            {
+                Debug.Log("Fallback - Pinch ended");
+            }
+            previousTouchDistance = 0f;
+            isPinching = false;
         }
     }
 
@@ -109,6 +255,16 @@ public class ScrollView_PinchScale : MonoBehaviour, IDragHandler, IScrollHandler
     /// </summary>
     public void OnDrag(PointerEventData eventData)
     {
+#if UNITY_ANDROID || UNITY_IOS
+        // Don't drag when pinching with two fingers
+        if (isPinching || Touch.activeTouches.Count > 1)
+        {
+            if (enableDebugLogs)
+                Debug.Log("Drag blocked - pinching active");
+            return;
+        }
+#endif
+
         if (mapRect != null)
         {
             mapRect.anchoredPosition += eventData.delta;

@@ -13,9 +13,15 @@ MonoBehaviour:
   m_Name: Level_05_Uxbenka
   m_EditorClassIdentifier: 
   levelNumber: 5
-  levelName: "Uxbenk\xE1"
+  levelName: "Uxbenk\xE1 - Ancient Place"
   location: Toledo, Belize
-  levelDescription: Stack 25 blocks with even faster swinging!
+  levelDescription: "Hidden among mist-covered hills, Uxbenk\xE1 is one of Belize\u2019s
+    oldest known Maya centers, dating to around 250 BC.\nIts plazas and carved stones
+    speak of an early kingdom tied to trade routes between the Guatemalan highlands
+    and the coast.\n\nHere, leaders ruled from terraced hills, surrounded by farmers
+    and artisans.\nThough small compared to later cities, Uxbenk\xE1\u2019s stelae
+    bear the glyphs of power and ancestry, linking it to the greater Maya world.\n\nThe
+    forest keeps its ruins close \u2014 but the past still breathes beneath the leaves."
   requiredStackHeight: 30
   oneStarScore: 1000
   twoStarScore: 1750

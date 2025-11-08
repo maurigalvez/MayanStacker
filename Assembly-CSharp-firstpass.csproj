@@ -19,7 +19,7 @@
     <RootNamespace></RootNamespace>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <AssemblyName>Assembly-CSharp</AssemblyName>
+    <AssemblyName>Assembly-CSharp-firstpass</AssemblyName>
     <TargetFramework>netstandard2.1</TargetFramework>
     <BaseDirectory>.</BaseDirectory>
   </PropertyGroup>
@@ -54,7 +54,7 @@
     <UnityProjectGenerator>Package</UnityProjectGenerator>
     <UnityProjectGeneratorVersion>2.0.25</UnityProjectGeneratorVersion>
     <UnityProjectGeneratorStyle>SDK</UnityProjectGeneratorStyle>
-    <UnityProjectType>Game:1</UnityProjectType>
+    <UnityProjectType>GamePlugins:3</UnityProjectType>
     <UnityBuildTarget>Android:13</UnityBuildTarget>
     <UnityVersion>6000.2.6f2</UnityVersion>
   </PropertyGroup>
@@ -66,87 +66,138 @@
     <Analyzer Include="C:\Users\mauri\Documents\Repositories\TamalStacker\Library\PackageCache\com.unity.dt.app-ui@7b87c8225c06\Runtime\SourceGenerators\netstandard2.0\EnumToLowerCase.dll" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Assets\Scripts\GameController.cs" />
-    <Compile Include="Assets\Scripts\LeaderboardManager.cs" />
-    <Compile Include="Assets\Scripts\Utilities\ScrollView_PinchScale.cs" />
-    <Compile Include="Assets\Scripts\DependencyRegistry\ISaveSystem.cs" />
-    <Compile Include="Assets\Scripts\StackableObject.cs" />
-    <Compile Include="Assets\Scripts\LeaderboardEntryUI.cs" />
-    <Compile Include="Assets\Scripts\GameSettings.cs" />
-    <Compile Include="Assets\Scripts\ObjectSpawnerAnimator.cs" />
-    <Compile Include="Assets\Scripts\UIManager.cs" />
-    <Compile Include="Assets\Scripts\GameSoundManager.cs" />
-    <Compile Include="Assets\Scripts\DependencyRegistry\IGameDataManager.cs" />
-    <Compile Include="Assets\Scripts\GameMode.cs" />
-    <Compile Include="Assets\Scripts\Ground.cs" />
-    <Compile Include="Assets\Scripts\EnvironmentAssetData.cs" />
-    <Compile Include="Assets\Scripts\SpawnerHolder.cs" />
-    <Compile Include="Assets\Scripts\InputManager.cs" />
-    <Compile Include="Assets\Scripts\MainMenuSoundManager.cs" />
-    <Compile Include="Assets\Scripts\DependencyRegistry\DependencyRegistry.cs" />
-    <Compile Include="Assets\Scripts\ObjectSpawner.cs" />
-    <Compile Include="Assets\Scripts\LeaderboardEntry.cs" />
-    <Compile Include="Assets\Scripts\CodexManager.cs" />
-    <Compile Include="Assets\Scripts\Utilities\RandomSpriteAssigner.cs" />
-    <Compile Include="Assets\Scripts\LevelButtonUI.cs" />
-    <Compile Include="Assets\Scripts\EnvironmentAsset.cs" />
-    <Compile Include="Assets\Scripts\StackManager.cs" />
-    <Compile Include="Assets\Scripts\MainMenuManager.cs" />
-    <Compile Include="Assets\Scripts\PointsPopup.cs" />
-    <Compile Include="Assets\Scripts\CodexEntryUI.cs" />
-    <Compile Include="Assets\Scripts\Utilities\ScalePulseAnimation.cs" />
-    <Compile Include="Assets\Scripts\SettingsManager.cs" />
-    <Compile Include="Assets\Scripts\EnvironmentSpawnerManager.cs" />
-    <Compile Include="Assets\Scripts\LevelData.cs" />
-    <Compile Include="Assets\Scripts\EnvironmentSpawner.cs" />
-    <Compile Include="Assets\Scripts\LevelManager.cs" />
-    <Compile Include="Assets\Scripts\Utilities\PositionPingPongAnimation.cs" />
-    <Compile Include="Assets\Scripts\GameManager.cs" />
-    <Compile Include="Assets\Scripts\LevelProgressUI.cs" />
-    <Compile Include="Assets\Scripts\DependencyRegistry\ILevelManager.cs" />
-    <Compile Include="Assets\Scripts\PlayFabManager.cs" />
-    <Compile Include="Assets\Scripts\SceneLoader.cs" />
-    <Compile Include="Assets\Scripts\LeaderboardPanel.cs" />
-    <Compile Include="Assets\Scripts\CameraController.cs" />
+    <Compile Include="Assets\Plugins\UnitySDK-2.224.251024\ExampleMacProject\Assets\Testing\Tests\Client\InstanceAuthTests.cs" />
+    <Compile Include="Assets\Plugins\UnitySDK-2.224.251024\ExampleTestProject\Assets\PlayFabSDK\Localization\PlayFabLocalizationInstanceAPI.cs" />
+    <Compile Include="Assets\Plugins\UnitySDK-2.224.251024\ExampleTestProject\Assets\PlayFabSDK\Shared\Internal\SingletonMonoBehaviour.cs" />
+    <Compile Include="Assets\Plugins\UnitySDK-2.224.251024\ExampleTestProject\Assets\PlayFabSDK\Economy\PlayFabEvents.cs" />
+    <Compile Include="Assets\Plugins\UnitySDK-2.224.251024\ExampleTestProject\Assets\PlayFabSDK\Client\PlayFabClientAPI.cs" />
+    <Compile Include="Assets\Plugins\UnitySDK-2.224.251024\ExampleTestProject\Assets\PlayFabSDK\Addon\PlayFabEvents.cs" />
+    <Compile Include="Assets\Plugins\UnitySDK-2.224.251024\ExampleTestProject\Assets\PlayFabSDK\Shared\Internal\Log.cs" />
+    <Compile Include="Assets\Plugins\UnitySDK-2.224.251024\ExampleTestProject\Assets\PlayFabSDK\Shared\Internal\PlayFabHttp\PlayFabUnityHttp.cs" />
+    <Compile Include="Assets\Plugins\UnitySDK-2.224.251024\ExampleTestProject\Assets\PlayFabSDK\Economy\PlayFabEconomyInstanceAPI.cs" />
+    <Compile Include="Assets\Plugins\UnitySDK-2.224.251024\ExampleTestProject\Assets\PlayFabSDK\Authentication\PlayFabEvents.cs" />
+    <Compile Include="Assets\Plugins\UnitySDK-2.224.251024\ExampleTestProject\Assets\PlayFabSDK\Experimentation\PlayFabExperimentationInstanceAPI.cs" />
+    <Compile Include="Assets\Plugins\UnitySDK-2.224.251024\ExampleTestProject\Assets\PlayFabSDK\Multiplayer\PlayFabMultiplayerAPI.cs" />
+    <Compile Include="Assets\Plugins\UnitySDK-2.224.251024\ExampleTestProject\Assets\PlayFabSDK\Shared\Public\ISerializerPlugin.cs" />
+    <Compile Include="Assets\Plugins\UnitySDK-2.224.251024\ExampleTestProject\Assets\PlayFabSDK\CloudScript\PlayFabCloudScriptAPI.cs" />
+    <Compile Include="Assets\Plugins\UnitySDK-2.224.251024\ExampleTestProject\Assets\PlayFabSDK\Shared\Models\PlayFabSharedSettings.cs" />
+    <Compile Include="Assets\Plugins\UnitySDK-2.224.251024\ExampleMacProject\Assets\Testing\Tests\Shared\Uunit\UUnitTestCase.cs" />
+    <Compile Include="Assets\Plugins\UnitySDK-2.224.251024\ExampleMacProject\Assets\Testing\Tests\Utility\JsonUnitTests.cs" />
+    <Compile Include="Assets\Plugins\UnitySDK-2.224.251024\ExampleMacProject\Assets\Testing\Tests\Client\ClientEventTests.cs" />
+    <Compile Include="Assets\Plugins\UnitySDK-2.224.251024\ExampleTestProject\Assets\PlayFabSDK\Server\PlayFabServerModels.cs" />
+    <Compile Include="Assets\Plugins\UnitySDK-2.224.251024\ExampleTestProject\Assets\PlayFabSDK\Multiplayer\PlayFabMultiplayerInstanceAPI.cs" />
+    <Compile Include="Assets\Plugins\UnitySDK-2.224.251024\ExampleTestProject\Assets\PlayFabSDK\Progression\PlayFabProgressionInstanceAPI.cs" />
+    <Compile Include="Assets\Plugins\UnitySDK-2.224.251024\ExampleTestProject\Assets\PlayFabSDK\Insights\PlayFabInsightsModels.cs" />
+    <Compile Include="Assets\Plugins\UnitySDK-2.224.251024\ExampleTestProject\Assets\PlayFabSDK\Progression\PlayFabEvents.cs" />
+    <Compile Include="Assets\Plugins\UnitySDK-2.224.251024\ExampleTestProject\Assets\PlayFabSDK\Economy\PlayFabEconomyModels.cs" />
+    <Compile Include="Assets\Plugins\UnitySDK-2.224.251024\ExampleTestProject\Assets\PlayFabSDK\Matchmaker\PlayFabMatchmakerModels.cs" />
+    <Compile Include="Assets\Plugins\UnitySDK-2.224.251024\ExampleTestProject\Assets\PlayFabSDK\Shared\Internal\wsaReflectionExtensions.cs" />
+    <Compile Include="Assets\Plugins\UnitySDK-2.224.251024\ExampleTestProject\Assets\PlayFabSDK\Shared\Internal\Util.cs" />
+    <Compile Include="Assets\Plugins\UnitySDK-2.224.251024\ExampleTestProject\Assets\PlayFabSDK\Events\PlayFabEventsInstanceAPI.cs" />
+    <Compile Include="Assets\Plugins\UnitySDK-2.224.251024\ExampleTestProject\Assets\PlayFabSDK\Shared\Public\PlayFabLogger.cs" />
+    <Compile Include="Assets\Plugins\UnitySDK-2.224.251024\ExampleTestProject\Assets\PlayFabSDK\Shared\Public\PlayFabApiSettings.cs" />
+    <Compile Include="Assets\Plugins\UnitySDK-2.224.251024\ExampleTestProject\Assets\PlayFabSDK\Client\PlayFabClientModels.cs" />
+    <Compile Include="Assets\Plugins\UnitySDK-2.224.251024\ExampleTestProject\Assets\PlayFabSDK\Entity\ScreenTimeTracker.cs" />
+    <Compile Include="Assets\Plugins\UnitySDK-2.224.251024\ExampleTestProject\Assets\PlayFabSDK\Shared\Public\PlayFabDataGatherer.cs" />
+    <Compile Include="Assets\Plugins\UnitySDK-2.224.251024\ExampleTestProject\Assets\PlayFabSDK\CloudScript\PlayFabCloudScriptInstanceAPI.cs" />
+    <Compile Include="Assets\Plugins\UnitySDK-2.224.251024\ExampleTestProject\Assets\PlayFabSDK\Localization\PlayFabEvents.cs" />
+    <Compile Include="Assets\Plugins\UnitySDK-2.224.251024\ExampleTestProject\Assets\PlayFabSDK\Groups\PlayFabGroupsAPI.cs" />
+    <Compile Include="Assets\Plugins\UnitySDK-2.224.251024\ExampleTestProject\Assets\PlayFabSDK\Shared\Internal\PlayFabErrors.cs" />
+    <Compile Include="Assets\Plugins\UnitySDK-2.224.251024\ExampleTestProject\Assets\PlayFabSDK\Localization\PlayFabLocalizationAPI.cs" />
+    <Compile Include="Assets\Plugins\UnitySDK-2.224.251024\ExampleTestProject\Assets\PlayFabSDK\Admin\PlayFabAdminInstanceAPI.cs" />
+    <Compile Include="Assets\Plugins\UnitySDK-2.224.251024\ExampleTestProject\Assets\PlayFabSDK\Shared\Public\ITransportPlugin.cs" />
+    <Compile Include="Assets\Plugins\UnitySDK-2.224.251024\ExampleTestProject\Assets\PlayFabSDK\Shared\Internal\ISerializer.cs" />
+    <Compile Include="Assets\Plugins\UnitySDK-2.224.251024\ExampleTestProject\Assets\PlayFabSDK\Localization\PlayFabLocalizationModels.cs" />
+    <Compile Include="Assets\Plugins\UnitySDK-2.224.251024\ExampleTestProject\Assets\PlayFabSDK\Insights\PlayFabInsightsInstanceAPI.cs" />
+    <Compile Include="Assets\Plugins\UnitySDK-2.224.251024\ExampleMacProject\Assets\Testing\Tests\Shared\Uunit\UUnitIncrementalTestRunner.cs" />
+    <Compile Include="Assets\Plugins\UnitySDK-2.224.251024\ExampleTestProject\Assets\PlayFabSDK\Multiplayer\PlayFabEvents.cs" />
+    <Compile Include="Assets\Plugins\UnitySDK-2.224.251024\ExampleMacProject\Assets\Testing\Tests\Server\ServerInstanceApiTests.cs" />
+    <Compile Include="Assets\Plugins\UnitySDK-2.224.251024\ExampleMacProject\Assets\Testing\Tests\Shared\Uunit\PlayFabUUnitUtils.cs" />
+    <Compile Include="Assets\Plugins\UnitySDK-2.224.251024\ExampleTestProject\Assets\PlayFabSDK\Addon\PlayFabAddonModels.cs" />
+    <Compile Include="Assets\Plugins\UnitySDK-2.224.251024\ExampleTestProject\Assets\PlayFabSDK\Shared\Internal\PlayFabHttp\PlayFabHTTP.cs" />
+    <Compile Include="Assets\Plugins\UnitySDK-2.224.251024\ExampleMacProject\Assets\Testing\Tests\Client\ClientMultiUserTests.cs" />
+    <Compile Include="Assets\Plugins\UnitySDK-2.224.251024\ExampleTestProject\Assets\PlayFabSDK\Progression\PlayFabProgressionModels.cs" />
+    <Compile Include="Assets\Plugins\UnitySDK-2.224.251024\ExampleTestProject\Assets\PlayFabSDK\Insights\PlayFabEvents.cs" />
+    <Compile Include="Assets\Plugins\UnitySDK-2.224.251024\ExampleTestProject\Assets\PlayFabSDK\Client\PlayFabDeviceUtil.cs" />
+    <Compile Include="Assets\Plugins\UnitySDK-2.224.251024\ExampleTestProject\Assets\PlayFabSDK\Progression\PlayFabProgressionAPI.cs" />
+    <Compile Include="Assets\Plugins\UnitySDK-2.224.251024\ExampleTestProject\Assets\PlayFabSDK\Insights\PlayFabInsightsAPI.cs" />
+    <Compile Include="Assets\Plugins\UnitySDK-2.224.251024\ExampleMacProject\Assets\Testing\Tests\Server\ServerApiTests.cs" />
+    <Compile Include="Assets\Plugins\UnitySDK-2.224.251024\ExampleTestProject\Assets\PlayFabSDK\Shared\Public\PluginManager.cs" />
+    <Compile Include="Assets\Plugins\UnitySDK-2.224.251024\ExampleTestProject\Assets\PlayFabSDK\Shared\Public\PlayFabEvents.cs" />
+    <Compile Include="Assets\Plugins\UnitySDK-2.224.251024\ExampleTestProject\Assets\PlayFabSDK\Shared\Public\PluginContractKey.cs" />
+    <Compile Include="Assets\Plugins\UnitySDK-2.224.251024\ExampleTestProject\Assets\PlayFabSDK\Shared\Public\PlayFabAuthenticationContext.cs" />
+    <Compile Include="Assets\Plugins\UnitySDK-2.224.251024\ExampleTestProject\Assets\PlayFabSDK\Shared\Internal\PlayFabHttp\IPlayFabHttp.cs" />
+    <Compile Include="Assets\Plugins\UnitySDK-2.224.251024\ExampleTestProject\Assets\PlayFabSDK\Shared\Public\PlayFabSettings.cs" />
+    <Compile Include="Assets\Plugins\UnitySDK-2.224.251024\ExampleTestProject\Assets\PlayFabSDK\Shared\Models\SharedModels.cs" />
+    <Compile Include="Assets\Plugins\UnitySDK-2.224.251024\ExampleTestProject\Assets\PlayFabSDK\Data\PlayFabDataModels.cs" />
+    <Compile Include="Assets\Plugins\UnitySDK-2.224.251024\ExampleTestProject\Assets\PlayFabSDK\Profiles\PlayFabEvents.cs" />
+    <Compile Include="Assets\Plugins\UnitySDK-2.224.251024\ExampleMacProject\Assets\Testing\Tests\Entity\EntityApiTests.cs" />
+    <Compile Include="Assets\Plugins\UnitySDK-2.224.251024\ExampleTestProject\Assets\PlayFabSDK\Events\PlayFabEventsAPI.cs" />
+    <Compile Include="Assets\Plugins\UnitySDK-2.224.251024\ExampleMacProject\Assets\Testing\Tests\Client\ClientApiTests.cs" />
+    <Compile Include="Assets\Plugins\UnitySDK-2.224.251024\ExampleTestProject\Assets\PlayFabSDK\Client\PlayFabEvents.cs" />
+    <Compile Include="Assets\Plugins\UnitySDK-2.224.251024\ExampleMacProject\Assets\Testing\Tests\Utility\PluginManagerTests.cs" />
+    <Compile Include="Assets\Plugins\UnitySDK-2.224.251024\ExampleTestProject\Assets\PlayFabSDK\CloudScript\PlayFabCloudScriptModels.cs" />
+    <Compile Include="Assets\Plugins\UnitySDK-2.224.251024\ExampleTestProject\Assets\PlayFabSDK\Admin\PlayFabAdminAPI.cs" />
+    <Compile Include="Assets\Plugins\UnitySDK-2.224.251024\ExampleTestProject\Assets\PlayFabSDK\Shared\Public\IPlayFabPlugin.cs" />
+    <Compile Include="Assets\Plugins\UnitySDK-2.224.251024\ExampleMacProject\Assets\Testing\Tests\Shared\Uunit\UUnitTestSuite.cs" />
+    <Compile Include="Assets\Plugins\UnitySDK-2.224.251024\ExampleTestProject\Assets\PlayFabSDK\Profiles\PlayFabProfilesAPI.cs" />
+    <Compile Include="Assets\Plugins\UnitySDK-2.224.251024\ExampleTestProject\Assets\PlayFabSDK\Addon\PlayFabAddonAPI.cs" />
+    <Compile Include="Assets\Plugins\UnitySDK-2.224.251024\ExampleTestProject\Assets\PlayFabSDK\Groups\PlayFabGroupsModels.cs" />
+    <Compile Include="Assets\Plugins\UnitySDK-2.224.251024\ExampleMacProject\Assets\Testing\Tests\Shared\Uunit\UUnitAssertException.cs" />
+    <Compile Include="Assets\Plugins\UnitySDK-2.224.251024\ExampleTestProject\Assets\PlayFabSDK\Admin\PlayFabEvents.cs" />
+    <Compile Include="Assets\Plugins\UnitySDK-2.224.251024\ExampleTestProject\Assets\PlayFabSDK\Admin\PlayFabAdminModels.cs" />
+    <Compile Include="Assets\Plugins\UnitySDK-2.224.251024\ExampleMacProject\Assets\Testing\Tests\Shared\TestTitleDataLoader.cs" />
+    <Compile Include="Assets\Plugins\UnitySDK-2.224.251024\ExampleMacProject\Assets\Testing\Tests\PersistentSockets\PubSubTest.cs" />
+    <Compile Include="Assets\Plugins\UnitySDK-2.224.251024\ExampleTestProject\Assets\PlayFabSDK\Addon\PlayFabAddonInstanceAPI.cs" />
+    <Compile Include="Assets\Plugins\UnitySDK-2.224.251024\ExampleTestProject\Assets\PlayFabSDK\Groups\PlayFabGroupsInstanceAPI.cs" />
+    <Compile Include="Assets\Plugins\UnitySDK-2.224.251024\ExampleTestProject\Assets\PlayFabSDK\Multiplayer\PlayFabMultiplayerModels.cs" />
+    <Compile Include="Assets\Plugins\UnitySDK-2.224.251024\ExampleTestProject\Assets\PlayFabSDK\Profiles\PlayFabProfilesModels.cs" />
+    <Compile Include="Assets\Plugins\UnitySDK-2.224.251024\ExampleMacProject\Assets\Testing\Tests\Client\StaticAuthTests.cs" />
+    <Compile Include="Assets\Plugins\UnitySDK-2.224.251024\ExampleTestProject\Assets\PlayFabSDK\Economy\PlayFabEconomyAPI.cs" />
+    <Compile Include="Assets\Plugins\UnitySDK-2.224.251024\ExampleTestProject\Assets\PlayFabSDK\Data\PlayFabEvents.cs" />
+    <Compile Include="Assets\Plugins\UnitySDK-2.224.251024\ExampleMacProject\Assets\Testing\Tests\Shared\Uunit\UUnitTestContext.cs" />
+    <Compile Include="Assets\Plugins\UnitySDK-2.224.251024\ExampleTestProject\Assets\PlayFabSDK\Matchmaker\PlayFabMatchmakerInstanceAPI.cs" />
+    <Compile Include="Assets\Plugins\UnitySDK-2.224.251024\ExampleTestProject\Assets\PlayFabSDK\Experimentation\PlayFabEvents.cs" />
+    <Compile Include="Assets\Plugins\UnitySDK-2.224.251024\ExampleTestProject\Assets\PlayFabSDK\Groups\PlayFabEvents.cs" />
+    <Compile Include="Assets\Plugins\UnitySDK-2.224.251024\ExampleTestProject\Assets\PlayFabSDK\Data\PlayFabDataAPI.cs" />
+    <Compile Include="Assets\Plugins\UnitySDK-2.224.251024\ExampleTestProject\Assets\PlayFabSDK\Data\PlayFabDataInstanceAPI.cs" />
+    <Compile Include="Assets\Plugins\UnitySDK-2.224.251024\ExampleTestProject\Assets\PlayFabSDK\Shared\Public\PluginContract.cs" />
+    <Compile Include="Assets\Plugins\UnitySDK-2.224.251024\ExampleTestProject\Assets\PlayFabSDK\Matchmaker\PlayFabMatchmakerAPI.cs" />
+    <Compile Include="Assets\Plugins\UnitySDK-2.224.251024\ExampleTestProject\Assets\PlayFabSDK\Shared\Internal\PlayFabHttp\PlayFabWWW.cs" />
+    <Compile Include="Assets\Plugins\UnitySDK-2.224.251024\ExampleMacProject\Assets\Testing\Tests\Utility\UtilTest.cs" />
+    <Compile Include="Assets\Plugins\UnitySDK-2.224.251024\ExampleTestProject\Assets\PlayFabSDK\Server\PlayFabEvents.cs" />
+    <Compile Include="Assets\Plugins\UnitySDK-2.224.251024\ExampleTestProject\Assets\PlayFabSDK\Server\PlayFabServerInstanceAPI.cs" />
+    <Compile Include="Assets\Plugins\UnitySDK-2.224.251024\ExampleTestProject\Assets\PlayFabSDK\Authentication\PlayFabAuthenticationAPI.cs" />
+    <Compile Include="Assets\Plugins\UnitySDK-2.224.251024\ExampleTestProject\Assets\PlayFabSDK\Server\PlayFabServerAPI.cs" />
+    <Compile Include="Assets\Plugins\UnitySDK-2.224.251024\ExampleTestProject\Assets\PlayFabSDK\Shared\Internal\SimpleJson.cs" />
+    <Compile Include="Assets\Plugins\UnitySDK-2.224.251024\ExampleMacProject\Assets\Testing\Tests\Shared\Uunit\UUnitTestReport.cs" />
+    <Compile Include="Assets\Plugins\UnitySDK-2.224.251024\ExampleTestProject\Assets\PlayFabSDK\Authentication\PlayFabAuthenticationModels.cs" />
+    <Compile Include="Assets\Plugins\UnitySDK-2.224.251024\ExampleMacProject\Assets\Testing\Tests\Client\ConnectionStringTests.cs" />
+    <Compile Include="Assets\Plugins\UnitySDK-2.224.251024\ExampleTestProject\Assets\PlayFabSDK\Events\PlayFabEvents.cs" />
+    <Compile Include="Assets\Plugins\UnitySDK-2.224.251024\ExampleTestProject\Assets\PlayFabSDK\Profiles\PlayFabProfilesInstanceAPI.cs" />
+    <Compile Include="Assets\Plugins\UnitySDK-2.224.251024\ExampleTestProject\Assets\PlayFabSDK\Authentication\PlayFabAuthenticationInstanceAPI.cs" />
+    <Compile Include="Assets\Plugins\UnitySDK-2.224.251024\ExampleTestProject\Assets\PlayFabSDK\Experimentation\PlayFabExperimentationModels.cs" />
+    <Compile Include="Assets\Plugins\UnitySDK-2.224.251024\ExampleTestProject\Assets\PlayFabSDK\Events\PlayFabEventsModels.cs" />
+    <Compile Include="Assets\Plugins\UnitySDK-2.224.251024\ExampleTestProject\Assets\PlayFabSDK\Experimentation\PlayFabExperimentationAPI.cs" />
+    <Compile Include="Assets\Plugins\UnitySDK-2.224.251024\ExampleTestProject\Assets\PlayFabSDK\Shared\Internal\PlayFabHttp\PlayFabWebRequest.cs" />
+    <Compile Include="Assets\Plugins\UnitySDK-2.224.251024\ExampleTestProject\Assets\PlayFabSDK\CloudScript\PlayFabEvents.cs" />
+    <Compile Include="Assets\Plugins\UnitySDK-2.224.251024\ExampleTestProject\Assets\PlayFabSDK\Matchmaker\PlayFabEvents.cs" />
+    <Compile Include="Assets\Plugins\UnitySDK-2.224.251024\ExampleTestProject\Assets\PlayFabSDK\Shared\Internal\PlayFabHttp\GzipDownloadHandler.cs" />
+    <Compile Include="Assets\Plugins\UnitySDK-2.224.251024\ExampleTestProject\Assets\PlayFabSDK\Client\PlayFabClientInstanceAPI.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Assets\TextMesh Pro\Shaders\TMPro.cginc" />
-    <None Include="Assets\PlayFabSdk\licenses\SimpleJson-license.txt" />
-    <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF-Mobile Overlay.shader" />
-    <None Include="Assets\PlayFabSdk\ExampleTestProject\Assets\Resources\testTitleDataPlaceholder.txt" />
-    <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF-Mobile-2-Pass.shader" />
-    <None Include="Assets\PlayFabSdk\licenses\SignalR-license.txt" />
-    <None Include="Assets\TextMesh Pro\Shaders\TMP_Bitmap.shader" />
-    <None Include="Assets\PlayFabSdk\licenses\Newtonsoft.Json-license.txt" />
-    <None Include="Assets\Fantasy Skybox FREE\Readme.txt" />
-    <None Include="Assets\TextMesh Pro\Shaders\TMPro_Mobile.cginc" />
-    <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF SSD.shader" />
-    <None Include="Assets\Fantasy Skybox FREE\ReleaseNotes.txt" />
-    <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF-Surface-Mobile.shader" />
-    <None Include="Assets\PlayFabSdk\licenses\ionic.zlib-license.txt" />
-    <None Include="Assets\TextMesh Pro\Shaders\SDFFunctions.hlsl" />
-    <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF-Surface.shader" />
-    <None Include="Assets\TextMesh Pro\Sprites\EmojiOne Attribution.txt" />
-    <None Include="Assets\TextMesh Pro\Shaders\TMP_Bitmap-Custom-Atlas.shader" />
-    <None Include="Assets\PlayFabSdk\licenses\tpl-license.txt" />
-    <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF.shader" />
-    <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF-Mobile SSD.shader" />
-    <None Include="Assets\TextMesh Pro\Resources\LineBreaking Leading Characters.txt" />
-    <None Include="Assets\Art\Fonts\aztec-1\aztec-1\license.txt" />
-    <None Include="Assets\TextMesh Pro\Shaders\TMPro_Properties.cginc" />
-    <None Include="Assets\TextMesh Pro\Shaders\TMPro_Surface.cginc" />
-    <None Include="Assets\TextMesh Pro\Resources\LineBreaking Following Characters.txt" />
-    <None Include="Assets\Scenes\MainMenu_UI_Hierarchy_Template.txt" />
-    <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF-Mobile Masking.shader" />
-    <None Include="Assets\Art\Fonts\mayan-1\readme.txt" />
-    <None Include="Assets\PlayFabSdk\licenses\uunit-license.txt" />
-    <None Include="Assets\Art\Fonts\aztec-1\aztec-1\readme.txt" />
-    <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF Overlay.shader" />
-    <None Include="Assets\Art\Textures\_pack_mayantemple_bg\help file.txt" />
-    <None Include="Assets\TextMesh Pro\Shaders\TMP_Bitmap-Mobile.shader" />
-    <None Include="Assets\TextMesh Pro\Fonts\LiberationSans - OFL.txt" />
-    <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF-Mobile.shader" />
-    <None Include="Assets\TextMesh Pro\Shaders\TMP_Sprite.shader" />
+    <None Include="Assets\Plugins\UnitySDK-2.224.251024\ExampleTestProject\Assets\PlayFabSDK\link.xml" />
+    <None Include="Assets\Plugins\UnitySDK-2.224.251024\licenses\SimpleJson-license.txt" />
+    <None Include="Assets\Plugins\UnitySDK-2.224.251024\ExampleTestProject\Assets\Resources\testTitleDataPlaceholder.txt" />
+    <None Include="Assets\Plugins\UnitySDK-2.224.251024\licenses\SignalR-license.txt" />
+    <None Include="Assets\Plugins\UnitySDK-2.224.251024\licenses\Newtonsoft.Json-license.txt" />
+    <None Include="Assets\Plugins\UnitySDK-2.224.251024\licenses\ionic.zlib-license.txt" />
+    <None Include="Assets\Plugins\UnitySDK-2.224.251024\ExampleMacProject\Assets\Resources\testTitleDataPlaceholder.txt" />
+    <None Include="Assets\Plugins\UnitySDK-2.224.251024\ExampleMacProject\Assets\Testing\PlayFabTesting.asmdef" />
+    <None Include="Assets\Plugins\UnitySDK-2.224.251024\licenses\tpl-license.txt" />
+    <None Include="Assets\Plugins\Android\AndroidManifest.xml" />
+    <None Include="Assets\Plugins\UnitySDK-2.224.251024\licenses\uunit-license.txt" />
+    <None Include="Assets\Plugins\UnitySDK-2.224.251024\ExampleTestProject\Assets\PlayFabSDK\PlayFab.asmdef" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="UnityEngine">
@@ -1149,10 +1200,6 @@
       <HintPath>C:\Program Files\Unity\Hub\Editor\6000.2.6f2\Editor\Data\NetStandard\compat\2.1.0\shims\netfx\System.Xml.Serialization.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Unity.RenderPipelines.Core.Editor">
-      <HintPath>Library\ScriptAssemblies\Unity.RenderPipelines.Core.Editor.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
     <Reference Include="Unity.2D.Common.Path.Editor">
       <HintPath>Library\ScriptAssemblies\Unity.2D.Common.Path.Editor.dll</HintPath>
       <Private>False</Private>
@@ -1177,16 +1224,8 @@
       <HintPath>Library\ScriptAssemblies\Unity.RenderPipelines.Core.ShaderLibrary.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Unity.2D.IK.Runtime">
-      <HintPath>Library\ScriptAssemblies\Unity.2D.IK.Runtime.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
     <Reference Include="Unity.VisualScripting.SettingsProvider.Editor">
       <HintPath>Library\ScriptAssemblies\Unity.VisualScripting.SettingsProvider.Editor.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Unity.2D.Animation.Editor">
-      <HintPath>Library\ScriptAssemblies\Unity.2D.Animation.Editor.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Unity.2D.Enhancers.Editor.AIBridge">
@@ -1195,14 +1234,6 @@
     </Reference>
     <Reference Include="Unity.InternalAPIEditorBridge.001">
       <HintPath>Library\ScriptAssemblies\Unity.InternalAPIEditorBridge.001.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Unity.RenderPipelines.Universal.Editor">
-      <HintPath>Library\ScriptAssemblies\Unity.RenderPipelines.Universal.Editor.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Unity.Timeline">
-      <HintPath>Library\ScriptAssemblies\Unity.Timeline.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="PPv2URPConverters">
@@ -1223,30 +1254,6 @@
     </Reference>
     <Reference Include="Unity.RenderPipelines.Universal.2D.Runtime">
       <HintPath>Library\ScriptAssemblies\Unity.RenderPipelines.Universal.2D.Runtime.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Unity.VisualScripting.Shared.Editor">
-      <HintPath>Library\ScriptAssemblies\Unity.VisualScripting.Shared.Editor.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Unity.Searcher.Editor">
-      <HintPath>Library\ScriptAssemblies\Unity.Searcher.Editor.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Unity.PlasticSCM.Editor">
-      <HintPath>Library\ScriptAssemblies\Unity.PlasticSCM.Editor.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Unity.Burst.Editor">
-      <HintPath>Library\ScriptAssemblies\Unity.Burst.Editor.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Unity.VisualScripting.Core">
-      <HintPath>Library\ScriptAssemblies\Unity.VisualScripting.Core.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Unity.Mathematics.Editor">
-      <HintPath>Library\ScriptAssemblies\Unity.Mathematics.Editor.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Unity.InferenceEngine.ONNX.Editor">
@@ -1277,16 +1284,12 @@
       <HintPath>Library\ScriptAssemblies\Unity.2D.Aseprite.Editor.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Unity.2D.Psdimporter.Editor">
-      <HintPath>Library\ScriptAssemblies\Unity.2D.Psdimporter.Editor.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
     <Reference Include="Unity.InferenceEngine.Editor">
       <HintPath>Library\ScriptAssemblies\Unity.InferenceEngine.Editor.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Unity.RenderPipelines.Core.Runtime">
-      <HintPath>Library\ScriptAssemblies\Unity.RenderPipelines.Core.Runtime.dll</HintPath>
+    <Reference Include="Unity.RenderPipelines.ShaderGraph.ShaderGraphLibrary">
+      <HintPath>Library\ScriptAssemblies\Unity.RenderPipelines.ShaderGraph.ShaderGraphLibrary.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Unity.VisualScripting.Flow">
@@ -1295,6 +1298,130 @@
     </Reference>
     <Reference Include="Unity.TextMeshPro.Editor">
       <HintPath>Library\ScriptAssemblies\Unity.TextMeshPro.Editor.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.2D.Tilemap.Extras.Editor">
+      <HintPath>Library\ScriptAssemblies\Unity.2D.Tilemap.Extras.Editor.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.VisualStudio.Editor">
+      <HintPath>Library\ScriptAssemblies\Unity.VisualStudio.Editor.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.2D.Tilemap.Editor">
+      <HintPath>Library\ScriptAssemblies\Unity.2D.Tilemap.Editor.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.InputSystem.ForUI">
+      <HintPath>Library\ScriptAssemblies\Unity.InputSystem.ForUI.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.RenderPipelines.GPUDriven.Runtime">
+      <HintPath>Library\ScriptAssemblies\Unity.RenderPipelines.GPUDriven.Runtime.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.VisualScripting.State.Editor">
+      <HintPath>Library\ScriptAssemblies\Unity.VisualScripting.State.Editor.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.RenderPipelines.Universal.Shaders">
+      <HintPath>Library\ScriptAssemblies\Unity.RenderPipelines.Universal.Shaders.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.UI">
+      <HintPath>Library\ScriptAssemblies\UnityEngine.UI.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.RenderPipelines.Universal.Runtime">
+      <HintPath>Library\ScriptAssemblies\Unity.RenderPipelines.Universal.Runtime.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.AI.Assistant.AvatarHelper.Editor">
+      <HintPath>Library\ScriptAssemblies\Unity.AI.Assistant.AvatarHelper.Editor.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.RenderPipelines.Universal.Config.Runtime">
+      <HintPath>Library\ScriptAssemblies\Unity.RenderPipelines.Universal.Config.Runtime.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.AppUI">
+      <HintPath>Library\ScriptAssemblies\Unity.AppUI.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.2D.Sprite.AIIntegration.Editor">
+      <HintPath>Library\ScriptAssemblies\Unity.2D.Sprite.AIIntegration.Editor.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.RenderPipelines.Core.Editor.Shared">
+      <HintPath>Library\ScriptAssemblies\Unity.RenderPipelines.Core.Editor.Shared.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.2D.SpriteShape.Editor">
+      <HintPath>Library\ScriptAssemblies\Unity.2D.SpriteShape.Editor.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.2D.Enhancers.Editor">
+      <HintPath>Library\ScriptAssemblies\Unity.2D.Enhancers.Editor.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.InputSystem">
+      <HintPath>Library\ScriptAssemblies\Unity.InputSystem.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.AppUI.Redux">
+      <HintPath>Library\ScriptAssemblies\Unity.AppUI.Redux.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.RenderPipelines.Core.Editor">
+      <HintPath>Library\ScriptAssemblies\Unity.RenderPipelines.Core.Editor.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.2D.IK.Runtime">
+      <HintPath>Library\ScriptAssemblies\Unity.2D.IK.Runtime.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.2D.Animation.Editor">
+      <HintPath>Library\ScriptAssemblies\Unity.2D.Animation.Editor.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.RenderPipelines.Universal.Editor">
+      <HintPath>Library\ScriptAssemblies\Unity.RenderPipelines.Universal.Editor.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.Timeline">
+      <HintPath>Library\ScriptAssemblies\Unity.Timeline.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.VisualScripting.Shared.Editor">
+      <HintPath>Library\ScriptAssemblies\Unity.VisualScripting.Shared.Editor.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.Searcher.Editor">
+      <HintPath>Library\ScriptAssemblies\Unity.Searcher.Editor.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.PlasticSCM.Editor">
+      <HintPath>Library\ScriptAssemblies\Unity.PlasticSCM.Editor.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.Burst.Editor">
+      <HintPath>Library\ScriptAssemblies\Unity.Burst.Editor.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.VisualScripting.Core">
+      <HintPath>Library\ScriptAssemblies\Unity.VisualScripting.Core.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.Mathematics.Editor">
+      <HintPath>Library\ScriptAssemblies\Unity.Mathematics.Editor.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.2D.Psdimporter.Editor">
+      <HintPath>Library\ScriptAssemblies\Unity.2D.Psdimporter.Editor.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.RenderPipelines.Core.Runtime">
+      <HintPath>Library\ScriptAssemblies\Unity.RenderPipelines.Core.Runtime.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Unity.2D.Tilemap.Extras">
@@ -1313,18 +1440,6 @@
       <HintPath>Library\ScriptAssemblies\Unity.2D.SpriteShape.Runtime.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Unity.VisualStudio.Editor">
-      <HintPath>Library\ScriptAssemblies\Unity.VisualStudio.Editor.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Unity.RenderPipelines.ShaderGraph.ShaderGraphLibrary">
-      <HintPath>Library\ScriptAssemblies\Unity.RenderPipelines.ShaderGraph.ShaderGraphLibrary.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Unity.2D.Tilemap.Editor">
-      <HintPath>Library\ScriptAssemblies\Unity.2D.Tilemap.Editor.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
     <Reference Include="Unity.2D.Common.Runtime">
       <HintPath>Library\ScriptAssemblies\Unity.2D.Common.Runtime.dll</HintPath>
       <Private>False</Private>
@@ -1333,16 +1448,8 @@
       <HintPath>Library\ScriptAssemblies\Unity.Collections.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Unity.InputSystem.ForUI">
-      <HintPath>Library\ScriptAssemblies\Unity.InputSystem.ForUI.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
     <Reference Include="Unity.AI.Assistant.Agent.Dynamic.Extension.Editor">
       <HintPath>Library\ScriptAssemblies\Unity.AI.Assistant.Agent.Dynamic.Extension.Editor.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Unity.RenderPipelines.GPUDriven.Runtime">
-      <HintPath>Library\ScriptAssemblies\Unity.RenderPipelines.GPUDriven.Runtime.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Unity.Timeline.Editor">
@@ -1353,10 +1460,6 @@
       <HintPath>Library\ScriptAssemblies\Unity.AppUI.Editor.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Unity.VisualScripting.State.Editor">
-      <HintPath>Library\ScriptAssemblies\Unity.VisualScripting.State.Editor.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
     <Reference Include="Unity.Mathematics">
       <HintPath>Library\ScriptAssemblies\Unity.Mathematics.dll</HintPath>
       <Private>False</Private>
@@ -1365,24 +1468,12 @@
       <HintPath>Library\ScriptAssemblies\Unity.Serialization.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Unity.RenderPipelines.Universal.Shaders">
-      <HintPath>Library\ScriptAssemblies\Unity.RenderPipelines.Universal.Shaders.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
     <Reference Include="Unity.Multiplayer.Center.Common">
       <HintPath>Library\ScriptAssemblies\Unity.Multiplayer.Center.Common.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="UnityEngine.UI">
-      <HintPath>Library\ScriptAssemblies\UnityEngine.UI.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
     <Reference Include="Unity.Burst">
       <HintPath>Library\ScriptAssemblies\Unity.Burst.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Unity.2D.Tilemap.Extras.Editor">
-      <HintPath>Library\ScriptAssemblies\Unity.2D.Tilemap.Extras.Editor.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Unity.VisualScripting.Core.Editor">
@@ -1393,28 +1484,12 @@
       <HintPath>Library\ScriptAssemblies\Unity.Multiplayer.Center.Editor.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Unity.RenderPipelines.Universal.Runtime">
-      <HintPath>Library\ScriptAssemblies\Unity.RenderPipelines.Universal.Runtime.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Unity.AI.Assistant.AvatarHelper.Editor">
-      <HintPath>Library\ScriptAssemblies\Unity.AI.Assistant.AvatarHelper.Editor.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
     <Reference Include="Unity.Rendering.LightTransport.Runtime">
       <HintPath>Library\ScriptAssemblies\Unity.Rendering.LightTransport.Runtime.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Unity.VisualScripting.State">
       <HintPath>Library\ScriptAssemblies\Unity.VisualScripting.State.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Unity.RenderPipelines.Universal.Config.Runtime">
-      <HintPath>Library\ScriptAssemblies\Unity.RenderPipelines.Universal.Config.Runtime.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Unity.AppUI">
-      <HintPath>Library\ScriptAssemblies\Unity.AppUI.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Unity.AppUI.Navigation.Editor">
@@ -1437,40 +1512,16 @@
       <HintPath>Library\ScriptAssemblies\Unity.ShaderGraph.Editor.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Unity.2D.Sprite.AIIntegration.Editor">
-      <HintPath>Library\ScriptAssemblies\Unity.2D.Sprite.AIIntegration.Editor.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Unity.RenderPipelines.Core.Editor.Shared">
-      <HintPath>Library\ScriptAssemblies\Unity.RenderPipelines.Core.Editor.Shared.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Unity.2D.SpriteShape.Editor">
-      <HintPath>Library\ScriptAssemblies\Unity.2D.SpriteShape.Editor.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
     <Reference Include="Unity.InferenceEngine.iOSBLAS">
       <HintPath>Library\ScriptAssemblies\Unity.InferenceEngine.iOSBLAS.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Unity.InputSystem">
-      <HintPath>Library\ScriptAssemblies\Unity.InputSystem.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Unity.Settings.Editor">
       <HintPath>Library\ScriptAssemblies\Unity.Settings.Editor.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Unity.2D.Enhancers.Editor">
-      <HintPath>Library\ScriptAssemblies\Unity.2D.Enhancers.Editor.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
     <Reference Include="UnityEditor.UI">
       <HintPath>Library\ScriptAssemblies\UnityEditor.UI.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Unity.AppUI.Redux">
-      <HintPath>Library\ScriptAssemblies\Unity.AppUI.Redux.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Unity.InferenceEngine">
@@ -1480,10 +1531,10 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="PlayFabTesting.csproj" />
+    <ProjectReference Include="PlayFabEditorExtensions.csproj" />
     <ProjectReference Include="PlayFab.csproj" />
     <ProjectReference Include="PlayFabTestingEditor.csproj" />
     <ProjectReference Include="PlayFabSDKEditor.csproj" />
-    <ProjectReference Include="PlayFabEditorExtensions.csproj" />
   </ItemGroup>
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
   <ItemGroup>

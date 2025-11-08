@@ -12,28 +12,16 @@ public class CodexEntryUI : MonoBehaviour
     [SerializeField] private Image backgroundImage;
     [SerializeField] private TextMeshProUGUI levelNameText;
 
-    [Header("Star Icons")]
-    [SerializeField] private Image starIcon1;
-    [SerializeField] private Image starIcon2;
-    [SerializeField] private Image starIcon3;
-
     [Header("Visual States")]
     [SerializeField] private Color normalColor = new Color(1f, 1f, 1f, 0.8f);
     [SerializeField] private Color selectedColor = new Color(1f, 0.9f, 0.6f, 1f);
-    [SerializeField] private Color starObtainedColor = Color.white;
-    [SerializeField] private Color starNotObtainedColor = new Color(0.3f, 0.3f, 0.3f, 1f);
 
     // Level data
     private LevelData levelData;
     private int levelNumber;
-    private int starsEarned;
     private int highScore;
     private bool isSelected = false;
     private bool isCompleted = false;
-
-    // Star icon array for easier access
-    private Image[] starIcons;
-    private const int MAX_STARS = 3;
 
     private void Awake()
     {
@@ -42,19 +30,15 @@ public class CodexEntryUI : MonoBehaviour
         {
             button = GetComponent<Button>();
         }
-
-        // Initialize star icons array
-        starIcons = new Image[MAX_STARS] { starIcon1, starIcon2, starIcon3 };
     }
 
     /// <summary>
     /// Initialize the codex entry with level data
     /// </summary>
-    public void Initialize(LevelData levelData, int stars, int highScore, bool isCompleted)
+    public void Initialize(LevelData levelData, int highScore, bool isCompleted)
     {
         this.levelData = levelData;
         this.levelNumber = levelData.levelNumber;
-        this.starsEarned = Mathf.Clamp(stars, 0, 3);
         this.highScore = highScore;
         this.isCompleted = isCompleted;
 
@@ -80,25 +64,6 @@ public class CodexEntryUI : MonoBehaviour
         if (backgroundImage != null)
         {
             backgroundImage.color = isSelected ? selectedColor : normalColor;
-        }
-
-        // Update stars display
-        UpdateStarsDisplay();
-    }
-
-    /// <summary>
-    /// Update the star icons based on stars earned
-    /// </summary>
-    private void UpdateStarsDisplay()
-    {
-        for (int i = 0; i < starIcons.Length; i++)
-        {
-            if (starIcons[i] != null)
-            {
-                // Set color based on whether star is earned
-                starIcons[i].color = i < starsEarned ? starObtainedColor : starNotObtainedColor;
-                starIcons[i].gameObject.SetActive(true);
-            }
         }
     }
 

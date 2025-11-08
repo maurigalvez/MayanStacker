@@ -15,7 +15,15 @@ MonoBehaviour:
   levelNumber: 2
   levelName: "Dzibilchalt\xFAn"
   location: Yucatan, Mexico
-  levelDescription: Stack 15 blocks with increased difficulty!
+  levelDescription: "Ancient even among the Maya, Dzibilchalt\xFAn was a city of
+    scholars and traders.\nIts famous Temple of the Seven Dolls aligns perfectly
+    with the sunrise on the equinox, flooding its doorways with light.\n\nThe site
+    thrived for over 2,000 years, linking the coast to inland cities through salt
+    and obsidian trade.\nIts cenote, a natural well, offered life-giving water and
+    a sacred link to the underworld.\n\nThough later absorbed by Spanish colonial
+    influence, the city\u2019s stones still whisper of ceremony, learning, and cosmic
+    order.\nWhen the sun passes through the temple\u2019s eyes, the ancient day begins
+    anew."
   requiredStackHeight: 15
   oneStarScore: 200
   twoStarScore: 600

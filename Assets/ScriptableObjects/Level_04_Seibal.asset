@@ -13,9 +13,15 @@ MonoBehaviour:
   m_Name: Level_04_Seibal
   m_EditorClassIdentifier: 
   levelNumber: 4
-  levelName: Seibal
+  levelName: Seibal - City of Renewal
   location: Peten, Guatemala
-  levelDescription: Stack 25 blocks with even faster swinging!
+  levelDescription: "Once a fading outpost, Seibal was reborn around 830 AD under
+    foreign influence, blending Maya and non-Maya styles.\nIts stelae show warriors
+    with foreign dress and serpent motifs, marking a crossroads of cultures.\n\nDespite
+    this renewal, Seibal\u2019s glory was brief \u2014 by 950 AD, silence claimed
+    its plazas again.\nStill, its art tells of transition, resilience, and the final
+    sparks of the Classic Maya world.\nBetween river and jungle, Seibal stood \u2014
+    last flame before the night."
   requiredStackHeight: 25
   oneStarScore: 750
   twoStarScore: 1500

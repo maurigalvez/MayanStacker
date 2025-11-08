@@ -65,7 +65,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: -852092561, guid: ac2445c1a06e00f46abfcad26ccddc64, type: 3}
+  m_Sprite: {fileID: 7626250412056753051, guid: ac2445c1a06e00f46abfcad26ccddc64, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -424,7 +424,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: -1920903718, guid: ac2445c1a06e00f46abfcad26ccddc64, type: 3}
+  m_Sprite: {fileID: 4673542265414845893, guid: ac2445c1a06e00f46abfcad26ccddc64, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -505,9 +505,9 @@ MonoBehaviour:
   visualStateCompletedPosition: {x: 0, y: 15}
   visualStateNotCompletedPosition: {x: 0, y: 4}
   unlockedSize: {x: 32, y: 27}
-  unlockedSprite: {fileID: -852092561, guid: ac2445c1a06e00f46abfcad26ccddc64, type: 3}
+  unlockedSprite: {fileID: 7626250412056753051, guid: ac2445c1a06e00f46abfcad26ccddc64, type: 3}
   lockedSize: {x: 25, y: 30}
-  lockedSprite: {fileID: -804245128, guid: ac2445c1a06e00f46abfcad26ccddc64, type: 3}
+  lockedSprite: {fileID: 2980665784921768128, guid: ac2445c1a06e00f46abfcad26ccddc64, type: 3}
   completedSize: {x: 50, y: 50}
   completedSprite: {fileID: 21300000, guid: 6eb0149e509bcbf42b4c6e6cb5b8a5fa, type: 3}
   unlockedColor: {r: 1, g: 1, b: 1, a: 1}
@@ -515,3 +515,6 @@ MonoBehaviour:
   completedColor: {r: 1, g: 0.9, b: 0.6, a: 1}
   starObtainedColor: {r: 1, g: 1, b: 1, a: 1}
   starNotObtainedColor: {r: 0.5019608, g: 0.5019608, b: 0.5019608, a: 1}
+  pulseMinScale: 0.95
+  pulseMaxScale: 1.05
+  pulseSpeed: 2
