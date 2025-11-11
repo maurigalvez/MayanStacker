@@ -111,6 +111,9 @@ public class ScrollView_PinchScale : MonoBehaviour, IDragHandler, IScrollHandler
             // Calculate current distance between touches
             float currentDistance = Vector2.Distance(touchZero.screenPosition, touchOne.screenPosition);
 
+            // Calculate the midpoint (pinch center) between the two touches
+            Vector2 pinchCenter = (touchZero.screenPosition + touchOne.screenPosition) / 2f;
+
             // On first frame of two-touch gesture, just store the distance
             if (!isPinching ||
                 touchZero.phase == UnityEngine.InputSystem.TouchPhase.Began ||
@@ -134,10 +137,10 @@ public class ScrollView_PinchScale : MonoBehaviour, IDragHandler, IScrollHandler
 
             previousTouchDistance = currentDistance;
 
-            // Apply zoom based on distance change
+            // Apply zoom based on distance change, using the pinch center as focal point
             if (Mathf.Abs(distanceDelta) > 0.1f) // Add threshold to avoid jitter
             {
-                Zoom(distanceDelta * pinchSensitivity);
+                Zoom(distanceDelta * pinchSensitivity, pinchCenter);
             }
         }
         else
@@ -196,6 +199,9 @@ public class ScrollView_PinchScale : MonoBehaviour, IDragHandler, IScrollHandler
 
             float currentDistance = Vector2.Distance(pos0, pos1);
 
+            // Calculate the midpoint (pinch center) between the two touches
+            Vector2 pinchCenter = (pos0 + pos1) / 2f;
+
             if (!isPinching)
             {
                 previousTouchDistance = currentDistance;
@@ -217,7 +223,7 @@ public class ScrollView_PinchScale : MonoBehaviour, IDragHandler, IScrollHandler
 
             if (Mathf.Abs(distanceDelta) > 0.1f)
             {
-                Zoom(distanceDelta * pinchSensitivity);
+                Zoom(distanceDelta * pinchSensitivity, pinchCenter);
             }
         }
         else
@@ -282,10 +288,11 @@ public class ScrollView_PinchScale : MonoBehaviour, IDragHandler, IScrollHandler
 
     /// <summary>
     /// Applies zoom increment to the map and clamps it within min/max bounds
-    /// Zooms towards the center of the screen
+    /// Zooms towards a specific screen position or the center of the viewport
     /// </summary>
     /// <param name="increment">The amount to zoom (positive = zoom in, negative = zoom out)</param>
-    private void Zoom(float increment)
+    /// <param name="screenPosition">Optional screen position to zoom towards. If null, zooms towards viewport center</param>
+    private void Zoom(float increment, Vector2? screenPosition = null)
     {
         if (mapRect != null)
         {
@@ -296,17 +303,28 @@ public class ScrollView_PinchScale : MonoBehaviour, IDragHandler, IScrollHandler
             if (Mathf.Abs(newZoom - currentZoom) < 0.001f)
                 return;
 
-            // Get the center of the screen in world space
+            // Get the zoom focal point
             RectTransform parentRect = mapRect.parent as RectTransform;
             if (parentRect != null)
             {
-                // Center of the viewport (parent rect)
-                Vector2 viewportCenter = parentRect.rect.center;
+                Vector2 zoomFocalPoint;
 
-                // Convert viewport center to local point on the map (before scaling)
+                if (screenPosition.HasValue)
+                {
+                    // Use the provided screen position (e.g., pinch center)
+                    zoomFocalPoint = screenPosition.Value;
+                }
+                else
+                {
+                    // Default to center of the viewport
+                    Vector2 viewportCenter = parentRect.rect.center;
+                    zoomFocalPoint = RectTransformUtility.WorldToScreenPoint(null, parentRect.TransformPoint(viewportCenter));
+                }
+
+                // Convert focal point to local point on the map (before scaling)
                 RectTransformUtility.ScreenPointToLocalPointInRectangle(
                     mapRect,
-                    RectTransformUtility.WorldToScreenPoint(null, parentRect.TransformPoint(viewportCenter)),
+                    zoomFocalPoint,
                     null,
                     out Vector2 localPointBeforeZoom
                 );
@@ -319,7 +337,7 @@ public class ScrollView_PinchScale : MonoBehaviour, IDragHandler, IScrollHandler
                 mapRect.localScale = Vector3.one * currentZoom;
 
                 // The local point will now be at a different screen position due to scaling
-                // We need to adjust the anchored position to keep that point at the screen center
+                // We need to adjust the anchored position to keep that point at the same screen position
                 Vector2 offsetDelta = localPointBeforeZoom * (zoomRatio - 1f);
                 mapRect.anchoredPosition -= offsetDelta;
             }

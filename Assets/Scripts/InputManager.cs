@@ -245,15 +245,6 @@ public class InputManager : MonoBehaviour
 
     private void ProcessInput(Vector2 screenPosition)
     {
-        // Block input if clicking in the top 200 pixels of the screen (UI area)
-        if (screenPosition.y > Screen.height - 200)
-        {
-#if UNITY_EDITOR
-            Debug.Log($"Input blocked: Click in top UI area (y={screenPosition.y}, screen height={Screen.height})");
-#endif
-            return;
-        }
-
         // Notify listeners
         OnScreenTapped?.Invoke(screenPosition);
         OnDropInput?.Invoke();

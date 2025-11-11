@@ -155,12 +155,13 @@ public class StackableObject : MonoBehaviour
         // Visual feedback based on landing accuracy
         UpdateVisualFeedback();
 
-        // Calculate and award score
-        int score = CalculateScore();
+        // Calculate and award score with combo multiplier
+        int baseScore = CalculateScore();
         var gameManager = DependencyRegistry.Find<GameManager>();
         if (gameManager != null)
         {
-            gameManager.AddScore(score);
+            // Use new combo-aware scoring method
+            gameManager.AddScoreWithCombo(baseScore, landingAccuracy);
         }
 
         // Add this object to the stack

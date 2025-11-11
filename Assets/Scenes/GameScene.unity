@@ -1211,6 +1211,13 @@ MonoBehaviour:
   highScore: 0
   isGameActive: 0
   isGameOver: 0
+  currentCombo: 0
+  maxCombo: 0
+  comboMinAccuracy: 0.6
+  comboStepsForMultiplier: 3
+  maxComboMultiplier: 5
+  comboDecayTime: 5
+  enableComboDecay: 1
 --- !u!4 &1286817094
 Transform:
   m_ObjectHideFlags: 0

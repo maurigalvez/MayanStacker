@@ -39,6 +39,11 @@ public class UIManager : MonoBehaviour
     [SerializeField] private GameObject pointsPopupPrefab;
     [SerializeField] private Transform pointsPopupParent;
 
+    [Header("Combo UI")]
+    [SerializeField] private GameObject comboDisplay;
+    [SerializeField] private TextMeshProUGUI multiplierText;
+    [SerializeField] private Image comboTimerBar; // Circular radial fill timer
+
     [Header("Pause Menu")]
     [SerializeField] private GameObject pauseMenuPanel;
     [SerializeField] private Button pauseButton;
@@ -57,10 +62,30 @@ public class UIManager : MonoBehaviour
     [SerializeField] private float pointsPopupDuration = 2f;
     [SerializeField] private float pointsPopupVerticalOffset = 30f;
 
+    // PlayerPrefs key for tracking if player has seen instructions
+    private const string INSTRUCTIONS_SEEN_KEY = "InfiniteMode_InstructionsSeen";
+
     [Header("Accuracy Text Colors")]
     [SerializeField] private Color perfectAccuracyColor = Color.green;
     [SerializeField] private Color goodAccuracyColor = Color.yellow;
     [SerializeField] private Color poorAccuracyColor = Color.red;
+
+    [Header("Combo Settings")]
+    [SerializeField]
+    private Color[] comboMultiplierColors = new Color[]
+    {
+        Color.white,                           // 1x - no combo
+        new Color(0.5f, 1f, 0.5f),            // 2x - light green
+        new Color(0f, 1f, 0f),                // 3x - green
+        new Color(1f, 0.84f, 0f),             // 4x - gold
+        new Color(1f, 0.5f, 0f)               // 5x - orange
+    };
+    [SerializeField] private float comboScalePulse = 1.3f;
+    [SerializeField] private float comboScalePulseDuration = 0.2f;
+    [SerializeField] private bool showComboTimer = true;
+    [SerializeField] private Color timerSafeColor = Color.green;
+    [SerializeField] private Color timerWarningColor = Color.yellow;
+    [SerializeField] private Color timerDangerColor = Color.red;
 
     // References
     private GameManager gameManager;
@@ -70,7 +95,9 @@ public class UIManager : MonoBehaviour
 
     // State
     private Coroutine landingAccuracyCoroutine;
+    private Coroutine comboPulseCoroutine;
     private bool isPaused = false;
+    private bool isUpdatingComboTimer = false;
 
     // Events
     public System.Action OnGameResumed;
@@ -102,6 +129,7 @@ public class UIManager : MonoBehaviour
             gameManager.OnGameOver += OnGameOver;
             gameManager.OnGameRestart += OnGameRestart;
             gameManager.OnGameModeChanged += OnGameModeChanged;
+            gameManager.OnComboChanged += UpdateComboDisplay;
         }
 
         // Subscribe to stack events
@@ -196,14 +224,17 @@ public class UIManager : MonoBehaviour
             UpdateScore(gameManager.CurrentScore);
             UpdateHighScore(gameManager.HighScore);
             UpdateGameModeDisplay(gameManager.CurrentGameMode);
+            UpdateComboDisplay(gameManager.CurrentCombo, gameManager.CurrentMultiplier);
         }
-
-        // Show instructions
-        ShowInstructions();
 
         // Initialize new UI elements
         UpdateStackHeight();
         HideLandingAccuracy();
+        InitializeComboDisplay();
+        InitializeComboTimer();
+
+        // Hide instructions initially - they'll show when OnGameStart is called
+        HideInstructions();
 
         // Initialize level UI if in level mode
         if (gameManager != null && gameManager.CurrentGameMode == GameMode.StackerLevels)
@@ -237,14 +268,25 @@ public class UIManager : MonoBehaviour
         if (gameUI != null)
             gameUI.SetActive(true);
 
-        // Hide instructions after a delay
-        StartCoroutine(InstructionRoutine());
+        // Only show instructions for level 1 or first-time infinite mode players
+        if (ShouldShowInstructions())
+        {
+            ShowInstructions();
+            StartCoroutine(InstructionRoutine());
+        }
     }
 
     private IEnumerator InstructionRoutine()
     {
         yield return new WaitForSeconds(3f);
         HideInstructions();
+
+        // Mark that player has seen instructions in Infinite Mode
+        if (gameManager != null && gameManager.CurrentGameMode == GameMode.InfiniteStacker)
+        {
+            PlayerPrefs.SetInt(INSTRUCTIONS_SEEN_KEY, 1);
+            PlayerPrefs.Save();
+        }
     }
 
     private void OnGameOver()
@@ -294,8 +336,42 @@ public class UIManager : MonoBehaviour
         // Hide landing accuracy text
         HideLandingAccuracy();
 
-        // Show instructions again
-        ShowInstructions();
+        // Show instructions only if appropriate (level 1 or first-time infinite mode)
+        if (ShouldShowInstructions())
+        {
+            ShowInstructions();
+        }
+        else
+        {
+            HideInstructions();
+        }
+    }
+
+    /// <summary>
+    /// Determines if instructions should be shown based on game mode and player experience
+    /// </summary>
+    private bool ShouldShowInstructions()
+    {
+        if (gameManager == null) return false;
+
+        // In Level Mode: Only show for level 1
+        if (gameManager.CurrentGameMode == GameMode.StackerLevels)
+        {
+            if (levelManager != null && levelManager.CurrentLevelIndex == 0)
+            {
+                return true; // Level 1 (index 0)
+            }
+            return false;
+        }
+
+        // In Infinite Mode: Only show if player hasn't seen instructions before
+        if (gameManager.CurrentGameMode == GameMode.InfiniteStacker)
+        {
+            bool hasSeenInstructions = PlayerPrefs.GetInt(INSTRUCTIONS_SEEN_KEY, 0) == 1;
+            return !hasSeenInstructions;
+        }
+
+        return false;
     }
 
     private void ShowInstructions()
@@ -332,8 +408,17 @@ public class UIManager : MonoBehaviour
         // Show landing accuracy feedback and points popup together
         if (stackableObject != null)
         {
-            int points = CalculatePointsFromAccuracy(stackableObject.LandingAccuracy);
-            ShowLandingAccuracyAndPoints(stackableObject.LandingAccuracy, points, stackableObject.transform.position);
+            int basePoints = CalculatePointsFromAccuracy(stackableObject.LandingAccuracy);
+
+            // Apply multiplier to get actual points awarded
+            float multiplier = 1f;
+            if (gameManager != null)
+            {
+                multiplier = gameManager.CurrentMultiplier;
+            }
+            int actualPoints = Mathf.RoundToInt(basePoints * multiplier);
+
+            ShowLandingAccuracyAndPoints(stackableObject.LandingAccuracy, actualPoints, stackableObject.transform.position);
         }
     }
 
@@ -347,21 +432,39 @@ public class UIManager : MonoBehaviour
             StopCoroutine(landingAccuracyCoroutine);
         }
 
-        // Set the text based on accuracy
+        // Get current combo from GameManager
+        int currentCombo = 0;
+        if (gameManager != null)
+        {
+            currentCombo = gameManager.CurrentCombo;
+        }
+
+        // Set the text based on accuracy with combo count
+        string baseText = "";
         if (accuracy >= 0.9f)
         {
-            landingAccuracyText.text = "PERFECT!";
+            baseText = "PERFECT!";
             landingAccuracyText.color = perfectAccuracyColor;
         }
         else if (accuracy >= 0.6f)
         {
-            landingAccuracyText.text = "GOOD";
+            baseText = "GOOD";
             landingAccuracyText.color = goodAccuracyColor;
         }
         else
         {
-            landingAccuracyText.text = "POOR";
+            baseText = "POOR";
             landingAccuracyText.color = poorAccuracyColor;
+        }
+
+        // Add combo count if active (Good or Perfect landing)
+        if (currentCombo > 0 && accuracy >= 0.6f)
+        {
+            landingAccuracyText.text = $"{baseText}\nx{currentCombo} COMBO";
+        }
+        else
+        {
+            landingAccuracyText.text = baseText;
         }
 
         // Convert world position to screen position for the accuracy label
@@ -419,13 +522,14 @@ public class UIManager : MonoBehaviour
         {
             popupText.text = $"+{points}";
 
-            // Color code based on points
-            if (points >= 100)
-                popupText.color = Color.green;
-            else if (points >= 50)
-                popupText.color = Color.yellow;
-            else
-                popupText.color = Color.red;
+            // Color code based on base points (accounting for multiplier)
+            // Perfect base = 100, Good base = 50, Poor base = 10
+            if (points >= 90) // Perfect landing (100+ with multiplier or base perfect)
+                popupText.color = perfectAccuracyColor;
+            else if (points >= 45) // Good landing (50+ with multiplier or base good)
+                popupText.color = goodAccuracyColor;
+            else // Poor landing
+                popupText.color = poorAccuracyColor;
         }
 
         // Convert world position to screen position with vertical offset to avoid overlap with accuracy label
@@ -501,6 +605,195 @@ public class UIManager : MonoBehaviour
         {
             newHighScoreText.gameObject.SetActive(false);
         }
+    }
+
+    // Combo UI Methods
+
+    /// <summary>
+    /// Initializes the combo display
+    /// </summary>
+    private void InitializeComboDisplay()
+    {
+        // Hide combo display initially (it will show when combo > 0)
+        if (comboDisplay != null)
+        {
+            comboDisplay.SetActive(false);
+        }
+    }
+
+    /// <summary>
+    /// Initializes the combo timer display
+    /// </summary>
+    private void InitializeComboTimer()
+    {
+        if (comboTimerBar != null)
+        {
+            comboTimerBar.gameObject.SetActive(false);
+            comboTimerBar.fillAmount = 1f; // Start full
+        }
+    }
+
+    /// <summary>
+    /// Updates the combo display with multiplier and timer
+    /// </summary>
+    private void UpdateComboDisplay(int combo, float multiplier)
+    {
+        // Show/hide combo display based on combo count and multiplier (only show when multiplier > 1)
+        if (comboDisplay != null)
+        {
+            bool shouldShow = combo > 0 && multiplier > 1f;
+            comboDisplay.SetActive(shouldShow);
+        }
+
+        // Update multiplier text with color coding (only show when multiplier > 1)
+        if (multiplierText != null && multiplier > 1f)
+        {
+            // Format multiplier: show one decimal place if needed, otherwise show as integer
+            string multiplierDisplay = (multiplier % 1 == 0) ? $"{multiplier:F0}x" : $"{multiplier:F1}x";
+            multiplierText.text = multiplierDisplay;
+
+            // Color code based on multiplier level (use floor for color index)
+            int colorIndex = Mathf.Clamp(Mathf.FloorToInt(multiplier) - 1, 0, comboMultiplierColors.Length - 1);
+            multiplierText.color = comboMultiplierColors[colorIndex];
+
+            multiplierText.gameObject.SetActive(true);
+        }
+        else if (multiplierText != null)
+        {
+            multiplierText.gameObject.SetActive(false);
+        }
+
+        // Trigger pulse animation when combo increases (only when multiplier > 1)
+        if (combo > 0 && multiplier > 1f)
+        {
+            TriggerComboPulse();
+
+            // Start updating combo timer if not already
+            if (!isUpdatingComboTimer)
+            {
+                StartCoroutine(UpdateComboTimerRoutine());
+            }
+        }
+        else
+        {
+            // Hide timer when combo resets or multiplier is 1
+            isUpdatingComboTimer = false;
+            if (comboTimerBar != null)
+            {
+                comboTimerBar.gameObject.SetActive(false);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Updates the combo timer display continuously
+    /// </summary>
+    private IEnumerator UpdateComboTimerRoutine()
+    {
+        isUpdatingComboTimer = true;
+
+        while (gameManager != null && gameManager.CurrentCombo > 0 && isUpdatingComboTimer)
+        {
+            float timeRemaining = gameManager.GetComboTimeRemaining();
+
+            if (timeRemaining <= 0)
+            {
+                // Combo has decayed
+                isUpdatingComboTimer = false;
+                yield break;
+            }
+
+            UpdateComboTimerDisplay(timeRemaining);
+            yield return null; // Update every frame for smooth timer
+        }
+
+        isUpdatingComboTimer = false;
+    }
+
+    /// <summary>
+    /// Updates the circular timer bar display
+    /// </summary>
+    private void UpdateComboTimerDisplay(float timeRemaining)
+    {
+        if (!showComboTimer || comboTimerBar == null) return;
+
+        // Show timer bar
+        comboTimerBar.gameObject.SetActive(true);
+
+        // Get decay time from GameManager for accurate calculation
+        float decayTime = 3f; // Default, should match GameManager setting
+        float fillAmount = timeRemaining / decayTime;
+
+        // Update fill amount (1.0 = full circle, 0.0 = empty)
+        comboTimerBar.fillAmount = fillAmount;
+
+        // Color code the bar based on time remaining
+        if (fillAmount > 0.5f)
+        {
+            comboTimerBar.color = timerSafeColor;
+        }
+        else if (fillAmount > 0.25f)
+        {
+            comboTimerBar.color = timerWarningColor;
+        }
+        else
+        {
+            comboTimerBar.color = timerDangerColor;
+        }
+    }
+
+    /// <summary>
+    /// Triggers a scale pulse animation on the combo display
+    /// </summary>
+    private void TriggerComboPulse()
+    {
+        if (comboDisplay == null) return;
+
+        // Stop any existing pulse
+        if (comboPulseCoroutine != null)
+        {
+            StopCoroutine(comboPulseCoroutine);
+        }
+
+        // Start new pulse
+        comboPulseCoroutine = StartCoroutine(ComboPulseAnimation());
+    }
+
+    /// <summary>
+    /// Animates a scale pulse on the combo display
+    /// </summary>
+    private IEnumerator ComboPulseAnimation()
+    {
+        RectTransform rectTransform = comboDisplay.GetComponent<RectTransform>();
+        if (rectTransform == null) yield break;
+
+        Vector3 originalScale = Vector3.one;
+        Vector3 pulseScale = Vector3.one * comboScalePulse;
+
+        float elapsedTime = 0f;
+
+        // Scale up
+        while (elapsedTime < comboScalePulseDuration / 2f)
+        {
+            elapsedTime += Time.deltaTime;
+            float progress = elapsedTime / (comboScalePulseDuration / 2f);
+            rectTransform.localScale = Vector3.Lerp(originalScale, pulseScale, progress);
+            yield return null;
+        }
+
+        elapsedTime = 0f;
+
+        // Scale back down
+        while (elapsedTime < comboScalePulseDuration / 2f)
+        {
+            elapsedTime += Time.deltaTime;
+            float progress = elapsedTime / (comboScalePulseDuration / 2f);
+            rectTransform.localScale = Vector3.Lerp(pulseScale, originalScale, progress);
+            yield return null;
+        }
+
+        // Ensure we end at original scale
+        rectTransform.localScale = originalScale;
     }
 
     private void RestartGame()
@@ -921,6 +1214,7 @@ public class UIManager : MonoBehaviour
             gameManager.OnGameOver -= OnGameOver;
             gameManager.OnGameRestart -= OnGameRestart;
             gameManager.OnGameModeChanged -= OnGameModeChanged;
+            gameManager.OnComboChanged -= UpdateComboDisplay;
         }
 
         if (stackManager != null)
@@ -941,6 +1235,14 @@ public class UIManager : MonoBehaviour
         {
             StopCoroutine(landingAccuracyCoroutine);
         }
+
+        if (comboPulseCoroutine != null)
+        {
+            StopCoroutine(comboPulseCoroutine);
+        }
+
+        // Stop combo timer update
+        isUpdatingComboTimer = false;
 
         // Remove button listeners
         if (restartButton != null)

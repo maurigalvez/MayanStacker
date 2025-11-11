@@ -46,8 +46,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PlayFabManager
   titleId: 12B8A0
   infiniteStackerLeaderboard: InfiniteStackerHighScores
-  stackerLevelsLeaderboard: StackerLevelsHighScores
+  stackerLevelsLeaderboardPrefix: StackerLevel_
   autoLoginOnStart: 1
   createAccountIfNotExists: 1
-  useGooglePlayGames: 0
+  useGooglePlayGames: 1
   fallbackToDeviceID: 1
