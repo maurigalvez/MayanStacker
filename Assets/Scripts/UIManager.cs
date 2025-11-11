@@ -1,3 +1,4 @@
+using System.Collections;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -18,6 +19,7 @@ public class UIManager : MonoBehaviour
     [SerializeField] private TextMeshProUGUI levelNameText;
     [SerializeField] private TextMeshProUGUI levelScoreText;
     [SerializeField] private Image[] stars; // Array of 3 star UI Images
+    [SerializeField] private GameObject levelProgressDisplay; // Container for level progress UI (shown only in Level Mode)
     [SerializeField] private TextMeshProUGUI levelProgressText; // Shows "Height: X/Y"
     [SerializeField] private Button nextLevelButton;
     [SerializeField] private Button retryLevelButton;
@@ -31,6 +33,7 @@ public class UIManager : MonoBehaviour
     [Header("Game UI")]
     [SerializeField] private GameObject gameUI;
     [SerializeField] private TextMeshProUGUI instructionsText;
+    [SerializeField] private GameObject stackHeightDisplay; // Container for stack height UI (shown only in Infinite Mode)
     [SerializeField] private TextMeshProUGUI stackHeightText;
     [SerializeField] private TextMeshProUGUI landingAccuracyText;
     [SerializeField] private GameObject pointsPopupPrefab;
@@ -235,7 +238,13 @@ public class UIManager : MonoBehaviour
             gameUI.SetActive(true);
 
         // Hide instructions after a delay
-        Invoke(nameof(HideInstructions), 3f);
+        StartCoroutine(InstructionRoutine());
+    }
+
+    private IEnumerator InstructionRoutine()
+    {
+        yield return new WaitForSeconds(3f);
+        HideInstructions();
     }
 
     private void OnGameOver()
@@ -561,10 +570,22 @@ public class UIManager : MonoBehaviour
             gameModeText.text = mode == GameMode.InfiniteStacker ? "Infinite Mode" : "Level Mode";
         }
 
-        // Show/hide level progress text based on mode
+        // Show/hide level progress display based on mode (only shown in Level Mode)
+        if (levelProgressDisplay != null)
+        {
+            levelProgressDisplay.SetActive(mode == GameMode.StackerLevels);
+        }
+
+        // Show/hide level progress text based on mode (kept for backward compatibility)
         if (levelProgressText != null)
         {
             levelProgressText.gameObject.SetActive(mode == GameMode.StackerLevels);
+        }
+
+        // Show/hide stack height display based on mode (only shown in Infinite Mode)
+        if (stackHeightDisplay != null)
+        {
+            stackHeightDisplay.SetActive(mode == GameMode.InfiniteStacker);
         }
     }
 
@@ -637,7 +658,7 @@ public class UIManager : MonoBehaviour
         if (nextLevelButton != null && levelManager != null)
         {
             bool hasNextLevel = levelManager.CurrentLevelIndex < levelManager.TotalLevels - 1;
-            
+
             // In demo mode, hide next level button if we're at the demo max level
             if (levelManager.IsDemoVersion)
             {
@@ -647,7 +668,7 @@ public class UIManager : MonoBehaviour
                     hasNextLevel = false; // Hide next level button at demo limit
                 }
             }
-            
+
             nextLevelButton.gameObject.SetActive(hasNextLevel);
         }
     }

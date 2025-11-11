@@ -1,6 +1,6 @@
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-using TMPro;
 
 /// <summary>
 /// Manages the visual progress bar that displays level completion progress
@@ -45,6 +45,16 @@ public class LevelProgressUI : MonoBehaviour
     {
         // Register with dependency registry
         DependencyRegistry.Register<LevelProgressUI>(this);
+
+        // Validate critical references
+        if (progressBarPanel == null)
+        {
+            Debug.LogError("LevelProgressUI: progressBarPanel is not assigned in Inspector!");
+        }
+        else
+        {
+            Debug.Log($"LevelProgressUI.Awake: progressBarPanel is assigned, initial state: {progressBarPanel.activeSelf}");
+        }
     }
 
     private void Start()
@@ -54,12 +64,20 @@ public class LevelProgressUI : MonoBehaviour
         stackManager = DependencyRegistry.Find<StackManager>();
         gameManager = DependencyRegistry.Find<GameManager>();
 
+        Debug.Log($"LevelProgressUI.Start: levelManager={levelManager != null}, stackManager={stackManager != null}, gameManager={gameManager != null}");
+        Debug.Log($"LevelProgressUI.Start: Current GameMode={gameManager?.CurrentGameMode}");
+
         // Subscribe to events
         if (levelManager != null)
         {
             levelManager.OnLevelLoaded += OnLevelLoaded;
             levelManager.OnStackHeightUpdated += OnStackHeightUpdated;
             levelManager.OnLevelCompleted += OnLevelCompleted;
+            Debug.Log("LevelProgressUI: Subscribed to LevelManager events");
+        }
+        else
+        {
+            Debug.LogError("LevelProgressUI: LevelManager not found!");
         }
 
         if (stackManager != null)
@@ -75,6 +93,30 @@ public class LevelProgressUI : MonoBehaviour
 
         // Initialize UI
         InitializeUI();
+
+        // On Android, there can be timing issues - check game mode after a frame
+        StartCoroutine(CheckGameModeAfterFrame());
+    }
+
+    /// <summary>
+    /// Check game mode after a frame to handle timing issues on Android
+    /// </summary>
+    private System.Collections.IEnumerator CheckGameModeAfterFrame()
+    {
+        // Wait for end of frame to ensure all managers are initialized
+        yield return new WaitForEndOfFrame();
+
+        Debug.Log($"LevelProgressUI.CheckGameModeAfterFrame: GameMode={gameManager?.CurrentGameMode}");
+
+        // Check if we're in level mode and if level is already loaded
+        if (gameManager != null && gameManager.CurrentGameMode == GameMode.StackerLevels)
+        {
+            if (levelManager != null && levelManager.CurrentLevel != null)
+            {
+                Debug.Log($"LevelProgressUI: Applying already-loaded level after frame: {levelManager.CurrentLevel.levelName}");
+                OnLevelLoaded(levelManager.CurrentLevel);
+            }
+        }
     }
 
     private void Update()
@@ -114,7 +156,13 @@ public class LevelProgressUI : MonoBehaviour
     /// </summary>
     private void OnLevelLoaded(LevelData levelData)
     {
-        if (levelData == null) return;
+        Debug.Log($"LevelProgressUI.OnLevelLoaded: Called with levelData={(levelData != null ? levelData.levelName : "null")}");
+
+        if (levelData == null)
+        {
+            Debug.LogWarning("LevelProgressUI.OnLevelLoaded: levelData is null, returning");
+            return;
+        }
 
         // Reset state
         currentHeight = 0;
@@ -122,10 +170,26 @@ public class LevelProgressUI : MonoBehaviour
         targetFillAmount = 0f;
         currentFillAmount = 0f;
 
+        Debug.Log($"LevelProgressUI: State reset - requiredHeight={requiredHeight}");
+
         // Show progress bar panel
         if (progressBarPanel != null)
         {
+            bool wasActive = progressBarPanel.activeSelf;
             progressBarPanel.SetActive(true);
+            Debug.Log($"LevelProgressUI: Progress bar panel activated (was {(wasActive ? "active" : "inactive")}, now active: {progressBarPanel.activeSelf})");
+
+            // Force canvas update on Android
+            Canvas parentCanvas = progressBarPanel.GetComponentInParent<Canvas>();
+            if (parentCanvas != null)
+            {
+                Canvas.ForceUpdateCanvases();
+                Debug.Log($"LevelProgressUI: Forced canvas update for panel in canvas: {parentCanvas.name}");
+            }
+        }
+        else
+        {
+            Debug.LogError("LevelProgressUI: progressBarPanel is null!");
         }
 
         // Update UI
@@ -221,6 +285,7 @@ public class LevelProgressUI : MonoBehaviour
     /// </summary>
     private void UpdateProgressText()
     {
+        // progressText is optional - it may be null if not assigned in Inspector
         if (progressText == null) return;
 
         if (showPercentage)
@@ -319,11 +384,25 @@ public class LevelProgressUI : MonoBehaviour
     /// </summary>
     private void OnGameModeChanged(GameMode newMode)
     {
+        Debug.Log($"LevelProgressUI.OnGameModeChanged: New mode = {newMode}");
+
         // Show/hide progress bar based on game mode
         if (progressBarPanel != null)
         {
             bool shouldShow = newMode == GameMode.StackerLevels;
             progressBarPanel.SetActive(shouldShow);
+            Debug.Log($"LevelProgressUI: Progress bar panel set to {(shouldShow ? "visible" : "hidden")} for mode {newMode}");
+
+            // If we're switching to level mode and a level is already loaded, re-apply it
+            if (shouldShow && levelManager != null && levelManager.CurrentLevel != null)
+            {
+                Debug.Log($"LevelProgressUI: Re-applying current level {levelManager.CurrentLevel.levelName} after mode change");
+                OnLevelLoaded(levelManager.CurrentLevel);
+            }
+        }
+        else
+        {
+            Debug.LogError("LevelProgressUI.OnGameModeChanged: progressBarPanel is null!");
         }
     }
 
@@ -335,6 +414,47 @@ public class LevelProgressUI : MonoBehaviour
         if (progressBarPanel != null)
         {
             progressBarPanel.SetActive(visible);
+            Debug.Log($"LevelProgressUI.SetVisible: Set to {visible}");
+        }
+    }
+
+    /// <summary>
+    /// Force refresh visibility based on current game mode and level state
+    /// Useful for debugging timing issues on Android
+    /// </summary>
+    public void ForceRefresh()
+    {
+        Debug.Log("LevelProgressUI.ForceRefresh: Called");
+
+        if (gameManager == null)
+        {
+            gameManager = DependencyRegistry.Find<GameManager>();
+        }
+
+        if (levelManager == null)
+        {
+            levelManager = DependencyRegistry.Find<LevelManager>();
+        }
+
+        // Check if we should be visible
+        bool shouldBeVisible = gameManager != null &&
+                                gameManager.CurrentGameMode == GameMode.StackerLevels &&
+                                levelManager != null &&
+                                levelManager.CurrentLevel != null;
+
+        Debug.Log($"LevelProgressUI.ForceRefresh: shouldBeVisible={shouldBeVisible}, gameMode={gameManager?.CurrentGameMode}, hasLevel={levelManager?.CurrentLevel != null}");
+
+        if (shouldBeVisible)
+        {
+            SetVisible(true);
+            if (levelManager.CurrentLevel != null)
+            {
+                OnLevelLoaded(levelManager.CurrentLevel);
+            }
+        }
+        else
+        {
+            SetVisible(false);
         }
     }
 

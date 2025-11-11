@@ -91,6 +91,8 @@ public class LevelManager : MonoBehaviour, ILevelManager
         }
 
         // Notify listeners
+        int subscriberCount = OnLevelLoaded?.GetInvocationList()?.Length ?? 0;
+        Debug.Log($"LevelManager: Invoking OnLevelLoaded event with {subscriberCount} subscribers");
         OnLevelLoaded?.Invoke(CurrentLevel);
 
         Debug.Log($"Loaded {CurrentLevel.levelName} - Required Height: {CurrentLevel.requiredStackHeight}");
