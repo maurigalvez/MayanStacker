@@ -15,7 +15,15 @@ MonoBehaviour:
   levelNumber: 6
   levelName: "Nakb\xE9"
   location: "Pet\xE9n, Guatemala"
-  levelDescription: Stack 25 blocks with even faster swinging!
+  levelDescription: "Nakb\xE9 is one of the earliest large Maya cities, flourishing
+    in the Mirador Basin during the Middle and Late Preclassic (c. 1000\u2013200
+    BCE). Its massive pyramids, elevated causeways, and early palatial complexes
+    show that organized labor, elite rule, and ceremonial architecture began far
+    earlier than once believed. The site\u2019s deep reservoirs and specialized workshops
+    point to a society already experimenting with large-scale urban planning. Nakb\xE9\u2019s
+    innovations helped lay the foundation for the rise of El Mirador and the later
+    Classic Maya kingdoms.\n\nIn these first cities, the Maya learned to build upward,
+    unify people, and carve the earliest echoes of kingship."
   requiredStackHeight: 30
   oneStarScore: 1250
   twoStarScore: 2000

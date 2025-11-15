@@ -19,8 +19,8 @@ public class GameManager : MonoBehaviour
     [SerializeField] private int maxCombo = 0;
     [Tooltip("Minimum accuracy (0-1) required to maintain combo")]
     [SerializeField] private float comboMinAccuracy = 0.6f; // Good or better
-    [Tooltip("Multiplier increase per consecutive landing (e.g., 0.5 = +0.5x per landing)")]
-    [SerializeField] private float multiplierIncrement = 0.5f;
+    [Tooltip("Multiplier increase per consecutive landing (e.g., 1.0 = +1.0x per landing)")]
+    [SerializeField] private float multiplierIncrement = 1.0f;
     [Tooltip("Maximum combo multiplier")]
     [SerializeField] private float maxComboMultiplier = 5f;
     [Tooltip("Time in seconds before combo decays (0 = no decay)")]
@@ -75,6 +75,13 @@ public class GameManager : MonoBehaviour
 
     private void Start()
     {
+        // Subscribe to PlayFab sync events for cloud save
+        var playFabManager = DependencyRegistry.Find<PlayFabManager>();
+        if (playFabManager != null)
+        {
+            playFabManager.OnProgressSynced += OnProgressSyncedFromCloud;
+        }
+
         // Only auto-start if not waiting for game mode selection
         if (!waitForGameModeSelection)
         {
@@ -286,8 +293,8 @@ public class GameManager : MonoBehaviour
         if (currentCombo <= 1) return 1f;
 
         // Calculate multiplier: starts at 1x, increases by multiplierIncrement starting from 2nd landing
-        // Example: with multiplierIncrement = 0.5:
-        // Combo 1: 1x (first landing, no bonus yet), Combo 2: 1.5x, Combo 3: 2x, Combo 4: 2.5x, etc.
+        // Example: with multiplierIncrement = 1.0:
+        // Combo 1: 1x (first landing, no bonus yet), Combo 2: 2x, Combo 3: 3x, Combo 4: 4x, etc.
         float multiplier = 1f + ((currentCombo - 1) * multiplierIncrement);
 
         // Cap at max multiplier
@@ -512,10 +519,65 @@ public class GameManager : MonoBehaviour
         PlayerPrefs.SetInt(key, currentScore);
         PlayerPrefs.Save();
         Debug.Log($"Saved high score to PlayerPrefs: {currentScore} (Key: {key})");
+        
+        // Also save to cloud
+        var playFabManager = DependencyRegistry.Find<PlayFabManager>();
+        if (playFabManager != null && playFabManager.IsLoggedIn)
+        {
+            playFabManager.SaveCurrentProgressToCloud();
+        }
+    }
+
+    /// <summary>
+    /// Called when progress is synced from cloud (after login)
+    /// Updates local high score if cloud has a higher value (server authoritative)
+    /// </summary>
+    private void OnProgressSyncedFromCloud(PlayerProgressData data)
+    {
+        if (data == null) return;
+
+        // Update Infinite Stacker high score from cloud
+        if (currentGameMode == GameMode.InfiniteStacker)
+        {
+            if (data.infiniteStackerHighScore > highScore)
+            {
+                Debug.Log($"Updating Infinite Stacker high score from cloud: {data.infiniteStackerHighScore}");
+                highScore = data.infiniteStackerHighScore;
+                
+                // Update PlayerPrefs cache
+                PlayerPrefs.SetInt("HighScore_InfiniteStacker", highScore);
+                PlayerPrefs.Save();
+                
+                // Notify UI
+                OnHighScoreChanged?.Invoke(highScore);
+            }
+        }
+        // Level mode high scores are handled by LevelManager
+    }
+
+    /// <summary>
+    /// Updates high score from cloud data
+    /// Called by LevelManager when level-specific high scores are synced
+    /// </summary>
+    public void UpdateHighScoreFromCloud(int cloudHighScore)
+    {
+        if (cloudHighScore > highScore)
+        {
+            Debug.Log($"Updating high score from cloud: {cloudHighScore}");
+            highScore = cloudHighScore;
+            OnHighScoreChanged?.Invoke(highScore);
+        }
     }
 
     private void OnDestroy()
     {
+        // Unsubscribe from PlayFab events
+        var playFabManager = DependencyRegistry.Find<PlayFabManager>();
+        if (playFabManager != null)
+        {
+            playFabManager.OnProgressSynced -= OnProgressSyncedFromCloud;
+        }
+
         DependencyRegistry.Unregister<GameManager>(this);
     }
 }

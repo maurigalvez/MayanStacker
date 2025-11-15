@@ -15,7 +15,16 @@ MonoBehaviour:
   levelNumber: 10
   levelName: Lamanai
   location: Orange Walk, Belize
-  levelDescription: Stack 45 blocks with even faster swinging!
+  levelDescription: "Lamanai (\u201CSubmerged Crocodile\u201D) stands out for its
+    remarkably long occupation, spanning over 3,000 years\u2014from the earliest
+    Maya farmers to the Spanish Colonial period. Its riverside location along the
+    New River made it a vital trade and transport node, supporting agriculture, craft
+    production, and interregional exchange. Lamanai\u2019s iconic mask-temples, copper
+    bells, incense burners, and later Spanish mission ruins reveal a city that adapted
+    through shifting eras, maintaining cultural identity even as new powers arrived.
+    Few Maya cities demonstrate such endurance, complexity, and cultural continuity.\n\nBy
+    the river\u2019s edge, Lamanai survived age after age, its temples witnessing
+    every turning of Maya history"
   requiredStackHeight: 45
   oneStarScore: 2000
   twoStarScore: 3000

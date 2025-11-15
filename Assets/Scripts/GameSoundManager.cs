@@ -16,9 +16,29 @@ public class GameSoundManager : MonoBehaviour
     [SerializeField] private AudioClip homeButtonSound;
     [SerializeField] private AudioClip retryButtonSound;
 
+    [Header("Game Event Sound Effects")]
+    [SerializeField] private AudioClip levelCompleteSound;
+    [SerializeField] private AudioClip gameOverSound;
+    [SerializeField] private AudioClip objectSpawnedSound;
+    [SerializeField] private AudioClip objectDroppedSound;
+    [SerializeField] private AudioClip comboSuccessSound;
+    [SerializeField] private AudioClip comboLostSound;
+
     [Header("Settings")]
     [SerializeField] private float sfxVolume = 0.7f;
     [SerializeField] private bool allowSimultaneousSounds = true;
+
+    [Header("Pitch Randomization")]
+    [SerializeField] private bool enablePitchRandomization = true;
+    [SerializeField] private float spawnedSoundMinPitch = 0.9f;
+    [SerializeField] private float spawnedSoundMaxPitch = 1.1f;
+    [SerializeField] private float droppedSoundMinPitch = 0.85f;
+    [SerializeField] private float droppedSoundMaxPitch = 1.15f;
+
+    [Header("Music Ducking")]
+    [SerializeField] private bool enableMusicDucking = true;
+    [SerializeField] private float duckedMusicVolume = 0.2f;
+    [SerializeField] private float duckFadeSpeed = 2f;
 
     // Audio sources
     private AudioSource musicSource;
@@ -27,15 +47,23 @@ public class GameSoundManager : MonoBehaviour
     // References
     private SettingsManager settingsManager;
     private GameManager gameManager;
+    private LevelManager levelManager;
+    private ObjectSpawner objectSpawner;
 
     // State
     private bool isInitialized = false;
     private bool isMusicPlaying = false;
+    private float originalMusicVolume;
+    private Coroutine duckingCoroutine = null;
+    private float previousMultiplier = 1f;
 
     private void Awake()
     {
         // Register with DependencyRegistry
         DependencyRegistry.Register<GameSoundManager>(this);
+
+        // Store original music volume
+        originalMusicVolume = musicVolume;
 
         // Create and configure music AudioSource
         musicSource = gameObject.AddComponent<AudioSource>();
@@ -55,11 +83,28 @@ public class GameSoundManager : MonoBehaviour
         // Find dependencies
         settingsManager = DependencyRegistry.Find<SettingsManager>();
         gameManager = DependencyRegistry.Find<GameManager>();
+        levelManager = DependencyRegistry.Find<LevelManager>();
+        objectSpawner = DependencyRegistry.Find<ObjectSpawner>();
 
         // Subscribe to game events if GameManager exists
         if (gameManager != null)
         {
             gameManager.OnGameStart += OnGameStart;
+            gameManager.OnGameOver += OnGameOver;
+            gameManager.OnComboChanged += OnComboChanged;
+        }
+
+        // Subscribe to level events if LevelManager exists
+        if (levelManager != null)
+        {
+            levelManager.OnLevelCompleted += OnLevelCompleted;
+        }
+
+        // Subscribe to object spawner events if ObjectSpawner exists
+        if (objectSpawner != null)
+        {
+            objectSpawner.OnObjectSpawned += OnObjectSpawned;
+            objectSpawner.OnObjectDropped += OnObjectDropped;
         }
 
         // Apply current volume settings
@@ -100,11 +145,71 @@ public class GameSoundManager : MonoBehaviour
     /// </summary>
     private void OnGameStart()
     {
+        // Reset combo tracking
+        previousMultiplier = 1f;
+
         // Ensure music is playing when game starts
         if (!isMusicPlaying)
         {
             PlayMusic();
         }
+    }
+
+    /// <summary>
+    /// Called when the game is over
+    /// </summary>
+    private void OnGameOver()
+    {
+        PlayGameOverSound();
+    }
+
+    /// <summary>
+    /// Called when a level is completed
+    /// </summary>
+    /// <param name="stars">Number of stars earned</param>
+    /// <param name="score">Final score</param>
+    private void OnLevelCompleted(int stars, int score)
+    {
+        PlayLevelCompleteSound();
+    }
+
+    /// <summary>
+    /// Called when an object is spawned
+    /// </summary>
+    /// <param name="spawnedObject">The spawned game object</param>
+    private void OnObjectSpawned(GameObject spawnedObject)
+    {
+        PlayObjectSpawnedSound();
+    }
+
+    /// <summary>
+    /// Called when an object is dropped
+    /// </summary>
+    /// <param name="droppedObject">The dropped game object</param>
+    private void OnObjectDropped(GameObject droppedObject)
+    {
+        PlayObjectDroppedSound();
+    }
+
+    /// <summary>
+    /// Called when combo changes
+    /// </summary>
+    /// <param name="comboCount">Current combo count</param>
+    /// <param name="multiplier">Current multiplier value</param>
+    private void OnComboChanged(int comboCount, float multiplier)
+    {
+        // Play sound when multiplier increases (combo growing)
+        if (multiplier > previousMultiplier && multiplier > 1f)
+        {
+            PlayComboSuccessSound();
+        }
+        // Play sound when combo is lost (multiplier drops to 1 or below)
+        else if (multiplier <= 1f && previousMultiplier > 1f)
+        {
+            PlayComboLostSound();
+        }
+
+        previousMultiplier = multiplier;
     }
 
 
@@ -217,6 +322,82 @@ public class GameSoundManager : MonoBehaviour
     }
 
     /// <summary>
+    /// Plays the level complete sound effect
+    /// </summary>
+    public void PlayLevelCompleteSound()
+    {
+        if (enableMusicDucking && levelCompleteSound != null)
+        {
+            PlaySoundWithDucking(levelCompleteSound);
+        }
+        else
+        {
+            PlaySound(levelCompleteSound);
+        }
+    }
+
+    /// <summary>
+    /// Plays the game over sound effect
+    /// </summary>
+    public void PlayGameOverSound()
+    {
+        if (enableMusicDucking && gameOverSound != null)
+        {
+            PlaySoundWithDucking(gameOverSound);
+        }
+        else
+        {
+            PlaySound(gameOverSound);
+        }
+    }
+
+    /// <summary>
+    /// Plays the object spawned sound effect with pitch randomization
+    /// </summary>
+    public void PlayObjectSpawnedSound()
+    {
+        if (enablePitchRandomization)
+        {
+            PlaySoundWithRandomPitch(objectSpawnedSound, spawnedSoundMinPitch, spawnedSoundMaxPitch);
+        }
+        else
+        {
+            PlaySound(objectSpawnedSound);
+        }
+    }
+
+    /// <summary>
+    /// Plays the object dropped sound effect with pitch randomization
+    /// </summary>
+    public void PlayObjectDroppedSound()
+    {
+        if (enablePitchRandomization)
+        {
+            PlaySoundWithRandomPitch(objectDroppedSound, droppedSoundMinPitch, droppedSoundMaxPitch);
+        }
+        else
+        {
+            PlaySound(objectDroppedSound);
+        }
+    }
+
+    /// <summary>
+    /// Plays the combo success sound effect when multiplier increases
+    /// </summary>
+    public void PlayComboSuccessSound()
+    {
+        PlaySound(comboSuccessSound);
+    }
+
+    /// <summary>
+    /// Plays the combo lost sound effect when combo decays to 1 or is lost
+    /// </summary>
+    public void PlayComboLostSound()
+    {
+        PlaySound(comboLostSound);
+    }
+
+    /// <summary>
     /// Plays a specific sound effect
     /// </summary>
     /// <param name="clip">The audio clip to play</param>
@@ -276,6 +457,48 @@ public class GameSoundManager : MonoBehaviour
     }
 
     /// <summary>
+    /// Plays a sound with random pitch variation
+    /// </summary>
+    /// <param name="clip">The audio clip to play</param>
+    /// <param name="minPitch">Minimum pitch value</param>
+    /// <param name="maxPitch">Maximum pitch value</param>
+    public void PlaySoundWithRandomPitch(AudioClip clip, float minPitch, float maxPitch)
+    {
+        if (!isInitialized)
+        {
+            Debug.LogWarning("GameSoundManager is not initialized yet");
+            return;
+        }
+
+        if (clip == null || sfxSource == null)
+        {
+            return;
+        }
+
+        // Store original pitch
+        float originalPitch = sfxSource.pitch;
+
+        // Set random pitch
+        sfxSource.pitch = Random.Range(minPitch, maxPitch);
+
+        // Play the sound
+        if (allowSimultaneousSounds)
+        {
+            sfxSource.PlayOneShot(clip);
+        }
+        else
+        {
+            sfxSource.Stop();
+            sfxSource.clip = clip;
+            sfxSource.Play();
+        }
+
+        // Reset pitch back to original after a short delay
+        // For PlayOneShot, we need to reset immediately as it doesn't affect the one-shot playback
+        sfxSource.pitch = originalPitch;
+    }
+
+    /// <summary>
     /// Stops all currently playing sound effects
     /// </summary>
     public void StopAllSounds()
@@ -330,6 +553,74 @@ public class GameSoundManager : MonoBehaviour
         return sfxSource != null ? sfxSource.volume : 0f;
     }
 
+    /// <summary>
+    /// Plays a sound effect and ducks (lowers) the music volume while it plays
+    /// </summary>
+    /// <param name="clip">The audio clip to play</param>
+    private void PlaySoundWithDucking(AudioClip clip)
+    {
+        if (clip == null || sfxSource == null || musicSource == null)
+        {
+            return;
+        }
+
+        // Stop any existing ducking coroutine
+        if (duckingCoroutine != null)
+        {
+            StopCoroutine(duckingCoroutine);
+        }
+
+        // Start new ducking coroutine
+        duckingCoroutine = StartCoroutine(DuckMusicCoroutine(clip));
+    }
+
+    /// <summary>
+    /// Coroutine that smoothly ducks music volume down, plays the SFX, then restores music volume
+    /// </summary>
+    /// <param name="sfxClip">The sound effect to play</param>
+    private System.Collections.IEnumerator DuckMusicCoroutine(AudioClip sfxClip)
+    {
+        // Store the target volume (original or current settings volume)
+        float targetVolume = originalMusicVolume;
+
+        // Fade music volume down
+        float startVolume = musicSource.volume;
+        float targetDuckedVolume = duckedMusicVolume * originalMusicVolume;
+        float fadeTime = 0f;
+        float fadeDuration = 1f / duckFadeSpeed;
+
+        while (fadeTime < fadeDuration)
+        {
+            fadeTime += Time.deltaTime;
+            float t = fadeTime / fadeDuration;
+            musicSource.volume = Mathf.Lerp(startVolume, targetDuckedVolume, t);
+            yield return null;
+        }
+
+        musicSource.volume = targetDuckedVolume;
+
+        // Play the sound effect
+        sfxSource.PlayOneShot(sfxClip);
+
+        // Wait for the sound effect to finish playing
+        yield return new WaitForSeconds(sfxClip.length);
+
+        // Fade music volume back up
+        startVolume = musicSource.volume;
+        fadeTime = 0f;
+
+        while (fadeTime < fadeDuration)
+        {
+            fadeTime += Time.deltaTime;
+            float t = fadeTime / fadeDuration;
+            musicSource.volume = Mathf.Lerp(startVolume, targetVolume, t);
+            yield return null;
+        }
+
+        musicSource.volume = targetVolume;
+        duckingCoroutine = null;
+    }
+
     private void OnDestroy()
     {
         // Unregister from DependencyRegistry
@@ -339,6 +630,19 @@ public class GameSoundManager : MonoBehaviour
         if (gameManager != null)
         {
             gameManager.OnGameStart -= OnGameStart;
+            gameManager.OnGameOver -= OnGameOver;
+            gameManager.OnComboChanged -= OnComboChanged;
+        }
+
+        if (levelManager != null)
+        {
+            levelManager.OnLevelCompleted -= OnLevelCompleted;
+        }
+
+        if (objectSpawner != null)
+        {
+            objectSpawner.OnObjectSpawned -= OnObjectSpawned;
+            objectSpawner.OnObjectDropped -= OnObjectDropped;
         }
     }
 }

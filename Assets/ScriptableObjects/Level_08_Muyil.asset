@@ -15,7 +15,15 @@ MonoBehaviour:
   levelNumber: 8
   levelName: Muyil
   location: Quintana Roo, Mexico
-  levelDescription: Stack 40 blocks with even faster swinging!
+  levelDescription: "Muyil, settled early and continuously occupied into the Postclassic,
+    served as a strategic hub for coastal and inland trade along the eastern Yucat\xE1n.
+    Connected to the Sian Ka\u2019an lagoon system, its canals allowed canoe traffic
+    to move salt, obsidian, honey, shell, textiles, and ritual goods along major
+    maritime routes. Architecturally, Muyil blends Pet\xE9n-style temple forms with
+    local Caribbean elements, reflecting centuries of cultural exchange. Its temples
+    overlook a landscape shaped as much by commerce as by ceremony, revealing the
+    importance of water-borne trade to Maya economies.\n\nFrom forest to sea, goods
+    and ideas flowed through Muyil\u2019s watery corridors."
   requiredStackHeight: 40
   oneStarScore: 1750
   twoStarScore: 2500

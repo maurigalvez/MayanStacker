@@ -15,7 +15,15 @@ MonoBehaviour:
   levelNumber: 9
   levelName: Cahal Pech
   location: Cayo, Belice
-  levelDescription: Stack 40 blocks with even faster swinging!
+  levelDescription: "Cahal Pech began as one of the oldest known Maya farming settlements
+    in western Belize, evolving over nearly two millennia into a royal residence
+    and ritual center overlooking the river valley. The site\u2019s 30+ structures\u2014palaces,
+    plazas, temples, and hidden passageways\u2014illustrate the steady growth of
+    social hierarchy from simple hamlets into organized chiefdoms and early states.
+    Fine ceramics, carved bone, and early writing traces show that Cahal Pech was
+    once home to a thriving elite lineage deeply connected to the rise of centers
+    like Xunantunich and Caracol.\n\nFrom this high ridge, generations of nobles
+    watched their world become a civilization."
   requiredStackHeight: 40
   oneStarScore: 1800
   twoStarScore: 2600

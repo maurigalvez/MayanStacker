@@ -1214,7 +1214,7 @@ MonoBehaviour:
   currentCombo: 0
   maxCombo: 0
   comboMinAccuracy: 0.6
-  comboStepsForMultiplier: 3
+  multiplierIncrement: 0.5
   maxComboMultiplier: 5
   comboDecayTime: 5
   enableComboDecay: 1
@@ -1546,8 +1546,22 @@ MonoBehaviour:
   unpauseSound: {fileID: 8300000, guid: 7a93a8af0f7e9964b866071a641aa36a, type: 3}
   homeButtonSound: {fileID: 8300000, guid: f81ce32cfa2e2e04193092c76e41119a, type: 3}
   retryButtonSound: {fileID: 8300000, guid: f81ce32cfa2e2e04193092c76e41119a, type: 3}
+  levelCompleteSound: {fileID: 8300000, guid: e412a9e90a0f79c458508bc8962c01e1, type: 3}
+  gameOverSound: {fileID: 8300000, guid: 6f64f48cf71832140bd500ba668657f5, type: 3}
+  objectSpawnedSound: {fileID: 8300000, guid: 09a49f88404ad0648b5d8e650d5f7fd4, type: 3}
+  objectDroppedSound: {fileID: 8300000, guid: 27837f8b462ea3842a2ea43925127233, type: 3}
+  comboSuccessSound: {fileID: 8300000, guid: 6812dd07e93c72945bca03619d0a9b3c, type: 3}
+  comboLostSound: {fileID: 8300000, guid: 6326ebddf6a1cb544abc3f87f8176305, type: 3}
   sfxVolume: 0.7
   allowSimultaneousSounds: 1
+  enablePitchRandomization: 1
+  spawnedSoundMinPitch: 0.9
+  spawnedSoundMaxPitch: 1.1
+  droppedSoundMinPitch: 0.85
+  droppedSoundMaxPitch: 1.15
+  enableMusicDucking: 1
+  duckedMusicVolume: 0.2
+  duckFadeSpeed: 2
 --- !u!1 &1895920179
 GameObject:
   m_ObjectHideFlags: 0
@@ -1802,6 +1816,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 1747891914646870234, guid: 60441e2117e89ce48a769a889c2ee4ca, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 22
+      objectReference: {fileID: 0}
     - target: {fileID: 3072199511613321717, guid: 60441e2117e89ce48a769a889c2ee4ca, type: 3}
       propertyPath: m_Name
       value: Game Scene UI

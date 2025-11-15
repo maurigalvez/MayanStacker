@@ -45,6 +45,11 @@ public class MainMenuManager : MonoBehaviour
     [Header("UI Elements")]
     [SerializeField] private TextMeshProUGUI versionText;
 
+    [Header("Cloud Sync UI")]
+    [SerializeField] private GameObject syncPanel;
+    [SerializeField] private TextMeshProUGUI syncStatusText;
+    [SerializeField] private float syncCompleteDisplayDuration = 1f;
+
     [Header("Settings")]
     [SerializeField] private string gameSceneName = "GameScene";
     [SerializeField] private string gameVersion = "1.0.0";
@@ -55,6 +60,7 @@ public class MainMenuManager : MonoBehaviour
     private CodexManager codexManager;
     private MainMenuSoundManager soundManager;
     private LeaderboardPanel leaderboardPanelComponent;
+    private PlayFabManager playFabManager;
 
     // Spawned UI elements
     private List<LevelButtonUI> spawnedLevelButtons = new List<LevelButtonUI>();
@@ -82,6 +88,16 @@ public class MainMenuManager : MonoBehaviour
         levelManager = DependencyRegistry.Find<LevelManager>();
         codexManager = DependencyRegistry.Find<CodexManager>();
         soundManager = DependencyRegistry.Find<MainMenuSoundManager>();
+        playFabManager = DependencyRegistry.Find<PlayFabManager>();
+
+        // Subscribe to PlayFab sync events
+        if (playFabManager != null)
+        {
+            playFabManager.OnLoginStarted += OnLoginStarted;
+            playFabManager.OnSyncStarted += OnSyncStarted;
+            playFabManager.OnProgressSynced += OnProgressSynced;
+            playFabManager.OnProgressSyncFailed += OnProgressSyncFailed;
+        }
 
         // Get leaderboard panel component
         if (leaderboardPanel != null)
@@ -96,6 +112,10 @@ public class MainMenuManager : MonoBehaviour
 
     private void InitializeUI()
     {
+        // Hide sync panel initially
+        if (syncPanel != null)
+            syncPanel.SetActive(false);
+
         // Set version text
         if (versionText != null)
         {
@@ -423,8 +443,105 @@ public class MainMenuManager : MonoBehaviour
         }
     }
 
+    // Cloud Sync UI Methods
+
+    /// <summary>
+    /// Called when PlayFab login starts
+    /// </summary>
+    private void OnLoginStarted()
+    {
+        ShowSyncScreen("Authenticating...");
+    }
+
+    /// <summary>
+    /// Called when cloud sync starts
+    /// </summary>
+    private void OnSyncStarted()
+    {
+        ShowSyncScreen("Syncing with cloud...");
+    }
+
+    /// <summary>
+    /// Called when progress sync completes successfully
+    /// </summary>
+    private void OnProgressSynced(PlayerProgressData data)
+    {
+        // Get display name from PlayFabManager
+        string displayName = playFabManager != null ? playFabManager.CurrentDisplayName : "";
+        
+        // Show success message with display name
+        if (!string.IsNullOrEmpty(displayName))
+        {
+            ShowSyncScreen($"Sync complete!\nLogged in as: {displayName}");
+        }
+        else
+        {
+            ShowSyncScreen("Sync complete!");
+        }
+        
+        StartCoroutine(HideSyncScreenAfterDelay());
+    }
+
+    /// <summary>
+    /// Called when progress sync fails
+    /// </summary>
+    private void OnProgressSyncFailed(string error)
+    {
+        // Show offline message briefly, then hide
+        ShowSyncScreen("Sync failed. Playing offline.");
+        StartCoroutine(HideSyncScreenAfterDelay());
+        Debug.LogWarning($"Cloud sync failed: {error}");
+    }
+
+    /// <summary>
+    /// Shows the sync screen with a status message and blocks input
+    /// </summary>
+    private void ShowSyncScreen(string message)
+    {
+        if (syncPanel != null)
+        {
+            syncPanel.SetActive(true);
+        }
+
+        if (syncStatusText != null)
+        {
+            syncStatusText.text = message;
+        }
+
+        Debug.Log($"[Sync UI] {message}");
+    }
+
+    /// <summary>
+    /// Hides the sync screen and re-enables input
+    /// </summary>
+    private void HideSyncScreen()
+    {
+        if (syncPanel != null)
+        {
+            syncPanel.SetActive(false);
+        }
+    }
+
+    /// <summary>
+    /// Hides sync screen after a brief delay
+    /// </summary>
+    private System.Collections.IEnumerator HideSyncScreenAfterDelay()
+    {
+        yield return new WaitForSeconds(syncCompleteDisplayDuration);
+        HideSyncScreen();
+    }
+
     private void OnDestroy()
     {
+        // Unsubscribe from PlayFab events
+        if (playFabManager != null)
+        {
+            playFabManager.OnLoginStarted -= OnLoginStarted;
+            playFabManager.OnSyncStarted -= OnSyncStarted;
+            playFabManager.OnProgressSynced -= OnProgressSynced;
+            playFabManager.OnProgressSyncFailed -= OnProgressSyncFailed;
+        }
+
         // Unregister from dependency registry
         DependencyRegistry.Unregister<MainMenuManager>(this);
 

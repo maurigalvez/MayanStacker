@@ -15,7 +15,15 @@ MonoBehaviour:
   levelNumber: 7
   levelName: Quirigua
   location: Izabal, Guatemala
-  levelDescription: Stack 35 blocks with even faster swinging!
+  levelDescription: "Quirigu\xE1 reached its height between 700\u2013850 CE, becoming
+    a regional power famed for its colossal monuments. Its sculptors carved the tallest
+    known Maya stelae\u2014towering stone pillars covered in detailed glyphs and
+    portraits of King K\u2019ak\u2019 Tiliw Chan Yopaat and his predecessors. The
+    city\u2019s history is marked by a dramatic political triumph when it broke free
+    from the dominance of Cop\xE1n, an event celebrated in its inscriptions. Quirigu\xE1\u2019s
+    monuments preserve some of the clearest dynastic records, making it essential
+    to understanding Classic Maya politics, alliances, and rivalries.\n\nHere, stone
+    giants preserved a kingdom\u2019s defiant rise against its powerful neighbor."
   requiredStackHeight: 35
   oneStarScore: 1500
   twoStarScore: 2500

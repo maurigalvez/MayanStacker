@@ -1684,7 +1684,10 @@ MonoBehaviour:
   stackHeightFormat: '{0}'
   landingAccuracyDisplayDuration: 2
   pointsPopupDuration: 2
-  pointsPopupVerticalOffset: 75
+  pointsPopupVerticalOffset: -100
+  accuracyAnimationDuration: 0.3
+  accuracyAppearScale: 1.5
+  accuracyFinalScale: 1.2
   perfectAccuracyColor: {r: 0.2863564, g: 0.9339623, b: 0.2863564, a: 1}
   goodAccuracyColor: {r: 0.8679245, g: 0.81931865, b: 0.25792095, a: 1}
   poorAccuracyColor: {r: 0.8773585, g: 0.12829298, b: 0.12829298, a: 1}

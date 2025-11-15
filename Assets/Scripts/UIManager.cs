@@ -61,6 +61,9 @@ public class UIManager : MonoBehaviour
     [SerializeField] private float landingAccuracyDisplayDuration = 2f;
     [SerializeField] private float pointsPopupDuration = 2f;
     [SerializeField] private float pointsPopupVerticalOffset = 30f;
+    [SerializeField] private float accuracyAnimationDuration = 0.3f;
+    [SerializeField] private float accuracyAppearScale = 1.5f;
+    [SerializeField] private float accuracyFinalScale = 1.2f;
 
     // PlayerPrefs key for tracking if player has seen instructions
     private const string INSTRUCTIONS_SEEN_KEY = "InfiniteMode_InstructionsSeen";
@@ -467,12 +470,11 @@ public class UIManager : MonoBehaviour
             landingAccuracyText.text = baseText;
         }
 
-        // Convert world position to screen position for the accuracy label
-        Vector3 screenPosition = Camera.main.WorldToScreenPoint(worldPosition);
+        // Position the accuracy label at the center of the screen
         RectTransform accuracyRect = landingAccuracyText.GetComponent<RectTransform>();
         if (accuracyRect != null)
         {
-            accuracyRect.position = screenPosition;
+            accuracyRect.anchoredPosition = Vector2.zero; // Center of parent canvas
         }
 
         // Show the text
@@ -487,7 +489,69 @@ public class UIManager : MonoBehaviour
 
     private System.Collections.IEnumerator HideLandingAccuracyAfterDelay()
     {
-        yield return new WaitForSeconds(landingAccuracyDisplayDuration);
+        if (landingAccuracyText == null) yield break;
+
+        RectTransform accuracyRect = landingAccuracyText.GetComponent<RectTransform>();
+        CanvasGroup canvasGroup = landingAccuracyText.GetComponent<CanvasGroup>();
+
+        // Add CanvasGroup if it doesn't exist (for fading)
+        if (canvasGroup == null)
+        {
+            canvasGroup = landingAccuracyText.gameObject.AddComponent<CanvasGroup>();
+        }
+
+        // Appear animation: scale from large to slightly larger than normal
+        float elapsedTime = 0f;
+        Vector3 startScale = Vector3.one * accuracyAppearScale;
+        Vector3 targetScale = Vector3.one * accuracyFinalScale;
+
+        accuracyRect.localScale = startScale;
+        canvasGroup.alpha = 0f;
+
+        // Fade in and scale down to final size
+        while (elapsedTime < accuracyAnimationDuration)
+        {
+            if (landingAccuracyText == null || accuracyRect == null) yield break;
+
+            elapsedTime += Time.deltaTime;
+            float progress = elapsedTime / accuracyAnimationDuration;
+
+            accuracyRect.localScale = Vector3.Lerp(startScale, targetScale, progress);
+            canvasGroup.alpha = Mathf.Lerp(0f, 1f, progress);
+
+            yield return null;
+        }
+
+        // Ensure final values
+        accuracyRect.localScale = targetScale;
+        canvasGroup.alpha = 1f;
+
+        // Hold for display duration (subtract animation time)
+        float holdDuration = landingAccuracyDisplayDuration - (accuracyAnimationDuration * 2);
+        if (holdDuration > 0)
+        {
+            yield return new WaitForSeconds(holdDuration);
+        }
+
+        // Disappear animation: fade out and scale down
+        elapsedTime = 0f;
+        startScale = targetScale;
+        Vector3 endScale = Vector3.one * 0.8f;
+
+        while (elapsedTime < accuracyAnimationDuration)
+        {
+            if (landingAccuracyText == null || accuracyRect == null) yield break;
+
+            elapsedTime += Time.deltaTime;
+            float progress = elapsedTime / accuracyAnimationDuration;
+
+            accuracyRect.localScale = Vector3.Lerp(startScale, endScale, progress);
+            canvasGroup.alpha = Mathf.Lerp(1f, 0f, progress);
+
+            yield return null;
+        }
+
+        // Hide the text
         HideLandingAccuracy();
     }
 
@@ -496,6 +560,19 @@ public class UIManager : MonoBehaviour
         if (landingAccuracyText != null)
         {
             landingAccuracyText.gameObject.SetActive(false);
+
+            // Reset scale and alpha for next appearance
+            RectTransform accuracyRect = landingAccuracyText.GetComponent<RectTransform>();
+            if (accuracyRect != null)
+            {
+                accuracyRect.localScale = Vector3.one;
+            }
+
+            CanvasGroup canvasGroup = landingAccuracyText.GetComponent<CanvasGroup>();
+            if (canvasGroup != null)
+            {
+                canvasGroup.alpha = 1f;
+            }
         }
     }
 
@@ -532,13 +609,12 @@ public class UIManager : MonoBehaviour
                 popupText.color = poorAccuracyColor;
         }
 
-        // Convert world position to screen position with vertical offset to avoid overlap with accuracy label
-        Vector3 screenPosition = Camera.main.WorldToScreenPoint(worldPosition);
-        screenPosition.y += pointsPopupVerticalOffset; // Offset above the accuracy label
+        // Position at center of screen, above the accuracy label
         RectTransform popupRect = popup.GetComponent<RectTransform>();
         if (popupRect != null)
         {
-            popupRect.position = screenPosition;
+            // Center position with vertical offset above accuracy text
+            popupRect.anchoredPosition = new Vector2(0, pointsPopupVerticalOffset);
         }
 
         // Start animation and destroy after duration
@@ -550,36 +626,58 @@ public class UIManager : MonoBehaviour
         if (popup == null) yield break;
 
         RectTransform rectTransform = popup.GetComponent<RectTransform>();
-        Vector3 startScale = Vector3.one;
-        Vector3 endScale = Vector3.one * 1.5f;
+        CanvasGroup canvasGroup = popup.GetComponent<CanvasGroup>();
+
+        // Add CanvasGroup if it doesn't exist (for fading)
+        if (canvasGroup == null)
+        {
+            canvasGroup = popup.AddComponent<CanvasGroup>();
+        }
 
         float elapsedTime = 0f;
-        float animationDuration = 0.3f;
+        float animationDuration = accuracyAnimationDuration;
 
-        // Scale up animation
+        // Appear animation: scale from large to slightly larger and fade in
+        Vector3 startScale = Vector3.one * accuracyAppearScale;
+        Vector3 targetScale = Vector3.one * accuracyFinalScale;
+
+        rectTransform.localScale = startScale;
+        canvasGroup.alpha = 0f;
+
+        // Fade in and scale to final size
         while (elapsedTime < animationDuration)
         {
             if (popup == null || rectTransform == null) yield break;
 
             elapsedTime += Time.deltaTime;
             float progress = elapsedTime / animationDuration;
-            rectTransform.localScale = Vector3.Lerp(startScale, endScale, progress);
+            rectTransform.localScale = Vector3.Lerp(startScale, targetScale, progress);
+            canvasGroup.alpha = Mathf.Lerp(0f, 1f, progress);
             yield return null;
         }
 
-        // Wait for remaining duration
-        yield return new WaitForSeconds(pointsPopupDuration - animationDuration);
+        // Ensure final values
+        rectTransform.localScale = targetScale;
+        canvasGroup.alpha = 1f;
 
-        // Scale down and fade out
+        // Hold for display duration (subtract animation time)
+        float holdDuration = pointsPopupDuration - (animationDuration * 2);
+        if (holdDuration > 0)
+        {
+            yield return new WaitForSeconds(holdDuration);
+        }
+
+        // Disappear animation: fade out and scale down
         elapsedTime = 0f;
-        Vector3 currentScale = rectTransform.localScale;
-        Vector3 targetScale = Vector3.zero;
+        startScale = targetScale;
+        Vector3 endScale = Vector3.one * 0.8f;
 
         while (elapsedTime < animationDuration && popup != null && rectTransform != null)
         {
             elapsedTime += Time.deltaTime;
             float progress = elapsedTime / animationDuration;
-            rectTransform.localScale = Vector3.Lerp(currentScale, targetScale, progress);
+            rectTransform.localScale = Vector3.Lerp(startScale, endScale, progress);
+            canvasGroup.alpha = Mathf.Lerp(1f, 0f, progress);
             yield return null;
         }
 

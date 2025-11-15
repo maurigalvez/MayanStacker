@@ -63,6 +63,13 @@ public class LevelManager : MonoBehaviour, ILevelManager
         {
             stackManager.OnObjectAddedToStack += OnObjectAddedToStack;
         }
+
+        // Subscribe to PlayFab sync events for cloud save
+        var playFabManager = DependencyRegistry.Find<PlayFabManager>();
+        if (playFabManager != null)
+        {
+            playFabManager.OnProgressSynced += OnProgressSyncedFromCloud;
+        }
     }
 
     /// <summary>
@@ -252,6 +259,13 @@ public class LevelManager : MonoBehaviour, ILevelManager
 
         PlayerPrefs.Save();
         Debug.Log($"Saved level {levelNumber} progress: {stars} stars");
+        
+        // Also save to cloud
+        var playFabManager = DependencyRegistry.Find<PlayFabManager>();
+        if (playFabManager != null && playFabManager.IsLoggedIn)
+        {
+            playFabManager.SaveCurrentProgressToCloud();
+        }
     }
 
     /// <summary>
@@ -367,6 +381,65 @@ public class LevelManager : MonoBehaviour, ILevelManager
         Debug.Log("ALL PlayerPrefs reset complete!");
     }
 
+    /// <summary>
+    /// Called when progress is synced from cloud (after login)
+    /// Updates local progress with cloud data (server authoritative)
+    /// </summary>
+    private void OnProgressSyncedFromCloud(PlayerProgressData data)
+    {
+        if (data == null) return;
+
+        Debug.Log($"Syncing level progress from cloud... Levels with stars: {data.levelStars.Count}");
+
+        // Update level stars from cloud (server authoritative - cloud always wins)
+        foreach (var kvp in data.levelStars)
+        {
+            int levelNumber = kvp.Key;
+            int cloudStars = kvp.Value;
+
+            // Update in-memory
+            if (!levelStars.ContainsKey(levelNumber) || cloudStars > levelStars[levelNumber])
+            {
+                levelStars[levelNumber] = cloudStars;
+                
+                // Update PlayerPrefs cache
+                PlayerPrefs.SetInt($"Level_{levelNumber}_Stars", cloudStars);
+                
+                Debug.Log($"Updated level {levelNumber} stars from cloud: {cloudStars}");
+            }
+        }
+
+        // Update level high scores from cloud
+        foreach (var kvp in data.levelHighScores)
+        {
+            int levelNumber = kvp.Key;
+            int cloudHighScore = kvp.Value;
+
+            // Update in-memory
+            if (!levelHighScores.ContainsKey(levelNumber) || cloudHighScore > levelHighScores[levelNumber])
+            {
+                levelHighScores[levelNumber] = cloudHighScore;
+                
+                // Update PlayerPrefs cache
+                PlayerPrefs.SetInt($"Level_{levelNumber}_HighScore", cloudHighScore);
+                
+                Debug.Log($"Updated level {levelNumber} high score from cloud: {cloudHighScore}");
+                
+                // Update GameManager if this is the current level
+                var gameManager = DependencyRegistry.Find<GameManager>();
+                if (gameManager != null && CurrentLevel != null && CurrentLevel.levelNumber == levelNumber)
+                {
+                    gameManager.UpdateHighScoreFromCloud(cloudHighScore);
+                }
+            }
+        }
+
+        // Save updated cache to disk
+        PlayerPrefs.Save();
+        
+        Debug.Log("Level progress sync complete!");
+    }
+
     private void OnDestroy()
     {
         // Unregister from dependency registry
@@ -385,6 +458,13 @@ public class LevelManager : MonoBehaviour, ILevelManager
         if (stackManager != null)
         {
             stackManager.OnObjectAddedToStack -= OnObjectAddedToStack;
+        }
+
+        // Unsubscribe from PlayFab events
+        var playFabManager = DependencyRegistry.Find<PlayFabManager>();
+        if (playFabManager != null)
+        {
+            playFabManager.OnProgressSynced -= OnProgressSyncedFromCloud;
         }
     }
 }

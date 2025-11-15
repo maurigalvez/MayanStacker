@@ -3,10 +3,13 @@ using PlayFab.ClientModels;
 using PlayFab.ProgressionModels;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using System.Collections;
+using System.Linq;
 
 #if UNITY_ANDROID
 using GooglePlayGames;
 using GooglePlayGames.BasicApi;
+using System.Collections.Generic;
 #endif
 
 /// <summary>
@@ -53,6 +56,13 @@ using GooglePlayGames.BasicApi;
 ///    - Save and enable the add-on
 /// 5. Verify in logs that Google Account ID is being logged correctly
 /// 
+/// GOOGLE PLAY GAMES POPUPS & NOTIFICATIONS:
+/// The SDK is configured to show Google Play Games popups and notifications:
+/// - Welcome back messages when signing in
+/// - XP and achievement notifications
+/// - If popups don't appear, check device settings: 
+///   Settings > Google > Games > Show notifications
+/// 
 /// The system will automatically fallback to Android Device ID if Google Play Games fails.
 /// When successfully logged in with Google, the logs will show:
 /// - Google Player ID (from Google Play Games)
@@ -84,6 +94,11 @@ public class PlayFabManager : MonoBehaviour
     // State
     private bool isLoggedIn = false;
     private string playFabId = "";
+    private string currentDisplayName = "";
+    private bool isSyncing = false;
+
+    // Cloud save constants
+    private const string PLAYER_PROGRESS_KEY = "PlayerProgress";
 
     // Events
     public System.Action<string> OnLoginSuccess;
@@ -91,9 +106,16 @@ public class PlayFabManager : MonoBehaviour
     public System.Action<int> OnScoreSubmitted;
     public System.Action<string> OnScoreSubmissionFailed;
 
+    // Cloud sync events
+    public System.Action OnLoginStarted;
+    public System.Action OnSyncStarted;
+    public System.Action<PlayerProgressData> OnProgressSynced;
+    public System.Action<string> OnProgressSyncFailed;
+
     // Properties
     public bool IsLoggedIn => isLoggedIn;
     public string PlayFabId => playFabId;
+    public string CurrentDisplayName => currentDisplayName;
 
     private void Awake()
     {
@@ -126,6 +148,9 @@ public class PlayFabManager : MonoBehaviour
     {
         // 1. Find initial dependencies and subscribe
         RefreshDependencies();
+
+        // make sure GPGS is initialized
+
 
         // 2. Auto-login if enabled
         if (autoLoginOnStart)
@@ -207,6 +232,9 @@ public class PlayFabManager : MonoBehaviour
         Debug.Log("Logging into PlayFab...");
 #endif
 
+        // Notify UI that login is starting
+        OnLoginStarted?.Invoke();
+
 #if UNITY_ANDROID
         LoginWithAndroid();
 #elif UNITY_IOS
@@ -224,7 +252,7 @@ public class PlayFabManager : MonoBehaviour
     {
         if (useGooglePlayGames)
         {
-            LoginWithGooglePlayGames();
+            StartCoroutine(LoginWithGooglePlayGames());
         }
         else
         {
@@ -233,81 +261,167 @@ public class PlayFabManager : MonoBehaviour
     }
 
     /// <summary>
+    /// Attempts silent authentication with Google Play Games
+    /// </summary>
+    private void AttemptSilentAuthentication()
+    {
+#if UNITY_ANDROID
+        Debug.Log("Attempting silent authentication...");
+
+        PlayGamesPlatform.Instance.Authenticate((status) =>
+        {
+            Debug.Log($"Authenticate callback received with status: {status}");
+
+            if (status == SignInStatus.Success)
+            {
+                Debug.Log("✓ Silent authentication successful!");
+                OnGooglePlayGamesAuthenticationSuccess();
+            }
+            else
+            {
+                Debug.LogWarning($"Silent authentication failed with status: {status}");
+                AttemptManualAuthentication();
+            }
+        });
+#endif
+    }
+
+    /// <summary>
+    /// Attempts manual authentication with Google Play Games (shows prompt to user)
+    /// </summary>
+    private void AttemptManualAuthentication()
+    {
+#if UNITY_ANDROID
+        Debug.Log("Attempting manual authentication (will show prompt)...");
+
+        PlayGamesPlatform.Instance.ManuallyAuthenticate((status) =>
+        {
+            Debug.Log($"Manual authentication callback received with status: {status}");
+
+            if (status == SignInStatus.Success)
+            {
+                Debug.Log("✓ Manual authentication successful!");
+                OnGooglePlayGamesAuthenticationSuccess();
+            }
+            else
+            {
+                Debug.LogError($"Manual authentication failed with status: {status}");
+            }
+        });
+#endif
+    }
+
+    /// <summary>
+    /// Called when Google Play Games authentication succeeds
+    /// Handles getting server auth code and submitting to PlayFab
+    /// </summary>
+    private void OnGooglePlayGamesAuthenticationSuccess()
+    {
+#if UNITY_ANDROID
+        // Get user info for logging
+        string playerID = PlayGamesPlatform.Instance.GetUserId();
+        string displayName = PlayGamesPlatform.Instance.GetUserDisplayName();
+
+#if DEBUG_MODE
+        Debug.Log($"Google Play Games Authentication Success:");
+        Debug.Log($"  - Google Player ID: {playerID}");
+        Debug.Log($"  - Display Name: {displayName ?? "[NULL - NOT AVAILABLE]"}");
+#endif
+
+        // Check if display name is null or looks like an ID (starts with 'g_' or is all numbers)
+        if (string.IsNullOrEmpty(displayName) || displayName.StartsWith("g_") || displayName.All(char.IsDigit))
+        {
+            Debug.LogWarning($"Display name appears invalid or missing: '{displayName}'");
+            Debug.LogWarning("This may cause leaderboards to show entity IDs instead of player names");
+        }
+
+        // Get the server auth code for PlayFab with OPEN_ID scope (required for ID token)
+#if DEBUG_MODE
+        Debug.Log("Requesting server-side access token with OPEN_ID scope for PlayFab...");
+#endif
+
+        // Request OPEN_ID scope to ensure ID token is included (required by PlayFab)
+        List<AuthScope> scopes = new List<AuthScope> { AuthScope.OPEN_ID };
+
+        PlayGamesPlatform.Instance.RequestServerSideAccess(true, scopes, (authResponse) =>
+        {
+            if (authResponse != null)
+            {
+                string serverAuthCode = authResponse.GetAuthCode();
+                List<AuthScope> grantedScopes = authResponse.GetGrantedScopes();
+
+#if DEBUG_MODE
+                Debug.Log($"Server auth response received:");
+                Debug.Log($"  - Auth code length: {serverAuthCode?.Length ?? 0}");
+                Debug.Log($"  - Granted scopes: {string.Join(", ", grantedScopes)}");
+#endif
+
+                if (!string.IsNullOrEmpty(serverAuthCode))
+                {
+#if DEBUG_MODE
+                    Debug.Log("✓ Server auth code with OPEN_ID scope received, submitting to PlayFab...");
+#endif
+                    SubmitGooglePlayGamesLogin(serverAuthCode, playerID, displayName);
+                }
+                else
+                {
+                    Debug.LogError("Server auth code is null or empty");
+
+                    if (fallbackToDeviceID)
+                    {
+#if DEBUG_MODE
+                        Debug.Log("Falling back to Android Device ID...");
+#endif
+                        LoginWithAndroidDeviceID();
+                    }
+                }
+            }
+            else
+            {
+                Debug.LogError("Failed to get server auth response from Google Play Games (response is null)");
+
+                if (fallbackToDeviceID)
+                {
+#if DEBUG_MODE
+                    Debug.Log("Falling back to Android Device ID...");
+#endif
+                    LoginWithAndroidDeviceID();
+                }
+            }
+        });
+#endif
+    }
+
+    /// <summary>
     /// Login with Google Play Games (recommended for Android)
     /// Requires Google Play Games Plugin for Unity to be installed and configured
     /// Install from: https://github.com/playgameservices/play-games-plugin-for-unity
     /// </summary>
-    private void LoginWithGooglePlayGames()
+    private IEnumerator LoginWithGooglePlayGames()
     {
 #if UNITY_ANDROID
 #if DEBUG_MODE
-        Debug.Log("Attempting Google Play Games authentication...");
+        Debug.Log("Starting Google Play Games authentication...");
 #endif
 
-        // Activate the Play Games platform
+        // Initialize Google Play Games
+        // Note: The plugin configuration should be done via Window > Google Play Games > Setup in Unity Editor
+        // This ensures display name permissions are properly requested
+        PlayGamesPlatform.DebugLogEnabled = true;
         PlayGamesPlatform.Activate();
 
-        // Attempt to authenticate with Google Play Games
-        PlayGamesPlatform.Instance.Authenticate((success) =>
-        {
-            if (success == SignInStatus.Success)
-            {
 #if DEBUG_MODE
-                Debug.Log("Google Play Games authentication successful!");
-
-                // Get the Google Play Games Player ID for logging
-                string playerID = PlayGamesPlatform.Instance.GetUserId();
-                Debug.Log($"Google Play Games Player ID: {playerID}");
-#else
-                string playerID = PlayGamesPlatform.Instance.GetUserId();
+        Debug.Log("Google Play Games platform activated");
 #endif
 
-                // Get the server auth code for PlayFab
-                PlayGamesPlatform.Instance.RequestServerSideAccess(true, (serverAuthCode) =>
-                {
-                    if (!string.IsNullOrEmpty(serverAuthCode))
-                    {
-#if DEBUG_MODE
-                        Debug.Log("Server auth code received, submitting to PlayFab...");
-#endif
-                        SubmitGooglePlayGamesLogin(serverAuthCode, playerID);
-                    }
-                    else
-                    {
-                        Debug.LogWarning("Failed to get server auth code from Google Play Games");
-                        if (fallbackToDeviceID)
-                        {
-#if DEBUG_MODE
-                            Debug.Log("Falling back to Android Device ID authentication...");
-#endif
-                            LoginWithAndroidDeviceID();
-                        }
-                        else
-                        {
-                            Debug.LogError("Google Play Games login failed and fallback is disabled");
-                        }
-                    }
-                });
-            }
-            else
-            {
-                Debug.LogWarning($"Google Play Games authentication failed with status: {success}");
-                if (fallbackToDeviceID)
-                {
-#if DEBUG_MODE
-                    Debug.Log("Falling back to Android Device ID authentication...");
-#endif
-                    LoginWithAndroidDeviceID();
-                }
-                else
-                {
-                    Debug.LogError("Google Play Games login failed and fallback is disabled");
-                }
-            }
-        });
+        yield return new WaitForSeconds(0.5f);
+
+        // Start the authentication flow (silent first, then manual if needed)
+        AttemptSilentAuthentication();
 #else
         Debug.LogError("Google Play Games is only available on Android!");
         LoginWithAndroidDeviceID();
+        yield break;
 #endif
     }
 
@@ -317,26 +431,29 @@ public class PlayFabManager : MonoBehaviour
     /// </summary>
     /// <param name="serverAuthCode">Server auth code from Google Play Games</param>
     /// <param name="playerID">Google Play Games Player ID for logging and verification</param>
-    private void SubmitGooglePlayGamesLogin(string serverAuthCode, string playerID)
+    /// <param name="displayName">Google Play Games display name to set in PlayFab</param>
+    private void SubmitGooglePlayGamesLogin(string serverAuthCode, string playerID, string displayName)
     {
         var request = new LoginWithGoogleAccountRequest
         {
             CreateAccount = createAccountIfNotExists,
             TitleId = PlayFabSettings.staticSettings.TitleId,
             ServerAuthCode = serverAuthCode,
-            // InfoRequestParameters helps us get player info for verification
+            // InfoRequestParameters helps us get player info for verification AND current display name
             InfoRequestParameters = new GetPlayerCombinedInfoRequestParams
             {
                 GetPlayerProfile = true,
-                GetUserAccountInfo = true
+                GetUserAccountInfo = true,
+                GetUserData = true
             }
         };
 
 #if DEBUG_MODE
-        Debug.Log($"Logging into PlayFab with Google Play Games (Player ID: {playerID})...");
+        Debug.Log($"Logging into PlayFab with Google Play Games (Player ID: {playerID}, Display Name: {displayName})...");
 #endif
+
         PlayFabClientAPI.LoginWithGoogleAccount(request,
-            result => OnGoogleLoginSuccessCallback(result, playerID),
+            result => OnGoogleLoginSuccessCallback(result, playerID, displayName),
             (error) =>
             {
                 Debug.LogWarning($"PlayFab login with Google Play Games failed: {error.GenerateErrorReport()}");
@@ -360,32 +477,35 @@ public class PlayFabManager : MonoBehaviour
     /// Called when Google Play Games login to PlayFab is successful
     /// Logs additional account information for verification and sets display name
     /// </summary>
-    private void OnGoogleLoginSuccessCallback(LoginResult result, string googlePlayerID)
+    private void OnGoogleLoginSuccessCallback(LoginResult result, string googlePlayerID, string googleDisplayName)
     {
         isLoggedIn = true;
         playFabId = result.PlayFabId;
 
-#if UNITY_ANDROID
-        // Get the Google Play display name for logging
-        string googleDisplayName = PlayGamesPlatform.Instance.GetUserDisplayName();
-#endif
-
 #if DEBUG_MODE
-        Debug.Log($"PlayFab login successful via Google Play Games!");
+        Debug.Log($"✓ PlayFab login successful via Google Play Games!");
         Debug.Log($"  - PlayFab ID: {playFabId}");
         Debug.Log($"  - Google Player ID: {googlePlayerID}");
-#if UNITY_ANDROID
         Debug.Log($"  - Google Display Name: {googleDisplayName ?? "Not available"}");
-#endif
         Debug.Log($"  - Account Created: {result.NewlyCreated}");
+#endif
+
+        // Check current PlayFab display name
+        string currentPlayFabDisplayName = result.InfoResultPayload?.PlayerProfile?.DisplayName;
+        currentDisplayName = currentPlayFabDisplayName ?? ""; // Store for public access
+#if DEBUG_MODE
+        Debug.Log($"  - Current PlayFab Display Name: {currentPlayFabDisplayName ?? "[Not Set]"}");
+#endif
 
         // Log Google account info if available
         if (result.InfoResultPayload?.AccountInfo?.GoogleInfo != null)
         {
             var googleInfo = result.InfoResultPayload.AccountInfo.GoogleInfo;
+#if DEBUG_MODE
             Debug.Log($"  - Google Account linked: Yes");
             Debug.Log($"  - Google Account ID: {googleInfo.GoogleId}");
             Debug.Log($"  - Google Email: {googleInfo.GoogleEmail ?? "Not provided"}");
+#endif
         }
         else
         {
@@ -395,18 +515,173 @@ public class PlayFabManager : MonoBehaviour
         // Check if this is a new account
         if (result.NewlyCreated)
         {
+#if DEBUG_MODE
             Debug.Log("New PlayFab account created and linked to Google Play Games account");
+#endif
         }
         else
         {
+#if DEBUG_MODE
             Debug.Log("Logged into existing PlayFab account linked to this Google Play Games account");
+#endif
+        }
+
+        // Only update display name if needed (not already set correctly)
+        StartCoroutine(SetDisplayNameIfNeeded(googleDisplayName, currentPlayFabDisplayName));
+
+        OnLoginSuccess?.Invoke(playFabId);
+
+        // Sync progress from cloud after login
+        SyncProgressOnLogin();
+    }
+
+    /// <summary>
+    /// Sets the display name only if needed (not already set correctly)
+    /// Checks if current PlayFab name matches Google name, and only updates if different
+    /// </summary>
+    private IEnumerator SetDisplayNameIfNeeded(string googleDisplayName, string currentPlayFabDisplayName)
+    {
+        string displayName = googleDisplayName;
+
+        // Check if display name is valid
+        bool isValidName = !string.IsNullOrEmpty(displayName) &&
+                          !displayName.StartsWith("g_") &&
+                          !displayName.All(char.IsDigit);
+
+#if UNITY_ANDROID
+        // If display name is invalid, retry getting it from Google Play Games
+        if (!isValidName && PlayGamesPlatform.Instance != null)
+        {
+            Debug.LogWarning("Initial display name is invalid, attempting to retrieve again...");
+
+            // Wait a bit for Google Play Games to fully initialize
+            yield return new WaitForSeconds(1.0f);
+
+            // Try to get display name again
+            displayName = PlayGamesPlatform.Instance.GetUserDisplayName();
+            Debug.Log($"Retry: Retrieved display name: {displayName ?? "[NULL]"}");
+
+            // Check validity again
+            isValidName = !string.IsNullOrEmpty(displayName) &&
+                         !displayName.StartsWith("g_") &&
+                         !displayName.All(char.IsDigit);
+
+            // If still invalid, try one more time after another delay
+            if (!isValidName)
+            {
+                Debug.LogWarning("Display name still invalid, trying one more time...");
+                yield return new WaitForSeconds(2.0f);
+
+                displayName = PlayGamesPlatform.Instance.GetUserDisplayName();
+                Debug.Log($"Final retry: Retrieved display name: {displayName ?? "[NULL]"}");
+
+                isValidName = !string.IsNullOrEmpty(displayName) &&
+                             !displayName.StartsWith("g_") &&
+                             !displayName.All(char.IsDigit);
+            }
         }
 #endif
 
-        // Update PlayFab display name from Google Play Games
-        UpdateDisplayNameFromGooglePlayGames();
+        // Check if current PlayFab display name is already correct
+        if (!string.IsNullOrEmpty(currentPlayFabDisplayName) && currentPlayFabDisplayName == displayName)
+        {
+#if DEBUG_MODE
+            Debug.Log($"✓ PlayFab display name already set correctly to: {currentPlayFabDisplayName}");
+#endif
+            yield break; // No need to update
+        }
 
-        OnLoginSuccess?.Invoke(playFabId);
+        // Check if current name looks like an entity ID (needs updating)
+        bool currentNameIsEntityId = string.IsNullOrEmpty(currentPlayFabDisplayName) ||
+                                     currentPlayFabDisplayName.Length > 16 || // Entity IDs are long
+                                     currentPlayFabDisplayName.All(c => char.IsLetterOrDigit(c) || c == '-'); // Entity IDs are alphanumeric with dashes
+
+        // Set the display name if valid and needed
+        if (isValidName)
+        {
+#if DEBUG_MODE
+            Debug.Log($"Updating PlayFab display name from '{currentPlayFabDisplayName ?? "[Not Set]"}' to '{displayName}'");
+#endif
+            SetDisplayNameDirectly(displayName, onSuccess: () =>
+            {
+                currentDisplayName = displayName; // Update stored display name on success
+#if DEBUG_MODE
+                Debug.Log($"✓ Display name successfully updated to: {displayName}");
+#endif
+            },
+            onFailure: (error) =>
+            {
+                Debug.LogWarning($"Could not update display name: {error}");
+                if (error.Contains("Name not available"))
+                {
+                    Debug.LogWarning("The display name is already in use. This is OK - your scores are still saved correctly.");
+#if DEBUG_MODE
+                    Debug.Log($"Your leaderboard entries will show as: {currentPlayFabDisplayName ?? "[Entity ID]"}");
+#endif
+                }
+            });
+        }
+        else if (currentNameIsEntityId)
+        {
+            // Current name looks bad and we couldn't get a good Google name
+            Debug.LogError($"Failed to get valid Google Play display name. Display name: '{displayName}'");
+            Debug.LogWarning("Leaderboards may show entity IDs instead of player names.");
+
+            // Try to set a fallback display name
+            string fallbackName = $"Player_{playFabId.Substring(0, System.Math.Min(6, playFabId.Length))}";
+#if DEBUG_MODE
+            Debug.Log($"Attempting to set fallback display name: {fallbackName}");
+#endif
+            SetDisplayNameDirectly(fallbackName,
+            onSuccess: () =>
+            {
+                currentDisplayName = fallbackName; // Update stored display name on success
+            },
+            onFailure: (error) =>
+            {
+                Debug.LogWarning("Could not set fallback name either. Scores will still save correctly.");
+            });
+        }
+        else
+        {
+#if DEBUG_MODE
+            Debug.Log($"Display name '{currentPlayFabDisplayName}' is acceptable, keeping as-is");
+#endif
+        }
+    }
+
+    /// <summary>
+    /// Helper method to set the display name directly in PlayFab
+    /// </summary>
+    private void SetDisplayNameDirectly(string displayName, System.Action onSuccess = null, System.Action<string> onFailure = null)
+    {
+        if (string.IsNullOrEmpty(displayName))
+        {
+            Debug.LogWarning("Cannot set empty display name");
+            onFailure?.Invoke("Display name is empty");
+            return;
+        }
+
+        var request = new UpdateUserTitleDisplayNameRequest
+        {
+            DisplayName = displayName
+        };
+
+        PlayFabClientAPI.UpdateUserTitleDisplayName(request,
+            result =>
+            {
+                currentDisplayName = result.DisplayName; // Update stored display name
+#if DEBUG_MODE
+                Debug.Log($"✓ PlayFab display name set to: {result.DisplayName}");
+#endif
+                onSuccess?.Invoke();
+            },
+            error =>
+            {
+                string errorMessage = error.GenerateErrorReport();
+                Debug.LogWarning($"Failed to update PlayFab display name: {errorMessage}");
+                onFailure?.Invoke(errorMessage);
+            });
     }
 
     /// <summary>
@@ -421,35 +696,15 @@ public class PlayFabManager : MonoBehaviour
 
         if (!string.IsNullOrEmpty(googleDisplayName))
         {
-#if DEBUG_MODE
-            Debug.Log($"Setting PlayFab display name to: {googleDisplayName}");
-#endif
-
-            var request = new UpdateUserTitleDisplayNameRequest
-            {
-                DisplayName = googleDisplayName
-            };
-
-            PlayFabClientAPI.UpdateUserTitleDisplayName(request,
-                result =>
-                {
-#if DEBUG_MODE
-                    Debug.Log($"✓ PlayFab display name updated successfully to: {result.DisplayName}");
-#endif
-                },
-                error =>
-                {
-                    Debug.LogWarning($"Failed to update PlayFab display name: {error.GenerateErrorReport()}");
-                });
+            Debug.Log($"Updating PlayFab display name to Google Play name: {googleDisplayName}");
+            SetDisplayNameDirectly(googleDisplayName);
         }
         else
         {
             Debug.LogWarning("Could not get display name from Google Play Games");
         }
 #else
-#if DEBUG_MODE
         Debug.Log("Display name update from Google Play Games only available on Android");
-#endif
 #endif
     }
 
@@ -476,44 +731,17 @@ public class PlayFabManager : MonoBehaviour
 
             if (!string.IsNullOrEmpty(googleDisplayName))
             {
-#if DEBUG_MODE
                 Debug.Log($"Ensuring PlayFab display name is set to Google Play name: {googleDisplayName}");
-#endif
-
-                var request = new UpdateUserTitleDisplayNameRequest
-                {
-                    DisplayName = googleDisplayName
-                };
-
-                PlayFabClientAPI.UpdateUserTitleDisplayName(request,
-                    result =>
-                    {
-#if DEBUG_MODE
-                        Debug.Log($"✓ Display name verified/updated to: {result.DisplayName}");
-#endif
-                        onComplete?.Invoke();
-                    },
-                    error =>
-                    {
-                        Debug.LogWarning($"Failed to update display name, continuing anyway: {error.GenerateErrorReport()}");
-                        onComplete?.Invoke();
-                    });
+                SetDisplayNameDirectly(googleDisplayName);
             }
             else
             {
-                Debug.LogWarning("Could not get display name from Google Play Games, continuing anyway");
-                onComplete?.Invoke();
+                Debug.LogWarning("Could not get display name from Google Play Games");
             }
         }
-        else
-        {
-            // Not using Google Play Games, just continue
-            onComplete?.Invoke();
-        }
-#else
-        // Not on Android, just continue
-        onComplete?.Invoke();
 #endif
+        // Always call onComplete regardless of display name update
+        onComplete?.Invoke();
     }
 
     /// <summary>
@@ -525,7 +753,11 @@ public class PlayFabManager : MonoBehaviour
         {
             AndroidDeviceId = SystemInfo.deviceUniqueIdentifier,
             CreateAccount = createAccountIfNotExists,
-            TitleId = PlayFabSettings.staticSettings.TitleId
+            TitleId = PlayFabSettings.staticSettings.TitleId,
+            InfoRequestParameters = new GetPlayerCombinedInfoRequestParams
+            {
+                GetPlayerProfile = true
+            }
         };
 
 #if DEBUG_MODE
@@ -543,7 +775,11 @@ public class PlayFabManager : MonoBehaviour
         {
             DeviceId = SystemInfo.deviceUniqueIdentifier,
             CreateAccount = createAccountIfNotExists,
-            TitleId = PlayFabSettings.staticSettings.TitleId
+            TitleId = PlayFabSettings.staticSettings.TitleId,
+            InfoRequestParameters = new GetPlayerCombinedInfoRequestParams
+            {
+                GetPlayerProfile = true
+            }
         };
 
 #if DEBUG_MODE
@@ -562,7 +798,11 @@ public class PlayFabManager : MonoBehaviour
         {
             CustomId = SystemInfo.deviceUniqueIdentifier,
             CreateAccount = createAccountIfNotExists,
-            TitleId = PlayFabSettings.staticSettings.TitleId
+            TitleId = PlayFabSettings.staticSettings.TitleId,
+            InfoRequestParameters = new GetPlayerCombinedInfoRequestParams
+            {
+                GetPlayerProfile = true
+            }
         };
 
 #if DEBUG_MODE
@@ -579,6 +819,12 @@ public class PlayFabManager : MonoBehaviour
         isLoggedIn = true;
         playFabId = result.PlayFabId;
 
+        // Get current display name if available
+        if (result.InfoResultPayload?.PlayerProfile?.DisplayName != null)
+        {
+            currentDisplayName = result.InfoResultPayload.PlayerProfile.DisplayName;
+        }
+
 #if DEBUG_MODE
         Debug.Log($"PlayFab login successful! PlayFabId: {playFabId}");
 #endif
@@ -594,6 +840,9 @@ public class PlayFabManager : MonoBehaviour
         }
 
         OnLoginSuccess?.Invoke(playFabId);
+
+        // Sync progress from cloud after login
+        SyncProgressOnLogin();
     }
 
     /// <summary>
@@ -613,6 +862,7 @@ public class PlayFabManager : MonoBehaviour
         PlayFabClientAPI.UpdateUserTitleDisplayName(request,
             result =>
             {
+                currentDisplayName = result.DisplayName; // Update stored display name
 #if DEBUG_MODE
                 Debug.Log($"Default display name set to: {result.DisplayName}");
 #endif
@@ -1024,7 +1274,7 @@ public class PlayFabManager : MonoBehaviour
 
     /// <summary>
     /// Refresh the display name from Google Play Games
-    /// Useful if the player changes their Google Play name
+    /// Useful if the player changes their Google Play name or if it wasn't set correctly at login
     /// </summary>
     public void RefreshDisplayNameFromGoogle()
     {
@@ -1034,7 +1284,241 @@ public class PlayFabManager : MonoBehaviour
             return;
         }
 
-        UpdateDisplayNameFromGooglePlayGames();
+#if UNITY_ANDROID
+        if (PlayGamesPlatform.Instance != null)
+        {
+#if DEBUG_MODE
+            Debug.Log("Force refreshing display name from Google Play Games...");
+#endif
+            // Get current display name from Google Play Games and force update
+            string googleDisplayName = PlayGamesPlatform.Instance.GetUserDisplayName();
+            StartCoroutine(SetDisplayNameIfNeeded(googleDisplayName, null)); // null current name to force update
+        }
+        else
+        {
+            Debug.LogWarning("Google Play Games not available");
+        }
+#else
+#if DEBUG_MODE
+        Debug.Log("Display name refresh from Google Play Games only available on Android");
+#endif
+#endif
+    }
+
+    #endregion
+
+    #region Cloud Save/Load
+
+    /// <summary>
+    /// Syncs progress from cloud after successful login
+    /// Automatically called after login success
+    /// </summary>
+    private void SyncProgressOnLogin()
+    {
+        if (!isLoggedIn)
+        {
+            Debug.LogWarning("Cannot sync - not logged into PlayFab");
+            return;
+        }
+
+        Debug.Log("Starting cloud progress sync...");
+        OnSyncStarted?.Invoke();
+
+        LoadProgressFromCloud(
+            onSuccess: (data) =>
+            {
+                Debug.Log("Cloud progress loaded successfully");
+                OnProgressSynced?.Invoke(data);
+            },
+            onFailure: (error) =>
+            {
+                Debug.LogWarning($"Failed to load cloud progress: {error}");
+                OnProgressSyncFailed?.Invoke(error);
+            }
+        );
+    }
+
+    /// <summary>
+    /// Saves player progress data to PlayFab cloud storage
+    /// </summary>
+    /// <param name="data">Progress data to save</param>
+    /// <param name="onSuccess">Callback on successful save</param>
+    /// <param name="onFailure">Callback on failed save with error message</param>
+    public void SaveProgressToCloud(PlayerProgressData data, System.Action onSuccess = null, System.Action<string> onFailure = null)
+    {
+        if (!isLoggedIn)
+        {
+            string error = "Cannot save to cloud - not logged into PlayFab";
+            Debug.LogWarning(error);
+            onFailure?.Invoke(error);
+            return;
+        }
+
+        if (isSyncing)
+        {
+            Debug.LogWarning("Already syncing, skipping save request");
+            return;
+        }
+
+        isSyncing = true;
+
+        // Update sync timestamp
+        data.UpdateSyncTimestamp();
+
+        // Convert to JSON
+        string json = data.ToJson();
+
+        var request = new UpdateUserDataRequest
+        {
+            Data = new System.Collections.Generic.Dictionary<string, string>
+            {
+                { PLAYER_PROGRESS_KEY, json }
+            }
+        };
+
+#if DEBUG_MODE
+        Debug.Log($"Saving progress to cloud... (Data size: {json.Length} chars)");
+#endif
+
+        PlayFabClientAPI.UpdateUserData(request,
+            result =>
+            {
+                isSyncing = false;
+#if DEBUG_MODE
+                Debug.Log("Progress saved to cloud successfully!");
+#endif
+                onSuccess?.Invoke();
+            },
+            error =>
+            {
+                isSyncing = false;
+                string errorMsg = $"Failed to save progress to cloud: {error.GenerateErrorReport()}";
+                Debug.LogWarning(errorMsg);
+                onFailure?.Invoke(errorMsg);
+            });
+    }
+
+    /// <summary>
+    /// Loads player progress data from PlayFab cloud storage
+    /// </summary>
+    /// <param name="onSuccess">Callback with loaded progress data</param>
+    /// <param name="onFailure">Callback on failed load with error message</param>
+    public void LoadProgressFromCloud(System.Action<PlayerProgressData> onSuccess, System.Action<string> onFailure = null)
+    {
+        if (!isLoggedIn)
+        {
+            string error = "Cannot load from cloud - not logged into PlayFab";
+            Debug.LogWarning(error);
+            onFailure?.Invoke(error);
+            return;
+        }
+
+        if (isSyncing)
+        {
+            Debug.LogWarning("Already syncing, skipping load request");
+            return;
+        }
+
+        isSyncing = true;
+
+        var request = new GetUserDataRequest();
+
+#if DEBUG_MODE
+        Debug.Log("Loading progress from cloud...");
+#endif
+
+        PlayFabClientAPI.GetUserData(request,
+            result =>
+            {
+                isSyncing = false;
+
+                // Check if progress data exists
+                if (result.Data != null && result.Data.ContainsKey(PLAYER_PROGRESS_KEY))
+                {
+                    string json = result.Data[PLAYER_PROGRESS_KEY].Value;
+                    PlayerProgressData data = PlayerProgressData.FromJson(json);
+
+#if DEBUG_MODE
+                    Debug.Log($"Progress loaded from cloud! Levels with stars: {data.levelStars.Count}, Infinite high score: {data.infiniteStackerHighScore}");
+#endif
+
+                    onSuccess?.Invoke(data);
+                }
+                else
+                {
+                    // No cloud data exists yet - this is normal for new accounts
+#if DEBUG_MODE
+                    Debug.Log("No cloud progress found - new account or first sync");
+#endif
+                    onSuccess?.Invoke(new PlayerProgressData());
+                }
+            },
+            error =>
+            {
+                isSyncing = false;
+                string errorMsg = $"Failed to load progress from cloud: {error.GenerateErrorReport()}";
+                Debug.LogWarning(errorMsg);
+                onFailure?.Invoke(errorMsg);
+            });
+    }
+
+    /// <summary>
+    /// Gets the current player progress from local managers and saves to cloud
+    /// Call this when player completes a level or sets a new high score
+    /// </summary>
+    public void SaveCurrentProgressToCloud()
+    {
+        if (!isLoggedIn)
+        {
+            Debug.LogWarning("Cannot save - not logged into PlayFab");
+            return;
+        }
+
+        // Collect progress from managers
+        PlayerProgressData data = new PlayerProgressData();
+
+        // Get level progress from LevelManager
+        var levelManager = DependencyRegistry.Find<LevelManager>();
+        if (levelManager != null)
+        {
+            var levels = levelManager.GetAllLevels();
+            foreach (var level in levels)
+            {
+                int levelNumber = level.levelNumber;
+                int stars = levelManager.GetLevelStars(levelNumber);
+                int highScore = levelManager.GetLevelHighScore(levelNumber);
+
+                if (stars > 0)
+                {
+                    data.levelStars[levelNumber] = stars;
+                }
+
+                if (highScore > 0)
+                {
+                    data.levelHighScores[levelNumber] = highScore;
+                }
+            }
+        }
+
+        // Get infinite mode high score from GameManager
+        var gameManager = DependencyRegistry.Find<GameManager>();
+        if (gameManager != null && gameManager.CurrentGameMode == GameMode.InfiniteStacker)
+        {
+            data.infiniteStackerHighScore = gameManager.HighScore;
+        }
+
+        // Save to cloud (fire-and-forget - don't block gameplay)
+        SaveProgressToCloud(data,
+            onSuccess: () =>
+            {
+#if DEBUG_MODE
+                Debug.Log("Current progress saved to cloud");
+#endif
+            },
+            onFailure: (error) =>
+            {
+                Debug.LogWarning($"Failed to save current progress: {error}");
+            });
     }
 
     #endregion
@@ -1051,4 +1535,5 @@ public class PlayFabManager : MonoBehaviour
         UnsubscribeFromEvents();
     }
 }
+
 
