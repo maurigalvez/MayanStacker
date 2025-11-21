@@ -24,7 +24,7 @@ public class LevelManager : MonoBehaviour, ILevelManager
 
     // Events
     public System.Action<LevelData> OnLevelLoaded;
-    public System.Action<int, int> OnLevelCompleted; // stars, score
+    public System.Action<int, int, bool> OnLevelCompleted; // stars, score, isFirstCompletion
     public System.Action OnLevelFailed;
     public System.Action<int> OnStackHeightUpdated; // current height
 
@@ -197,11 +197,16 @@ public class LevelManager : MonoBehaviour, ILevelManager
         // Calculate stars earned
         earnedStars = CurrentLevel.CalculateStars(finalScore);
 
-        // Save progress
-        SaveLevelProgress(CurrentLevel.levelNumber, earnedStars, finalScore);
+        // Check if this is the first completion BEFORE saving
+        int levelNumber = CurrentLevel.levelNumber;
+        bool isFirstCompletion = !IsLevelCompletedBefore(levelNumber);
+        bool codexNotShown = !IsCodexUnlocked(levelNumber);
 
-        // Notify listeners
-        OnLevelCompleted?.Invoke(earnedStars, finalScore);
+        // Save progress
+        SaveLevelProgress(levelNumber, earnedStars, finalScore);
+
+        // Notify listeners with first completion flag
+        OnLevelCompleted?.Invoke(earnedStars, finalScore, isFirstCompletion && codexNotShown && earnedStars > 0);
 
         Debug.Log($"Level Complete! Stars: {earnedStars}/3, Score: {finalScore}");
     }
@@ -259,13 +264,46 @@ public class LevelManager : MonoBehaviour, ILevelManager
 
         PlayerPrefs.Save();
         Debug.Log($"Saved level {levelNumber} progress: {stars} stars");
-        
+
         // Also save to cloud
         var playFabManager = DependencyRegistry.Find<PlayFabManager>();
         if (playFabManager != null && playFabManager.IsLoggedIn)
         {
             playFabManager.SaveCurrentProgressToCloud();
         }
+    }
+
+    /// <summary>
+    /// Mark codex as unlocked for a level (called from UI after showing popup)
+    /// </summary>
+    public void MarkCodexUnlockedForLevel(int levelNumber)
+    {
+        MarkCodexUnlocked(levelNumber);
+    }
+
+    /// <summary>
+    /// Check if a level has been completed before (has at least 1 star)
+    /// </summary>
+    public bool IsLevelCompletedBefore(int levelNumber)
+    {
+        return GetLevelStars(levelNumber) > 0;
+    }
+
+    /// <summary>
+    /// Check if codex has been unlocked for a level (shown to player)
+    /// </summary>
+    public bool IsCodexUnlocked(int levelNumber)
+    {
+        return PlayerPrefs.GetInt($"Level_{levelNumber}_CodexUnlocked", 0) == 1;
+    }
+
+    /// <summary>
+    /// Mark codex as unlocked for a level
+    /// </summary>
+    private void MarkCodexUnlocked(int levelNumber)
+    {
+        PlayerPrefs.SetInt($"Level_{levelNumber}_CodexUnlocked", 1);
+        PlayerPrefs.Save();
     }
 
     /// <summary>
@@ -401,10 +439,10 @@ public class LevelManager : MonoBehaviour, ILevelManager
             if (!levelStars.ContainsKey(levelNumber) || cloudStars > levelStars[levelNumber])
             {
                 levelStars[levelNumber] = cloudStars;
-                
+
                 // Update PlayerPrefs cache
                 PlayerPrefs.SetInt($"Level_{levelNumber}_Stars", cloudStars);
-                
+
                 Debug.Log($"Updated level {levelNumber} stars from cloud: {cloudStars}");
             }
         }
@@ -419,12 +457,12 @@ public class LevelManager : MonoBehaviour, ILevelManager
             if (!levelHighScores.ContainsKey(levelNumber) || cloudHighScore > levelHighScores[levelNumber])
             {
                 levelHighScores[levelNumber] = cloudHighScore;
-                
+
                 // Update PlayerPrefs cache
                 PlayerPrefs.SetInt($"Level_{levelNumber}_HighScore", cloudHighScore);
-                
+
                 Debug.Log($"Updated level {levelNumber} high score from cloud: {cloudHighScore}");
-                
+
                 // Update GameManager if this is the current level
                 var gameManager = DependencyRegistry.Find<GameManager>();
                 if (gameManager != null && CurrentLevel != null && CurrentLevel.levelNumber == levelNumber)
@@ -436,7 +474,7 @@ public class LevelManager : MonoBehaviour, ILevelManager
 
         // Save updated cache to disk
         PlayerPrefs.Save();
-        
+
         Debug.Log("Level progress sync complete!");
     }
 

@@ -24,7 +24,7 @@ MonoBehaviour:
     influence, the city\u2019s stones still whisper of ceremony, learning, and cosmic
     order.\nWhen the sun passes through the temple\u2019s eyes, the ancient day begins
     anew."
-  requiredStackHeight: 15
+  requiredStackHeight: 10
   oneStarScore: 200
   twoStarScore: 600
   threeStarScore: 1000

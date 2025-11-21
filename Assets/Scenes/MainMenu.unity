@@ -765,10 +765,6 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 7372702067826005740, guid: 23215e23a59cf8243b4a17cf47c43f5e, type: 3}
-      propertyPath: useGooglePlayGames
-      value: 1
-      objectReference: {fileID: 0}
     - target: {fileID: 8745447753479278976, guid: 23215e23a59cf8243b4a17cf47c43f5e, type: 3}
       propertyPath: m_Name
       value: PlayFab Manager
@@ -786,6 +782,22 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 1957653543757242573, guid: 74a40cd5abedcda4b90ec0e20018ae0e, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3259005096695197104, guid: 74a40cd5abedcda4b90ec0e20018ae0e, type: 3}
+      propertyPath: pathSprite
+      value: 
+      objectReference: {fileID: 21300000, guid: 11df6bf26cd964d49a88220c7d1a6cb1, type: 3}
+    - target: {fileID: 3259005096695197104, guid: 74a40cd5abedcda4b90ec0e20018ae0e, type: 3}
+      propertyPath: pathColor.a
+      value: 0.78431374
+      objectReference: {fileID: 0}
+    - target: {fileID: 3259005096695197104, guid: 74a40cd5abedcda4b90ec0e20018ae0e, type: 3}
+      propertyPath: nextLevelPathColor.a
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 4316829900831077214, guid: 74a40cd5abedcda4b90ec0e20018ae0e, type: 3}
       propertyPath: m_Name
       value: Main Menu Canvas
@@ -870,13 +882,9 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 8686632556115698734, guid: 74a40cd5abedcda4b90ec0e20018ae0e, type: 3}
-      propertyPath: m_fontAsset
-      value: 
-      objectReference: {fileID: 11400000, guid: 06efddd04e7285f458e43066a52b267b, type: 2}
-    - target: {fileID: 8686632556115698734, guid: 74a40cd5abedcda4b90ec0e20018ae0e, type: 3}
-      propertyPath: m_hasFontAssetChanged
-      value: 1
+    - target: {fileID: 7765601016763136543, guid: 74a40cd5abedcda4b90ec0e20018ae0e, type: 3}
+      propertyPath: m_text
+      value: TEMPLE STACKER
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

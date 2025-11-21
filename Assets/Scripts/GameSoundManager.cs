@@ -23,6 +23,7 @@ public class GameSoundManager : MonoBehaviour
     [SerializeField] private AudioClip objectDroppedSound;
     [SerializeField] private AudioClip comboSuccessSound;
     [SerializeField] private AudioClip comboLostSound;
+    [SerializeField] private AudioClip codexUnlockSound;
 
     [Header("Settings")]
     [SerializeField] private float sfxVolume = 0.7f;
@@ -168,7 +169,8 @@ public class GameSoundManager : MonoBehaviour
     /// </summary>
     /// <param name="stars">Number of stars earned</param>
     /// <param name="score">Final score</param>
-    private void OnLevelCompleted(int stars, int score)
+    /// <param name="showCodexPopup">Whether to show codex unlock popup</param>
+    private void OnLevelCompleted(int stars, int score, bool showCodexPopup)
     {
         PlayLevelCompleteSound();
     }
@@ -319,6 +321,21 @@ public class GameSoundManager : MonoBehaviour
     public void PlayRetryButtonSound()
     {
         PlaySound(retryButtonSound);
+    }
+
+    /// <summary>
+    /// Plays the codex unlock sound effect
+    /// </summary>
+    public void PlayCodexUnlockSound()
+    {
+        if (enableMusicDucking && codexUnlockSound != null)
+        {
+            PlaySoundWithDucking(codexUnlockSound);
+        }
+        else
+        {
+            PlaySound(codexUnlockSound);
+        }
     }
 
     /// <summary>

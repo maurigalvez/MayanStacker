@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.EnhancedTouch;
+using UnityEngine.UI;
 using Touch = UnityEngine.InputSystem.EnhancedTouch.Touch;
 
 /// <summary>
@@ -11,6 +12,7 @@ public class ScrollView_PinchScale : MonoBehaviour, IDragHandler, IScrollHandler
 {
     [Header("References")]
     [SerializeField] private RectTransform mapRect;
+    private ScrollRect scrollRect;
 
     [Header("Zoom Settings")]
     [SerializeField] private float zoomSpeed = 0.1f;
@@ -29,6 +31,28 @@ public class ScrollView_PinchScale : MonoBehaviour, IDragHandler, IScrollHandler
 
     private void Start()
     {
+        // Ensure ScrollRect is found (in case it wasn't found in Awake)
+        if (scrollRect == null)
+        {
+            scrollRect = GetComponent<ScrollRect>();
+            if (scrollRect == null)
+            {
+                scrollRect = GetComponentInParent<ScrollRect>();
+            }
+        }
+
+        if (enableDebugLogs)
+        {
+            if (scrollRect != null)
+            {
+                Debug.Log($"ScrollView_PinchScale: ScrollRect found - Content: {scrollRect.content?.name}, Viewport: {scrollRect.viewport?.name}");
+            }
+            else
+            {
+                Debug.LogWarning("ScrollView_PinchScale: No ScrollRect found");
+            }
+        }
+
         // Initialize zoom at maximum scale
         currentZoom = maxZoom;
         if (mapRect != null)
@@ -39,6 +63,21 @@ public class ScrollView_PinchScale : MonoBehaviour, IDragHandler, IScrollHandler
 
     private void Awake()
     {
+        // Register with dependency registry
+        DependencyRegistry.Register<ScrollView_PinchScale>(this);
+
+        // Try to find ScrollRect early (might be on this GameObject or parent)
+        scrollRect = GetComponent<ScrollRect>();
+        if (scrollRect == null)
+        {
+            scrollRect = GetComponentInParent<ScrollRect>();
+        }
+
+        if (enableDebugLogs && scrollRect != null)
+        {
+            Debug.Log($"ScrollView_PinchScale: Found ScrollRect in Awake");
+        }
+
 #if UNITY_ANDROID || UNITY_IOS
         // Enable Enhanced Touch for multi-touch support on mobile platforms only
         if (!EnhancedTouchSupport.enabled)
@@ -348,5 +387,279 @@ public class ScrollView_PinchScale : MonoBehaviour, IDragHandler, IScrollHandler
                 mapRect.localScale = Vector3.one * currentZoom;
             }
         }
+    }
+
+    /// <summary>
+    /// Centers the map view on a specific RectTransform (e.g., a level button)
+    /// </summary>
+    /// <param name="targetRect">The RectTransform to center on</param>
+    /// <param name="animate">Whether to animate the centering (default: false for instant)</param>
+    public void CenterOnRectTransform(RectTransform targetRect, bool animate = false)
+    {
+        if (mapRect == null || targetRect == null)
+        {
+            if (enableDebugLogs)
+                Debug.LogWarning("ScrollView_PinchScale: Cannot center - mapRect or targetRect is null");
+            return;
+        }
+
+        // If we have a ScrollRect, use its normalized position for centering
+        if (scrollRect != null)
+        {
+            CenterOnRectTransformWithScrollRect(targetRect, animate);
+            return;
+        }
+
+        // Fallback to direct anchoredPosition manipulation
+        RectTransform viewportRect = mapRect.parent as RectTransform;
+        if (viewportRect == null)
+        {
+            if (enableDebugLogs)
+                Debug.LogWarning("ScrollView_PinchScale: Cannot center - viewport parent is null and no ScrollRect found");
+            return;
+        }
+
+        // Get the target's position in the map's local coordinate space
+        Vector2 targetPosInMap = mapRect.InverseTransformPoint(targetRect.position);
+
+        // Get the viewport center in the map's local coordinate space
+        Vector2 viewportCenterInMap = mapRect.InverseTransformPoint(viewportRect.position);
+
+        // Calculate how much we need to move the map to center the target
+        Vector2 offset = viewportCenterInMap - targetPosInMap;
+
+        // Apply the offset to center the target
+        mapRect.anchoredPosition += offset;
+
+        if (enableDebugLogs)
+        {
+            Debug.Log($"ScrollView_PinchScale: Centered on {targetRect.name} (no ScrollRect). " +
+                     $"Target pos in map: {targetPosInMap}, Viewport center in map: {viewportCenterInMap}, Offset: {offset}, " +
+                     $"New anchored position: {mapRect.anchoredPosition}");
+        }
+    }
+
+    /// <summary>
+    /// Centers using ScrollRect's normalized position (more reliable for ScrollRect-based UI)
+    /// </summary>
+    private void CenterOnRectTransformWithScrollRect(RectTransform targetRect, bool animate)
+    {
+        if (scrollRect == null || scrollRect.content == null || targetRect == null)
+        {
+            if (enableDebugLogs)
+                Debug.LogWarning("ScrollView_PinchScale: Cannot center with ScrollRect - missing components");
+            return;
+        }
+
+        // Force canvas update to ensure layout is complete
+        Canvas.ForceUpdateCanvases();
+
+        RectTransform content = scrollRect.content;
+        RectTransform viewport = scrollRect.viewport != null ? scrollRect.viewport : scrollRect.GetComponent<RectTransform>();
+
+        if (viewport == null)
+        {
+            if (enableDebugLogs)
+                Debug.LogWarning("ScrollView_PinchScale: Cannot get viewport");
+            return;
+        }
+
+        // Get the target's position in content's local space
+        Vector2 targetPosInContent = content.InverseTransformPoint(targetRect.position);
+
+        // Get viewport bounds in content's local space
+        Vector3[] viewportCorners = new Vector3[4];
+        viewport.GetWorldCorners(viewportCorners);
+
+        // Convert viewport corners to content's local space
+        Vector2 viewportMin = content.InverseTransformPoint(viewportCorners[0]);
+        Vector2 viewportMax = content.InverseTransformPoint(viewportCorners[2]);
+        Vector2 viewportSize = viewportMax - viewportMin;
+        Vector2 viewportCenter = viewportMin + viewportSize * 0.5f;
+
+        // Calculate the offset needed to center the target
+        Vector2 offset = viewportCenter - targetPosInContent;
+
+        // Store current position
+        Vector2 currentPosition = content.anchoredPosition;
+
+        // Apply the offset
+        content.anchoredPosition += offset;
+
+        // Force another canvas update after moving
+        Canvas.ForceUpdateCanvases();
+
+        if (enableDebugLogs)
+        {
+            Debug.Log($"ScrollView_PinchScale: Centered on {targetRect.name} (using ScrollRect). " +
+                     $"Target world pos: {targetRect.position}, Target in content: {targetPosInContent}, " +
+                     $"Viewport center in content: {viewportCenter}, " +
+                     $"Offset: {offset}, Old position: {currentPosition}, New position: {content.anchoredPosition}");
+        }
+    }
+
+    /// <summary>
+    /// Centers the map on the current level based on player progress
+    /// Finds the current level via LevelManager and MainMenuManager, then centers on that level's button
+    /// </summary>
+    public void CenterMapOnCurrentLevel()
+    {
+        if (enableDebugLogs)
+            Debug.Log("ScrollView_PinchScale: CenterMapOnCurrentLevel called");
+
+        // Force canvas update to ensure layout is complete
+        Canvas.ForceUpdateCanvases();
+
+        // Get LevelManager via DependencyRegistry
+        var levelManager = DependencyRegistry.Find<LevelManager>();
+        if (levelManager == null)
+        {
+            Debug.LogWarning("ScrollView_PinchScale: LevelManager not found via DependencyRegistry");
+            return;
+        }
+
+        if (enableDebugLogs)
+            Debug.Log($"ScrollView_PinchScale: Found LevelManager with {levelManager.TotalLevels} total levels");
+
+        // Get MainMenuManager via DependencyRegistry to access level buttons
+        var mainMenuManager = DependencyRegistry.Find<MainMenuManager>();
+        if (mainMenuManager == null)
+        {
+            Debug.LogWarning("ScrollView_PinchScale: MainMenuManager not found via DependencyRegistry");
+            return;
+        }
+
+        if (enableDebugLogs)
+            Debug.Log($"ScrollView_PinchScale: Found MainMenuManager with {mainMenuManager.GetLevelButtonCount()} level buttons");
+
+        // Get the current level index
+        int currentLevelIndex = GetCurrentLevelIndex(levelManager);
+
+        if (enableDebugLogs)
+            Debug.Log($"ScrollView_PinchScale: Current level index: {currentLevelIndex} (level {currentLevelIndex + 1})");
+
+        // Get the level button for the current level
+        var levelButton = mainMenuManager.GetLevelButton(currentLevelIndex);
+        if (levelButton != null)
+        {
+            RectTransform buttonRect = levelButton.GetComponent<RectTransform>();
+            if (buttonRect != null)
+            {
+                if (enableDebugLogs)
+                    Debug.Log($"ScrollView_PinchScale: Found level button RectTransform: {buttonRect.name} at world position {buttonRect.position}, local position {buttonRect.localPosition}");
+
+                // Small delay to ensure everything is laid out
+                StartCoroutine(CenterOnButtonDelayed(buttonRect));
+            }
+            else
+            {
+                Debug.LogWarning($"ScrollView_PinchScale: Level button found but RectTransform is null");
+            }
+        }
+        else
+        {
+            Debug.LogWarning($"ScrollView_PinchScale: Could not find level button for index {currentLevelIndex}. " +
+                           $"MainMenuManager has {mainMenuManager.GetLevelButtonCount()} buttons.");
+        }
+    }
+
+    /// <summary>
+    /// Coroutine to center on button after a small delay to ensure layout is complete
+    /// </summary>
+    private System.Collections.IEnumerator CenterOnButtonDelayed(RectTransform buttonRect)
+    {
+        yield return new WaitForEndOfFrame();
+        yield return new WaitForEndOfFrame();
+
+        Canvas.ForceUpdateCanvases();
+        CenterOnRectTransform(buttonRect, animate: false);
+
+        if (enableDebugLogs)
+            Debug.Log($"ScrollView_PinchScale: Centering complete");
+    }
+
+    /// <summary>
+    /// Find the current level index (highest unlocked level with progress, or next playable level)
+    /// This represents the player's current progress in the game
+    /// </summary>
+    /// <param name="levelManager">The LevelManager instance</param>
+    /// <returns>Level index of the current level, or 0 if none found</returns>
+    private int GetCurrentLevelIndex(LevelManager levelManager)
+    {
+        if (levelManager == null) return 0;
+
+        int totalLevels = levelManager.TotalLevels;
+        int highestLevelWithProgress = -1;
+
+        // Find the highest level that has at least 1 star (completed)
+        // This represents the player's furthest progress
+        for (int i = totalLevels - 1; i >= 0; i--)
+        {
+            int levelNumber = i + 1; // Convert to 1-based
+            bool isUnlocked = levelManager.IsLevelUnlocked(levelNumber);
+            int stars = levelManager.GetLevelStars(levelNumber);
+
+            if (isUnlocked && stars > 0)
+            {
+                highestLevelWithProgress = i;
+                break; // Found the highest, no need to continue
+            }
+        }
+
+        // If we found a level with progress, try to return the next unlocked level
+        if (highestLevelWithProgress >= 0)
+        {
+            // Check if there's a next level that's unlocked
+            int nextLevelIndex = highestLevelWithProgress + 1;
+            if (nextLevelIndex < totalLevels)
+            {
+                int nextLevelNumber = nextLevelIndex + 1;
+                if (levelManager.IsLevelUnlocked(nextLevelNumber))
+                {
+                    // Return the next level (the one they should play next)
+                    return nextLevelIndex;
+                }
+            }
+            // If no next level is unlocked, return the highest level with progress
+            return highestLevelWithProgress;
+        }
+
+        // If no progress, return the first playable level (should be level 1)
+        int nextPlayable = GetNextPlayableLevelIndex(levelManager);
+        return nextPlayable >= 0 ? nextPlayable : 0;
+    }
+
+    /// <summary>
+    /// Find the next playable level (first unlocked level with 0 stars)
+    /// </summary>
+    /// <param name="levelManager">The LevelManager instance</param>
+    /// <returns>Level index of the next playable level, or -1 if none found</returns>
+    private int GetNextPlayableLevelIndex(LevelManager levelManager)
+    {
+        if (levelManager == null) return -1;
+
+        int totalLevels = levelManager.TotalLevels;
+
+        // Find the first unlocked level that hasn't been completed (0 stars)
+        for (int i = 0; i < totalLevels; i++)
+        {
+            int levelNumber = i + 1; // Convert to 1-based
+            bool isUnlocked = levelManager.IsLevelUnlocked(levelNumber);
+            int stars = levelManager.GetLevelStars(levelNumber);
+
+            if (isUnlocked && stars == 0)
+            {
+                return i; // Return the index (0-based)
+            }
+        }
+
+        // If all levels are completed, return -1
+        return -1;
+    }
+
+    private void OnDestroy()
+    {
+        // Unregister from dependency registry
+        DependencyRegistry.Unregister<ScrollView_PinchScale>(this);
     }
 }

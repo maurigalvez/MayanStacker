@@ -24,7 +24,7 @@ MonoBehaviour:
     innovations helped lay the foundation for the rise of El Mirador and the later
     Classic Maya kingdoms.\n\nIn these first cities, the Maya learned to build upward,
     unify people, and carve the earliest echoes of kingship."
-  requiredStackHeight: 30
+  requiredStackHeight: 20
   oneStarScore: 1250
   twoStarScore: 2000
   threeStarScore: 2600

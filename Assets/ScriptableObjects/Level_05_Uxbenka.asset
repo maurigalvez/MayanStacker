@@ -22,7 +22,7 @@ MonoBehaviour:
     and artisans.\nThough small compared to later cities, Uxbenk\xE1\u2019s stelae
     bear the glyphs of power and ancestry, linking it to the greater Maya world.\n\nThe
     forest keeps its ruins close \u2014 but the past still breathes beneath the leaves."
-  requiredStackHeight: 30
+  requiredStackHeight: 17
   oneStarScore: 1000
   twoStarScore: 1750
   threeStarScore: 2500

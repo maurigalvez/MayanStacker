@@ -22,7 +22,7 @@ MonoBehaviour:
     they lay: tools, pigments, and codex fragments, frozen in time.\n\nExcavations
     reveal a city that valued knowledge as much as power, a rare glimpse into daily
     elite life.\nHere, the fire of war met the ink of wisdom."
-  requiredStackHeight: 20
+  requiredStackHeight: 12
   oneStarScore: 300
   twoStarScore: 900
   threeStarScore: 1500

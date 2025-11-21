@@ -37,9 +37,20 @@ public class LevelButtonUI : MonoBehaviour
     [SerializeField] private Color starNotObtainedColor = new Color(0.3f, 0.3f, 0.3f, 1f);
 
     [Header("Pulse Animation")]
-    [SerializeField] private float pulseMinScale = 0.95f;
-    [SerializeField] private float pulseMaxScale = 1.05f;
+    [SerializeField] private float pulseMinScale = 0.9f;
+    [SerializeField] private float pulseMaxScale = 1.15f;
     [SerializeField] private float pulseSpeed = 2f;
+    [SerializeField] private Color pulseColor = new Color(1f, 0.8f, 0.2f, 1f); // Gold/yellow highlight color
+    [SerializeField] private Color normalTextColor = Color.white;
+    [SerializeField] private float pulseColorIntensity = 0.5f; // How much the color pulses (0-1)
+
+    [Header("Current Level Indicator")]
+    [SerializeField] private GameObject currentLevelIndicator; // Optional "Current Level" text or icon
+    [SerializeField] private Image highlightBorder; // Optional border/glow effect
+    [SerializeField] private Color highlightBorderColor = new Color(1f, 0.8f, 0.2f, 0.8f);
+    [SerializeField] private float highlightBorderWidth = 3f;
+    [SerializeField] private float arrowAnimationDistance = 10f; // How far the arrow moves up/down
+    [SerializeField] private float arrowAnimationSpeed = 3f; // Speed of the arrow animation
 
     // Level data
     private int levelIndex;
@@ -51,6 +62,11 @@ public class LevelButtonUI : MonoBehaviour
     private bool isPulsing = false;
     private Vector3 originalScale;
     private float pulseTimer = 0f;
+    private Color originalTextColor;
+    private Color originalBackgroundColor;
+    private float originalFontSize;
+    private Vector3 originalIndicatorPosition;
+    private float arrowAnimationTimer = 0f;
 
     // Spawned UI elements
     private List<GameObject> spawnedStarIcons = new List<GameObject>();
@@ -67,8 +83,32 @@ public class LevelButtonUI : MonoBehaviour
         // Store original scale
         originalScale = transform.localScale;
 
+        // Store original colors and font size
+        if (levelNumberText != null)
+        {
+            originalTextColor = levelNumberText.color;
+            originalFontSize = levelNumberText.fontSize;
+        }
+        if (backgroundImage != null)
+        {
+            originalBackgroundColor = backgroundImage.color;
+        }
+
         // Spawn star icons
         SpawnStarIcons();
+
+        // Hide current level indicator initially and store original position
+        if (currentLevelIndicator != null)
+        {
+            originalIndicatorPosition = currentLevelIndicator.transform.localPosition;
+            currentLevelIndicator.SetActive(false);
+        }
+
+        // Hide highlight border initially
+        if (highlightBorder != null)
+        {
+            highlightBorder.gameObject.SetActive(false);
+        }
     }
 
     private void Update()
@@ -77,8 +117,35 @@ public class LevelButtonUI : MonoBehaviour
         if (isPulsing)
         {
             pulseTimer += Time.deltaTime * pulseSpeed;
-            float scale = Mathf.Lerp(pulseMinScale, pulseMaxScale, (Mathf.Sin(pulseTimer) + 1f) / 2f);
+            float normalizedValue = (Mathf.Sin(pulseTimer) + 1f) / 2f; // 0 to 1
+            float scale = Mathf.Lerp(pulseMinScale, pulseMaxScale, normalizedValue);
             transform.localScale = originalScale * scale;
+
+            // Pulse color effect on text
+            if (levelNumberText != null)
+            {
+                Color targetColor = Color.Lerp(normalTextColor, pulseColor, normalizedValue * pulseColorIntensity);
+                levelNumberText.color = targetColor;
+            }
+
+            // Pulse color effect on background/border
+            if (highlightBorder != null && highlightBorder.gameObject.activeSelf)
+            {
+                float alpha = 0.5f + (normalizedValue * 0.5f); // Pulse between 0.5 and 1.0 alpha
+                Color borderColor = highlightBorderColor;
+                borderColor.a = alpha;
+                highlightBorder.color = borderColor;
+            }
+
+            // Animate arrow indicator up and down
+            if (currentLevelIndicator != null && currentLevelIndicator.activeSelf)
+            {
+                arrowAnimationTimer += Time.deltaTime * arrowAnimationSpeed;
+                float verticalOffset = Mathf.Sin(arrowAnimationTimer) * arrowAnimationDistance;
+                Vector3 newPosition = originalIndicatorPosition;
+                newPosition.y += verticalOffset;
+                currentLevelIndicator.transform.localPosition = newPosition;
+            }
         }
     }
 
@@ -282,6 +349,38 @@ public class LevelButtonUI : MonoBehaviour
     {
         isPulsing = true;
         pulseTimer = 0f;
+        arrowAnimationTimer = 0f;
+
+        // Show current level indicator and reset position
+        if (currentLevelIndicator != null)
+        {
+            currentLevelIndicator.transform.localPosition = originalIndicatorPosition;
+            currentLevelIndicator.SetActive(true);
+        }
+
+        // Show and configure highlight border
+        if (highlightBorder != null)
+        {
+            highlightBorder.gameObject.SetActive(true);
+            highlightBorder.color = highlightBorderColor;
+
+            // Make the border slightly larger than the button
+            RectTransform borderRect = highlightBorder.rectTransform;
+            RectTransform buttonRect = GetComponent<RectTransform>();
+            if (buttonRect != null)
+            {
+                borderRect.sizeDelta = buttonRect.sizeDelta + Vector2.one * highlightBorderWidth * 2f;
+            }
+        }
+
+        // Make level number text larger and bolder
+        if (levelNumberText != null)
+        {
+            originalTextColor = levelNumberText.color;
+            // Increase font size by 20% when pulsing
+            levelNumberText.fontSize = levelNumberText.fontSize * 1.2f;
+            levelNumberText.fontStyle = FontStyles.Bold;
+        }
     }
 
     /// <summary>
@@ -291,6 +390,31 @@ public class LevelButtonUI : MonoBehaviour
     {
         isPulsing = false;
         transform.localScale = originalScale;
+
+        // Hide current level indicator and reset position
+        if (currentLevelIndicator != null)
+        {
+            currentLevelIndicator.transform.localPosition = originalIndicatorPosition;
+            currentLevelIndicator.SetActive(false);
+        }
+
+        // Reset arrow animation timer
+        arrowAnimationTimer = 0f;
+
+        // Hide highlight border
+        if (highlightBorder != null)
+        {
+            highlightBorder.gameObject.SetActive(false);
+        }
+
+        // Reset text color and size
+        if (levelNumberText != null)
+        {
+            levelNumberText.color = originalTextColor;
+            // Reset font size to original
+            levelNumberText.fontSize = originalFontSize;
+            levelNumberText.fontStyle = FontStyles.Normal;
+        }
     }
 
     private void OnDestroy()

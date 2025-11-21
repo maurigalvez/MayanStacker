@@ -1459,6 +1459,7 @@ RectTransform:
   m_LocalScale: {x: 7, y: 7, z: 5}
   m_ConstrainProportionsScale: 0
   m_Children:
+  - {fileID: 6688465059346301153}
   - {fileID: 6858719476776750254}
   m_Father: {fileID: 3472138178551047984}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -4133,7 +4134,7 @@ MonoBehaviour:
   syncStatusText: {fileID: 8686632556115698734}
   syncCompleteDisplayDuration: 1
   gameSceneName: GameScene
-  gameVersion: 0.5
+  gameVersion: 0.5.5
 --- !u!114 &5733294060283004849
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4293,7 +4294,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &8700813411897551946
 RectTransform:
   m_ObjectHideFlags: 0
@@ -4570,7 +4571,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ScrollView_PinchScale
   mapRect: {fileID: 3505238312695809785}
   zoomSpeed: 0.1
-  minZoom: 3
+  minZoom: 2
   maxZoom: 7
   mouseScrollSensitivity: 0.1
   pinchSensitivity: 0.01
@@ -4991,7 +4992,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: ARCADE MODE
+  m_text: TEMPLE STACK
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 0649c6418573f5e4d86a66538c037919, type: 2}
   m_sharedMaterial: {fileID: -6638395598126524788, guid: 0649c6418573f5e4d86a66538c037919, type: 2}
@@ -8173,6 +8174,65 @@ RectTransform:
   m_AnchoredPosition: {x: -244, y: 456}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!1 &8278102939055034648
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 6688465059346301153}
+  - component: {fileID: 3259005096695197104}
+  m_Layer: 5
+  m_Name: Path Renderer
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &6688465059346301153
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8278102939055034648}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 3505238312695809785}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 100, y: 100}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &3259005096695197104
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8278102939055034648}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 05dd03f6d2d27294d868dcec2aeea230, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LevelPathRenderer
+  pathWidth: 5
+  pathColor: {r: 0.49056602, g: 0.2664271, b: 0.053221796, a: 0.8}
+  pathSprite: {fileID: 10905, guid: 0000000000000000f000000000000000, type: 0}
+  nextLevelPathColor: {r: 1, g: 0.8000001, b: 0.20000002, a: 0.8}
+  nextLevelPathWidth: 8
+  startOffset: {x: 0, y: 0}
+  endOffset: {x: 0, y: 0}
+  updateOnLevelChange: 1
+  updateDelay: 0.1
+  pathParent: {fileID: 6688465059346301153}
+  scrollViewContent: {fileID: 874015003776968021}
 --- !u!1 &8292600004980150605
 GameObject:
   m_ObjectHideFlags: 0
@@ -8720,7 +8780,7 @@ MonoBehaviour:
       m_Calls: []
   m_text: '-'
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 06efddd04e7285f458e43066a52b267b, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
@@ -8786,7 +8846,7 @@ MonoBehaviour:
   m_margin: {x: 0, y: 0, z: 0, w: 0}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
-  m_hasFontAssetChanged: 0
+  m_hasFontAssetChanged: 1
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
 --- !u!1 &9117386840009222247

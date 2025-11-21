@@ -1,6 +1,7 @@
 using System.Collections;
 using GoogleMobileAds.Api;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 /// <summary>
 /// Manages Google Mobile Ads integration for the game
@@ -42,6 +43,13 @@ public class AdManager : MonoBehaviour
 
     private void Awake()
     {
+        var existingAdManager = DependencyRegistry.Find<AdManager>();
+        if (existingAdManager != null)
+        {
+            Destroy(gameObject);
+            return;
+        }
+
         // Register with dependency registry
         DependencyRegistry.Register<AdManager>(this);
 
@@ -60,11 +68,48 @@ public class AdManager : MonoBehaviour
 
     private void Start()
     {
-        // Find dependencies
+        // Subscribe to scene loaded events to refresh dependencies when scenes change
+        SceneManager.sceneLoaded += OnSceneLoaded;
+
+        // Find initial dependencies
+        FindDependencies();
+
+        // Initialize Google Mobile Ads SDK
+        InitializeMobileAds();
+    }
+
+    /// <summary>
+    /// Called when a new scene is loaded
+    /// Re-finds dependencies since they might be new instances in the new scene
+    /// </summary>
+    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        DebugLog($"Scene loaded: {scene.name}, refreshing dependencies...");
+        FindDependencies();
+    }
+
+    /// <summary>
+    /// Find or refresh manager dependencies
+    /// This is called on Start and whenever a new scene loads
+    /// </summary>
+    private void FindDependencies()
+    {
+        // Unsubscribe from old references if they exist
+        if (gameManager != null)
+        {
+            gameManager.OnGameOver -= OnGameOver;
+        }
+
+        if (levelManager != null)
+        {
+            levelManager.OnLevelCompleted -= OnLevelCompleted;
+        }
+
+        // Find new references
         gameManager = DependencyRegistry.Find<GameManager>();
         levelManager = DependencyRegistry.Find<LevelManager>();
 
-        // Subscribe to game events
+        // Subscribe to game events with new references
         if (gameManager != null)
         {
             gameManager.OnGameOver += OnGameOver;
@@ -72,7 +117,7 @@ public class AdManager : MonoBehaviour
         }
         else
         {
-            Debug.LogWarning("AdManager: GameManager not found!");
+            DebugLog("GameManager not found (may not exist in this scene)");
         }
 
         if (levelManager != null)
@@ -82,11 +127,8 @@ public class AdManager : MonoBehaviour
         }
         else
         {
-            Debug.LogWarning("AdManager: LevelManager not found (may not exist in this scene)");
+            DebugLog("LevelManager not found (may not exist in this scene)");
         }
-
-        // Initialize Google Mobile Ads SDK
-        InitializeMobileAds();
     }
 
     /// <summary>
@@ -279,7 +321,7 @@ public class AdManager : MonoBehaviour
     /// <summary>
     /// Called when level complete event is triggered (Level Mode)
     /// </summary>
-    private void OnLevelCompleted(int stars, int score)
+    private void OnLevelCompleted(int stars, int score, bool showCodexPopup)
     {
         gameOverCount++;
         Debug.Log($"[AdManager] 🏆 Level Complete #{gameOverCount} triggered (stars: {stars}, score: {score})");
@@ -344,7 +386,10 @@ public class AdManager : MonoBehaviour
 
     private void OnDestroy()
     {
-        // Unsubscribe from events
+        // Unsubscribe from scene loaded events
+        SceneManager.sceneLoaded -= OnSceneLoaded;
+
+        // Unsubscribe from game events
         if (gameManager != null)
         {
             gameManager.OnGameOver -= OnGameOver;

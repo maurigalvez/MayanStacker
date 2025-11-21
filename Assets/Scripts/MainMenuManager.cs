@@ -68,6 +68,29 @@ public class MainMenuManager : MonoBehaviour
     // State
     private bool isFirstShow = true;
 
+    /// <summary>
+    /// Get a level button by index (for use by ScrollView_PinchScale)
+    /// </summary>
+    /// <param name="levelIndex">Zero-based level index</param>
+    /// <returns>The LevelButtonUI component, or null if not found</returns>
+    public LevelButtonUI GetLevelButton(int levelIndex)
+    {
+        if (levelIndex >= 0 && levelIndex < spawnedLevelButtons.Count)
+        {
+            return spawnedLevelButtons[levelIndex];
+        }
+        return null;
+    }
+
+    /// <summary>
+    /// Get the count of spawned level buttons (for debugging)
+    /// </summary>
+    /// <returns>The number of spawned level buttons</returns>
+    public int GetLevelButtonCount()
+    {
+        return spawnedLevelButtons.Count;
+    }
+
     private void Awake()
     {
         // Register with dependency registry
@@ -309,6 +332,41 @@ public class MainMenuManager : MonoBehaviour
     }
 
 
+    /// <summary>
+    /// Centers the map on the current level after a brief delay to ensure UI is laid out
+    /// </summary>
+    private System.Collections.IEnumerator CenterMapOnCurrentLevelDelayed()
+    {
+        // Wait for end of frame to ensure UI layout is complete
+        yield return new WaitForSeconds(0.2f);
+
+        // Try to find ScrollView_PinchScale with retries (in case it hasn't registered yet)
+        ScrollView_PinchScale mapScrollView = null;
+        int maxRetries = 10;
+        int retryCount = 0;
+
+        while (mapScrollView == null && retryCount < maxRetries)
+        {
+            mapScrollView = DependencyRegistry.Find<ScrollView_PinchScale>();
+            if (mapScrollView == null)
+            {
+                retryCount++;
+                yield return new WaitForEndOfFrame();
+            }
+        }
+
+        if (mapScrollView != null)
+        {
+            Debug.Log($"MainMenuManager: Found ScrollView_PinchScale after {retryCount} retries");
+            mapScrollView.CenterMapOnCurrentLevel();
+        }
+        else
+        {
+            Debug.LogWarning($"MainMenuManager: ScrollView_PinchScale not found via DependencyRegistry after {maxRetries} retries. Cannot center map on current level.");
+        }
+    }
+
+
     // Panel Navigation Methods
     private void ShowMainMenu()
     {
@@ -380,6 +438,16 @@ public class MainMenuManager : MonoBehaviour
         soundManager?.PlayPanelOpen();
         SetActivePanel(levelSelectionPanel);
         InitializeLevelSelection(); // Refresh level states
+
+        // Notify path renderer to update paths
+        var pathRenderer = DependencyRegistry.Find<LevelPathRenderer>();
+        if (pathRenderer != null)
+        {
+            pathRenderer.OnLevelSelectionShown();
+        }
+
+        // Center map on current level after a brief delay to ensure UI is laid out
+        StartCoroutine(CenterMapOnCurrentLevelDelayed());
     }
 
     private void SetActivePanel(GameObject panelToShow)
@@ -468,7 +536,7 @@ public class MainMenuManager : MonoBehaviour
     {
         // Get display name from PlayFabManager
         string displayName = playFabManager != null ? playFabManager.CurrentDisplayName : "";
-        
+
         // Show success message with display name
         if (!string.IsNullOrEmpty(displayName))
         {
@@ -478,7 +546,7 @@ public class MainMenuManager : MonoBehaviour
         {
             ShowSyncScreen("Sync complete!");
         }
-        
+
         StartCoroutine(HideSyncScreenAfterDelay());
     }
 

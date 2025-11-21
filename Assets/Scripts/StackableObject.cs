@@ -40,6 +40,7 @@ public class StackableObject : MonoBehaviour
     // State
     private bool isDropped = false;
     private bool hasLanded = false;
+    private bool landedOnStackable = false; // Track if object initially landed on a stackable object
     private Vector3 originalPosition;
     private float landingAccuracy = 0f;
 
@@ -124,12 +125,21 @@ public class StackableObject : MonoBehaviour
 
     private void OnCollisionEnter2D(Collision2D collision)
     {
-        if (!isDropped || hasLanded) return;
+        if (!isDropped) return;
 
-        // Check if we landed on another stackable object or the ground
-        if (collision.gameObject.CompareTag("Stackable") || collision.gameObject.CompareTag("Ground"))
+        // If we haven't landed yet, process initial landing
+        if (!hasLanded)
         {
-            LandOnObject(collision);
+            // Check if we landed on another stackable object or the ground
+            if (collision.gameObject.CompareTag("Stackable") || collision.gameObject.CompareTag("Ground"))
+            {
+                LandOnObject(collision);
+            }
+        }
+        // If we already landed on a stackable object, check if we're now hitting the ground (fell off)
+        else if (hasLanded && landedOnStackable && collision.gameObject.CompareTag("Ground"))
+        {
+            CheckFallOffStack();
         }
     }
 
@@ -137,8 +147,16 @@ public class StackableObject : MonoBehaviour
     {
         hasLanded = true;
 
+        // Get references early for use throughout the method
+        var stackManager = DependencyRegistry.Find<StackManager>();
+        var gameManager = DependencyRegistry.Find<GameManager>();
+
+        // Check if we landed on the ground (not on another stackable object)
+        bool landedOnGround = collision.gameObject.CompareTag("Ground");
+        landedOnStackable = collision.gameObject.CompareTag("Stackable");
+
         // Calculate landing accuracy based on how centered we are
-        if (collision.gameObject.CompareTag("Stackable"))
+        if (landedOnStackable)
         {
             StackableObject otherObject = collision.gameObject.GetComponent<StackableObject>();
             if (otherObject != null)
@@ -146,9 +164,21 @@ public class StackableObject : MonoBehaviour
                 CalculateLandingAccuracy(otherObject);
             }
         }
-        else
+        else if (landedOnGround)
         {
-            // Landed on ground - perfect landing
+            // Landed on ground - check if this is the first object
+            if (stackManager != null && stackManager.GetStackCount() > 0)
+            {
+                // Not the first object - game over!
+                Debug.Log("Game Over: Object landed on ground instead of the stack!");
+                if (gameManager != null)
+                {
+                    gameManager.GameOver();
+                    return; // Don't process landing further
+                }
+            }
+
+            // First object landing on ground is fine - perfect landing
             landingAccuracy = 1f;
         }
 
@@ -157,7 +187,6 @@ public class StackableObject : MonoBehaviour
 
         // Calculate and award score with combo multiplier
         int baseScore = CalculateScore();
-        var gameManager = DependencyRegistry.Find<GameManager>();
         if (gameManager != null)
         {
             // Use new combo-aware scoring method
@@ -165,7 +194,6 @@ public class StackableObject : MonoBehaviour
         }
 
         // Add this object to the stack
-        var stackManager = DependencyRegistry.Find<StackManager>();
         if (stackManager == null)
         {
             // Create StackManager if it doesn't exist
@@ -252,12 +280,39 @@ public class StackableObject : MonoBehaviour
         audioSource.PlayOneShot(randomClip);
     }
 
+    /// <summary>
+    /// Check if object fell off the stack and hit the ground
+    /// </summary>
+    private void CheckFallOffStack()
+    {
+        var stackManager = DependencyRegistry.Find<StackManager>();
+        var gameManager = DependencyRegistry.Find<GameManager>();
+
+        if (stackManager == null || gameManager == null) return;
+
+        // Get all objects in the stack
+        var stackObjects = stackManager.GetStackObjects();
+        int stackCount = stackObjects.Count;
+
+        // If an object that landed on a stackable object hits the ground:
+        // - If it's the first object (stackCount == 1 and this object is in it), it's fine
+        // - If there are other objects in the stack, this object fell off → game over
+        bool isFirstObject = stackCount == 1 && stackObjects.Contains(this);
+
+        if (!isFirstObject && stackCount > 0)
+        {
+            Debug.Log("Game Over: Object fell off the stack and touched the ground!");
+            gameManager.GameOver();
+        }
+    }
+
 
     private void OnGameRestart()
     {
         // Reset object state
         isDropped = false;
         hasLanded = false;
+        landedOnStackable = false;
         landingAccuracy = 0f;
 
         // Reset physics

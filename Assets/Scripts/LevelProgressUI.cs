@@ -359,7 +359,7 @@ public class LevelProgressUI : MonoBehaviour
     /// <summary>
     /// Called when level is completed
     /// </summary>
-    private void OnLevelCompleted(int stars, int score)
+    private void OnLevelCompleted(int stars, int score, bool showCodexPopup)
     {
         // Ensure progress bar shows full
         targetFillAmount = 1f;

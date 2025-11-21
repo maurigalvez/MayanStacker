@@ -904,7 +904,7 @@ public class PlayFabManager : MonoBehaviour
     /// Called when a level is completed in Stacker Levels mode
     /// Triggers high score saving in GameManager
     /// </summary>
-    private void OnLevelCompleted(int stars, int score)
+    private void OnLevelCompleted(int stars, int score, bool showCodexPopup)
     {
         if (gameManager == null) return;
 

@@ -26,6 +26,12 @@ public class UIManager : MonoBehaviour
     [SerializeField] private Button mainMenuButton;
     [SerializeField] private TextMeshProUGUI gameModeText;
 
+    [Header("Codex Unlock Popup")]
+    [SerializeField] private GameObject codexUnlockPopup;
+    [SerializeField] private TextMeshProUGUI codexUnlockText;
+    [SerializeField] private Button codexUnlockDismissButton;
+    [SerializeField] private float codexPopupDisplayDuration = 3f;
+
     [Header("Star Colors")]
     [SerializeField] private Color starInitialColor = new Color(0.3f, 0.3f, 0.3f, 1f); // Dark gray
     [SerializeField] private Color starHighlightColor = new Color(1f, 0.84f, 0f, 1f); // Gold/yellow
@@ -202,6 +208,11 @@ public class UIManager : MonoBehaviour
             pauseMainMenuButton.onClick.AddListener(GoToMainMenuFromPause);
         }
 
+        if (codexUnlockDismissButton != null)
+        {
+            codexUnlockDismissButton.onClick.AddListener(DismissCodexPopup);
+        }
+
         // Initialize UI
         InitializeUI();
     }
@@ -220,6 +231,9 @@ public class UIManager : MonoBehaviour
 
         if (pauseMenuPanel != null)
             pauseMenuPanel.SetActive(false);
+
+        if (codexUnlockPopup != null)
+            codexUnlockPopup.SetActive(false);
 
         // Update initial scores
         if (gameManager != null)
@@ -1018,11 +1032,20 @@ public class UIManager : MonoBehaviour
         }
     }
 
-    private void OnLevelCompleted(int stars, int score)
+    private void OnLevelCompleted(int stars, int score, bool showCodexPopup)
     {
         // Hide game UI
         if (gameUI != null)
             gameUI.SetActive(false);
+
+        // Show codex unlock popup if this is the first completion
+        if (showCodexPopup && levelManager != null && levelManager.CurrentLevel != null)
+        {
+            ShowCodexUnlockPopup(levelManager.CurrentLevel.levelName);
+
+            // Mark codex as unlocked after showing popup
+            levelManager.MarkCodexUnlockedForLevel(levelManager.CurrentLevel.levelNumber);
+        }
 
         // Show level complete panel
         if (levelCompletePanel != null)
@@ -1166,6 +1189,106 @@ public class UIManager : MonoBehaviour
 
         // Load the main menu scene
         SceneLoader.LoadMainMenu();
+    }
+
+    // Codex Unlock Popup Methods
+
+    /// <summary>
+    /// Shows the codex unlock popup with the level name
+    /// </summary>
+    private void ShowCodexUnlockPopup(string levelName)
+    {
+        if (codexUnlockPopup == null || codexUnlockText == null) return;
+
+        // Set the text
+        codexUnlockText.text = $"{levelName} Codex Unlocked";
+
+        // Play codex unlock sound
+        if (gameSoundManager != null)
+        {
+            gameSoundManager.PlayCodexUnlockSound();
+        }
+
+        // Show the popup
+        codexUnlockPopup.SetActive(true);
+
+        // Start animation and auto-dismiss
+        StartCoroutine(AnimateCodexPopup());
+    }
+
+    /// <summary>
+    /// Dismisses the codex unlock popup
+    /// </summary>
+    private void DismissCodexPopup()
+    {
+        if (codexUnlockPopup == null) return;
+
+        codexUnlockPopup.SetActive(false);
+    }
+
+    /// <summary>
+    /// Animates the codex popup appearance and auto-dismisses after duration
+    /// </summary>
+    private IEnumerator AnimateCodexPopup()
+    {
+        if (codexUnlockPopup == null) yield break;
+
+        RectTransform popupRect = codexUnlockPopup.GetComponent<RectTransform>();
+        CanvasGroup canvasGroup = codexUnlockPopup.GetComponent<CanvasGroup>();
+
+        // Add CanvasGroup if it doesn't exist (for fading)
+        if (canvasGroup == null)
+        {
+            canvasGroup = codexUnlockPopup.AddComponent<CanvasGroup>();
+        }
+
+        float elapsedTime = 0f;
+        float animationDuration = 0.5f;
+
+        // Appear animation: scale from large and fade in
+        Vector3 startScale = Vector3.one * 0.5f;
+        Vector3 targetScale = Vector3.one;
+
+        popupRect.localScale = startScale;
+        canvasGroup.alpha = 0f;
+
+        // Fade in and scale up
+        while (elapsedTime < animationDuration)
+        {
+            if (codexUnlockPopup == null || popupRect == null) yield break;
+
+            elapsedTime += Time.deltaTime;
+            float progress = elapsedTime / animationDuration;
+            popupRect.localScale = Vector3.Lerp(startScale, targetScale, progress);
+            canvasGroup.alpha = Mathf.Lerp(0f, 1f, progress);
+            yield return null;
+        }
+
+        // Ensure final values
+        popupRect.localScale = targetScale;
+        canvasGroup.alpha = 1f;
+
+        // Hold for display duration
+        yield return new WaitForSeconds(codexPopupDisplayDuration);
+
+        // Disappear animation: fade out and scale down
+        elapsedTime = 0f;
+        startScale = targetScale;
+        Vector3 endScale = Vector3.one * 0.8f;
+
+        while (elapsedTime < animationDuration)
+        {
+            if (codexUnlockPopup == null || popupRect == null) yield break;
+
+            elapsedTime += Time.deltaTime;
+            float progress = elapsedTime / animationDuration;
+            popupRect.localScale = Vector3.Lerp(startScale, endScale, progress);
+            canvasGroup.alpha = Mathf.Lerp(1f, 0f, progress);
+            yield return null;
+        }
+
+        // Hide the popup
+        DismissCodexPopup();
     }
 
     // Pause Menu Methods
@@ -1392,6 +1515,11 @@ public class UIManager : MonoBehaviour
         if (pauseMainMenuButton != null)
         {
             pauseMainMenuButton.onClick.RemoveListener(GoToMainMenuFromPause);
+        }
+
+        if (codexUnlockDismissButton != null)
+        {
+            codexUnlockDismissButton.onClick.RemoveListener(DismissCodexPopup);
         }
     }
 }
