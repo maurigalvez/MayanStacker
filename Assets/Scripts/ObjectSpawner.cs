@@ -25,8 +25,14 @@ public class ObjectSpawner : MonoBehaviour
         DependencyRegistry.Register<ObjectSpawner>(this);
     }
 
+    // References
+    private UIManager uiManager;
+
     private void Start()
     {
+        // Get UI manager reference
+        uiManager = DependencyRegistry.Find<UIManager>();
+
         // Subscribe to game events
         var gameManager = DependencyRegistry.Find<GameManager>();
         if (gameManager != null)
@@ -36,8 +42,13 @@ public class ObjectSpawner : MonoBehaviour
             gameManager.OnGameRestart += OnGameRestart;
         }
 
-        // Start spawning objects
-        SpawnNewObject();
+        // Subscribe to UI events (title finished)
+        if (uiManager != null)
+        {
+            uiManager.OnTitleFinished += OnTitleFinished;
+        }
+
+        // Don't spawn immediately - wait for game start and title to finish
     }
 
 
@@ -176,7 +187,18 @@ public class ObjectSpawner : MonoBehaviour
     private void OnGameStart()
     {
         canSpawn = true;
-        if (currentObject == null)
+        // Don't spawn immediately - wait for title to finish
+        // Spawning will happen in OnTitleFinished if no object exists
+        if (currentObject == null && (uiManager == null || !uiManager.IsTitleShowing))
+        {
+            SpawnNewObject();
+        }
+    }
+
+    private void OnTitleFinished()
+    {
+        // Title has finished, now we can spawn if game is active and no object exists
+        if (canSpawn && currentObject == null)
         {
             SpawnNewObject();
         }
@@ -199,8 +221,13 @@ public class ObjectSpawner : MonoBehaviour
         canSpawn = true;
         waitingForLanding = false;
 
-        // Spawn new object after a brief delay
-        Invoke(nameof(SpawnNewObject), 0.5f);
+        // Don't spawn immediately - wait for title to finish
+        // Spawning will happen in OnTitleFinished
+        // If title is not showing (shouldn't happen, but safety check), spawn after delay
+        if (uiManager == null || !uiManager.IsTitleShowing)
+        {
+            Invoke(nameof(SpawnNewObject), 0.5f);
+        }
     }
 
     private void OnDestroy()
@@ -215,6 +242,11 @@ public class ObjectSpawner : MonoBehaviour
             gameManager.OnGameStart -= OnGameStart;
             gameManager.OnGameOver -= OnGameOver;
             gameManager.OnGameRestart -= OnGameRestart;
+        }
+
+        if (uiManager != null)
+        {
+            uiManager.OnTitleFinished -= OnTitleFinished;
         }
     }
 

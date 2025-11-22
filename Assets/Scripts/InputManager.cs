@@ -76,10 +76,11 @@ public class InputManager : MonoBehaviour
             gameManager.OnGameRestart += OnGameRestart;
         }
 
-        // Subscribe to UI events (pause/resume)
+        // Subscribe to UI events (pause/resume and title finished)
         if (uiManager != null)
         {
             uiManager.OnGameResumed += OnGameResumed;
+            uiManager.OnTitleFinished += OnTitleFinished;
         }
     }
 
@@ -120,6 +121,10 @@ public class InputManager : MonoBehaviour
         if (uiManager != null && uiManager.IsPaused)
             return;
 
+        // Block input if title is still showing
+        if (uiManager != null && uiManager.IsTitleShowing)
+            return;
+
         // Block input if we just resumed from pause
         if (isInputBlocked)
             return;
@@ -146,6 +151,10 @@ public class InputManager : MonoBehaviour
 
         // Block input if game is paused
         if (uiManager != null && uiManager.IsPaused)
+            return;
+
+        // Block input if title is still showing
+        if (uiManager != null && uiManager.IsTitleShowing)
             return;
 
         // Block input if we just resumed from pause
@@ -348,6 +357,12 @@ public class InputManager : MonoBehaviour
         StartCoroutine(BlockInputTemporarily());
     }
 
+    private void OnTitleFinished()
+    {
+        // Title has finished, input can now be accepted (if game is active)
+        // No action needed here - the IsTitleShowing check will now return false
+    }
+
     private System.Collections.IEnumerator BlockInputTemporarily()
     {
         isInputBlocked = true;
@@ -381,6 +396,7 @@ public class InputManager : MonoBehaviour
         if (uiManager != null)
         {
             uiManager.OnGameResumed -= OnGameResumed;
+            uiManager.OnTitleFinished -= OnTitleFinished;
         }
     }
 }

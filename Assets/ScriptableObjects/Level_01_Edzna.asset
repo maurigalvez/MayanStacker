@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Level_01_Edzna
   m_EditorClassIdentifier: 
   levelNumber: 1
-  levelName: "Edzn\xE1 - House of the Itzaes"
+  levelName: Edzna
   location: Campeche, Mexico
   levelDescription: "Long before the jungle reclaimed its stones, Edzn\xE1 thrived
     as a powerful Mayan city.\nIts name means \u201CHouse of the Itzaes\u201D, echoing

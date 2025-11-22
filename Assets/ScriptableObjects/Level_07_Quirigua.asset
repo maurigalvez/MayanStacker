@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Level_07_Quirigua
   m_EditorClassIdentifier: 
   levelNumber: 7
-  levelName: Quirigua
+  levelName: ' Quirigua'
   location: Izabal, Guatemala
   levelDescription: "Quirigu\xE1 reached its height between 700\u2013850 CE, becoming
     a regional power famed for its colossal monuments. Its sculptors carved the tallest

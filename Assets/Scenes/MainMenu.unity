@@ -886,6 +886,18 @@ PrefabInstance:
       propertyPath: m_text
       value: TEMPLE STACKER
       objectReference: {fileID: 0}
+    - target: {fileID: 7765601016763136543, guid: 74a40cd5abedcda4b90ec0e20018ae0e, type: 3}
+      propertyPath: m_fontAsset
+      value: 
+      objectReference: {fileID: 11400000, guid: 0649c6418573f5e4d86a66538c037919, type: 2}
+    - target: {fileID: 7765601016763136543, guid: 74a40cd5abedcda4b90ec0e20018ae0e, type: 3}
+      propertyPath: m_sharedMaterial
+      value: 
+      objectReference: {fileID: -6638395598126524788, guid: 0649c6418573f5e4d86a66538c037919, type: 2}
+    - target: {fileID: 7765601016763136543, guid: 74a40cd5abedcda4b90ec0e20018ae0e, type: 3}
+      propertyPath: m_hasFontAssetChanged
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []

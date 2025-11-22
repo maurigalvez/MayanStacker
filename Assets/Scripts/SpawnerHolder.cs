@@ -32,6 +32,7 @@ public class SpawnerHolder : MonoBehaviour
 
     [Header("Stack Height Settings")]
     [SerializeField] private float consistentHeightOffset = 2f; // Consistent height above the highest point (ground or stack)
+    [SerializeField] private float heightAnimationSpeed = 5f; // How fast the holder animates to new height (units per second)
 
 
     [Header("Swing Constraints")]
@@ -44,6 +45,7 @@ public class SpawnerHolder : MonoBehaviour
     private Vector3 initialSpawnerPosition;
     private Vector3 holderCenterPosition;
     private float currentStackHeight = 0f;
+    private float targetHolderHeight = 0f; // Target height for smooth animation
     private float groundHeight = 0f; // Height of the ground/floor
     private Camera mainCamera;
     private float currentRotationZ = 0f;
@@ -89,6 +91,7 @@ public class SpawnerHolder : MonoBehaviour
         // Get ground height from Ground script, fallback to 0 if not found
         groundHeight = ground != null ? ground.GetGroundTop() : 0f;
         currentStackHeight = groundHeight;
+        targetHolderHeight = groundHeight + consistentHeightOffset;
 
         // If no spawner is assigned, try to find one using DependencyRegistry
 
@@ -143,6 +146,9 @@ public class SpawnerHolder : MonoBehaviour
         // Update recoil effect
         UpdateRecoilEffect();
 
+        // Animate holder height smoothly towards target
+        AnimateHolderHeight();
+
         // Update swing motion
         UpdateSwingMotion();
 
@@ -182,14 +188,30 @@ public class SpawnerHolder : MonoBehaviour
         // Update current stack height
         currentStackHeight = highestPoint;
 
-        // Update holder Y position to maintain consistent distance above the highest point
-        float newHolderHeight = currentStackHeight + consistentHeightOffset;
-        Vector3 holderPosition = transform.position;
-        holderPosition.y = newHolderHeight;
-        transform.position = holderPosition;
+        // Set target height for smooth animation (will be animated in Update)
+        targetHolderHeight = currentStackHeight + consistentHeightOffset;
+    }
 
-        // Update the stored center position
-        holderCenterPosition = transform.position;
+    /// <summary>
+    /// Smoothly animates the holder height towards the target height
+    /// </summary>
+    private void AnimateHolderHeight()
+    {
+        float currentHeight = transform.position.y;
+
+        // Use MoveTowards for smooth, consistent speed animation
+        float newHeight = Mathf.MoveTowards(currentHeight, targetHolderHeight, heightAnimationSpeed * Time.deltaTime);
+
+        // Only update if there's a change to avoid unnecessary transforms
+        if (Mathf.Abs(newHeight - currentHeight) > 0.001f)
+        {
+            Vector3 holderPosition = transform.position;
+            holderPosition.y = newHeight;
+            transform.position = holderPosition;
+
+            // Update the stored center position
+            holderCenterPosition = transform.position;
+        }
     }
 
     /// <summary>
@@ -614,6 +636,11 @@ public class SpawnerHolder : MonoBehaviour
         recoilDirectionStrength = Mathf.Max(0f, strength);
     }
 
+    public void SetHeightAnimationSpeed(float speed)
+    {
+        heightAnimationSpeed = Mathf.Max(0.1f, speed);
+    }
+
     // Game event handlers
 
     private void OnGameStart()
@@ -638,6 +665,7 @@ public class SpawnerHolder : MonoBehaviour
         // Reset swing and stack height when game restarts
         swingTime = 0f;
         currentStackHeight = groundHeight;
+        targetHolderHeight = groundHeight + consistentHeightOffset;
         currentRotationZ = 0f;
         targetRotationZ = 0f;
         previousRotationZ = 0f;
@@ -649,7 +677,7 @@ public class SpawnerHolder : MonoBehaviour
         swingSpeed = originalSwingSpeed;
         rotationMultiplier = originalRotationMultiplier;
 
-        // Reset holder height to be above ground with consistent offset
+        // Reset holder height to be above ground with consistent offset (animated, not snapped)
         Vector3 holderPosition = transform.position;
         holderPosition.y = groundHeight + consistentHeightOffset;
         transform.position = holderPosition;
@@ -770,4 +798,5 @@ public class SpawnerHolder : MonoBehaviour
     public bool EnableDirectionalRecoil => enableDirectionalRecoil;
     public float RecoilDirectionStrength => recoilDirectionStrength;
     public float SpawnerAngularVelocity => spawnerAngularVelocity;
+    public float HeightAnimationSpeed => heightAnimationSpeed;
 }

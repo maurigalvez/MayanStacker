@@ -44,6 +44,9 @@ public class UIManager : MonoBehaviour
     [SerializeField] private TextMeshProUGUI landingAccuracyText;
     [SerializeField] private GameObject pointsPopupPrefab;
     [SerializeField] private Transform pointsPopupParent;
+    [SerializeField] private StackOverviewUI stackOverviewUI; // Mini-map showing stack overview (shown in all game modes)
+    [SerializeField] private TextMeshProUGUI gameTitleText; // Title shown before game starts (Level name or "Infinite Stacker")
+    [SerializeField] private float gameTitleDisplayDuration = 2.5f; // How long to show the title before game starts
 
     [Header("Combo UI")]
     [SerializeField] private GameObject comboDisplay;
@@ -105,12 +108,15 @@ public class UIManager : MonoBehaviour
     // State
     private Coroutine landingAccuracyCoroutine;
     private Coroutine comboPulseCoroutine;
+    private Coroutine gameTitleCoroutine;
     private bool isPaused = false;
     private bool isUpdatingComboTimer = false;
+    private bool isTitleShowing = false; // Track if title is currently showing
 
     // Events
     public System.Action OnGameResumed;
     public System.Action OnGamePaused;
+    public System.Action OnTitleFinished; // Fired when the game title finishes displaying
 
     // Public properties
     public bool IsPaused => isPaused;
@@ -235,6 +241,10 @@ public class UIManager : MonoBehaviour
         if (codexUnlockPopup != null)
             codexUnlockPopup.SetActive(false);
 
+        // Hide game title initially
+        if (gameTitleText != null)
+            gameTitleText.gameObject.SetActive(false);
+
         // Update initial scores
         if (gameManager != null)
         {
@@ -285,12 +295,10 @@ public class UIManager : MonoBehaviour
         if (gameUI != null)
             gameUI.SetActive(true);
 
-        // Only show instructions for level 1 or first-time infinite mode players
-        if (ShouldShowInstructions())
-        {
-            ShowInstructions();
-            StartCoroutine(InstructionRoutine());
-        }
+        // Show game title before starting (instructions and input will wait for title to finish)
+        ShowGameTitle();
+
+        // Instructions will be shown after title finishes (handled in GameTitleRoutine)
     }
 
     private IEnumerator InstructionRoutine()
@@ -353,12 +361,12 @@ public class UIManager : MonoBehaviour
         // Hide landing accuracy text
         HideLandingAccuracy();
 
-        // Show instructions only if appropriate (level 1 or first-time infinite mode)
-        if (ShouldShowInstructions())
-        {
-            ShowInstructions();
-        }
-        else
+        // Show game title before restarting (instructions will wait for title to finish)
+        ShowGameTitle();
+
+        // Instructions will be shown after title finishes if needed (handled in GameTitleRoutine)
+        // Otherwise, make sure they're hidden
+        if (!ShouldShowInstructions())
         {
             HideInstructions();
         }
@@ -405,6 +413,169 @@ public class UIManager : MonoBehaviour
         if (instructionsText != null)
         {
             instructionsText.gameObject.SetActive(false);
+        }
+    }
+
+    /// <summary>
+    /// Shows the game title (level name or "Infinite Stacker") before the game starts
+    /// </summary>
+    private void ShowGameTitle()
+    {
+        if (gameTitleText == null || gameManager == null) return;
+
+        // Mark that title is showing
+        isTitleShowing = true;
+
+        // Determine title text based on game mode
+        string titleText = "";
+        if (gameManager.CurrentGameMode == GameMode.StackerLevels)
+        {
+            // Show level number and level name if available
+            if (levelManager != null && levelManager.CurrentLevel != null)
+            {
+                titleText = $"Level {levelManager.CurrentLevel.levelNumber}\n{levelManager.CurrentLevel.levelName}";
+            }
+            else
+            {
+                titleText = "Level Mode";
+            }
+        }
+        else if (gameManager.CurrentGameMode == GameMode.InfiniteStacker)
+        {
+            titleText = "Infinite Stacker";
+        }
+
+        // Set the text
+        gameTitleText.text = titleText;
+
+        // Stop any existing title coroutine
+        if (gameTitleCoroutine != null)
+        {
+            StopCoroutine(gameTitleCoroutine);
+        }
+
+        // Start the title display coroutine
+        gameTitleCoroutine = StartCoroutine(GameTitleRoutine());
+    }
+
+    /// <summary>
+    /// Public property to check if title is currently showing
+    /// </summary>
+    public bool IsTitleShowing => isTitleShowing;
+
+    /// <summary>
+    /// Coroutine that shows the game title with animation, then hides it
+    /// </summary>
+    private IEnumerator GameTitleRoutine()
+    {
+        if (gameTitleText == null) yield break;
+
+        // Show the title
+        gameTitleText.gameObject.SetActive(true);
+
+        // Get components for animation
+        RectTransform titleRect = gameTitleText.GetComponent<RectTransform>();
+        CanvasGroup canvasGroup = gameTitleText.GetComponent<CanvasGroup>();
+
+        // Add CanvasGroup if it doesn't exist (for fading)
+        if (canvasGroup == null)
+        {
+            canvasGroup = gameTitleText.gameObject.AddComponent<CanvasGroup>();
+        }
+
+        // Animation settings
+        float animationDuration = 0.5f;
+        float elapsedTime = 0f;
+
+        // Appear animation: scale from large and fade in
+        Vector3 startScale = Vector3.one * 1.5f;
+        Vector3 targetScale = Vector3.one;
+
+        if (titleRect != null)
+        {
+            titleRect.localScale = startScale;
+        }
+        canvasGroup.alpha = 0f;
+
+        // Fade in and scale down
+        while (elapsedTime < animationDuration)
+        {
+            if (gameTitleText == null || titleRect == null) yield break;
+
+            elapsedTime += Time.deltaTime;
+            float progress = elapsedTime / animationDuration;
+
+            if (titleRect != null)
+            {
+                titleRect.localScale = Vector3.Lerp(startScale, targetScale, progress);
+            }
+            canvasGroup.alpha = Mathf.Lerp(0f, 1f, progress);
+
+            yield return null;
+        }
+
+        // Ensure final values
+        if (titleRect != null)
+        {
+            titleRect.localScale = targetScale;
+        }
+        canvasGroup.alpha = 1f;
+
+        // Hold for display duration (subtract animation time)
+        float holdDuration = gameTitleDisplayDuration - (animationDuration * 2);
+        if (holdDuration > 0)
+        {
+            yield return new WaitForSeconds(holdDuration);
+        }
+
+        // Disappear animation: fade out and scale down
+        elapsedTime = 0f;
+        startScale = targetScale;
+        Vector3 endScale = Vector3.one * 0.8f;
+
+        while (elapsedTime < animationDuration)
+        {
+            if (gameTitleText == null || titleRect == null) yield break;
+
+            elapsedTime += Time.deltaTime;
+            float progress = elapsedTime / animationDuration;
+
+            if (titleRect != null)
+            {
+                titleRect.localScale = Vector3.Lerp(startScale, endScale, progress);
+            }
+            canvasGroup.alpha = Mathf.Lerp(1f, 0f, progress);
+
+            yield return null;
+        }
+
+        // Hide the title
+        if (gameTitleText != null)
+        {
+            gameTitleText.gameObject.SetActive(false);
+
+            // Reset scale and alpha for next appearance
+            if (titleRect != null)
+            {
+                titleRect.localScale = Vector3.one;
+            }
+            if (canvasGroup != null)
+            {
+                canvasGroup.alpha = 1f;
+            }
+        }
+
+        // Mark that title is no longer showing
+        isTitleShowing = false;
+
+        // Fire event that title has finished
+        OnTitleFinished?.Invoke();
+
+        // Now show instructions if needed (after title is done)
+        if (ShouldShowInstructions())
+        {
+            ShowInstructions();
+            StartCoroutine(InstructionRoutine());
         }
     }
 
@@ -933,7 +1104,7 @@ public class UIManager : MonoBehaviour
         // Update level info
         if (levelNameText != null)
         {
-            levelNameText.text = levelManager.CurrentLevel.levelName;
+            levelNameText.text = $"Level {levelManager.CurrentLevel.levelNumber}\n{levelManager.CurrentLevel.levelName}";
         }
 
         UpdateLevelProgress(stackManager?.GetStackCount() ?? 0);
@@ -992,6 +1163,12 @@ public class UIManager : MonoBehaviour
         {
             stackHeightDisplay.SetActive(mode == GameMode.InfiniteStacker);
         }
+
+        // Show stack overview UI for all game modes
+        if (stackOverviewUI != null)
+        {
+            stackOverviewUI.gameObject.SetActive(true);
+        }
     }
 
     private void OnLevelLoaded(LevelData level)
@@ -1000,7 +1177,7 @@ public class UIManager : MonoBehaviour
 
         if (levelNameText != null)
         {
-            levelNameText.text = level.levelName;
+            levelNameText.text = $"Level {level.levelNumber}\n{level.levelName}";
         }
 
         UpdateLevelProgress(0);
@@ -1056,7 +1233,7 @@ public class UIManager : MonoBehaviour
         // Update level name
         if (levelNameText != null && levelManager != null && levelManager.CurrentLevel != null)
         {
-            levelNameText.text = $"{levelManager.CurrentLevel.levelName} Complete!";
+            levelNameText.text = $"Level {levelManager.CurrentLevel.levelNumber}\n{levelManager.CurrentLevel.levelName} Complete!";
         }
 
         // Update score
@@ -1460,6 +1637,11 @@ public class UIManager : MonoBehaviour
         if (comboPulseCoroutine != null)
         {
             StopCoroutine(comboPulseCoroutine);
+        }
+
+        if (gameTitleCoroutine != null)
+        {
+            StopCoroutine(gameTitleCoroutine);
         }
 
         // Stop combo timer update

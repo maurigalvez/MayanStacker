@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Level_05_Uxbenka
   m_EditorClassIdentifier: 
   levelNumber: 5
-  levelName: "Uxbenk\xE1 - Ancient Place"
+  levelName: Uxbenka
   location: Toledo, Belize
   levelDescription: "Hidden among mist-covered hills, Uxbenk\xE1 is one of Belize\u2019s
     oldest known Maya centers, dating to around 250 BC.\nIts plazas and carved stones
