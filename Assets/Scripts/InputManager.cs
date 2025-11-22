@@ -19,6 +19,7 @@ public class InputManager : MonoBehaviour
     private ObjectSpawner objectSpawner;
     private GameManager gameManager;
     private UIManager uiManager;
+    private LevelManager levelManager;
 
     // State
     private bool isInputBlocked = false;
@@ -68,6 +69,7 @@ public class InputManager : MonoBehaviour
         objectSpawner = DependencyRegistry.Find<ObjectSpawner>();
         gameManager = DependencyRegistry.Find<GameManager>();
         uiManager = DependencyRegistry.Find<UIManager>();
+        levelManager = DependencyRegistry.Find<LevelManager>();
 
         // Subscribe to game events
         if (gameManager != null)
@@ -117,6 +119,10 @@ public class InputManager : MonoBehaviour
         if (gameManager == null || !gameManager.IsGameActive || gameManager.IsGameOver)
             return;
 
+        // Block input if level is completed
+        if (levelManager != null && levelManager.IsLevelComplete)
+            return;
+
         // Block input if game is paused
         if (uiManager != null && uiManager.IsPaused)
             return;
@@ -147,6 +153,10 @@ public class InputManager : MonoBehaviour
         }
 
         if (gameManager == null || !gameManager.IsGameActive || gameManager.IsGameOver)
+            return;
+
+        // Block input if level is completed
+        if (levelManager != null && levelManager.IsLevelComplete)
             return;
 
         // Block input if game is paused

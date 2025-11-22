@@ -27,11 +27,13 @@ public class ObjectSpawner : MonoBehaviour
 
     // References
     private UIManager uiManager;
+    private LevelManager levelManager;
 
     private void Start()
     {
         // Get UI manager reference
         uiManager = DependencyRegistry.Find<UIManager>();
+        levelManager = DependencyRegistry.Find<LevelManager>();
 
         // Subscribe to game events
         var gameManager = DependencyRegistry.Find<GameManager>();
@@ -71,6 +73,12 @@ public class ObjectSpawner : MonoBehaviour
         // Don't allow dropping if game is over
         var gameManager = DependencyRegistry.Find<GameManager>();
         if (gameManager != null && gameManager.IsGameOver)
+        {
+            return;
+        }
+
+        // Don't allow dropping if level is completed
+        if (levelManager != null && levelManager.IsLevelComplete)
         {
             return;
         }
