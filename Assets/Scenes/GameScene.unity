@@ -220,7 +220,7 @@ Transform:
   m_GameObject: {fileID: 144379236}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.05173, y: 5, z: 0}
+  m_LocalPosition: {x: -0.05173, y: 12.48, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -488,7 +488,7 @@ Camera:
   far clip plane: 1000
   field of view: 34
   orthographic: 1
-  orthographic size: 8
+  orthographic size: 12
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
@@ -513,7 +513,7 @@ Transform:
   m_GameObject: {fileID: 519420028}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 7.5, z: -10}
+  m_LocalPosition: {x: 0, y: 11, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -532,12 +532,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f7685ef04d8b1bd42aa251b4a6849664, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  orthographicSize: 8
-  cameraOffset: {x: 0, y: 7.5, z: -10}
+  orthographicSize: 12
+  cameraOffset: {x: 0, y: 11, z: -10}
   followStack: 0
   followSpeed: 3
-  cameraHeightOffset: 7.5
-  minY: 7.5
+  cameraHeightOffset: 7
+  minY: 11
   maxY: 1000
   debugMode: 0
 --- !u!1 &570952936
@@ -1278,7 +1278,7 @@ Transform:
   m_GameObject: {fileID: 1559832333}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.05173, y: 13, z: 0}
+  m_LocalPosition: {x: -0.05173, y: 17, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -1313,7 +1313,7 @@ MonoBehaviour:
   recoilDirectionStrength: 2
   objectSpawner: {fileID: 144379237}
   spawnerOffset: {x: 0, y: -4, z: 0}
-  consistentHeightOffset: 13
+  consistentHeightOffset: 15
   constrainToScreen: 1
   screenMargin: 1
 --- !u!1 &1705766542
@@ -1552,6 +1552,7 @@ MonoBehaviour:
   objectDroppedSound: {fileID: 8300000, guid: 27837f8b462ea3842a2ea43925127233, type: 3}
   comboSuccessSound: {fileID: 8300000, guid: 6812dd07e93c72945bca03619d0a9b3c, type: 3}
   comboLostSound: {fileID: 8300000, guid: 6326ebddf6a1cb544abc3f87f8176305, type: 3}
+  codexUnlockSound: {fileID: 0}
   sfxVolume: 0.7
   allowSimultaneousSounds: 1
   enablePitchRandomization: 1
