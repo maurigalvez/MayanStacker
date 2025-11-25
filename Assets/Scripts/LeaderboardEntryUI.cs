@@ -22,6 +22,9 @@ public class LeaderboardEntryUI : MonoBehaviour
     [Header("Text Colors")]
     [SerializeField] private Color normalTextColor = Color.white;
     [SerializeField] private Color currentPlayerTextColor = Color.yellow;
+    [SerializeField] private Color firstPlaceTextColor = new Color(1f, 0.84f, 0f); // Gold
+    [SerializeField] private Color secondPlaceTextColor = new Color(0.75f, 0.75f, 0.75f); // Silver
+    [SerializeField] private Color thirdPlaceTextColor = new Color(0.8f, 0.5f, 0.2f); // Bronze
 
     /// <summary>
     /// Set up the UI with leaderboard entry data
@@ -60,16 +63,26 @@ public class LeaderboardEntryUI : MonoBehaviour
         Color bgColor = normalColor;
         Color textColor = normalTextColor;
 
-        // Highlight current player
+        // Determine text color based on position (prioritize current player color)
         if (entry.isCurrentPlayer)
         {
             bgColor = currentPlayerColor;
             textColor = currentPlayerTextColor;
         }
-        // Highlight top 3 positions
-        else if (entry.position <= 3)
+        else if (entry.position == 1)
         {
             bgColor = topThreeColor;
+            textColor = firstPlaceTextColor;
+        }
+        else if (entry.position == 2)
+        {
+            bgColor = topThreeColor;
+            textColor = secondPlaceTextColor;
+        }
+        else if (entry.position == 3)
+        {
+            bgColor = topThreeColor;
+            textColor = thirdPlaceTextColor;
         }
 
         // Apply background color
@@ -78,19 +91,10 @@ public class LeaderboardEntryUI : MonoBehaviour
             backgroundImage.color = bgColor;
         }
 
-        // Apply text color
-        if (entry.isCurrentPlayer)
-        {
-            if (positionText != null) positionText.color = textColor;
-            if (playerNameText != null) playerNameText.color = textColor;
-            if (scoreText != null) scoreText.color = textColor;
-        }
-        else
-        {
-            if (positionText != null) positionText.color = normalTextColor;
-            if (playerNameText != null) playerNameText.color = normalTextColor;
-            if (scoreText != null) scoreText.color = normalTextColor;
-        }
+        // Apply text color to all text elements
+        if (positionText != null) positionText.color = textColor;
+        if (playerNameText != null) playerNameText.color = textColor;
+        if (scoreText != null) scoreText.color = textColor;
     }
 
     /// <summary>

@@ -23,8 +23,8 @@ MonoBehaviour:
     sparks of the Classic Maya world.\nBetween river and jungle, Seibal stood \u2014
     last flame before the night."
   requiredStackHeight: 15
-  oneStarScore: 750
-  twoStarScore: 1500
+  oneStarScore: 800
+  twoStarScore: 1200
   threeStarScore: 2000
-  swingSpeedMultiplier: 1.5
-  swingAmplitudeMultiplier: 1.3
+  swingSpeedMultiplier: 1.2
+  swingAmplitudeMultiplier: 1.2

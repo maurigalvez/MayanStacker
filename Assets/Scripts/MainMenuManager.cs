@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
@@ -39,8 +40,13 @@ public class MainMenuManager : MonoBehaviour
     [Header("Level Selection")]
     [SerializeField] private Button backFromLevelSelectionButton;
     [SerializeField] private Button goToNextLevelButton;
+    [SerializeField] private Button previousLevelButton;
+    [SerializeField] private Button nextLevelButton;
+    [SerializeField] private Button codexButtonFromLevelSelection;
+    [SerializeField] private Button leaderboardButtonFromLevelSelection;
     [SerializeField] private GameObject levelButtonPrefab;
     [SerializeField] private Transform[] levelButtonContainers;
+    [SerializeField] private TextMeshProUGUI selectedLevelLabel;
 
     [Header("UI Elements")]
     [SerializeField] private TextMeshProUGUI versionText;
@@ -67,6 +73,8 @@ public class MainMenuManager : MonoBehaviour
 
     // State
     private bool isFirstShow = true;
+    private GameObject previousPanel = null; // Track previous panel for navigation
+    private int currentSelectedLevelIndex = -1; // Track currently selected/focused level (0-based)
 
     /// <summary>
     /// Get a level button by index (for use by ScrollView_PinchScale)
@@ -131,6 +139,72 @@ public class MainMenuManager : MonoBehaviour
         InitializeUI();
         SetupButtonListeners();
         ShowMainMenu();
+        
+        // Perform app startup integrity check
+        PerformStartupIntegrityCheck();
+    }
+    
+    /// <summary>
+    /// Perform Standard Integrity check on app startup (one-time check per session)
+    /// </summary>
+    private void PerformStartupIntegrityCheck()
+    {
+        var integrityManager = DependencyRegistry.Find<IntegrityManager>();
+        if (integrityManager != null && integrityManager.IsIntegrityChecksEnabled)
+        {
+            // Only perform if not already done
+            if (!integrityManager.HasPerformedStartupCheck)
+            {
+                Debug.Log("[MainMenuManager] Performing app startup integrity check...");
+                
+                // Optionally show sync panel during check
+                if (syncPanel != null && syncStatusText != null)
+                {
+                    syncPanel.SetActive(true);
+                    syncStatusText.text = "Verifying app integrity...";
+                }
+                
+                integrityManager.PerformStartupCheck((result) =>
+                {
+                    if (result.Success)
+                    {
+                        Debug.Log("[MainMenuManager] App startup integrity check passed.");
+                        
+                        // Hide sync panel after short delay
+                        if (syncPanel != null)
+                        {
+                            StartCoroutine(HideSyncPanelAfterDelay(syncCompleteDisplayDuration));
+                        }
+                    }
+                    else
+                    {
+                        Debug.LogWarning($"[MainMenuManager] App startup integrity check failed: {result.ErrorMessage}");
+                        
+                        // Hide sync panel on failure too (game continues)
+                        if (syncPanel != null)
+                        {
+                            syncPanel.SetActive(false);
+                        }
+                    }
+                });
+            }
+            else
+            {
+                Debug.Log("[MainMenuManager] Startup integrity check already performed this session.");
+            }
+        }
+    }
+    
+    /// <summary>
+    /// Coroutine to hide sync panel after a delay
+    /// </summary>
+    private IEnumerator HideSyncPanelAfterDelay(float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        if (syncPanel != null)
+        {
+            syncPanel.SetActive(false);
+        }
     }
 
     private void InitializeUI()
@@ -173,10 +247,10 @@ public class MainMenuManager : MonoBehaviour
             creditsButton.onClick.AddListener(ShowCreditsPanel);
 
         if (codexButton != null)
-            codexButton.onClick.AddListener(ShowCodexPanel);
+            codexButton.onClick.AddListener(OnCodexFromMainMenu);
 
         if (leaderboardButton != null)
-            leaderboardButton.onClick.AddListener(ShowLeaderboardPanel);
+            leaderboardButton.onClick.AddListener(OnLeaderboardFromMainMenu);
 
         // Settings
         if (backFromSettingsButton != null)
@@ -188,18 +262,32 @@ public class MainMenuManager : MonoBehaviour
 
         // Codex
         if (backFromCodexButton != null)
-            backFromCodexButton.onClick.AddListener(ShowMainMenu);
+            backFromCodexButton.onClick.AddListener(OnBackFromCodex);
 
         // Leaderboard
         if (backFromLeaderboardButton != null)
-            backFromLeaderboardButton.onClick.AddListener(ShowMainMenu);
+            backFromLeaderboardButton.onClick.AddListener(OnBackFromLeaderboard);
 
         // Level Selection
         if (backFromLevelSelectionButton != null)
             backFromLevelSelectionButton.onClick.AddListener(ShowMainMenu);
 
+        // Level Selection - Codex and Leaderboard buttons
+        if (codexButtonFromLevelSelection != null)
+            codexButtonFromLevelSelection.onClick.AddListener(OnCodexFromLevelSelection);
+
+        if (leaderboardButtonFromLevelSelection != null)
+            leaderboardButtonFromLevelSelection.onClick.AddListener(OnLeaderboardFromLevelSelection);
+
         if (goToNextLevelButton != null)
             goToNextLevelButton.onClick.AddListener(OnGoToNextLevelClicked);
+
+        // Level Navigation Buttons
+        if (previousLevelButton != null)
+            previousLevelButton.onClick.AddListener(OnPreviousLevelClicked);
+
+        if (nextLevelButton != null)
+            nextLevelButton.onClick.AddListener(OnNextLevelClicked);
     }
 
     private void InitializeLevelSelection()
@@ -241,6 +329,26 @@ public class MainMenuManager : MonoBehaviour
         {
             // Apply pulse animation to the next playable level
             spawnedLevelButtons[nextPlayableLevelIndex].StartPulseAnimation();
+            // Set this as the currently selected level
+            currentSelectedLevelIndex = nextPlayableLevelIndex;
+        }
+        else
+        {
+            // If no next playable level, find the last unlocked level
+            int lastUnlockedIndex = GetLastUnlockedLevelIndex();
+            if (lastUnlockedIndex >= 0)
+            {
+                currentSelectedLevelIndex = lastUnlockedIndex;
+                if (lastUnlockedIndex < spawnedLevelButtons.Count)
+                {
+                    spawnedLevelButtons[lastUnlockedIndex].StartPulseAnimation();
+                }
+            }
+            else
+            {
+                // Fallback to first level if none unlocked (shouldn't happen)
+                currentSelectedLevelIndex = 0;
+            }
         }
 
         // Update "Go to Next Level" button visibility/interactability
@@ -248,6 +356,12 @@ public class MainMenuManager : MonoBehaviour
         {
             goToNextLevelButton.interactable = (nextPlayableLevelIndex >= 0);
         }
+
+        // Update navigation buttons
+        UpdateNavigationButtons();
+
+        // Update level label
+        UpdateSelectedLevelLabel();
 
         Debug.Log($"Created {totalLevels} level buttons dynamically");
     }
@@ -331,6 +445,255 @@ public class MainMenuManager : MonoBehaviour
         return -1;
     }
 
+    /// <summary>
+    /// Get the last unlocked level index
+    /// </summary>
+    /// <returns>Level index of the last unlocked level, or -1 if none found</returns>
+    private int GetLastUnlockedLevelIndex()
+    {
+        if (levelManager == null) return -1;
+
+        int totalLevels = levelManager.TotalLevels;
+
+        // Find the last unlocked level (highest level number that's unlocked)
+        for (int i = totalLevels - 1; i >= 0; i--)
+        {
+            int levelNumber = i + 1; // Convert to 1-based
+            bool isUnlocked = levelManager.IsLevelUnlocked(levelNumber);
+
+            if (isUnlocked)
+            {
+                return i; // Return the index (0-based)
+            }
+        }
+
+        return -1;
+    }
+
+    /// <summary>
+    /// Get all unlocked level indices
+    /// </summary>
+    /// <returns>List of unlocked level indices (0-based), sorted by level number</returns>
+    private List<int> GetUnlockedLevelIndices()
+    {
+        List<int> unlockedIndices = new List<int>();
+
+        if (levelManager == null) return unlockedIndices;
+
+        int totalLevels = levelManager.TotalLevels;
+
+        for (int i = 0; i < totalLevels; i++)
+        {
+            int levelNumber = i + 1; // Convert to 1-based
+            bool isUnlocked = levelManager.IsLevelUnlocked(levelNumber);
+
+            if (isUnlocked)
+            {
+                unlockedIndices.Add(i);
+            }
+        }
+
+        return unlockedIndices;
+    }
+
+    /// <summary>
+    /// Get the previous unlocked level index (with circular navigation)
+    /// </summary>
+    /// <param name="currentIndex">Current level index (0-based)</param>
+    /// <returns>Previous unlocked level index, or -1 if none found</returns>
+    private int GetPreviousUnlockedLevelIndex(int currentIndex)
+    {
+        List<int> unlockedIndices = GetUnlockedLevelIndices();
+
+        if (unlockedIndices.Count == 0) return -1;
+
+        // Find current index in the unlocked list
+        int currentPosition = unlockedIndices.IndexOf(currentIndex);
+
+        if (currentPosition < 0)
+        {
+            // Current level is not in unlocked list, find the closest unlocked level
+            // Find the first unlocked level that's less than currentIndex
+            for (int i = unlockedIndices.Count - 1; i >= 0; i--)
+            {
+                if (unlockedIndices[i] < currentIndex)
+                {
+                    return unlockedIndices[i];
+                }
+            }
+            // If none found before current, return the last unlocked (circular)
+            return unlockedIndices[unlockedIndices.Count - 1];
+        }
+
+        // Circular navigation: if at first unlocked, go to last unlocked
+        if (currentPosition == 0)
+        {
+            return unlockedIndices[unlockedIndices.Count - 1];
+        }
+
+        // Otherwise, return the previous unlocked level
+        return unlockedIndices[currentPosition - 1];
+    }
+
+    /// <summary>
+    /// Get the next unlocked level index (with circular navigation)
+    /// </summary>
+    /// <param name="currentIndex">Current level index (0-based)</param>
+    /// <returns>Next unlocked level index, or -1 if none found</returns>
+    private int GetNextUnlockedLevelIndex(int currentIndex)
+    {
+        List<int> unlockedIndices = GetUnlockedLevelIndices();
+
+        if (unlockedIndices.Count == 0) return -1;
+
+        // Find current index in the unlocked list
+        int currentPosition = unlockedIndices.IndexOf(currentIndex);
+
+        if (currentPosition < 0)
+        {
+            // Current level is not in unlocked list, find the closest unlocked level
+            // Find the first unlocked level that's greater than currentIndex
+            for (int i = 0; i < unlockedIndices.Count; i++)
+            {
+                if (unlockedIndices[i] > currentIndex)
+                {
+                    return unlockedIndices[i];
+                }
+            }
+            // If none found after current, return the first unlocked (circular)
+            return unlockedIndices[0];
+        }
+
+        // Circular navigation: if at last unlocked, go to first unlocked
+        if (currentPosition == unlockedIndices.Count - 1)
+        {
+            return unlockedIndices[0];
+        }
+
+        // Otherwise, return the next unlocked level
+        return unlockedIndices[currentPosition + 1];
+    }
+
+    /// <summary>
+    /// Update navigation button states based on unlocked levels
+    /// </summary>
+    private void UpdateNavigationButtons()
+    {
+        if (previousLevelButton != null)
+        {
+            // Previous button should always be enabled if there are unlocked levels
+            List<int> unlockedIndices = GetUnlockedLevelIndices();
+            previousLevelButton.interactable = unlockedIndices.Count > 0;
+        }
+
+        if (nextLevelButton != null)
+        {
+            // Next button should always be enabled if there are unlocked levels
+            List<int> unlockedIndices = GetUnlockedLevelIndices();
+            nextLevelButton.interactable = unlockedIndices.Count > 0;
+        }
+    }
+
+    /// <summary>
+    /// Update the selected level label with level number and name
+    /// </summary>
+    private void UpdateSelectedLevelLabel()
+    {
+        if (selectedLevelLabel == null)
+        {
+            return;
+        }
+
+        if (currentSelectedLevelIndex < 0 || levelManager == null)
+        {
+            selectedLevelLabel.text = "";
+            return;
+        }
+
+        // Get all levels from LevelManager
+        List<LevelData> allLevels = levelManager.GetAllLevels();
+
+        if (currentSelectedLevelIndex >= 0 && currentSelectedLevelIndex < allLevels.Count)
+        {
+            LevelData levelData = allLevels[currentSelectedLevelIndex];
+            if (levelData != null)
+            {
+                int levelNumber = currentSelectedLevelIndex + 1; // Convert to 1-based
+                selectedLevelLabel.text = $"Level {levelNumber}\n{levelData.levelName}";
+            }
+            else
+            {
+                selectedLevelLabel.text = "";
+            }
+        }
+        else
+        {
+            selectedLevelLabel.text = "";
+        }
+    }
+
+    /// <summary>
+    /// Center map on a specific level index
+    /// </summary>
+    /// <param name="levelIndex">Level index to center on (0-based)</param>
+    private void CenterMapOnLevel(int levelIndex)
+    {
+        if (levelIndex < 0 || levelIndex >= spawnedLevelButtons.Count)
+        {
+            Debug.LogWarning($"Cannot center map on invalid level index: {levelIndex}");
+            return;
+        }
+
+        // Use LevelData position directly - no need to get the button rect
+        StartCoroutine(CenterMapOnLevelDelayed(levelIndex));
+    }
+
+    /// <summary>
+    /// Centers the map on a specific level after a brief delay to ensure UI is laid out
+    /// Uses LevelData position for reliable centering
+    /// </summary>
+    private System.Collections.IEnumerator CenterMapOnLevelDelayed(int levelIndex)
+    {
+        // Wait for end of frame to ensure UI layout is complete
+        yield return new WaitForEndOfFrame();
+
+        // Force canvas update to ensure layout is calculated
+        Canvas.ForceUpdateCanvases();
+
+        // Wait a bit longer to ensure scaling calculations are complete
+        yield return new WaitForSeconds(0.15f);
+
+        // Force another canvas update after delay
+        Canvas.ForceUpdateCanvases();
+
+        // Try to find ScrollView_PinchScale with retries
+        ScrollView_PinchScale mapScrollView = null;
+        int maxRetries = 10;
+        int retryCount = 0;
+
+        while (mapScrollView == null && retryCount < maxRetries)
+        {
+            mapScrollView = DependencyRegistry.Find<ScrollView_PinchScale>();
+            if (mapScrollView == null)
+            {
+                retryCount++;
+                yield return new WaitForEndOfFrame();
+            }
+        }
+
+        if (mapScrollView != null)
+        {
+            // Force canvas update one more time before centering
+            Canvas.ForceUpdateCanvases();
+            var levelButton = spawnedLevelButtons[levelIndex];
+            // Use the new method with LevelData position (more reliable)
+            mapScrollView.CenterOnRectTransform(levelButton.GetComponent<RectTransform>(), animate: true);
+        }
+        else
+        {
+            Debug.LogWarning($"ScrollView_PinchScale not found via DependencyRegistry after {maxRetries} retries.");
+        }
+    }
 
     /// <summary>
     /// Centers the map on the current level after a brief delay to ensure UI is laid out
@@ -404,10 +767,14 @@ public class MainMenuManager : MonoBehaviour
         SetActivePanel(creditsPanel);
     }
 
-    private void ShowCodexPanel()
+    private void ShowCodexPanel(GameObject returnToPanel = null)
     {
         soundManager?.PlayButtonClick();
         soundManager?.PlayPanelOpen();
+
+        // Store the panel to return to (default to main menu if not specified)
+        previousPanel = returnToPanel != null ? returnToPanel : mainMenuPanel;
+
         SetActivePanel(codexPanel);
 
         // Initialize codex
@@ -417,10 +784,14 @@ public class MainMenuManager : MonoBehaviour
         }
     }
 
-    private void ShowLeaderboardPanel()
+    private void ShowLeaderboardPanel(GameObject returnToPanel = null)
     {
         soundManager?.PlayButtonClick();
         soundManager?.PlayPanelOpen();
+
+        // Store the panel to return to (default to main menu if not specified)
+        previousPanel = returnToPanel != null ? returnToPanel : mainMenuPanel;
+
         SetActivePanel(leaderboardPanel);
 
         // Open the leaderboard panel with mode selection visible
@@ -452,22 +823,36 @@ public class MainMenuManager : MonoBehaviour
 
     private void SetActivePanel(GameObject panelToShow)
     {
-        // Hide all panels
-        if (mainMenuPanel != null) mainMenuPanel.SetActive(false);
-        if (settingsPanel != null) settingsPanel.SetActive(false);
-        if (creditsPanel != null) creditsPanel.SetActive(false);
-        if (levelSelectionPanel != null) levelSelectionPanel.SetActive(false);
-        if (codexPanel != null) codexPanel.SetActive(false);
-        if (leaderboardPanel != null) leaderboardPanel.SetActive(false);
+        // Check if we're switching away from codex
+        bool isSwitchingFromCodex = codexPanel != null && codexPanel.activeSelf && panelToShow != codexPanel;
 
-        // Hide codex if switching away from it
-        if (codexManager != null && panelToShow != codexPanel)
+        // If switching from codex, show the target panel first (so there's no empty background)
+        if (isSwitchingFromCodex && panelToShow != null)
         {
-            codexManager.HideCodex();
+            panelToShow.SetActive(true);
         }
 
-        // Show the requested panel
-        if (panelToShow != null)
+        // Hide all panels (except codex if we're animating it, and the target panel if already shown)
+        if (mainMenuPanel != null && mainMenuPanel != panelToShow) mainMenuPanel.SetActive(false);
+        if (settingsPanel != null && settingsPanel != panelToShow) settingsPanel.SetActive(false);
+        if (creditsPanel != null && creditsPanel != panelToShow) creditsPanel.SetActive(false);
+        if (levelSelectionPanel != null && levelSelectionPanel != panelToShow) levelSelectionPanel.SetActive(false);
+        if (leaderboardPanel != null && leaderboardPanel != panelToShow) leaderboardPanel.SetActive(false);
+
+        // Hide codex if switching away from it (with animation)
+        if (isSwitchingFromCodex && codexManager != null)
+        {
+            // Start scroll-down animation - codex panel will be hidden after animation completes
+            codexManager.HideCodex();
+        }
+        else if (panelToShow != codexPanel)
+        {
+            // Not switching from codex and not switching to codex, hide it immediately
+            if (codexPanel != null) codexPanel.SetActive(false);
+        }
+
+        // Show the requested panel (if not already shown)
+        if (panelToShow != null && !panelToShow.activeSelf)
         {
             panelToShow.SetActive(true);
         }
@@ -491,6 +876,13 @@ public class MainMenuManager : MonoBehaviour
     {
         soundManager?.PlayLevelButtonClick();
         Debug.Log($"Level {levelIndex + 1} selected");
+
+        // Update selected level index before loading
+        currentSelectedLevelIndex = levelIndex;
+
+        // Update level label
+        UpdateSelectedLevelLabel();
+
         SceneLoader.LoadGameScene(gameSceneName, GameMode.StackerLevels, levelIndex);
     }
 
@@ -508,6 +900,180 @@ public class MainMenuManager : MonoBehaviour
         {
             soundManager?.PlayButtonClick();
             Debug.Log("All levels completed!");
+        }
+    }
+
+    /// <summary>
+    /// Handle previous level button click - navigates to previous unlocked level (circular)
+    /// </summary>
+    private void OnPreviousLevelClicked()
+    {
+        if (currentSelectedLevelIndex < 0)
+        {
+            Debug.LogWarning("No level currently selected!");
+            return;
+        }
+
+        int previousIndex = GetPreviousUnlockedLevelIndex(currentSelectedLevelIndex);
+
+        if (previousIndex >= 0 && previousIndex < spawnedLevelButtons.Count)
+        {
+            soundManager?.PlayLevelButtonClick();
+
+            // Stop pulse animation on current level
+            if (currentSelectedLevelIndex >= 0 && currentSelectedLevelIndex < spawnedLevelButtons.Count)
+            {
+                spawnedLevelButtons[currentSelectedLevelIndex].StopPulseAnimation();
+            }
+
+            // Update selected level
+            currentSelectedLevelIndex = previousIndex;
+
+            // Start pulse animation on new level
+            spawnedLevelButtons[previousIndex].StartPulseAnimation();
+
+            // Center map on the new level
+            CenterMapOnLevel(previousIndex);
+
+            // Update level label
+            UpdateSelectedLevelLabel();
+
+            Debug.Log($"Navigated to previous unlocked level: {previousIndex + 1}");
+        }
+        else
+        {
+            soundManager?.PlayButtonClick();
+            Debug.LogWarning("No previous unlocked level found!");
+        }
+    }
+
+    /// <summary>
+    /// Handle next level button click - navigates to next unlocked level (circular)
+    /// </summary>
+    private void OnNextLevelClicked()
+    {
+        if (currentSelectedLevelIndex < 0)
+        {
+            Debug.LogWarning("No level currently selected!");
+            return;
+        }
+
+        int nextIndex = GetNextUnlockedLevelIndex(currentSelectedLevelIndex);
+
+        if (nextIndex >= 0 && nextIndex < spawnedLevelButtons.Count)
+        {
+            soundManager?.PlayLevelButtonClick();
+
+            // Stop pulse animation on current level
+            if (currentSelectedLevelIndex >= 0 && currentSelectedLevelIndex < spawnedLevelButtons.Count)
+            {
+                spawnedLevelButtons[currentSelectedLevelIndex].StopPulseAnimation();
+            }
+
+            // Update selected level
+            currentSelectedLevelIndex = nextIndex;
+
+            // Start pulse animation on new level
+            spawnedLevelButtons[nextIndex].StartPulseAnimation();
+
+            // Center map on the new level
+            CenterMapOnLevel(nextIndex);
+
+            // Update level label
+            UpdateSelectedLevelLabel();
+
+            Debug.Log($"Navigated to next unlocked level: {nextIndex + 1}");
+        }
+        else
+        {
+            soundManager?.PlayButtonClick();
+            Debug.LogWarning("No next unlocked level found!");
+        }
+    }
+
+    /// <summary>
+    /// Handle codex button click from main menu
+    /// </summary>
+    private void OnCodexFromMainMenu()
+    {
+        ShowCodexPanel(mainMenuPanel);
+    }
+
+    /// <summary>
+    /// Handle leaderboard button click from main menu
+    /// </summary>
+    private void OnLeaderboardFromMainMenu()
+    {
+        ShowLeaderboardPanel(mainMenuPanel);
+    }
+
+    /// <summary>
+    /// Handle codex button click from level selection
+    /// </summary>
+    private void OnCodexFromLevelSelection()
+    {
+        ShowCodexPanel(levelSelectionPanel);
+    }
+
+    /// <summary>
+    /// Handle leaderboard button click from level selection
+    /// </summary>
+    private void OnLeaderboardFromLevelSelection()
+    {
+        ShowLeaderboardPanel(levelSelectionPanel);
+    }
+
+    /// <summary>
+    /// Handle back button from codex - returns to previous panel
+    /// </summary>
+    private void OnBackFromCodex()
+    {
+        soundManager?.PlayBackButton();
+        soundManager?.PlayPanelClose();
+
+        // Return to the previous panel (main menu or level selection)
+        if (previousPanel != null)
+        {
+            if (previousPanel == levelSelectionPanel)
+            {
+                ShowLevelSelection();
+            }
+            else
+            {
+                ShowMainMenu();
+            }
+        }
+        else
+        {
+            // Fallback to main menu if previous panel is not set
+            ShowMainMenu();
+        }
+    }
+
+    /// <summary>
+    /// Handle back button from leaderboard - returns to previous panel
+    /// </summary>
+    private void OnBackFromLeaderboard()
+    {
+        soundManager?.PlayBackButton();
+        soundManager?.PlayPanelClose();
+
+        // Return to the previous panel (main menu or level selection)
+        if (previousPanel != null)
+        {
+            if (previousPanel == levelSelectionPanel)
+            {
+                ShowLevelSelection();
+            }
+            else
+            {
+                ShowMainMenu();
+            }
+        }
+        else
+        {
+            // Fallback to main menu if previous panel is not set
+            ShowMainMenu();
         }
     }
 
@@ -647,8 +1213,20 @@ public class MainMenuManager : MonoBehaviour
         if (backFromLevelSelectionButton != null)
             backFromLevelSelectionButton.onClick.RemoveAllListeners();
 
+        if (codexButtonFromLevelSelection != null)
+            codexButtonFromLevelSelection.onClick.RemoveAllListeners();
+
+        if (leaderboardButtonFromLevelSelection != null)
+            leaderboardButtonFromLevelSelection.onClick.RemoveAllListeners();
+
         if (goToNextLevelButton != null)
             goToNextLevelButton.onClick.RemoveAllListeners();
+
+        if (previousLevelButton != null)
+            previousLevelButton.onClick.RemoveAllListeners();
+
+        if (nextLevelButton != null)
+            nextLevelButton.onClick.RemoveAllListeners();
 
         // Clean up spawned level buttons
         ClearLevelButtons();

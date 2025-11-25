@@ -27,9 +27,11 @@ MonoBehaviour:
     uncovered its ruins.\nBy 1958, excavation began.\nIn 1986, new life returned
     as Guatemalan refugees helped restore Edzn\xE1, guided by international aid.\n\nThe
     stones remember \u2014 even when the world forgets.\n"
+  siteImage: {fileID: 0}
   requiredStackHeight: 8
-  oneStarScore: 100
-  twoStarScore: 300
-  threeStarScore: 500
+  oneStarScore: 250
+  twoStarScore: 500
+  threeStarScore: 800
   swingSpeedMultiplier: 1
   swingAmplitudeMultiplier: 1
+  mapPosition: {x: 1687, y: -3230}

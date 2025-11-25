@@ -17,9 +17,13 @@ public class ScrollView_PinchScale : MonoBehaviour, IDragHandler, IScrollHandler
     [Header("Zoom Settings")]
     [SerializeField] private float zoomSpeed = 0.1f;
     [SerializeField] private float minZoom = 0.5f;
-    [SerializeField] private float maxZoom = 3f;
+    [SerializeField] private float maxZoom = 7f;
     [SerializeField] private float mouseScrollSensitivity = 0.1f;
     [SerializeField] private float pinchSensitivity = 0.01f;
+
+    [Header("Animation Settings")]
+    [SerializeField] private float centeringAnimationDuration = 0.5f;
+    [SerializeField] private AnimationCurve centeringAnimationCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
 
     [Header("Debug")]
     [SerializeField] private bool enableDebugLogs = false;
@@ -28,6 +32,10 @@ public class ScrollView_PinchScale : MonoBehaviour, IDragHandler, IScrollHandler
     private float currentZoom;
     private float previousTouchDistance = 0f;
     private bool isPinching = false;
+    private Coroutine centeringAnimationCoroutine;
+
+    // Public property to access current zoom
+    public float CurrentZoom => currentZoom;
 
     private void Start()
     {
@@ -391,11 +399,19 @@ public class ScrollView_PinchScale : MonoBehaviour, IDragHandler, IScrollHandler
 
     /// <summary>
     /// Centers the map view on a specific RectTransform (e.g., a level button)
+    /// Requires ScrollRect to be present
     /// </summary>
     /// <param name="targetRect">The RectTransform to center on</param>
     /// <param name="animate">Whether to animate the centering (default: false for instant)</param>
     public void CenterOnRectTransform(RectTransform targetRect, bool animate = false)
     {
+        if (scrollRect == null)
+        {
+            if (enableDebugLogs)
+                Debug.LogWarning("ScrollView_PinchScale: Cannot center - ScrollRect is required");
+            return;
+        }
+
         if (mapRect == null || targetRect == null)
         {
             if (enableDebugLogs)
@@ -403,99 +419,177 @@ public class ScrollView_PinchScale : MonoBehaviour, IDragHandler, IScrollHandler
             return;
         }
 
-        // If we have a ScrollRect, use its normalized position for centering
-        if (scrollRect != null)
-        {
-            CenterOnRectTransformWithScrollRect(targetRect, animate);
-            return;
-        }
+        CenterOnRectTransformWithScrollRect(targetRect, animate);
+    }
 
-        // Fallback to direct anchoredPosition manipulation
-        RectTransform viewportRect = mapRect.parent as RectTransform;
-        if (viewportRect == null)
+    /// <summary>
+    /// Centers using ScrollRect's scroll position, accounting for content scaling
+    /// Map is both content and mapRect, and it scales 3-7x
+    /// Numbered containers also have their own scale (not 1)
+    /// Target buttons are nested: Map -> Locations -> numbered containers -> Level Button(Clone)
+    /// Works by calculating where target is relative to content pivot, then adjusting anchoredPosition
+    /// </summary>
+    private void CenterOnRectTransformWithScrollRect(RectTransform target, bool animate)
+    {
+        ScrollRect scroll = scrollRect;
+        RectTransform content = scroll.content;
+        RectTransform viewport = scroll.viewport;
+
+        if (content == null || viewport == null || target == null)
         {
             if (enableDebugLogs)
-                Debug.LogWarning("ScrollView_PinchScale: Cannot center - viewport parent is null and no ScrollRect found");
+                Debug.LogWarning("ScrollView_PinchScale: Cannot center - content, viewport, or target is null");
             return;
         }
 
-        // Get the target's position in the map's local coordinate space
-        Vector2 targetPosInMap = mapRect.InverseTransformPoint(targetRect.position);
+        // Force canvas update to ensure layout is correct
+        Canvas.ForceUpdateCanvases();
 
-        // Get the viewport center in the map's local coordinate space
-        Vector2 viewportCenterInMap = mapRect.InverseTransformPoint(viewportRect.position);
+        // Get the canvas for coordinate conversion
+        Canvas canvas = content.GetComponentInParent<Canvas>();
+        Camera cam = canvas != null && canvas.renderMode == RenderMode.ScreenSpaceCamera ? canvas.worldCamera : null;
 
-        // Calculate how much we need to move the map to center the target
-        Vector2 offset = viewportCenterInMap - targetPosInMap;
+        // --- 1. Get target's center position in content's local unscaled space ---
+        Vector2 targetRectCenter = target.rect.center;
+        Vector3 targetCenterWorld = target.TransformPoint(targetRectCenter);
+        Vector2 targetCenterScreen = RectTransformUtility.WorldToScreenPoint(cam, targetCenterWorld);
 
-        // Apply the offset to center the target
-        mapRect.anchoredPosition += offset;
+        Vector2 targetInContentSpace;
+        RectTransformUtility.ScreenPointToLocalPointInRectangle(
+            content,
+            targetCenterScreen,
+            cam,
+            out targetInContentSpace
+        );
+
+        // --- 2. Calculate the required anchoredPosition to center the target ---
+        // Key relationship: When content is scaled by S, a point at position P in content's local unscaled space
+        // appears at position: anchoredPosition + P * S in viewport space.
+        // 
+        // We want the target (at targetInContentSpace) to be at the viewport center.
+        // Viewport center is at viewport.rect.center in viewport space (typically 0,0).
+        //
+        // Therefore: viewport.rect.center = anchoredPosition + targetInContentSpace * scale
+        // Solving for anchoredPosition: anchoredPosition = viewport.rect.center - targetInContentSpace * scale
+
+        Vector3 contentScale = content.localScale;
+        Vector2 viewportCenter = viewport.rect.center;
+
+        Vector2 newAnchoredPos = viewportCenter - new Vector2(
+            targetInContentSpace.x * contentScale.x,
+            targetInContentSpace.y * contentScale.y
+        );
+
+        // --- 3. Clamp to scroll bounds (optional) ---
+        //newAnchoredPos.x = Mathf.Clamp(newAnchoredPos.x, -GetRightClamp(), GetLeftClamp());
+        //newAnchoredPos.y = Mathf.Clamp(newAnchoredPos.y, -GetBottomClamp(), GetTopClamp());
+
+        // --- 4. Apply position (with animation if requested) ---
+        Vector2 startPos = content.anchoredPosition;
+
+        if (animate && centeringAnimationDuration > 0f)
+        {
+            // Stop any existing animation
+            if (centeringAnimationCoroutine != null)
+            {
+                StopCoroutine(centeringAnimationCoroutine);
+            }
+
+            // Start new animation
+            centeringAnimationCoroutine = StartCoroutine(AnimateCentering(content, startPos, newAnchoredPos, centeringAnimationDuration));
+        }
+        else
+        {
+            // Set position instantly
+            content.anchoredPosition = newAnchoredPos;
+        }
 
         if (enableDebugLogs)
         {
-            Debug.Log($"ScrollView_PinchScale: Centered on {targetRect.name} (no ScrollRect). " +
-                     $"Target pos in map: {targetPosInMap}, Viewport center in map: {viewportCenterInMap}, Offset: {offset}, " +
-                     $"New anchored position: {mapRect.anchoredPosition}");
+            Debug.Log($"ScrollView_PinchScale: Centering - Target: {target.name}, " +
+                     $"Target in content space: {targetInContentSpace}, " +
+                     $"Viewport center: {viewportCenter}, " +
+                     $"Target * scale: ({targetInContentSpace.x * contentScale.x}, {targetInContentSpace.y * contentScale.y}), " +
+                     $"Start anchoredPos: {startPos}, " +
+                     $"Target anchoredPos: {newAnchoredPos}, " +
+                     $"Animate: {animate}, Content scale: {contentScale}");
         }
     }
 
     /// <summary>
-    /// Centers using ScrollRect's normalized position (more reliable for ScrollRect-based UI)
+    /// Coroutine to smoothly animate the content's anchoredPosition from start to target
     /// </summary>
-    private void CenterOnRectTransformWithScrollRect(RectTransform targetRect, bool animate)
+    private System.Collections.IEnumerator AnimateCentering(RectTransform content, Vector2 startPos, Vector2 targetPos, float duration)
     {
-        if (scrollRect == null || scrollRect.content == null || targetRect == null)
+        float elapsedTime = 0f;
+
+        while (elapsedTime < duration)
         {
-            if (enableDebugLogs)
-                Debug.LogWarning("ScrollView_PinchScale: Cannot center with ScrollRect - missing components");
-            return;
+            elapsedTime += Time.deltaTime;
+            float t = elapsedTime / duration;
+
+            // Apply animation curve if provided
+            if (centeringAnimationCurve != null && centeringAnimationCurve.length > 0)
+            {
+                t = centeringAnimationCurve.Evaluate(t);
+            }
+
+            // Smoothly interpolate between start and target position
+            content.anchoredPosition = Vector2.Lerp(startPos, targetPos, t);
+
+            yield return null;
         }
 
-        // Force canvas update to ensure layout is complete
-        Canvas.ForceUpdateCanvases();
-
-        RectTransform content = scrollRect.content;
-        RectTransform viewport = scrollRect.viewport != null ? scrollRect.viewport : scrollRect.GetComponent<RectTransform>();
-
-        if (viewport == null)
-        {
-            if (enableDebugLogs)
-                Debug.LogWarning("ScrollView_PinchScale: Cannot get viewport");
-            return;
-        }
-
-        // Get the target's position in content's local space
-        Vector2 targetPosInContent = content.InverseTransformPoint(targetRect.position);
-
-        // Get viewport bounds in content's local space
-        Vector3[] viewportCorners = new Vector3[4];
-        viewport.GetWorldCorners(viewportCorners);
-
-        // Convert viewport corners to content's local space
-        Vector2 viewportMin = content.InverseTransformPoint(viewportCorners[0]);
-        Vector2 viewportMax = content.InverseTransformPoint(viewportCorners[2]);
-        Vector2 viewportSize = viewportMax - viewportMin;
-        Vector2 viewportCenter = viewportMin + viewportSize * 0.5f;
-
-        // Calculate the offset needed to center the target
-        Vector2 offset = viewportCenter - targetPosInContent;
-
-        // Store current position
-        Vector2 currentPosition = content.anchoredPosition;
-
-        // Apply the offset
-        content.anchoredPosition += offset;
-
-        // Force another canvas update after moving
-        Canvas.ForceUpdateCanvases();
+        // Ensure we end exactly at the target position
+        content.anchoredPosition = targetPos;
+        centeringAnimationCoroutine = null;
 
         if (enableDebugLogs)
         {
-            Debug.Log($"ScrollView_PinchScale: Centered on {targetRect.name} (using ScrollRect). " +
-                     $"Target world pos: {targetRect.position}, Target in content: {targetPosInContent}, " +
-                     $"Viewport center in content: {viewportCenter}, " +
-                     $"Offset: {offset}, Old position: {currentPosition}, New position: {content.anchoredPosition}");
+            Debug.Log($"ScrollView_PinchScale: Centering animation complete");
         }
+    }
+
+    private float GetLeftClamp()   // content cannot move more right than this
+    {
+        float contentWidth = scrollRect.content.rect.width;
+        float viewportWidth = scrollRect.viewport.rect.width;
+
+        float pivot = scrollRect.content.pivot.x;
+
+        // how far the content can move so the LEFT edge aligns with viewport LEFT
+        return (contentWidth * pivot) - (viewportWidth * 0.5f);
+    }
+
+    private float GetRightClamp()  // content cannot move more left than this
+    {
+        float contentWidth = scrollRect.content.rect.width;
+        float viewportWidth = scrollRect.viewport.rect.width;
+
+        float pivot = scrollRect.content.pivot.x;
+
+        // how far the content can move so the RIGHT edge aligns with viewport RIGHT
+        return (contentWidth * (1f - pivot)) - (viewportWidth * 0.5f);
+    }
+
+    private float GetTopClamp()    // content cannot move more down than this
+    {
+        float contentHeight = scrollRect.content.rect.height;
+        float viewportHeight = scrollRect.viewport.rect.height;
+
+        float pivot = scrollRect.content.pivot.y;
+
+        return (contentHeight * (1f - pivot)) - (viewportHeight * 0.5f);
+    }
+
+    private float GetBottomClamp() // content cannot move more up than this
+    {
+        float contentHeight = scrollRect.content.rect.height;
+        float viewportHeight = scrollRect.viewport.rect.height;
+
+        float pivot = scrollRect.content.pivot.y;
+
+        return (contentHeight * pivot) - (viewportHeight * 0.5f);
     }
 
     /// <summary>
@@ -659,6 +753,13 @@ public class ScrollView_PinchScale : MonoBehaviour, IDragHandler, IScrollHandler
 
     private void OnDestroy()
     {
+        // Stop any running animation
+        if (centeringAnimationCoroutine != null)
+        {
+            StopCoroutine(centeringAnimationCoroutine);
+            centeringAnimationCoroutine = null;
+        }
+
         // Unregister from dependency registry
         DependencyRegistry.Unregister<ScrollView_PinchScale>(this);
     }

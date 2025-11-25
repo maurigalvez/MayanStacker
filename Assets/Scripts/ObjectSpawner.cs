@@ -44,6 +44,12 @@ public class ObjectSpawner : MonoBehaviour
             gameManager.OnGameRestart += OnGameRestart;
         }
 
+        // Subscribe to level events
+        if (levelManager != null)
+        {
+            levelManager.OnLevelCompleted += OnLevelCompleted;
+        }
+
         // Subscribe to UI events (title finished)
         if (uiManager != null)
         {
@@ -59,11 +65,20 @@ public class ObjectSpawner : MonoBehaviour
         // Unsubscribe from this object's event
         landedObject.OnObjectLanded -= OnObjectLanded;
 
-        // Mark that we're no longer waiting for landing
-        waitingForLanding = false;
+        // Don't spawn a new object if level is completed
+        if (levelManager != null && levelManager.IsLevelComplete)
+        {
+            // Mark that we're no longer waiting for landing
+            waitingForLanding = false;
+            return;
+        }
 
-        // Spawn a new object after the current one has landed and settled
+        // Spawn a new object BEFORE clearing the waiting flag
+        // This prevents race conditions with OnTitleFinished trying to spawn at the same time
         SpawnNewObject();
+
+        // Mark that we're no longer waiting for landing (AFTER spawning)
+        waitingForLanding = false;
     }
 
     public void DropCurrentObject()
@@ -195,9 +210,9 @@ public class ObjectSpawner : MonoBehaviour
     private void OnGameStart()
     {
         canSpawn = true;
-        // Don't spawn immediately - wait for title to finish
-        // Spawning will happen in OnTitleFinished if no object exists
-        if (currentObject == null && (uiManager == null || !uiManager.IsTitleShowing))
+        // Spawn immediately when game starts, even if title is still showing
+        // This allows players to start dropping blocks before the title disappears
+        if (currentObject == null)
         {
             SpawnNewObject();
         }
@@ -206,7 +221,8 @@ public class ObjectSpawner : MonoBehaviour
     private void OnTitleFinished()
     {
         // Title has finished, now we can spawn if game is active and no object exists
-        if (canSpawn && currentObject == null)
+        // Don't spawn if we're waiting for a landing - that will trigger the spawn instead
+        if (canSpawn && currentObject == null && !waitingForLanding)
         {
             SpawnNewObject();
         }
@@ -214,32 +230,55 @@ public class ObjectSpawner : MonoBehaviour
 
     private void OnGameOver()
     {
+        // Cancel any pending spawns
+        CancelInvoke(nameof(SpawnNewObject));
+
         canSpawn = false;
     }
 
-    private void OnGameRestart()
+    private void OnLevelCompleted(int stars, int score, bool isFirstCompletion)
     {
-        // Clean up current object
+        // Cancel any pending spawns
+        CancelInvoke(nameof(SpawnNewObject));
+
+        // Destroy the current object when level is completed
+        // This prevents the "stuck block" issue where a block is left swinging
         if (currentObject != null)
         {
             Destroy(currentObject);
             currentObject = null;
         }
 
+        canSpawn = false;
+        waitingForLanding = false;
+    }
+
+    private void OnGameRestart()
+    {
+        // Cancel any pending Invoke calls to prevent double spawning
+        CancelInvoke(nameof(SpawnNewObject));
+
+        // Clean up ALL stackable objects, not just the current one
+        // This ensures that any blocks spawned after level completion are removed
+        GameObject[] allStackableObjects = GameObject.FindGameObjectsWithTag("Stackable");
+        foreach (GameObject obj in allStackableObjects)
+        {
+            Destroy(obj);
+        }
+
+        currentObject = null;
         canSpawn = true;
         waitingForLanding = false;
 
-        // Don't spawn immediately - wait for title to finish
-        // Spawning will happen in OnTitleFinished
-        // If title is not showing (shouldn't happen, but safety check), spawn after delay
-        if (uiManager == null || !uiManager.IsTitleShowing)
-        {
-            Invoke(nameof(SpawnNewObject), 0.5f);
-        }
+        // Don't spawn here - let OnGameStart handle spawning
+        // This prevents double spawning since OnGameRestart is typically followed by OnGameStart
     }
 
     private void OnDestroy()
     {
+        // Cancel any pending Invoke calls
+        CancelInvoke();
+
         // Unregister from dependency registry
         DependencyRegistry.Unregister<ObjectSpawner>(this);
 
@@ -250,6 +289,11 @@ public class ObjectSpawner : MonoBehaviour
             gameManager.OnGameStart -= OnGameStart;
             gameManager.OnGameOver -= OnGameOver;
             gameManager.OnGameRestart -= OnGameRestart;
+        }
+
+        if (levelManager != null)
+        {
+            levelManager.OnLevelCompleted -= OnLevelCompleted;
         }
 
         if (uiManager != null)

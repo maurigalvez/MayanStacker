@@ -90,12 +90,14 @@ public class PlayFabManager : MonoBehaviour
     // References (found via DependencyRegistry)
     private GameManager gameManager;
     private LevelManager levelManager;
+    private IntegrityManager integrityManager;
 
     // State
     private bool isLoggedIn = false;
     private string playFabId = "";
     private string currentDisplayName = "";
     private bool isSyncing = false;
+    private string lastIntegrityToken = null; // Store last integrity token for logging
 
     // Cloud save constants
     private const string PLAYER_PROGRESS_KEY = "PlayerProgress";
@@ -183,6 +185,7 @@ public class PlayFabManager : MonoBehaviour
         // Find new references
         gameManager = DependencyRegistry.Find<GameManager>();
         levelManager = DependencyRegistry.Find<LevelManager>();
+        integrityManager = DependencyRegistry.Find<IntegrityManager>();
 
         // Subscribe to new references
         SubscribeToEvents();
@@ -918,6 +921,7 @@ public class PlayFabManager : MonoBehaviour
     /// <summary>
     /// Submit a score to a specific leaderboard using the new Statistics V2 API
     /// Ensures display name is set from Google Play Games before submission
+    /// Performs Classic Integrity check before submission for security
     /// </summary>
     public void SubmitScore(string leaderboardName, int score)
     {
@@ -927,6 +931,53 @@ public class PlayFabManager : MonoBehaviour
             return;
         }
 
+        // Perform Classic Integrity check before score submission
+        if (integrityManager != null && integrityManager.IsIntegrityChecksEnabled)
+        {
+            // Generate a nonce for this score submission
+            string nonce = IntegrityManager.GenerateNonce(32);
+            
+#if DEBUG_MODE
+            Debug.Log($"[PlayFabManager] Requesting integrity check before submitting score {score} to {leaderboardName}");
+#endif
+
+            integrityManager.RequestClassicIntegrityToken(nonce, (integrityResult) =>
+            {
+                // Store the token for logging/debugging
+                lastIntegrityToken = integrityResult.Token;
+
+                if (!integrityResult.Success)
+                {
+                    Debug.LogWarning($"[PlayFabManager] Integrity check failed: {integrityResult.ErrorMessage}. Proceeding with submission (server-side verification recommended).");
+                }
+                else
+                {
+#if DEBUG_MODE
+                    Debug.Log($"[PlayFabManager] Integrity check passed. Token length: {integrityResult.Token?.Length ?? 0}");
+#endif
+                }
+
+                // Proceed with score submission regardless of integrity check result
+                // (Integrity token should be sent to server for verification in production)
+                SubmitScoreInternal(leaderboardName, score, integrityResult.Token);
+            });
+        }
+        else
+        {
+            // No integrity manager or checks disabled, submit directly
+            if (integrityManager == null)
+            {
+                Debug.LogWarning("[PlayFabManager] IntegrityManager not found. Score will be submitted without integrity check.");
+            }
+            SubmitScoreInternal(leaderboardName, score, null);
+        }
+    }
+
+    /// <summary>
+    /// Internal method to submit score after integrity check
+    /// </summary>
+    private void SubmitScoreInternal(string leaderboardName, int score, string integrityToken)
+    {
         // Ensure display name is current from Google Play Games before submitting score
         EnsureDisplayNameIsSet(() =>
         {
@@ -942,8 +993,17 @@ public class PlayFabManager : MonoBehaviour
                 }
             };
 
+            // Note: In production, the integrity token should be included in the request
+            // and verified server-side. PlayFab CloudScript or Azure Functions can be used
+            // to verify the token with Google's Integrity API verification endpoint.
+            // For now, we log it for monitoring purposes.
+
 #if DEBUG_MODE
             Debug.Log($"Submitting score {score} to leaderboard '{leaderboardName}' with current display name");
+            if (!string.IsNullOrEmpty(integrityToken))
+            {
+                Debug.Log($"Integrity token available (length: {integrityToken.Length}) - should be verified server-side");
+            }
 #endif
             PlayFabProgressionAPI.UpdateStatistics(request, OnScoreSubmitSuccess, OnScoreSubmitFailure);
         });

@@ -112,6 +112,7 @@ public class UIManager : MonoBehaviour
     private bool isPaused = false;
     private bool isUpdatingComboTimer = false;
     private bool isTitleShowing = false; // Track if title is currently showing
+    private bool isSubscribedToGameStart = false; // Track subscription to avoid duplicates
 
     // Events
     public System.Action OnGameResumed;
@@ -125,22 +126,39 @@ public class UIManager : MonoBehaviour
     {
         // Register with dependency registry
         DependencyRegistry.Register<UIManager>(this);
+
+        // Subscribe to OnGameStart early to avoid missing events (Android timing fix)
+        // Try to find GameManager early - it might already be registered if it persists across scenes
+        gameManager = DependencyRegistry.Find<GameManager>();
+        if (gameManager != null && !isSubscribedToGameStart)
+        {
+            gameManager.OnGameStart += OnGameStart;
+            isSubscribedToGameStart = true;
+        }
     }
 
     private void Start()
     {
         // Get references
-        gameManager = DependencyRegistry.Find<GameManager>();
+        if (gameManager == null)
+        {
+            gameManager = DependencyRegistry.Find<GameManager>();
+        }
         stackManager = DependencyRegistry.Find<StackManager>();
         levelManager = DependencyRegistry.Find<LevelManager>();
         gameSoundManager = DependencyRegistry.Find<GameSoundManager>();
 
-        // Subscribe to game events
+        // Subscribe to game events (OnGameStart already subscribed in Awake for Android timing fix)
         if (gameManager != null)
         {
             gameManager.OnScoreChanged += UpdateScore;
             gameManager.OnHighScoreChanged += UpdateHighScore;
-            gameManager.OnGameStart += OnGameStart;
+            // Subscribe to OnGameStart if not already subscribed (Android timing fix - subscribe early in Awake)
+            if (!isSubscribedToGameStart)
+            {
+                gameManager.OnGameStart += OnGameStart;
+                isSubscribedToGameStart = true;
+            }
             gameManager.OnGameOver += OnGameOver;
             gameManager.OnGameRestart += OnGameRestart;
             gameManager.OnGameModeChanged += OnGameModeChanged;
@@ -245,6 +263,9 @@ public class UIManager : MonoBehaviour
         if (gameTitleText != null)
             gameTitleText.gameObject.SetActive(false);
 
+        // Disable raycast targets on popup text labels to prevent blocking input
+        DisableRaycastTargetsOnPopupTexts();
+
         // Update initial scores
         if (gameManager != null)
         {
@@ -270,6 +291,24 @@ public class UIManager : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Disables raycast targets on all popup text labels to prevent them from blocking input
+    /// </summary>
+    private void DisableRaycastTargetsOnPopupTexts()
+    {
+        if (landingAccuracyText != null)
+            landingAccuracyText.raycastTarget = false;
+
+        if (gameTitleText != null)
+            gameTitleText.raycastTarget = false;
+
+        if (instructionsText != null)
+            instructionsText.raycastTarget = false;
+
+        if (multiplierText != null)
+            multiplierText.raycastTarget = false;
+    }
+
     private void UpdateScore(int score)
     {
         if (scoreText != null)
@@ -288,6 +327,16 @@ public class UIManager : MonoBehaviour
 
     private void OnGameStart()
     {
+        // Ensure we have references (handles timing issues where OnGameStart fires before Start())
+        if (gameManager == null)
+        {
+            gameManager = DependencyRegistry.Find<GameManager>();
+        }
+        if (levelManager == null)
+        {
+            levelManager = DependencyRegistry.Find<LevelManager>();
+        }
+
         // Hide game over panel, show game UI
         if (gameOverPanel != null)
             gameOverPanel.SetActive(false);
@@ -361,8 +410,8 @@ public class UIManager : MonoBehaviour
         // Hide landing accuracy text
         HideLandingAccuracy();
 
-        // Show game title before restarting (instructions will wait for title to finish)
-        ShowGameTitle();
+        // Don't show title here - OnGameStart() will be called after RestartGame() and will show it
+        // This prevents the title from showing twice during restart
 
         // Instructions will be shown after title finishes if needed (handled in GameTitleRoutine)
         // Otherwise, make sure they're hidden
@@ -421,7 +470,33 @@ public class UIManager : MonoBehaviour
     /// </summary>
     private void ShowGameTitle()
     {
-        if (gameTitleText == null || gameManager == null) return;
+        if (gameTitleText == null) return;
+
+        // Ensure we have references - get them if not already set (handles timing issues on Android)
+        if (gameManager == null)
+        {
+            gameManager = DependencyRegistry.Find<GameManager>();
+            if (gameManager == null) return;
+        }
+
+        if (levelManager == null)
+        {
+            levelManager = DependencyRegistry.Find<LevelManager>();
+        }
+
+        // Stop any existing title coroutine
+        if (gameTitleCoroutine != null)
+        {
+            StopCoroutine(gameTitleCoroutine);
+        }
+
+        // If in level mode and level isn't loaded yet, wait for it via coroutine
+        if (gameManager.CurrentGameMode == GameMode.StackerLevels &&
+            (levelManager == null || levelManager.CurrentLevel == null))
+        {
+            gameTitleCoroutine = StartCoroutine(WaitForLevelAndShowTitle());
+            return;
+        }
 
         // Mark that title is showing
         isTitleShowing = true;
@@ -448,14 +523,74 @@ public class UIManager : MonoBehaviour
         // Set the text
         gameTitleText.text = titleText;
 
-        // Stop any existing title coroutine
-        if (gameTitleCoroutine != null)
+        // Ensure UIManager is active before starting coroutine (Android timing fix)
+        if (!gameObject.activeInHierarchy)
         {
-            StopCoroutine(gameTitleCoroutine);
+            Debug.LogWarning("UIManager not active, cannot start title coroutine");
+            return;
         }
 
         // Start the title display coroutine
         gameTitleCoroutine = StartCoroutine(GameTitleRoutine());
+    }
+
+    /// <summary>
+    /// Waits for level to load, then shows the title with correct level information
+    /// </summary>
+    private IEnumerator WaitForLevelAndShowTitle()
+    {
+        // Wait for level manager and level to be available
+        float timeout = 5f; // Maximum wait time
+        float elapsed = 0f;
+
+        while ((levelManager == null || levelManager.CurrentLevel == null) && elapsed < timeout)
+        {
+            elapsed += Time.deltaTime;
+            yield return null;
+        }
+
+        // Wait a frame to ensure everything is initialized (Android timing fix)
+        yield return null;
+
+        // Now show the title with the level information
+        if (levelManager != null && levelManager.CurrentLevel != null && gameTitleText != null)
+        {
+            // Mark that title is showing
+            isTitleShowing = true;
+
+            // Set the text with level information
+            string titleText = $"Level {levelManager.CurrentLevel.levelNumber}\n{levelManager.CurrentLevel.levelName}";
+            gameTitleText.text = titleText;
+
+            // Ensure UIManager is active before starting coroutine (Android timing fix)
+            if (!gameObject.activeInHierarchy)
+            {
+                Debug.LogWarning("UIManager not active, cannot start title coroutine");
+                yield break;
+            }
+
+            // Start the title display coroutine
+            gameTitleCoroutine = StartCoroutine(GameTitleRoutine());
+        }
+        else
+        {
+            // Fallback if level still not loaded after timeout
+            if (gameTitleText != null)
+            {
+                isTitleShowing = true;
+                gameTitleText.text = "Level Mode";
+
+                // Ensure UIManager is active before starting coroutine (Android timing fix)
+                if (gameObject.activeInHierarchy)
+                {
+                    gameTitleCoroutine = StartCoroutine(GameTitleRoutine());
+                }
+                else
+                {
+                    Debug.LogWarning("UIManager not active, cannot start title coroutine");
+                }
+            }
+        }
     }
 
     /// <summary>
@@ -470,8 +605,27 @@ public class UIManager : MonoBehaviour
     {
         if (gameTitleText == null) yield break;
 
+        // Ensure the UIManager GameObject is active (required for coroutines on Android)
+        if (!gameObject.activeInHierarchy)
+        {
+            Debug.LogWarning("UIManager not active, cannot show game title");
+            yield break;
+        }
+
+        // Wait a frame to ensure everything is initialized (helps with Android timing issues)
+        yield return null;
+
+        // Wait before showing the title (reduced from 0.25s to ensure better Android compatibility)
+        yield return new WaitForSeconds(0.1f);
+
         // Show the title
+        if (gameTitleText == null) yield break;
         gameTitleText.gameObject.SetActive(true);
+
+        // Wait for end of frame to ensure GameObject is fully active and ready for component access (Android fix)
+        yield return new WaitForEndOfFrame();
+
+        if (gameTitleText == null) yield break;
 
         // Get components for animation
         RectTransform titleRect = gameTitleText.GetComponent<RectTransform>();
@@ -783,6 +937,9 @@ public class UIManager : MonoBehaviour
         if (popupText != null)
         {
             popupText.text = $"+{points}";
+
+            // Disable raycast target to prevent blocking input
+            popupText.raycastTarget = false;
 
             // Color code based on base points (accounting for multiplier)
             // Perfect base = 100, Good base = 50, Poor base = 10
@@ -1184,6 +1341,18 @@ public class UIManager : MonoBehaviour
 
         // Reset stars to dark color for new level
         InitializeStars();
+
+        // If title is waiting for level to load (via WaitForLevelAndShowTitle coroutine),
+        // update the title text immediately - the coroutine will continue and show it
+        if (gameManager != null && gameManager.CurrentGameMode == GameMode.StackerLevels &&
+            isTitleShowing && gameTitleText != null)
+        {
+            // Update title text if it was showing "Level Mode" - the coroutine will handle the animation
+            if (gameTitleText.text == "Level Mode" || gameTitleText.text.Contains("Level Mode"))
+            {
+                gameTitleText.text = $"Level {level.levelNumber}\n{level.levelName}";
+            }
+        }
     }
 
     private void UpdateLevelProgress(int currentHeight)
@@ -1608,7 +1777,11 @@ public class UIManager : MonoBehaviour
         {
             gameManager.OnScoreChanged -= UpdateScore;
             gameManager.OnHighScoreChanged -= UpdateHighScore;
-            gameManager.OnGameStart -= OnGameStart;
+            if (isSubscribedToGameStart)
+            {
+                gameManager.OnGameStart -= OnGameStart;
+                isSubscribedToGameStart = false;
+            }
             gameManager.OnGameOver -= OnGameOver;
             gameManager.OnGameRestart -= OnGameRestart;
             gameManager.OnGameModeChanged -= OnGameModeChanged;

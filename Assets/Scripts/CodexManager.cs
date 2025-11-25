@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
@@ -12,7 +13,8 @@ public class CodexManager : MonoBehaviour
     [SerializeField] private GameObject codexPanel;
     [SerializeField] private Transform codexEntryContainer;
     [SerializeField] private GameObject codexEntryPrefab;
-    [SerializeField] private ScrollRect scrollRect;
+    [SerializeField] private RectTransform scrollContainer; // The scroll area to animate
+    [SerializeField] private ScrollRect entriesScrollRect; // The ScrollRect holding the entries
 
     [Header("Shared Detail Panel")]
     [SerializeField] private GameObject sharedDetailPanel;
@@ -20,27 +22,23 @@ public class CodexManager : MonoBehaviour
     [SerializeField] private TextMeshProUGUI detailLevelNameText;
     [SerializeField] private TextMeshProUGUI detailLocationText;
     [SerializeField] private TextMeshProUGUI detailDescriptionText;
-    [SerializeField] private TextMeshProUGUI detailRequiredHeightText;
-    [SerializeField] private TextMeshProUGUI detailHighScoreText;
-    [SerializeField] private Transform detailStarContainer;
-    [SerializeField] private GameObject detailStarIconPrefab;
+    [SerializeField] private Image detailSiteImage;
 
     [Header("Empty State")]
     [SerializeField] private GameObject emptyStatePanel;
     [SerializeField] private string emptyStateMessage = "No levels unlocked yet. Play levels to unlock entries in the Codex!";
 
+    [Header("Animation Settings")]
+    [SerializeField] private float scrollUpAnimationDuration = 0.8f;
+    [SerializeField] private AnimationCurve scrollAnimationCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
+
     // References (found via DependencyRegistry)
     private LevelManager levelManager;
-
-    [Header("Detail Panel Visual States")]
-    [SerializeField] private Color starObtainedColor = Color.white;
-    [SerializeField] private Color starNotObtainedColor = new Color(0.3f, 0.3f, 0.3f, 1f);
 
     // State
     private List<CodexEntryUI> spawnedEntries = new List<CodexEntryUI>();
     private CodexEntryUI currentlySelectedEntry = null;
-    private GameObject[] detailStarIcons = new GameObject[3];
-    private const int MAX_STARS = 3;
+    private Coroutine scrollAnimationCoroutine;
 
     private void Awake()
     {
@@ -56,6 +54,26 @@ public class CodexManager : MonoBehaviour
         if (levelManager == null)
         {
             Debug.LogWarning("CodexManager: LevelManager not found!");
+        }
+
+        // Set scroll container to codex panel transform if not assigned
+        if (scrollContainer == null && codexPanel != null)
+        {
+            scrollContainer = codexPanel.GetComponent<RectTransform>();
+            if (scrollContainer == null)
+            {
+                Debug.LogWarning("CodexManager: Codex panel does not have a RectTransform component. Scale animations will not work.");
+            }
+        }
+
+        // Find ScrollRect if not assigned
+        if (entriesScrollRect == null && codexPanel != null)
+        {
+            entriesScrollRect = codexPanel.GetComponentInChildren<ScrollRect>();
+            if (entriesScrollRect == null)
+            {
+                Debug.LogWarning("CodexManager: ScrollRect not found in codex panel hierarchy. Scroll position reset will not work.");
+            }
         }
 
         // Hide codex panel by default
@@ -75,9 +93,6 @@ public class CodexManager : MonoBehaviour
         {
             closeDetailPanelButton.onClick.AddListener(CloseDetailPanel);
         }
-
-        // Initialize detail panel star icons
-        InitializeDetailPanelStars();
     }
 
     /// <summary>
@@ -91,26 +106,98 @@ public class CodexManager : MonoBehaviour
         }
 
         PopulateCodex();
+
+        // Start scroll-up animation after a brief delay to ensure UI is laid out
+        AnimateScrollUp();
     }
 
     /// <summary>
-    /// Hide the codex panel
+    /// Animate the scroll container scaling up from small to full size
     /// </summary>
-    public void HideCodex()
+    private void AnimateScrollUp()
     {
+        if (scrollContainer == null) return;
+
+        // Stop any existing animation
+        if (scrollAnimationCoroutine != null)
+        {
+            StopCoroutine(scrollAnimationCoroutine);
+        }
+
+        // Start the animation coroutine
+        scrollAnimationCoroutine = StartCoroutine(ScrollAnimationCoroutine(0f, 1f));
+    }
+
+    /// <summary>
+    /// Hide the codex panel with scroll-down animation
+    /// </summary>
+    /// <param name="onComplete">Callback invoked when the animation completes</param>
+    public void HideCodex(System.Action onComplete = null)
+    {
+        // Start scroll-down animation and hide after it completes
+        StartCoroutine(HideCodexWithAnimation(onComplete));
+    }
+
+    /// <summary>
+    /// Coroutine that scrolls down the codex and then hides it
+    /// </summary>
+    private IEnumerator HideCodexWithAnimation(System.Action onComplete)
+    {
+        // Deselect any selected entry
+        DeselectCurrentEntry();
+
+        // Hide shared detail panel immediately
+        if (sharedDetailPanel != null)
+        {
+            sharedDetailPanel.SetActive(false);
+        }
+
+        // Animate scale down from full size to small
+        if (scrollContainer != null)
+        {
+            scrollAnimationCoroutine = StartCoroutine(ScrollAnimationCoroutine(1f, 0f));
+            yield return scrollAnimationCoroutine;
+        }
+
+        // Hide the panel after animation completes
         if (codexPanel != null)
         {
             codexPanel.SetActive(false);
         }
 
-        // Deselect any selected entry
-        DeselectCurrentEntry();
+        // Invoke callback if provided
+        onComplete?.Invoke();
+    }
 
-        // Hide shared detail panel
-        if (sharedDetailPanel != null)
+    private IEnumerator ScrollAnimationCoroutine(float yStartScale, float yEndScale)
+    {
+        if (scrollContainer == null) yield break;
+
+        float elapsedTime = 0f;
+        var startScale = scrollContainer.localScale;
+        startScale.y = yStartScale;
+        scrollContainer.localScale = startScale;
+        var newScale = startScale;
+        while (elapsedTime < scrollUpAnimationDuration)
         {
-            sharedDetailPanel.SetActive(false);
+            elapsedTime += Time.deltaTime;
+            float normalizedTime = elapsedTime / scrollUpAnimationDuration;
+            float curveValue = scrollAnimationCurve.Evaluate(normalizedTime);
+
+            float currentScale = Mathf.Lerp(yStartScale, yEndScale, curveValue);
+            newScale.y = currentScale;
+            scrollContainer.localScale = newScale;
+            yield return null;
         }
+        scrollContainer.localScale = newScale;
+
+        // Reset scroll position to top when scroll-up animation completes
+        if (yEndScale >= 1f && entriesScrollRect != null)
+        {
+            entriesScrollRect.verticalNormalizedPosition = 1f;
+        }
+
+        scrollAnimationCoroutine = null;
     }
 
     /// <summary>
@@ -253,8 +340,7 @@ public class CodexManager : MonoBehaviour
 
         Debug.Log($"CodexManager: Selected {clickedEntry.GetLevelData().levelName}");
 
-        // Scroll to the selected entry if scroll rect exists
-        ScrollToEntry(clickedEntry);
+        // Note: ScrollToEntry removed - scrolling is handled by the ScrollRect component in the UI
     }
 
     /// <summary>
@@ -283,33 +369,6 @@ public class CodexManager : MonoBehaviour
         DeselectCurrentEntry();
     }
 
-    /// <summary>
-    /// Scroll to a specific entry in the scroll view
-    /// </summary>
-    private void ScrollToEntry(CodexEntryUI entry)
-    {
-        if (scrollRect == null || entry == null) return;
-
-        // Calculate the position to scroll to
-        RectTransform entryRect = entry.GetComponent<RectTransform>();
-        RectTransform contentRect = codexEntryContainer.GetComponent<RectTransform>();
-
-        if (entryRect == null || contentRect == null) return;
-
-        // Calculate normalized position (0 = bottom, 1 = top)
-        float entryY = entryRect.anchoredPosition.y;
-        float contentHeight = contentRect.rect.height;
-        float viewportHeight = scrollRect.viewport.rect.height;
-
-        if (contentHeight > viewportHeight)
-        {
-            float normalizedPosition = Mathf.Clamp01(
-                (contentHeight - Mathf.Abs(entryY)) / (contentHeight - viewportHeight)
-            );
-
-            scrollRect.verticalNormalizedPosition = normalizedPosition;
-        }
-    }
 
     /// <summary>
     /// Show or hide the empty state panel
@@ -334,43 +393,6 @@ public class CodexManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Initialize the star icons in the shared detail panel
-    /// </summary>
-    private void InitializeDetailPanelStars()
-    {
-        // Clear any existing stars
-        ClearDetailPanelStars();
-
-        // Validate requirements
-        if (detailStarIconPrefab == null || detailStarContainer == null)
-        {
-            return;
-        }
-
-        // Spawn 3 stars in the container
-        for (int i = 0; i < MAX_STARS; i++)
-        {
-            GameObject starIcon = Instantiate(detailStarIconPrefab, detailStarContainer);
-            detailStarIcons[i] = starIcon;
-        }
-    }
-
-    /// <summary>
-    /// Clear all spawned star icons in the detail panel
-    /// </summary>
-    private void ClearDetailPanelStars()
-    {
-        for (int i = 0; i < detailStarIcons.Length; i++)
-        {
-            if (detailStarIcons[i] != null)
-            {
-                Destroy(detailStarIcons[i]);
-                detailStarIcons[i] = null;
-            }
-        }
-    }
-
-    /// <summary>
     /// Update the shared detail panel with data from the selected entry
     /// </summary>
     private void UpdateSharedDetailPanel(CodexEntryUI selectedEntry)
@@ -389,10 +411,10 @@ public class CodexManager : MonoBehaviour
         // Show the shared detail panel
         sharedDetailPanel.SetActive(true);
 
-        // Get level stats
+        // Get level completion status
         int levelNumber = selectedEntry.GetLevelNumber();
-        int starsEarned = levelManager != null ? levelManager.GetLevelStars(levelNumber) : 0;
         int highScore = levelManager != null ? levelManager.GetLevelHighScore(levelNumber) : 0;
+        int starsEarned = levelManager != null ? levelManager.GetLevelStars(levelNumber) : 0;
         bool isCompleted = starsEarned > 0 || highScore > 0;
 
         // Update level name - show "????" if not completed
@@ -431,49 +453,30 @@ public class CodexManager : MonoBehaviour
             }
         }
 
-        // Update required height - always show this
-        if (detailRequiredHeightText != null)
+        // Update site image
+        if (detailSiteImage != null)
         {
-            detailRequiredHeightText.text = $"Required Height: {levelData.requiredStackHeight}";
-        }
-
-        // Update high score
-        if (detailHighScoreText != null)
-        {
-            detailHighScoreText.text = highScore > 0
-                ? $"High Score: {highScore}"
-                : "Not yet completed";
-        }
-
-        // Update stars display
-        UpdateDetailPanelStars(starsEarned);
-    }
-
-    /// <summary>
-    /// Update the star icons in the detail panel based on stars earned
-    /// </summary>
-    private void UpdateDetailPanelStars(int starsEarned)
-    {
-        starsEarned = Mathf.Clamp(starsEarned, 0, MAX_STARS);
-
-        for (int i = 0; i < detailStarIcons.Length; i++)
-        {
-            if (detailStarIcons[i] != null)
+            if (isCompleted && levelData.siteImage != null)
             {
-                Image starImage = detailStarIcons[i].GetComponent<Image>();
-                if (starImage != null)
-                {
-                    // Set color based on whether star is earned
-                    starImage.color = i < starsEarned ? starObtainedColor : starNotObtainedColor;
-                }
-
-                detailStarIcons[i].SetActive(true);
+                detailSiteImage.sprite = levelData.siteImage;
+                detailSiteImage.gameObject.SetActive(true);
+            }
+            else
+            {
+                detailSiteImage.gameObject.SetActive(false);
             }
         }
     }
 
     private void OnDestroy()
     {
+        // Stop any running animations
+        if (scrollAnimationCoroutine != null)
+        {
+            StopCoroutine(scrollAnimationCoroutine);
+            scrollAnimationCoroutine = null;
+        }
+
         // Unregister from DependencyRegistry
         DependencyRegistry.Unregister<CodexManager>(this);
 
@@ -485,9 +488,6 @@ public class CodexManager : MonoBehaviour
 
         // Clean up spawned entries
         ClearEntries();
-
-        // Clean up detail panel stars
-        ClearDetailPanelStars();
     }
 }
 

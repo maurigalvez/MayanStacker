@@ -127,10 +127,6 @@ public class InputManager : MonoBehaviour
         if (uiManager != null && uiManager.IsPaused)
             return;
 
-        // Block input if title is still showing
-        if (uiManager != null && uiManager.IsTitleShowing)
-            return;
-
         // Block input if we just resumed from pause
         if (isInputBlocked)
             return;
@@ -161,10 +157,6 @@ public class InputManager : MonoBehaviour
 
         // Block input if game is paused
         if (uiManager != null && uiManager.IsPaused)
-            return;
-
-        // Block input if title is still showing
-        if (uiManager != null && uiManager.IsTitleShowing)
             return;
 
         // Block input if we just resumed from pause

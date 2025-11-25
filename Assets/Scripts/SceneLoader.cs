@@ -99,25 +99,30 @@ public static class SceneLoader
             {
                 // Set game mode without starting (we'll start after level is loaded)
                 gameManager.InitializeGameMode(pendingGameMode.Value);
-                
+
                 // Load the specific level (this calls gameManager.SetCurrentLevel internally)
                 levelManager.LoadLevel(pendingLevelIndex.Value);
                 Debug.Log($"Loaded level {pendingLevelIndex.Value + 1}");
-                
-                // Now start the game
+
+                // Now start the game (SceneLoader is the authoritative source for starting after scene load)
+                // This prevents duplicate StartGame() calls that can cause timing issues on Android
                 gameManager.StartGame();
             }
             else
             {
                 Debug.LogWarning("LevelManager not found, couldn't load specific level!");
-                // Fallback to normal mode setting
-                gameManager.SetGameMode(pendingGameMode.Value);
+                // Fallback: initialize mode and start explicitly
+                gameManager.InitializeGameMode(pendingGameMode.Value);
+                gameManager.StartGame();
             }
         }
         else
         {
             // For InfiniteStacker or when no specific level is requested
-            gameManager.SetGameMode(pendingGameMode.Value);
+            // Initialize mode without auto-starting, then start explicitly
+            // This ensures SceneLoader is the single source of StartGame() after scene load
+            gameManager.InitializeGameMode(pendingGameMode.Value);
+            gameManager.StartGame();
         }
 
         // Clear pending data

@@ -39,7 +39,7 @@ public class LeaderboardEntry
     public string GetPositionText()
     {
         string suffix = "th";
-        
+
         if (position % 100 >= 11 && position % 100 <= 13)
         {
             suffix = "th";
@@ -54,7 +54,7 @@ public class LeaderboardEntry
             }
         }
 
-        return $"{position}{suffix}";
+        return $"{position}";
     }
 }
 

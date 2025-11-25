@@ -82,11 +82,26 @@ public class GameManager : MonoBehaviour
             playFabManager.OnProgressSynced += OnProgressSyncedFromCloud;
         }
 
-        // Only auto-start if not waiting for game mode selection
+        // Find IntegrityManager for game session checks
+        var integrityManager = DependencyRegistry.Find<IntegrityManager>();
+
+        // Don't auto-start if waiting for game mode selection (SceneLoader will handle starting)
+        // This prevents StartGame() from being called multiple times, which can cause timing issues on Android
+        // where UIManager might not be ready when OnGameStart fires, preventing gameTitleText from displaying
         if (!waitForGameModeSelection)
         {
-            gameModeInitialized = true;
-            StartGame();
+            // Only auto-start if game mode is already initialized (meaning this is not a scene load scenario)
+            // When SceneLoader loads a scene, it will initialize game mode and start the game, so we don't start here
+            // This prevents duplicate StartGame() calls
+            if (gameModeInitialized)
+            {
+                Debug.Log("Game mode already initialized in Start(), starting game...");
+                StartGame();
+            }
+            else
+            {
+                Debug.Log("Game mode not yet initialized, SceneLoader will handle starting the game...");
+            }
         }
         else
         {
@@ -113,6 +128,20 @@ public class GameManager : MonoBehaviour
         comboDecayActive = false;
         lastAccuracyLevel = AccuracyLevel.None;
         highScoreSaved = false; // Reset save flag for new game session
+        
+        // Perform Standard Integrity check at game session start
+        var integrityManager = DependencyRegistry.Find<IntegrityManager>();
+        if (integrityManager != null && integrityManager.IsIntegrityChecksEnabled)
+        {
+            integrityManager.PerformGameSessionCheck((result) =>
+            {
+                if (!result.Success)
+                {
+                    Debug.LogWarning($"[GameManager] Game session integrity check failed: {result.ErrorMessage}");
+                }
+            });
+        }
+        
         OnGameStart?.Invoke();
         OnScoreChanged?.Invoke(currentScore);
         OnComboChanged?.Invoke(currentCombo, GetComboMultiplier());
@@ -519,7 +548,7 @@ public class GameManager : MonoBehaviour
         PlayerPrefs.SetInt(key, currentScore);
         PlayerPrefs.Save();
         Debug.Log($"Saved high score to PlayerPrefs: {currentScore} (Key: {key})");
-        
+
         // Also save to cloud
         var playFabManager = DependencyRegistry.Find<PlayFabManager>();
         if (playFabManager != null && playFabManager.IsLoggedIn)
@@ -543,11 +572,11 @@ public class GameManager : MonoBehaviour
             {
                 Debug.Log($"Updating Infinite Stacker high score from cloud: {data.infiniteStackerHighScore}");
                 highScore = data.infiniteStackerHighScore;
-                
+
                 // Update PlayerPrefs cache
                 PlayerPrefs.SetInt("HighScore_InfiniteStacker", highScore);
                 PlayerPrefs.Save();
-                
+
                 // Notify UI
                 OnHighScoreChanged?.Invoke(highScore);
             }

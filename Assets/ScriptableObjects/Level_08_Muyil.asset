@@ -28,5 +28,5 @@ MonoBehaviour:
   oneStarScore: 1750
   twoStarScore: 2500
   threeStarScore: 3200
-  swingSpeedMultiplier: 1.5
+  swingSpeedMultiplier: 1.3
   swingAmplitudeMultiplier: 1.3

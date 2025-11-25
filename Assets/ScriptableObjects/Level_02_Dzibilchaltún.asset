@@ -25,8 +25,8 @@ MonoBehaviour:
     order.\nWhen the sun passes through the temple\u2019s eyes, the ancient day begins
     anew."
   requiredStackHeight: 10
-  oneStarScore: 200
-  twoStarScore: 600
-  threeStarScore: 1000
-  swingSpeedMultiplier: 1.2
-  swingAmplitudeMultiplier: 1.1
+  oneStarScore: 500
+  twoStarScore: 1000
+  threeStarScore: 1500
+  swingSpeedMultiplier: 1
+  swingAmplitudeMultiplier: 1

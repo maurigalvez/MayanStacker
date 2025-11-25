@@ -23,8 +23,8 @@ MonoBehaviour:
     reveal a city that valued knowledge as much as power, a rare glimpse into daily
     elite life.\nHere, the fire of war met the ink of wisdom."
   requiredStackHeight: 12
-  oneStarScore: 300
-  twoStarScore: 900
+  oneStarScore: 750
+  twoStarScore: 1000
   threeStarScore: 1500
-  swingSpeedMultiplier: 1.5
-  swingAmplitudeMultiplier: 1.3
+  swingSpeedMultiplier: 1.1
+  swingAmplitudeMultiplier: 1.1

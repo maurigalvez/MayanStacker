@@ -18,6 +18,8 @@ public class LevelData : ScriptableObject
     [TextArea(3, 5)]
     [Tooltip("Optional description of the level")]
     public string levelDescription = "";
+    [Tooltip("Image of the archaeological site")]
+    public Sprite siteImage;
 
     [Header("Level Objectives")]
     [Tooltip("Required stack height to complete the level")]

@@ -27,6 +27,10 @@ public class PointsPopup : MonoBehaviour
         if (canvasGroup == null)
             canvasGroup = GetComponent<CanvasGroup>();
 
+        // Disable raycast target to prevent blocking input
+        if (pointsText != null)
+            pointsText.raycastTarget = false;
+
         // Initialize canvas group
         if (canvasGroup != null)
         {
