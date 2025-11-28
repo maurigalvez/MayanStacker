@@ -61,6 +61,7 @@ public class LevelButtonUI : MonoBehaviour
     // Animation state
     private bool isPulsing = false;
     private Vector3 originalScale;
+    private Vector3 baseScale; // Base scale accounting for button state (full or half for unlocked)
     private float pulseTimer = 0f;
     private Color originalTextColor;
     private Color originalBackgroundColor;
@@ -82,6 +83,7 @@ public class LevelButtonUI : MonoBehaviour
 
         // Store original scale
         originalScale = transform.localScale;
+        baseScale = originalScale; // Initialize base scale (will be updated in UpdateAppearance)
 
         // Store original colors and font size
         if (levelNumberText != null)
@@ -119,7 +121,7 @@ public class LevelButtonUI : MonoBehaviour
             pulseTimer += Time.deltaTime * pulseSpeed;
             float normalizedValue = (Mathf.Sin(pulseTimer) + 1f) / 2f; // 0 to 1
             float scale = Mathf.Lerp(pulseMinScale, pulseMaxScale, normalizedValue);
-            transform.localScale = originalScale * scale;
+            transform.localScale = baseScale * scale;
 
             // Pulse color effect on text
             if (levelNumberText != null)
@@ -231,6 +233,26 @@ public class LevelButtonUI : MonoBehaviour
             button.interactable = isUnlocked;
         }
 
+        // Update button scale: highlighted levels are full scale, completed levels are 60%, others are 50%
+        if (isPulsing)
+        {
+            // Highlighted/pulsing - full scale
+            baseScale = originalScale;
+            transform.localScale = baseScale;
+        }
+        else if (starsEarned > 0)
+        {
+            // Completed but not highlighted - 60% scale
+            baseScale = originalScale * 0.6f;
+            transform.localScale = baseScale;
+        }
+        else
+        {
+            // Not highlighted and not completed - half scale (for locked and unlocked but not completed)
+            baseScale = originalScale * 0.5f;
+            transform.localScale = baseScale;
+        }
+
         // Update background sprite and color
         if (backgroundImage != null)
         {
@@ -283,16 +305,29 @@ public class LevelButtonUI : MonoBehaviour
     {
         if (spawnedStarIcons == null || spawnedStarIcons.Count == 0) return;
 
+        // Only show stars if the level is completed (has at least 1 star)
+        bool shouldShowStars = starsEarned > 0;
+
         for (int i = 0; i < spawnedStarIcons.Count; i++)
         {
             if (spawnedStarIcons[i] != null)
             {
+                // Hide stars if level is not completed
+                if (!shouldShowStars)
+                {
+                    spawnedStarIcons[i].SetActive(false);
+                    continue;
+                }
+
+                // Show stars for completed levels
+                spawnedStarIcons[i].SetActive(true);
+
                 // Get the Image component on the star
                 Image starImage = spawnedStarIcons[i].GetComponent<Image>();
                 if (starImage != null)
                 {
                     // Set color based on whether star is earned
-                    if (isUnlocked && i < starsEarned)
+                    if (i < starsEarned)
                     {
                         // Star is obtained - white color
                         starImage.color = starObtainedColor;
@@ -303,9 +338,6 @@ public class LevelButtonUI : MonoBehaviour
                         starImage.color = starNotObtainedColor;
                     }
                 }
-
-                // Always keep the star visible
-                spawnedStarIcons[i].SetActive(true);
             }
         }
     }
@@ -351,6 +383,9 @@ public class LevelButtonUI : MonoBehaviour
         pulseTimer = 0f;
         arrowAnimationTimer = 0f;
 
+        // Update base scale to full scale for highlighted level
+        baseScale = originalScale;
+
         // Show current level indicator and reset position
         if (currentLevelIndicator != null)
         {
@@ -384,12 +419,24 @@ public class LevelButtonUI : MonoBehaviour
     }
 
     /// <summary>
-    /// Stop the pulse animation and reset scale to original
+    /// Stop the pulse animation and reset scale to base scale
     /// </summary>
     public void StopPulseAnimation()
     {
         isPulsing = false;
-        transform.localScale = originalScale;
+
+        // Update base scale based on completion status when not highlighted
+        if (starsEarned > 0)
+        {
+            // Completed - 60% scale
+            baseScale = originalScale * 0.6f;
+        }
+        else
+        {
+            // Not completed - 50% scale
+            baseScale = originalScale * 0.5f;
+        }
+        transform.localScale = baseScale;
 
         // Hide current level indicator and reset position
         if (currentLevelIndicator != null)

@@ -10,6 +10,12 @@ public class ObjectSpawner : MonoBehaviour
     [SerializeField] private Vector2 objectSize = new Vector2(1f, 0.3f);
     [SerializeField] private Color[] objectColors = { Color.red, Color.blue, Color.green, Color.yellow, Color.magenta };
 
+    [Header("Level Mode Settings")]
+    [Tooltip("Sprite to use for the last block in level mode")]
+    [SerializeField] private Sprite lastBlockSprite;
+    [Tooltip("Y scale multiplier for the last block's collider (to match different texture height)")]
+    [SerializeField] private float lastBlockColliderYScale = 1f;
+
     // State
     private GameObject currentObject;
     private bool canSpawn = true;
@@ -28,15 +34,18 @@ public class ObjectSpawner : MonoBehaviour
     // References
     private UIManager uiManager;
     private LevelManager levelManager;
+    private GameManager gameManager;
+    private StackManager stackManager;
 
     private void Start()
     {
         // Get UI manager reference
         uiManager = DependencyRegistry.Find<UIManager>();
         levelManager = DependencyRegistry.Find<LevelManager>();
+        gameManager = DependencyRegistry.Find<GameManager>();
+        stackManager = DependencyRegistry.Find<StackManager>();
 
         // Subscribe to game events
-        var gameManager = DependencyRegistry.Find<GameManager>();
         if (gameManager != null)
         {
             gameManager.OnGameStart += OnGameStart;
@@ -179,19 +188,43 @@ public class ObjectSpawner : MonoBehaviour
         SpriteRenderer spriteRenderer = stackableObject.SpriteRenderer;
         if (spriteRenderer != null)
         {
+            // Check if this is the last block in level mode
+            bool isLastBlock = IsLastBlockInLevel();
+
             // Set a random color for visual variety
             Color randomColor = objectColors[Random.Range(0, objectColors.Length)];
-            // Use the current sprite if it exists, otherwise create a default one
-            if (spriteRenderer.sprite == null)
-            {
-                // Create a simple colored rectangle sprite only if no sprite exists
-                Texture2D texture = new Texture2D(1, 1);
-                texture.SetPixel(0, 0, randomColor);
-                texture.Apply();
 
-                Sprite sprite = Sprite.Create(texture, new Rect(0, 0, 1, 1), new Vector2(0.5f, 0.5f));
-                spriteRenderer.sprite = sprite;
+            // Store the original sprite from the prefab (if it exists)
+            Sprite originalSprite = spriteRenderer.sprite;
+
+            // If this is the last block in level mode and we have a special sprite, use it
+            if (isLastBlock && lastBlockSprite != null)
+            {
+                spriteRenderer.sprite = lastBlockSprite;
             }
+            // Otherwise, ensure we have a sprite (use original if it exists, or create a default one)
+            else
+            {
+                // Use the original sprite if it exists
+                if (originalSprite != null)
+                {
+                    spriteRenderer.sprite = originalSprite;
+                }
+                // Create a default sprite only if no sprite exists
+                else if (spriteRenderer.sprite == null)
+                {
+                    // Create a simple colored rectangle sprite only if no sprite exists
+                    Texture2D texture = new Texture2D(1, 1);
+                    texture.SetPixel(0, 0, randomColor);
+                    texture.Apply();
+
+                    Sprite sprite = Sprite.Create(texture, new Rect(0, 0, 1, 1), new Vector2(0.5f, 0.5f));
+                    spriteRenderer.sprite = sprite;
+                }
+            }
+
+            // Ensure sprite renderer is enabled
+            spriteRenderer.enabled = true;
 
             spriteRenderer.color = randomColor;
 
@@ -203,8 +236,55 @@ public class ObjectSpawner : MonoBehaviour
         BoxCollider2D collider = stackableObject.Collider as BoxCollider2D;
         if (collider != null)
         {
-            collider.size = objectSize;
+            // Check if this is the last block in level mode
+            bool isLastBlock = IsLastBlockInLevel();
+
+            // Set collider size - adjust Y scale for last block if needed
+            Vector2 colliderSize = objectSize;
+            if (isLastBlock && lastBlockColliderYScale != 1f)
+            {
+                colliderSize.y = objectSize.y * lastBlockColliderYScale;
+            }
+
+            collider.size = colliderSize;
         }
+    }
+
+    /// <summary>
+    /// Check if the next block to be spawned is the last block needed for the current level
+    /// </summary>
+    private bool IsLastBlockInLevel()
+    {
+        // Only check in level mode
+        if (gameManager == null || gameManager.CurrentGameMode != GameMode.StackerLevels)
+        {
+            return false;
+        }
+
+        // Need both level manager and stack manager to determine this
+        if (levelManager == null || stackManager == null)
+        {
+            return false;
+        }
+
+        // Check if level is already complete (shouldn't spawn more blocks, but check anyway)
+        if (levelManager.IsLevelComplete)
+        {
+            return false;
+        }
+
+        // Get current stack height and required height
+        int currentHeight = stackManager.GetStackCount();
+        LevelData currentLevel = levelManager.CurrentLevel;
+
+        if (currentLevel == null)
+        {
+            return false;
+        }
+
+        // This is the last block if current height + 1 equals required height
+        // (the +1 accounts for the block we're about to spawn)
+        return (currentHeight + 1) == currentLevel.requiredStackHeight;
     }
 
     private void OnGameStart()
@@ -241,12 +321,25 @@ public class ObjectSpawner : MonoBehaviour
         // Cancel any pending spawns
         CancelInvoke(nameof(SpawnNewObject));
 
-        // Destroy the current object when level is completed
+        // Destroy the current object when level is completed ONLY if it hasn't been dropped yet
         // This prevents the "stuck block" issue where a block is left swinging
+        // But we don't want to destroy blocks that have already been dropped and landed
         if (currentObject != null)
         {
-            Destroy(currentObject);
-            currentObject = null;
+            // Check if the object is still parented to the spawner (hasn't been dropped yet)
+            // If it's been dropped, it will have been deparented, so we shouldn't destroy it
+            if (currentObject.transform.parent == transform)
+            {
+                // Block is still swinging - destroy it to prevent it from being stuck
+                Destroy(currentObject);
+                currentObject = null;
+            }
+            else
+            {
+                // Block has been dropped - just clear the reference, don't destroy it
+                // The block that landed should remain visible
+                currentObject = null;
+            }
         }
 
         canSpawn = false;

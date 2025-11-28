@@ -25,6 +25,8 @@ public class UIManager : MonoBehaviour
     [SerializeField] private Button retryLevelButton;
     [SerializeField] private Button mainMenuButton;
     [SerializeField] private TextMeshProUGUI gameModeText;
+    [Tooltip("Delay in seconds before showing the level complete panel")]
+    [SerializeField] private float levelCompleteDelay = 1f;
 
     [Header("Codex Unlock Popup")]
     [SerializeField] private GameObject codexUnlockPopup;
@@ -52,6 +54,19 @@ public class UIManager : MonoBehaviour
     [SerializeField] private GameObject comboDisplay;
     [SerializeField] private TextMeshProUGUI multiplierText;
     [SerializeField] private Image comboTimerBar; // Circular radial fill timer
+
+    [Header("Kukulkan's Shift UI")]
+    [SerializeField] private TextMeshProUGUI kukulkanShiftText; // TextMeshProUGUI component for the message
+    [SerializeField] private Color kukulkanShiftColor = Color.yellow;
+    [SerializeField] private float kukulkanShiftDisplayDuration = 3f;
+    [SerializeField] private float kukulkanShiftAnimationDuration = 0.5f;
+    [SerializeField] private float kukulkanShiftAppearScale = 2f;
+    [SerializeField] private float kukulkanShiftFinalScale = 1.5f;
+
+    [Header("Kukulkan's Wrath Meter")]
+    [SerializeField] private GameObject kukulkanWrathMeter; // Container for the meter (always visible)
+    [SerializeField] private Image kukulkanWrathFillImage; // Fill image that goes up based on consecutive perfects
+    [SerializeField] private Image kukulkanWrathBackgroundImage; // Background/display image (optional, for styling)
 
     [Header("Pause Menu")]
     [SerializeField] private GameObject pauseMenuPanel;
@@ -95,9 +110,6 @@ public class UIManager : MonoBehaviour
     [SerializeField] private float comboScalePulse = 1.3f;
     [SerializeField] private float comboScalePulseDuration = 0.2f;
     [SerializeField] private bool showComboTimer = true;
-    [SerializeField] private Color timerSafeColor = Color.green;
-    [SerializeField] private Color timerWarningColor = Color.yellow;
-    [SerializeField] private Color timerDangerColor = Color.red;
 
     // References
     private GameManager gameManager;
@@ -109,6 +121,8 @@ public class UIManager : MonoBehaviour
     private Coroutine landingAccuracyCoroutine;
     private Coroutine comboPulseCoroutine;
     private Coroutine gameTitleCoroutine;
+    private Coroutine levelCompleteCoroutine;
+    private Coroutine perfectHitStreakCoroutine;
     private bool isPaused = false;
     private bool isUpdatingComboTimer = false;
     private bool isTitleShowing = false; // Track if title is currently showing
@@ -163,12 +177,14 @@ public class UIManager : MonoBehaviour
             gameManager.OnGameRestart += OnGameRestart;
             gameManager.OnGameModeChanged += OnGameModeChanged;
             gameManager.OnComboChanged += UpdateComboDisplay;
+            gameManager.OnConsecutivePerfectHitsChanged += UpdateKukulkanWrathMeter;
         }
 
         // Subscribe to stack events
         if (stackManager != null)
         {
             stackManager.OnObjectAddedToStack += OnObjectAddedToStack;
+            stackManager.OnStackStraightened += OnStackStraightened;
         }
 
         // Subscribe to level events
@@ -266,6 +282,12 @@ public class UIManager : MonoBehaviour
         // Disable raycast targets on popup text labels to prevent blocking input
         DisableRaycastTargetsOnPopupTexts();
 
+        // Hide Kukulkan's Shift text initially
+        HideKukulkanShiftText();
+
+        // Initialize Kukulkan's Wrath meter (always visible)
+        InitializeKukulkanWrathMeter();
+
         // Update initial scores
         if (gameManager != null)
         {
@@ -307,6 +329,9 @@ public class UIManager : MonoBehaviour
 
         if (multiplierText != null)
             multiplierText.raycastTarget = false;
+
+        if (kukulkanShiftText != null)
+            kukulkanShiftText.raycastTarget = false;
     }
 
     private void UpdateScore(int score)
@@ -365,6 +390,9 @@ public class UIManager : MonoBehaviour
 
     private void OnGameOver()
     {
+        // Stop combo timer update to prevent sound effects after game over
+        isUpdatingComboTimer = false;
+
         // Show game over panel, hide game UI
         if (gameUI != null)
             gameUI.SetActive(false);
@@ -378,8 +406,9 @@ public class UIManager : MonoBehaviour
             finalScoreText.text = string.Format(finalScoreFormat, gameManager.CurrentScore);
         }
 
-        // Check if it's a new high score
-        if (gameManager != null && gameManager.CurrentScore >= gameManager.HighScore)
+        // Check if it's a new high score (only show in Infinite Stacker mode)
+        if (gameManager != null && gameManager.CurrentGameMode == GameMode.InfiniteStacker &&
+            gameManager.CurrentScore >= gameManager.HighScore)
         {
             ShowNewHighScore();
         }
@@ -409,6 +438,15 @@ public class UIManager : MonoBehaviour
 
         // Hide landing accuracy text
         HideLandingAccuracy();
+
+        // Hide Kukulkan's Shift text
+        HideKukulkanShiftText();
+
+        // Reset Kukulkan's Wrath meter
+        if (gameManager != null)
+        {
+            UpdateKukulkanWrathMeter(0);
+        }
 
         // Don't show title here - OnGameStart() will be called after RestartGame() and will show it
         // This prevents the title from showing twice during restart
@@ -799,8 +837,8 @@ public class UIManager : MonoBehaviour
             landingAccuracyText.color = poorAccuracyColor;
         }
 
-        // Add combo count if active (Good or Perfect landing)
-        if (currentCombo > 0 && accuracy >= 0.6f)
+        // Add combo count if active (Perfect landing only)
+        if (currentCombo > 0 && accuracy >= 0.9f)
         {
             landingAccuracyText.text = $"{baseText}\nx{currentCombo} COMBO";
         }
@@ -1134,6 +1172,19 @@ public class UIManager : MonoBehaviour
 
         while (gameManager != null && gameManager.CurrentCombo > 0 && isUpdatingComboTimer)
         {
+            // Stop updating if game is over or level is completed
+            if (gameManager.IsGameOver)
+            {
+                isUpdatingComboTimer = false;
+                yield break;
+            }
+
+            if (levelManager != null && levelManager.IsLevelComplete)
+            {
+                isUpdatingComboTimer = false;
+                yield break;
+            }
+
             float timeRemaining = gameManager.GetComboTimeRemaining();
 
             if (timeRemaining <= 0)
@@ -1166,20 +1217,6 @@ public class UIManager : MonoBehaviour
 
         // Update fill amount (1.0 = full circle, 0.0 = empty)
         comboTimerBar.fillAmount = fillAmount;
-
-        // Color code the bar based on time remaining
-        if (fillAmount > 0.5f)
-        {
-            comboTimerBar.color = timerSafeColor;
-        }
-        else if (fillAmount > 0.25f)
-        {
-            comboTimerBar.color = timerWarningColor;
-        }
-        else
-        {
-            comboTimerBar.color = timerDangerColor;
-        }
     }
 
     /// <summary>
@@ -1380,6 +1417,9 @@ public class UIManager : MonoBehaviour
 
     private void OnLevelCompleted(int stars, int score, bool showCodexPopup)
     {
+        // Stop combo timer update to prevent sound effects after level completion
+        isUpdatingComboTimer = false;
+
         // Hide game UI
         if (gameUI != null)
             gameUI.SetActive(false);
@@ -1392,6 +1432,24 @@ public class UIManager : MonoBehaviour
             // Mark codex as unlocked after showing popup
             levelManager.MarkCodexUnlockedForLevel(levelManager.CurrentLevel.levelNumber);
         }
+
+        // Stop any existing level complete coroutine
+        if (levelCompleteCoroutine != null)
+        {
+            StopCoroutine(levelCompleteCoroutine);
+        }
+
+        // Start coroutine to show level complete panel after delay
+        levelCompleteCoroutine = StartCoroutine(ShowLevelCompletePanelDelayed(stars, score));
+    }
+
+    /// <summary>
+    /// Coroutine to show the level complete panel after a delay
+    /// </summary>
+    private IEnumerator ShowLevelCompletePanelDelayed(int stars, int score)
+    {
+        // Wait for the specified delay
+        yield return new WaitForSeconds(levelCompleteDelay);
 
         // Show level complete panel
         if (levelCompletePanel != null)
@@ -1786,11 +1844,13 @@ public class UIManager : MonoBehaviour
             gameManager.OnGameRestart -= OnGameRestart;
             gameManager.OnGameModeChanged -= OnGameModeChanged;
             gameManager.OnComboChanged -= UpdateComboDisplay;
+            gameManager.OnConsecutivePerfectHitsChanged -= UpdateKukulkanWrathMeter;
         }
 
         if (stackManager != null)
         {
             stackManager.OnObjectAddedToStack -= OnObjectAddedToStack;
+            stackManager.OnStackStraightened -= OnStackStraightened;
         }
 
         if (levelManager != null)
@@ -1875,6 +1935,183 @@ public class UIManager : MonoBehaviour
         if (codexUnlockDismissButton != null)
         {
             codexUnlockDismissButton.onClick.RemoveListener(DismissCodexPopup);
+        }
+
+        // Stop perfect hit streak coroutine
+        if (perfectHitStreakCoroutine != null)
+        {
+            StopCoroutine(perfectHitStreakCoroutine);
+        }
+    }
+
+    /// <summary>
+    /// Called when stack has been straightened - shows "Kukulkan's Shift" message
+    /// </summary>
+    private void OnStackStraightened()
+    {
+        if (kukulkanShiftText == null) return;
+
+        // Stop any existing coroutine
+        if (perfectHitStreakCoroutine != null)
+        {
+            StopCoroutine(perfectHitStreakCoroutine);
+        }
+
+        // Set the text and color
+        kukulkanShiftText.text = "Kukulkan's Shift";
+        kukulkanShiftText.color = kukulkanShiftColor;
+
+        // Show the text
+        kukulkanShiftText.gameObject.SetActive(true);
+
+        // Start animation coroutine
+        perfectHitStreakCoroutine = StartCoroutine(ShowKukulkanShiftAnimation());
+    }
+
+    /// <summary>
+    /// Coroutine to animate the Kukulkan's Shift message
+    /// </summary>
+    private IEnumerator ShowKukulkanShiftAnimation()
+    {
+        if (kukulkanShiftText == null) yield break;
+
+        RectTransform textRect = kukulkanShiftText.GetComponent<RectTransform>();
+        if (textRect == null) yield break;
+
+        Color originalColor = kukulkanShiftColor;
+
+        // Appear animation: scale from large and fade in
+        float elapsedTime = 0f;
+        Vector3 startScale = Vector3.one * kukulkanShiftAppearScale;
+        Vector3 targetScale = Vector3.one * kukulkanShiftFinalScale;
+
+        textRect.localScale = startScale;
+        kukulkanShiftText.color = new Color(originalColor.r, originalColor.g, originalColor.b, 0f);
+
+        // Fade in and scale down to final size
+        while (elapsedTime < kukulkanShiftAnimationDuration)
+        {
+            if (kukulkanShiftText == null || textRect == null) yield break;
+
+            elapsedTime += Time.deltaTime;
+            float progress = elapsedTime / kukulkanShiftAnimationDuration;
+            float smoothProgress = progress * progress * (3f - 2f * progress); // Smooth step
+
+            textRect.localScale = Vector3.Lerp(startScale, targetScale, smoothProgress);
+            float alpha = Mathf.Lerp(0f, 1f, smoothProgress);
+            kukulkanShiftText.color = new Color(originalColor.r, originalColor.g, originalColor.b, alpha);
+
+            yield return null;
+        }
+
+        // Ensure final values
+        textRect.localScale = targetScale;
+        kukulkanShiftText.color = originalColor;
+
+        // Hold for display duration (subtract animation time)
+        float holdDuration = kukulkanShiftDisplayDuration - (kukulkanShiftAnimationDuration * 2);
+        if (holdDuration > 0)
+        {
+            yield return new WaitForSeconds(holdDuration);
+        }
+
+        // Disappear animation: fade out and scale down
+        elapsedTime = 0f;
+        Vector3 startScaleOut = targetScale;
+        Vector3 endScale = Vector3.one * 0.8f;
+
+        while (elapsedTime < kukulkanShiftAnimationDuration)
+        {
+            if (kukulkanShiftText == null || textRect == null) yield break;
+
+            elapsedTime += Time.deltaTime;
+            float progress = elapsedTime / kukulkanShiftAnimationDuration;
+            float smoothProgress = progress * progress * (3f - 2f * progress); // Smooth step
+
+            textRect.localScale = Vector3.Lerp(startScaleOut, endScale, smoothProgress);
+            float alpha = Mathf.Lerp(1f, 0f, smoothProgress);
+            kukulkanShiftText.color = new Color(originalColor.r, originalColor.g, originalColor.b, alpha);
+
+            yield return null;
+        }
+
+        // Hide the text
+        HideKukulkanShiftText();
+    }
+
+    /// <summary>
+    /// Hides the Kukulkan's Shift text and resets its properties
+    /// </summary>
+    private void HideKukulkanShiftText()
+    {
+        if (kukulkanShiftText != null)
+        {
+            kukulkanShiftText.gameObject.SetActive(false);
+
+            // Reset scale and color for next appearance
+            RectTransform textRect = kukulkanShiftText.GetComponent<RectTransform>();
+            if (textRect != null)
+            {
+                textRect.localScale = Vector3.one;
+            }
+
+            kukulkanShiftText.color = kukulkanShiftColor;
+        }
+    }
+
+    // Kukulkan's Wrath Meter Methods
+
+    /// <summary>
+    /// Initializes the Kukulkan's Wrath meter - ensures it's always visible
+    /// </summary>
+    private void InitializeKukulkanWrathMeter()
+    {
+        // Always show the meter
+        if (kukulkanWrathMeter != null)
+        {
+            kukulkanWrathMeter.SetActive(true);
+        }
+
+        // Initialize fill to empty
+        if (kukulkanWrathFillImage != null)
+        {
+            kukulkanWrathFillImage.fillAmount = 0f;
+        }
+
+        // Update with current value if game is active
+        if (gameManager != null)
+        {
+            UpdateKukulkanWrathMeter(gameManager.ConsecutivePerfectHits);
+        }
+    }
+
+    /// <summary>
+    /// Updates the Kukulkan's Wrath meter fill amount based on consecutive perfect hits
+    /// </summary>
+    /// <param name="consecutivePerfectHits">Current number of consecutive perfect hits</param>
+    private void UpdateKukulkanWrathMeter(int consecutivePerfectHits)
+    {
+        // Ensure meter is visible
+        if (kukulkanWrathMeter != null)
+        {
+            kukulkanWrathMeter.SetActive(true);
+        }
+
+        if (kukulkanWrathFillImage == null || gameManager == null) return;
+
+        // Calculate fill amount: consecutivePerfectHits / perfectHitsRequired
+        int perfectHitsRequired = gameManager.PerfectHitsRequired;
+        if (perfectHitsRequired > 0)
+        {
+            float fillAmount = (float)consecutivePerfectHits / perfectHitsRequired;
+            fillAmount = Mathf.Clamp01(fillAmount); // Ensure between 0 and 1
+
+            kukulkanWrathFillImage.fillAmount = fillAmount;
+        }
+        else
+        {
+            // If perfect hits required is 0 or invalid, set to 0
+            kukulkanWrathFillImage.fillAmount = 0f;
         }
     }
 }

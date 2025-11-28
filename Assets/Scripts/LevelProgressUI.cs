@@ -11,7 +11,6 @@ public class LevelProgressUI : MonoBehaviour
     [Header("Progress Bar")]
     [SerializeField] private GameObject progressBarPanel;
     [SerializeField] private Image progressBarFill;
-    [SerializeField] private TextMeshProUGUI progressText;
     [SerializeField] private TextMeshProUGUI targetText;
 
     [Header("Visual Settings")]
@@ -20,9 +19,7 @@ public class LevelProgressUI : MonoBehaviour
     [SerializeField] private Color progressColorComplete = new Color(0.3f, 1f, 0.3f); // Green
     [SerializeField] private bool animateProgress = true;
     [SerializeField] private float animationSpeed = 5f;
-    [SerializeField] private bool showPercentage = true;
-    [SerializeField] private string progressFormat = "{0}/{1}";
-    [SerializeField] private string targetFormat = "Goal: {0}";
+    [SerializeField] private string targetFormat = "{0} blocks remaining";
 
     [Header("Visual Effects")]
     [SerializeField] private bool pulseOnProgress = true;
@@ -259,8 +256,8 @@ public class LevelProgressUI : MonoBehaviour
         Color targetColor = GetProgressColor(currentFillAmount);
         progressBarFill.color = targetColor;
 
-        // Update progress text
-        UpdateProgressText();
+        // Update target text (shows remaining blocks)
+        UpdateTargetText();
     }
 
     /// <summary>
@@ -281,32 +278,14 @@ public class LevelProgressUI : MonoBehaviour
     }
 
     /// <summary>
-    /// Update the progress text display
-    /// </summary>
-    private void UpdateProgressText()
-    {
-        // progressText is optional - it may be null if not assigned in Inspector
-        if (progressText == null) return;
-
-        if (showPercentage)
-        {
-            int percentage = Mathf.RoundToInt(currentFillAmount * 100f);
-            progressText.text = $"{percentage}%";
-        }
-        else
-        {
-            progressText.text = string.Format(progressFormat, currentHeight, requiredHeight);
-        }
-    }
-
-    /// <summary>
-    /// Update the target/goal text
+    /// Update the target/goal text to show remaining blocks
     /// </summary>
     private void UpdateTargetText()
     {
         if (targetText == null) return;
 
-        targetText.text = string.Format(targetFormat, requiredHeight);
+        int remainingBlocks = Mathf.Max(0, requiredHeight - currentHeight);
+        targetText.text = string.Format(targetFormat, remainingBlocks);
     }
 
     /// <summary>

@@ -8,6 +8,7 @@ public class GameController : MonoBehaviour
     [SerializeField] private InputManager inputManager;
     [SerializeField] private UIManager uiManager;
     [SerializeField] private CameraController cameraController;
+    private LevelManager levelManager;
 
     [Header("Game Settings")]
     [SerializeField] private bool autoFindComponents = true;
@@ -26,6 +27,9 @@ public class GameController : MonoBehaviour
             FindComponents();
         }
 
+        // Find LevelManager
+        levelManager = DependencyRegistry.Find<LevelManager>();
+
         // Set up camera follow
         if (cameraController != null)
         {
@@ -38,6 +42,12 @@ public class GameController : MonoBehaviour
             gameManager.OnGameStart += OnGameStart;
             gameManager.OnGameOver += OnGameOver;
             gameManager.OnGameRestart += OnGameRestart;
+        }
+
+        // Subscribe to level events
+        if (levelManager != null)
+        {
+            levelManager.OnLevelCompleted += OnLevelCompleted;
         }
 
         Debug.Log("Game Controller initialized successfully!");
@@ -110,6 +120,17 @@ public class GameController : MonoBehaviour
         }
     }
 
+    private void OnLevelCompleted(int stars, int score, bool showCodexPopup)
+    {
+        Debug.Log("Level Completed!");
+
+        // Disable camera follow when level is completed
+        if (cameraController != null)
+        {
+            cameraController.SetFollowStack(false);
+        }
+    }
+
     private void OnDestroy()
     {
         // Unsubscribe from events
@@ -118,6 +139,11 @@ public class GameController : MonoBehaviour
             gameManager.OnGameStart -= OnGameStart;
             gameManager.OnGameOver -= OnGameOver;
             gameManager.OnGameRestart -= OnGameRestart;
+        }
+
+        if (levelManager != null)
+        {
+            levelManager.OnLevelCompleted -= OnLevelCompleted;
         }
     }
 

@@ -211,6 +211,8 @@ MonoBehaviour:
   objectSize: {x: 4, y: 2}
   objectColors:
   - {r: 1, g: 1, b: 1, a: 1}
+  lastBlockSprite: {fileID: -1971845008274128344, guid: 9c9ef6c67af71ec4392943b01a3c36c0, type: 3}
+  lastBlockColliderYScale: 1.6
 --- !u!4 &144379238
 Transform:
   m_ObjectHideFlags: 0
@@ -1218,6 +1220,7 @@ MonoBehaviour:
   maxComboMultiplier: 5
   comboDecayTime: 5
   enableComboDecay: 1
+  perfectHitsRequired: 4
 --- !u!4 &1286817094
 Transform:
   m_ObjectHideFlags: 0
@@ -1252,6 +1255,13 @@ MonoBehaviour:
   horizontalDistanceThreshold: 8
   stackHeightFallThreshold: 4
   settlingTimeGracePeriod: 1.5
+  straighteningDuration: 0.5
+  freezeRotationAfterStraightening: 0
+  stabilizedMassMultiplier: 3
+  stabilizedDragMultiplier: 5
+  stabilizedAngularDragMultiplier: 10
+  stabilizedFrictionMultiplier: 2
+  freezeXPositionAfterStraightening: 1
 --- !u!1 &1559832333
 GameObject:
   m_ObjectHideFlags: 0
@@ -1488,7 +1498,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 2
   m_Sprite: {fileID: 5193826416196738204, guid: f33460b5ca9ad7f43999e03c6bcd2bbd, type: 3}
-  m_Color: {r: 0.9528302, g: 0.9528302, b: 0.9528302, a: 1}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -2000,9 +2010,41 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 607086731091237290, guid: 60441e2117e89ce48a769a889c2ee4ca, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 607086731091237290, guid: 60441e2117e89ce48a769a889c2ee4ca, type: 3}
+      propertyPath: m_AnchorMin.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 607086731091237290, guid: 60441e2117e89ce48a769a889c2ee4ca, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1747891914646870234, guid: 60441e2117e89ce48a769a889c2ee4ca, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1747891914646870234, guid: 60441e2117e89ce48a769a889c2ee4ca, type: 3}
+      propertyPath: m_AnchorMin.y
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 3072199511613321717, guid: 60441e2117e89ce48a769a889c2ee4ca, type: 3}
       propertyPath: m_Name
       value: Game Scene UI
+      objectReference: {fileID: 0}
+    - target: {fileID: 5523580983493758357, guid: 60441e2117e89ce48a769a889c2ee4ca, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5523580983493758357, guid: 60441e2117e89ce48a769a889c2ee4ca, type: 3}
+      propertyPath: m_AnchorMin.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5523580983493758357, guid: 60441e2117e89ce48a769a889c2ee4ca, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7244201993073100091, guid: 60441e2117e89ce48a769a889c2ee4ca, type: 3}
       propertyPath: m_Pivot.x

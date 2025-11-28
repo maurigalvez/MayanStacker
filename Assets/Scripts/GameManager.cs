@@ -17,8 +17,8 @@ public class GameManager : MonoBehaviour
     [Header("Combo System")]
     [SerializeField] private int currentCombo = 0;
     [SerializeField] private int maxCombo = 0;
-    [Tooltip("Minimum accuracy (0-1) required to maintain combo")]
-    [SerializeField] private float comboMinAccuracy = 0.6f; // Good or better
+    [Tooltip("Minimum accuracy (0-1) for Good landing classification (combos only count for Perfect hits >= 0.9f)")]
+    [SerializeField] private float comboMinAccuracy = 0.6f; // Used for Good vs Poor classification
     [Tooltip("Multiplier increase per consecutive landing (e.g., 1.0 = +1.0x per landing)")]
     [SerializeField] private float multiplierIncrement = 1.0f;
     [Tooltip("Maximum combo multiplier")]
@@ -28,6 +28,10 @@ public class GameManager : MonoBehaviour
     [Tooltip("Enable combo decay timer")]
     [SerializeField] private bool enableComboDecay = true;
 
+    [Header("Perfect Hit System")]
+    [Tooltip("Number of consecutive perfect hits required to straighten the stack")]
+    [SerializeField] private int perfectHitsRequired = 4;
+
     // Internal state
     private bool gameModeInitialized = false;
     private int currentLevelNumber = -1; // For StackerLevels mode
@@ -35,6 +39,7 @@ public class GameManager : MonoBehaviour
     private float lastComboUpdateTime = 0f; // Track time since last combo update
     private bool comboDecayActive = false; // Track if decay timer is running
     private AccuracyLevel lastAccuracyLevel = AccuracyLevel.None; // Track last accuracy level for consistency check
+    private int consecutivePerfectHits = 0; // Track consecutive perfect hits for stack straightening
 
     // Accuracy level enum for combo consistency
     private enum AccuracyLevel
@@ -53,6 +58,8 @@ public class GameManager : MonoBehaviour
     public System.Action OnGameRestart;
     public System.Action<GameMode> OnGameModeChanged;
     public System.Action<int, float> OnComboChanged; // combo count, multiplier
+    public System.Action OnPerfectHitStreak; // Triggered when required perfect hits are achieved
+    public System.Action<int> OnConsecutivePerfectHitsChanged; // Triggered when consecutive perfect hits count changes (current count)
 
     // Properties
     public GameMode CurrentGameMode => currentGameMode;
@@ -64,6 +71,8 @@ public class GameManager : MonoBehaviour
     public int CurrentCombo => currentCombo;
     public int MaxCombo => maxCombo;
     public float CurrentMultiplier => GetComboMultiplier();
+    public int ConsecutivePerfectHits => consecutivePerfectHits;
+    public int PerfectHitsRequired => perfectHitsRequired;
 
     private void Awake()
     {
@@ -112,8 +121,18 @@ public class GameManager : MonoBehaviour
     private void Update()
     {
         // Check for combo decay if enabled and game is active
+        // Don't run combo decay if game is over or level is completed
         if (enableComboDecay && isGameActive && !isGameOver && comboDecayActive)
         {
+            // Check if level is completed (for level mode)
+            var levelManager = DependencyRegistry.Find<LevelManager>();
+            if (levelManager != null && levelManager.IsLevelComplete)
+            {
+                // Stop combo decay when level is completed
+                comboDecayActive = false;
+                return;
+            }
+
             CheckComboDecay();
         }
     }
@@ -127,8 +146,10 @@ public class GameManager : MonoBehaviour
         lastComboUpdateTime = 0f;
         comboDecayActive = false;
         lastAccuracyLevel = AccuracyLevel.None;
+        consecutivePerfectHits = 0; // Reset perfect hit streak
+        OnConsecutivePerfectHitsChanged?.Invoke(consecutivePerfectHits); // Notify of reset
         highScoreSaved = false; // Reset save flag for new game session
-        
+
         // Perform Standard Integrity check at game session start
         var integrityManager = DependencyRegistry.Find<IntegrityManager>();
         if (integrityManager != null && integrityManager.IsIntegrityChecksEnabled)
@@ -141,7 +162,7 @@ public class GameManager : MonoBehaviour
                 }
             });
         }
-        
+
         OnGameStart?.Invoke();
         OnScoreChanged?.Invoke(currentScore);
         OnComboChanged?.Invoke(currentCombo, GetComboMultiplier());
@@ -149,6 +170,7 @@ public class GameManager : MonoBehaviour
 
     /// <summary>
     /// Adds score with combo multiplier based on landing accuracy
+    /// Combo multiplier only applies for perfect hits (accuracy >= 0.9f)
     /// </summary>
     /// <param name="basePoints">Base points before multiplier</param>
     /// <param name="accuracy">Landing accuracy (0-1)</param>
@@ -160,8 +182,9 @@ public class GameManager : MonoBehaviour
         // Update combo based on accuracy
         UpdateCombo(accuracy);
 
-        // Calculate points with multiplier
-        float multiplier = GetComboMultiplier();
+        // Calculate points - multiplier only applies for perfect hits
+        bool isPerfectHit = accuracy >= 0.9f;
+        float multiplier = isPerfectHit ? GetComboMultiplier() : 1f;
         int finalPoints = Mathf.RoundToInt(basePoints * multiplier);
 
         currentScore += finalPoints;
@@ -199,7 +222,7 @@ public class GameManager : MonoBehaviour
 
     /// <summary>
     /// Updates combo count based on landing accuracy
-    /// Combo requires CONSECUTIVE landings of Good or Perfect (can upgrade from Good to Perfect)
+    /// Combo requires CONSECUTIVE Perfect landings only (accuracy >= 0.9f)
     /// </summary>
     private void UpdateCombo(float accuracy)
     {
@@ -218,25 +241,50 @@ public class GameManager : MonoBehaviour
             currentAccuracyLevel = AccuracyLevel.Poor;
         }
 
+        // Track consecutive perfect hits for stack straightening
+        int previousPerfectHits = consecutivePerfectHits;
+        if (currentAccuracyLevel == AccuracyLevel.Perfect)
+        {
+            consecutivePerfectHits++;
+
+            // Notify listeners of perfect hits change
+            if (consecutivePerfectHits != previousPerfectHits)
+            {
+                OnConsecutivePerfectHitsChanged?.Invoke(consecutivePerfectHits);
+            }
+
+            // Check if we've reached the required number of perfect hits
+            if (consecutivePerfectHits >= perfectHitsRequired)
+            {
+                Debug.Log($"Perfect hit streak achieved! {consecutivePerfectHits} consecutive perfect hits - straightening stack!");
+                OnPerfectHitStreak?.Invoke();
+                consecutivePerfectHits = 0; // Reset after triggering
+                OnConsecutivePerfectHitsChanged?.Invoke(consecutivePerfectHits); // Notify of reset
+            }
+        }
+        else
+        {
+            // Non-perfect hit breaks the perfect hit streak
+            if (consecutivePerfectHits > 0)
+            {
+                consecutivePerfectHits = 0;
+                OnConsecutivePerfectHitsChanged?.Invoke(consecutivePerfectHits); // Notify of reset
+            }
+        }
+
         // Check if we should maintain or break the combo
+        // Combo only counts for Perfect hits (accuracy >= 0.9f)
         bool shouldMaintainCombo = false;
 
-        if (currentAccuracyLevel == AccuracyLevel.Poor)
+        if (currentAccuracyLevel == AccuracyLevel.Perfect)
         {
-            // Poor landing always breaks combo
-            shouldMaintainCombo = false;
-        }
-        else if (currentCombo == 0)
-        {
-            // Starting a new combo - accept either Good or Perfect
+            // Perfect landing - always maintain or start combo
             shouldMaintainCombo = true;
         }
         else
         {
-            // Combo is active - maintain if same level OR upgrading from Good to Perfect
-            bool isSameLevel = (currentAccuracyLevel == lastAccuracyLevel);
-            bool isUpgrade = (lastAccuracyLevel == AccuracyLevel.Good && currentAccuracyLevel == AccuracyLevel.Perfect);
-            shouldMaintainCombo = isSameLevel || isUpgrade;
+            // Good or Poor landing - always break combo
+            shouldMaintainCombo = false;
         }
 
         if (shouldMaintainCombo)
@@ -348,6 +396,9 @@ public class GameManager : MonoBehaviour
         isGameActive = false;
         isGameOver = true;
 
+        // Stop combo decay to prevent sound effects after game over
+        comboDecayActive = false;
+
         // For InfiniteStacker mode, save high score on game over
         if (currentGameMode == GameMode.InfiniteStacker && currentScore > 0)
         {
@@ -366,6 +417,8 @@ public class GameManager : MonoBehaviour
         lastComboUpdateTime = 0f;
         comboDecayActive = false;
         lastAccuracyLevel = AccuracyLevel.None;
+        consecutivePerfectHits = 0; // Reset perfect hit streak
+        OnConsecutivePerfectHitsChanged?.Invoke(consecutivePerfectHits); // Notify of reset
         OnGameRestart?.Invoke();
         OnScoreChanged?.Invoke(currentScore);
         OnComboChanged?.Invoke(currentCombo, GetComboMultiplier());

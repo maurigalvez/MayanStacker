@@ -13,6 +13,22 @@ public class StackManager : MonoBehaviour
     [SerializeField] private float stackHeightFallThreshold = 4f; // How far below stack top before considered fallen
     [SerializeField] private float settlingTimeGracePeriod = 1.5f; // Time after landing before strict checks apply
 
+    [Header("Stack Straightening")]
+    [Tooltip("Duration of the straightening animation in seconds")]
+    [SerializeField] private float straighteningDuration = 0.5f;
+    [Tooltip("Whether to freeze rotation after straightening")]
+    [SerializeField] private bool freezeRotationAfterStraightening = false;
+    [Tooltip("Mass multiplier to make blocks heavier after straightening")]
+    [SerializeField] private float stabilizedMassMultiplier = 3f;
+    [Tooltip("Drag multiplier to reduce movement after straightening")]
+    [SerializeField] private float stabilizedDragMultiplier = 5f;
+    [Tooltip("Angular drag multiplier to reduce rotation after straightening")]
+    [SerializeField] private float stabilizedAngularDragMultiplier = 10f;
+    [Tooltip("Friction multiplier to prevent sliding after straightening")]
+    [SerializeField] private float stabilizedFrictionMultiplier = 2f;
+    [Tooltip("Whether to freeze X position to prevent horizontal sliding")]
+    [SerializeField] private bool freezeXPositionAfterStraightening = true;
+
     // Stack tracking
     private List<StackableObject> stackObjects = new List<StackableObject>();
     private List<StackableObject> droppedObjects = new List<StackableObject>(); // Track all dropped objects
@@ -22,10 +38,21 @@ public class StackManager : MonoBehaviour
     // Ground reference
     private Ground ground;
 
+    // Helper class to store physics properties
+    private class PhysicsProperties
+    {
+        public float mass;
+        public float drag;
+        public float angularDrag;
+        public float friction;
+        public RigidbodyConstraints2D constraints;
+    }
+
     // Events
     public System.Action OnStackFall;
     public System.Action<StackableObject> OnObjectAddedToStack;
     public System.Action<StackableObject> OnObjectRemovedFromStack;
+    public System.Action OnStackStraightened; // Fired when stack straightening animation completes
 
     // Singleton pattern for easy access
     private static StackManager instance;
@@ -55,6 +82,7 @@ public class StackManager : MonoBehaviour
         if (gameManager != null)
         {
             gameManager.OnGameRestart += OnGameRestart;
+            gameManager.OnPerfectHitStreak += OnPerfectHitStreak;
         }
 
         // Get ground reference
@@ -522,6 +550,200 @@ public class StackManager : MonoBehaviour
         return ground;
     }
 
+    /// <summary>
+    /// Called when perfect hit streak is achieved - straightens and stabilizes the stack
+    /// </summary>
+    private void OnPerfectHitStreak()
+    {
+        if (stackObjects.Count == 0) return;
+
+        // Don't straighten if game is over
+        var gameManager = DependencyRegistry.Find<GameManager>();
+        if (gameManager != null && gameManager.IsGameOver)
+        {
+            return;
+        }
+
+        Debug.Log($"Straightening stack with {stackObjects.Count} objects");
+
+        // Notify that stack straightening is starting (for UI display)
+        OnStackStraightened?.Invoke();
+
+        StartCoroutine(StraightenStackCoroutine());
+    }
+
+    /// <summary>
+    /// Coroutine to smoothly straighten and stabilize the stack
+    /// </summary>
+    private IEnumerator StraightenStackCoroutine()
+    {
+        if (stackObjects.Count == 0) yield break;
+
+        // Sort objects by Y position (bottom to top) to find the first block
+        List<StackableObject> sortedObjects = new List<StackableObject>(stackObjects);
+        sortedObjects.Sort((a, b) => a.transform.position.y.CompareTo(b.transform.position.y));
+
+        // Get the first block's X position (bottom block)
+        float firstBlockX = sortedObjects.Count > 0 && sortedObjects[0] != null
+            ? sortedObjects[0].transform.position.x
+            : 0f;
+
+        // Store initial positions, rotations, and rigidbody states
+        Dictionary<StackableObject, Vector3> initialPositions = new Dictionary<StackableObject, Vector3>();
+        Dictionary<StackableObject, Quaternion> initialRotations = new Dictionary<StackableObject, Quaternion>();
+        Dictionary<StackableObject, Vector3> targetPositions = new Dictionary<StackableObject, Vector3>();
+        Dictionary<StackableObject, RigidbodyType2D> originalBodyTypes = new Dictionary<StackableObject, RigidbodyType2D>();
+        Dictionary<StackableObject, PhysicsProperties> originalPhysicsProperties = new Dictionary<StackableObject, PhysicsProperties>();
+
+        // Calculate target positions - align all blocks to first block's X, keep current Y
+        foreach (StackableObject obj in sortedObjects)
+        {
+            if (obj == null) continue;
+
+            Rigidbody2D rb = obj.GetComponent<Rigidbody2D>();
+            if (rb == null) continue;
+
+            Collider2D col = obj.Collider;
+            if (col == null) continue;
+
+            // Store initial state
+            initialPositions[obj] = obj.transform.position;
+            initialRotations[obj] = obj.transform.rotation;
+            originalBodyTypes[obj] = rb.bodyType;
+
+            // Store original physics properties
+            PhysicsProperties props = new PhysicsProperties
+            {
+                mass = rb.mass,
+                drag = rb.linearDamping,
+                angularDrag = rb.angularDamping,
+                constraints = rb.constraints
+            };
+
+            // Get friction from physics material
+            if (col.sharedMaterial != null)
+            {
+                props.friction = col.sharedMaterial.friction;
+            }
+            else
+            {
+                props.friction = 0.6f; // Default
+            }
+
+            originalPhysicsProperties[obj] = props;
+
+            // Disable physics by setting to kinematic (prevents collisions during animation)
+            rb.bodyType = RigidbodyType2D.Kinematic;
+            rb.linearVelocity = Vector2.zero;
+            rb.angularVelocity = 0f;
+
+            // Target position: align X to first block, keep current Y
+            Vector3 targetPos = new Vector3(firstBlockX, obj.transform.position.y, obj.transform.position.z);
+            targetPositions[obj] = targetPos;
+        }
+
+        // Animate to target positions
+        float elapsed = 0f;
+        while (elapsed < straighteningDuration)
+        {
+            elapsed += Time.deltaTime;
+            float t = Mathf.Clamp01(elapsed / straighteningDuration);
+            // Use smooth step for easing
+            float smoothT = t * t * (3f - 2f * t);
+
+            foreach (StackableObject obj in sortedObjects)
+            {
+                if (obj == null) continue;
+                if (!initialPositions.ContainsKey(obj) || !targetPositions.ContainsKey(obj)) continue;
+
+                Rigidbody2D rb = obj.GetComponent<Rigidbody2D>();
+                if (rb == null) continue;
+
+                // Interpolate position
+                Vector3 currentPos = Vector3.Lerp(initialPositions[obj], targetPositions[obj], smoothT);
+                obj.transform.position = currentPos;
+
+                // Interpolate rotation to zero
+                Quaternion targetRotation = Quaternion.identity;
+                obj.transform.rotation = Quaternion.Lerp(initialRotations[obj], targetRotation, smoothT);
+            }
+
+            yield return null;
+        }
+
+        // Finalize positions and rotations, and make blocks more solid
+        foreach (StackableObject obj in sortedObjects)
+        {
+            if (obj == null) continue;
+            if (!targetPositions.ContainsKey(obj)) continue;
+
+            Rigidbody2D rb = obj.GetComponent<Rigidbody2D>();
+            if (rb == null) continue;
+
+            Collider2D col = obj.Collider;
+            if (col == null) continue;
+
+            // Set final position and rotation
+            obj.transform.position = targetPositions[obj];
+            obj.transform.rotation = Quaternion.identity;
+
+            // Restore original body type (back to Dynamic)
+            if (originalBodyTypes.ContainsKey(obj))
+            {
+                rb.bodyType = originalBodyTypes[obj];
+            }
+            else
+            {
+                rb.bodyType = RigidbodyType2D.Dynamic;
+            }
+
+            // Apply stabilization - make blocks more solid and grounded
+            if (originalPhysicsProperties.ContainsKey(obj))
+            {
+                PhysicsProperties originalProps = originalPhysicsProperties[obj];
+
+                // Increase mass to make blocks heavier and more stable
+                rb.mass = originalProps.mass * stabilizedMassMultiplier;
+
+                // Increase drag to reduce movement
+                rb.linearDamping = originalProps.drag * stabilizedDragMultiplier;
+
+                // Increase angular drag to reduce rotation
+                rb.angularDamping = originalProps.angularDrag * stabilizedAngularDragMultiplier;
+
+                // Increase friction to prevent sliding
+                PhysicsMaterial2D material = col.sharedMaterial;
+                if (material == null)
+                {
+                    material = new PhysicsMaterial2D("StabilizedStackableMaterial");
+                    col.sharedMaterial = material;
+                }
+                material.friction = originalProps.friction * stabilizedFrictionMultiplier;
+            }
+
+            // Set constraints for stability
+            RigidbodyConstraints2D constraints = RigidbodyConstraints2D.None;
+
+            if (freezeRotationAfterStraightening)
+            {
+                constraints |= RigidbodyConstraints2D.FreezeRotation;
+            }
+
+            if (freezeXPositionAfterStraightening)
+            {
+                constraints |= RigidbodyConstraints2D.FreezePositionX;
+            }
+
+            rb.constraints = constraints;
+
+            // Reset velocities
+            rb.linearVelocity = Vector2.zero;
+            rb.angularVelocity = 0f;
+        }
+
+        Debug.Log("Stack straightened and stabilized!");
+    }
+
     private void OnGameRestart()
     {
         // Clear the stack when game restarts
@@ -542,6 +764,7 @@ public class StackManager : MonoBehaviour
         if (gameManager != null)
         {
             gameManager.OnGameRestart -= OnGameRestart;
+            gameManager.OnPerfectHitStreak -= OnPerfectHitStreak;
         }
     }
 }

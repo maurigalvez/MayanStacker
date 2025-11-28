@@ -864,6 +864,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Main Menu Canvas
       objectReference: {fileID: 0}
+    - target: {fileID: 4690574841634264256, guid: 74a40cd5abedcda4b90ec0e20018ae0e, type: 3}
+      propertyPath: gameVersion
+      value: 0.6
+      objectReference: {fileID: 0}
     - target: {fileID: 5299663569894928602, guid: 74a40cd5abedcda4b90ec0e20018ae0e, type: 3}
       propertyPath: m_Color.a
       value: 0.039215688
