@@ -16,9 +16,10 @@ MonoBehaviour:
   levelName: Tonina
   location: Chiapas, Mexico
   levelDescription: Stack 40 blocks with even faster swinging!
-  requiredStackHeight: 100
-  oneStarScore: 0
-  twoStarScore: 0
-  threeStarScore: 3100
+  siteImage: {fileID: 0}
+  requiredStackHeight: 50
+  oneStarScore: 4200
+  twoStarScore: 5000
+  threeStarScore: 7500
   swingSpeedMultiplier: 1.5
   swingAmplitudeMultiplier: 1.3

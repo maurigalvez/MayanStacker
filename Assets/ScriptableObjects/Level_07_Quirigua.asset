@@ -24,7 +24,7 @@ MonoBehaviour:
     monuments preserve some of the clearest dynastic records, making it essential
     to understanding Classic Maya politics, alliances, and rivalries.\n\nHere, stone
     giants preserved a kingdom\u2019s defiant rise against its powerful neighbor."
-  siteImage: {fileID: 0}
+  siteImage: {fileID: 21300000, guid: 6825687c7f69488439c5973cf99b9747, type: 3}
   requiredStackHeight: 20
   oneStarScore: 1500
   twoStarScore: 2500

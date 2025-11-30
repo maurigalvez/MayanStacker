@@ -16,9 +16,10 @@ MonoBehaviour:
   levelName: Xunantunich
   location: Cayo, Belize
   levelDescription: Stack 45 blocks with even faster swinging!
-  requiredStackHeight: 45
-  oneStarScore: 2000
-  twoStarScore: 3000
-  threeStarScore: 4000
+  siteImage: {fileID: 0}
+  requiredStackHeight: 43
+  oneStarScore: 3600
+  twoStarScore: 4300
+  threeStarScore: 4800
   swingSpeedMultiplier: 1.5
   swingAmplitudeMultiplier: 1.3

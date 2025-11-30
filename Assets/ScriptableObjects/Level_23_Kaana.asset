@@ -16,9 +16,10 @@ MonoBehaviour:
   levelName: Kaana
   location: Cayo District, Belize
   levelDescription: Stack 45 blocks with even faster swinging!
+  siteImage: {fileID: 0}
   requiredStackHeight: 45
-  oneStarScore: 2000
-  twoStarScore: 3000
-  threeStarScore: 4000
+  oneStarScore: 3800
+  twoStarScore: 4500
+  threeStarScore: 5200
   swingSpeedMultiplier: 1.5
   swingAmplitudeMultiplier: 1.3

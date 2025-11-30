@@ -15,13 +15,14 @@ MonoBehaviour:
   levelNumber: 3
   levelName: Aguateca
   location: Peten, Guatemala
-  levelDescription: "High on a cliff above the Petexbat\xFAn Lagoon, Aguateca stood
-    as a fortified stronghold in the Late Classic period.\nIts rulers commanded both
-    warriors and scribes, leaving behind walls etched with royal pride.\n\nThe city
-    fell suddenly \u2014 attacked and abandoned in haste.\nObjects were left where
-    they lay: tools, pigments, and codex fragments, frozen in time.\n\nExcavations
-    reveal a city that valued knowledge as much as power, a rare glimpse into daily
-    elite life.\nHere, the fire of war met the ink of wisdom."
+  levelDescription: "Here, the fire of war met the ink of wisdom.\n\nHigh on a cliff
+    above the Petexbat\xFAn Lagoon, Aguateca stood as a fortified stronghold in the
+    Late Classic period.\nIts rulers commanded both warriors and scribes, leaving
+    behind walls etched with royal pride.\n\nThe city fell suddenly \u2014 attacked
+    and abandoned in haste.\nObjects were left where they lay: tools, pigments, and
+    codex fragments, frozen in time.\n\nExcavations reveal a city that valued knowledge
+    as much as power, a rare glimpse into daily elite life."
+  siteImage: {fileID: 21300000, guid: 3db13226b53f0be4bb5d15c7c8c8ee06, type: 3}
   requiredStackHeight: 12
   oneStarScore: 750
   twoStarScore: 1000

@@ -16,9 +16,10 @@ MonoBehaviour:
   levelName: Calakmul
   location: Campeche, Mexico
   levelDescription: Stack 95 blocks with even faster swinging!
-  requiredStackHeight: 100
-  oneStarScore: 300
-  twoStarScore: 300
-  threeStarScore: 3100
+  siteImage: {fileID: 0}
+  requiredStackHeight: 46
+  oneStarScore: 3900
+  twoStarScore: 4600
+  threeStarScore: 6000
   swingSpeedMultiplier: 1.5
   swingAmplitudeMultiplier: 1.3

@@ -16,9 +16,10 @@ MonoBehaviour:
   levelName: "San Andr\xE9s"
   location: La Libertad, El Salvador
   levelDescription: Stack 45 blocks with even faster swinging!
-  requiredStackHeight: 45
-  oneStarScore: 2000
-  twoStarScore: 3000
-  threeStarScore: 4000
+  siteImage: {fileID: 0}
+  requiredStackHeight: 34
+  oneStarScore: 2800
+  twoStarScore: 3700
+  threeStarScore: 4400
   swingSpeedMultiplier: 1.5
   swingAmplitudeMultiplier: 1.3

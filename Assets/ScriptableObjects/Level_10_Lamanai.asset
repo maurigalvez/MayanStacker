@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   levelNumber: 10
   levelName: Lamanai
-  location: Orange Walk, Belize
+  location: Orange Walk, Belice
   levelDescription: "Lamanai (\u201CSubmerged Crocodile\u201D) stands out for its
     remarkably long occupation, spanning over 3,000 years\u2014from the earliest
     Maya farmers to the Spanish Colonial period. Its riverside location along the
@@ -25,9 +25,10 @@ MonoBehaviour:
     Few Maya cities demonstrate such endurance, complexity, and cultural continuity.\n\nBy
     the river\u2019s edge, Lamanai survived age after age, its temples witnessing
     every turning of Maya history"
-  requiredStackHeight: 30
+  siteImage: {fileID: 9191206007319775398, guid: 7046cc57f50a2a64e8557e055eac902a, type: 3}
+  requiredStackHeight: 27
   oneStarScore: 2000
   twoStarScore: 3000
-  threeStarScore: 4000
+  threeStarScore: 3500
   swingSpeedMultiplier: 1.5
   swingAmplitudeMultiplier: 1.5

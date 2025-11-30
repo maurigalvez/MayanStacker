@@ -22,6 +22,7 @@ MonoBehaviour:
     its plazas again.\nStill, its art tells of transition, resilience, and the final
     sparks of the Classic Maya world.\nBetween river and jungle, Seibal stood \u2014
     last flame before the night."
+  siteImage: {fileID: 21300000, guid: b0e2f22612498ff4598a2315bcfb9b24, type: 3}
   requiredStackHeight: 15
   oneStarScore: 800
   twoStarScore: 1200

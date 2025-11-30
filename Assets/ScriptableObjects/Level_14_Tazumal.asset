@@ -16,9 +16,10 @@ MonoBehaviour:
   levelName: Tazumal
   location: Chalchuapa, El Salvador
   levelDescription: Stack 45 blocks with even faster swinging!
-  requiredStackHeight: 45
-  oneStarScore: 2000
-  twoStarScore: 3000
-  threeStarScore: 4000
+  siteImage: {fileID: 0}
+  requiredStackHeight: 35
+  oneStarScore: 2900
+  twoStarScore: 3750
+  threeStarScore: 4500
   swingSpeedMultiplier: 1.5
   swingAmplitudeMultiplier: 1.3

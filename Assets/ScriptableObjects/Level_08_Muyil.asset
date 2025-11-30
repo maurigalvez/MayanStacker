@@ -24,6 +24,7 @@ MonoBehaviour:
     overlook a landscape shaped as much by commerce as by ceremony, revealing the
     importance of water-borne trade to Maya economies.\n\nFrom forest to sea, goods
     and ideas flowed through Muyil\u2019s watery corridors."
+  siteImage: {fileID: 21300000, guid: 5ef51fc46e4c4c349beaaefa8f41e946, type: 3}
   requiredStackHeight: 22
   oneStarScore: 1750
   twoStarScore: 2500

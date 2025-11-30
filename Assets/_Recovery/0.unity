@@ -119,57 +119,6 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
---- !u!1 &612015170
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 612015172}
-  - component: {fileID: 612015171}
-  m_Layer: 0
-  m_Name: AdManager
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &612015171
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 612015170}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4ddb0ef695c55044db9e5036f0a3e433, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::AdManager
-  useTestAds: 1
-  admobAppId: ca-app-pub-3940256099942544~3347511713
-  androidAdUnitId: ca-app-pub-3940256099942544/1033173712
-  productionAndroidAdUnitId: 
-  adFrequency: 2
-  adShowDelay: 1
-  enableDebugLogs: 1
---- !u!4 &612015172
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 612015170}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 358.56247, y: 336.59485, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &782402055
 GameObject:
   m_ObjectHideFlags: 0
@@ -563,52 +512,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &1681292951
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1681292953}
-  - component: {fileID: 1681292952}
-  m_Layer: 0
-  m_Name: ReviewManager
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &1681292952
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1681292951}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: de018aa4e2422fb488665bc682065765, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ReviewManagerHelper
-  enableReviewPrompt: 1
-  minCompletedLevelsForReview: 2
---- !u!4 &1681292953
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1681292951}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 528.88965, y: 932.8429, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1842219268
 GameObject:
   m_ObjectHideFlags: 0
@@ -828,9 +731,17 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 761173148564304254, guid: 74a40cd5abedcda4b90ec0e20018ae0e, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 12.430176
+      objectReference: {fileID: 0}
     - target: {fileID: 4316829900831077214, guid: 74a40cd5abedcda4b90ec0e20018ae0e, type: 3}
       propertyPath: m_Name
       value: Main Menu Canvas
+      objectReference: {fileID: 0}
+    - target: {fileID: 4333900528755554251, guid: 74a40cd5abedcda4b90ec0e20018ae0e, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6812175529766804833, guid: 74a40cd5abedcda4b90ec0e20018ae0e, type: 3}
       propertyPath: m_Pivot.x
@@ -986,5 +897,3 @@ SceneRoots:
   - {fileID: 782402058}
   - {fileID: 6772455392756851292}
   - {fileID: 1182049661}
-  - {fileID: 612015172}
-  - {fileID: 1681292953}

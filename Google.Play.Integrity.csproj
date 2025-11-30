@@ -19,7 +19,7 @@
     <RootNamespace></RootNamespace>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <AssemblyName>Assembly-CSharp</AssemblyName>
+    <AssemblyName>Google.Play.Integrity</AssemblyName>
     <TargetFramework>netstandard2.1</TargetFramework>
     <BaseDirectory>.</BaseDirectory>
   </PropertyGroup>
@@ -62,117 +62,30 @@
     <Analyzer Include="C:\Program Files\Unity\Hub\Editor\6000.2.6f2\Editor\Data\Tools\Unity.SourceGenerators\Unity.SourceGenerators.dll" />
     <Analyzer Include="C:\Program Files\Unity\Hub\Editor\6000.2.6f2\Editor\Data\Tools\Unity.SourceGenerators\Unity.Properties.SourceGenerator.dll" />
     <Analyzer Include="C:\Program Files\Unity\Hub\Editor\6000.2.6f2\Editor\Data\Tools\Unity.SourceGenerators\Unity.UIToolkit.SourceGenerator.dll" />
-    <Analyzer Include="C:\Users\mauri\Documents\Repositories\TamalStacker\Library\PackageCache\com.unity.ai.inference@4ac711cab9a3\Runtime\Core\SourceGenerator\SourceGenerators.dll" />
-    <Analyzer Include="C:\Users\mauri\Documents\Repositories\TamalStacker\Library\PackageCache\com.unity.dt.app-ui@7b87c8225c06\Runtime\SourceGenerators\netstandard2.0\EnumToLowerCase.dll" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Assets\Scripts\GameController.cs" />
-    <Compile Include="Assets\Scripts\AdManager.cs" />
-    <Compile Include="Assets\Scripts\LeaderboardManager.cs" />
-    <Compile Include="Assets\Scripts\Utilities\ScrollView_PinchScale.cs" />
-    <Compile Include="Assets\Scripts\IntegrityManager.cs" />
-    <Compile Include="Assets\Scripts\DependencyRegistry\ISaveSystem.cs" />
-    <Compile Include="Assets\Scripts\StackableObject.cs" />
-    <Compile Include="Assets\Scripts\PlayerProgressData.cs" />
-    <Compile Include="Assets\Scripts\LeaderboardEntryUI.cs" />
-    <Compile Include="Assets\Scripts\GameSettings.cs" />
-    <Compile Include="Assets\Scripts\ObjectSpawnerAnimator.cs" />
-    <Compile Include="Assets\Scripts\UIManager.cs" />
-    <Compile Include="Assets\Scripts\GameSoundManager.cs" />
-    <Compile Include="Assets\Scripts\DependencyRegistry\IGameDataManager.cs" />
-    <Compile Include="Assets\Scripts\GameMode.cs" />
-    <Compile Include="Assets\Scripts\Ground.cs" />
-    <Compile Include="Assets\GooglePlayPlugins\com.google.play.integrity\Samples\IntegrityTestApp\Scripts\FakeIntegrityVerifierServer.cs" />
-    <Compile Include="Assets\Scripts\LevelPathRenderer.cs" />
-    <Compile Include="Assets\Scripts\EnvironmentAssetData.cs" />
-    <Compile Include="Assets\Scripts\SpawnerHolder.cs" />
-    <Compile Include="Assets\Scripts\InputManager.cs" />
-    <Compile Include="Assets\Scripts\MainMenuSoundManager.cs" />
-    <Compile Include="Assets\Scripts\DependencyRegistry\DependencyRegistry.cs" />
-    <Compile Include="Assets\GooglePlayPlugins\com.google.play.integrity\Samples\IntegrityTestApp\Scripts\RequestIntegrityTokenAction.cs" />
-    <Compile Include="Assets\Scripts\ReviewManagerHelper.cs" />
-    <Compile Include="Assets\Scripts\ObjectSpawner.cs" />
-    <Compile Include="Assets\Scripts\LeaderboardEntry.cs" />
-    <Compile Include="Assets\Scripts\CodexManager.cs" />
-    <Compile Include="Assets\Scripts\Utilities\RandomSpriteAssigner.cs" />
-    <Compile Include="Assets\Scripts\LevelButtonUI.cs" />
-    <Compile Include="Assets\Scripts\EnvironmentAsset.cs" />
-    <Compile Include="Assets\Scripts\StackManager.cs" />
-    <Compile Include="Assets\Scripts\MainMenuManager.cs" />
-    <Compile Include="Assets\Scripts\PointsPopup.cs" />
-    <Compile Include="Assets\Scripts\CodexEntryUI.cs" />
-    <Compile Include="Assets\Scripts\Utilities\ScalePulseAnimation.cs" />
-    <Compile Include="Assets\Scripts\SettingsManager.cs" />
-    <Compile Include="Assets\GooglePlayPlugins\com.google.play.review\Samples\ReviewDemo\Scripts\ReviewDemo.cs" />
-    <Compile Include="Assets\Scripts\EnvironmentSpawnerManager.cs" />
-    <Compile Include="Assets\Scripts\LevelData.cs" />
-    <Compile Include="Assets\Scripts\EnvironmentSpawner.cs" />
-    <Compile Include="Assets\Scripts\LevelManager.cs" />
-    <Compile Include="Assets\Scripts\StackOverviewUI.cs" />
-    <Compile Include="Assets\Scripts\Utilities\PositionPingPongAnimation.cs" />
-    <Compile Include="Assets\Scripts\GameManager.cs" />
-    <Compile Include="Assets\Scripts\LevelProgressUI.cs" />
-    <Compile Include="Assets\Scripts\DependencyRegistry\ILevelManager.cs" />
-    <Compile Include="Assets\Scripts\PlayFabManager.cs" />
-    <Compile Include="Assets\Scripts\SceneLoader.cs" />
-    <Compile Include="Assets\Scripts\LeaderboardPanel.cs" />
-    <Compile Include="Assets\Scripts\IntegritySettings.cs" />
-    <Compile Include="Assets\Scripts\CameraController.cs" />
+    <Compile Include="Assets\GooglePlayPlugins\com.google.play.integrity\Runtime\Scripts\StandardIntegrityToken.cs" />
+    <Compile Include="Assets\GooglePlayPlugins\com.google.play.integrity\Runtime\Scripts\Internal\PlayCoreIntegrityTokenResponse.cs" />
+    <Compile Include="Assets\GooglePlayPlugins\com.google.play.integrity\Runtime\Scripts\Internal\IntegrityAsyncOperation.cs" />
+    <Compile Include="Assets\GooglePlayPlugins\com.google.play.integrity\Runtime\Scripts\PrepareIntegrityTokenRequest.cs" />
+    <Compile Include="Assets\GooglePlayPlugins\com.google.play.integrity\Runtime\Scripts\Internal\PlayCoreIntegrityManager.cs" />
+    <Compile Include="Assets\GooglePlayPlugins\com.google.play.integrity\Runtime\Scripts\StandardIntegrityErrorCode.cs" />
+    <Compile Include="Assets\GooglePlayPlugins\com.google.play.integrity\Runtime\Scripts\StandardIntegrityManager.cs" />
+    <Compile Include="Assets\GooglePlayPlugins\com.google.play.integrity\Runtime\Scripts\IntegrityTokenResponse.cs" />
+    <Compile Include="Assets\GooglePlayPlugins\com.google.play.integrity\Runtime\Scripts\Internal\StandardIntegrityAsyncOperation.cs" />
+    <Compile Include="Assets\GooglePlayPlugins\com.google.play.integrity\Runtime\Scripts\StandardIntegrityTokenProvider.cs" />
+    <Compile Include="Assets\GooglePlayPlugins\com.google.play.integrity\Runtime\Scripts\Internal\PlayCoreStandardIntegrityManager.cs" />
+    <Compile Include="Assets\GooglePlayPlugins\com.google.play.integrity\Runtime\Scripts\Internal\PlayCoreStandardIntegrityTokenProvider.cs" />
+    <Compile Include="Assets\GooglePlayPlugins\com.google.play.integrity\Runtime\Scripts\IntegrityErrorCode.cs" />
+    <Compile Include="Assets\GooglePlayPlugins\com.google.play.integrity\Runtime\Scripts\IntegrityManager.cs" />
+    <Compile Include="Assets\GooglePlayPlugins\com.google.play.integrity\Runtime\Scripts\StandardIntegrityTokenRequest.cs" />
+    <Compile Include="Assets\GooglePlayPlugins\com.google.play.integrity\Runtime\Scripts\IntegrityTokenRequest.cs" />
+    <Compile Include="Assets\GooglePlayPlugins\com.google.play.integrity\Runtime\Scripts\Internal\PlayCoreTranslator.cs" />
+    <Compile Include="Assets\GooglePlayPlugins\com.google.play.integrity\Runtime\Scripts\IntegrityDialogResponseCode.cs" />
+    <Compile Include="Assets\GooglePlayPlugins\com.google.play.integrity\Runtime\Scripts\Internal\PlayCoreStandardIntegrityToken.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Assets\TextMesh Pro\Shaders\TMPro.cginc" />
-    <None Include="Assets\PlayFabSdk\licenses\SimpleJson-license.txt" />
-    <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF-Mobile Overlay.shader" />
-    <None Include="Assets\PlayFabSdk\ExampleTestProject\Assets\Resources\testTitleDataPlaceholder.txt" />
-    <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF-Mobile-2-Pass.shader" />
-    <None Include="Assets\PlayFabSdk\licenses\SignalR-license.txt" />
-    <None Include="Assets\GoogleMobileAds\GoogleMobileAds.Common.dll" />
-    <None Include="Assets\GoogleMobileAds\GoogleMobileAds.Ump.iOS.dll" />
-    <None Include="Assets\TextMesh Pro\Shaders\TMP_Bitmap.shader" />
-    <None Include="Assets\GoogleMobileAds\GoogleMobileAds.dll" />
-    <None Include="Assets\PlayFabSdk\licenses\Newtonsoft.Json-license.txt" />
-    <None Include="Assets\Fantasy Skybox FREE\Readme.txt" />
-    <None Include="Assets\GoogleMobileAds\GoogleMobileAds.iOS.dll" />
-    <None Include="Assets\TextMesh Pro\Shaders\TMPro_Mobile.cginc" />
-    <None Include="Assets\GooglePlayPlugins\com.google.play.integrity\Proguard\integrity.txt" />
-    <None Include="Assets\GoogleMobileAds\GoogleMobileAds_version-10.6.0_manifest.txt" />
-    <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF SSD.shader" />
-    <None Include="Assets\Fantasy Skybox FREE\ReleaseNotes.txt" />
-    <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF-Surface-Mobile.shader" />
-    <None Include="Assets\GooglePlayGames\com.google.play.games\Proguard\games.txt" />
-    <None Include="Assets\GoogleMobileAds\GoogleMobileAds.Core.dll" />
-    <None Include="Assets\PlayFabSdk\licenses\ionic.zlib-license.txt" />
-    <None Include="Assets\TextMesh Pro\Shaders\SDFFunctions.hlsl" />
-    <None Include="Assets\GoogleMobileAds\link.xml" />
-    <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF-Surface.shader" />
-    <None Include="Assets\TextMesh Pro\Sprites\EmojiOne Attribution.txt" />
-    <None Include="Assets\TextMesh Pro\Shaders\TMP_Bitmap-Custom-Atlas.shader" />
-    <None Include="Assets\PlayFabSdk\licenses\tpl-license.txt" />
-    <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF.shader" />
-    <None Include="Assets\GoogleMobileAds\GoogleMobileAds.Ump.Unity.dll" />
-    <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF-Mobile SSD.shader" />
-    <None Include="Assets\TextMesh Pro\Resources\LineBreaking Leading Characters.txt" />
-    <None Include="Assets\GoogleMobileAds\GoogleMobileAds.Ump.dll" />
-    <None Include="Assets\Art\Fonts\aztec-1\aztec-1\license.txt" />
-    <None Include="Assets\TextMesh Pro\Shaders\TMPro_Properties.cginc" />
-    <None Include="Assets\TextMesh Pro\Shaders\TMPro_Surface.cginc" />
-    <None Include="Assets\TextMesh Pro\Resources\LineBreaking Following Characters.txt" />
-    <None Include="Assets\GooglePlayPlugins\com.google.play.review\Proguard\review.txt" />
-    <None Include="Assets\GoogleMobileAds\GoogleMobileAds.Unity.dll" />
-    <None Include="Assets\GooglePlayPlugins\com.google.play.core\Proguard\common.txt" />
-    <None Include="Assets\Scenes\MainMenu_UI_Hierarchy_Template.txt" />
-    <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF-Mobile Masking.shader" />
-    <None Include="Assets\Art\Fonts\mayan-1\readme.txt" />
-    <None Include="Assets\PlayFabSdk\licenses\uunit-license.txt" />
-    <None Include="Assets\Art\Fonts\aztec-1\aztec-1\readme.txt" />
-    <None Include="Assets\GoogleMobileAds\GoogleMobileAds.Android.dll" />
-    <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF Overlay.shader" />
-    <None Include="Assets\Art\Textures\_pack_mayantemple_bg\help file.txt" />
-    <None Include="Assets\TextMesh Pro\Shaders\TMP_Bitmap-Mobile.shader" />
-    <None Include="Assets\TextMesh Pro\Fonts\LiberationSans - OFL.txt" />
-    <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF-Mobile.shader" />
-    <None Include="Assets\GoogleMobileAds\GoogleMobileAds.Ump.Android.dll" />
-    <None Include="Assets\TextMesh Pro\Shaders\TMP_Sprite.shader" />
+    <None Include="Assets\GooglePlayPlugins\com.google.play.integrity\Runtime\Google.Play.Integrity.asmdef" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="UnityEngine">
@@ -651,6 +564,38 @@
       <HintPath>C:\Program Files\Unity\Hub\Editor\6000.2.6f2\Editor\Data\Managed\UnityEngine\UnityEditor.XRModule.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="UnityEditor.Graphs">
+      <HintPath>C:\Program Files\Unity\Hub\Editor\6000.2.6f2\Editor\Data\Managed\UnityEditor.Graphs.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEditor.WebGL.Extensions">
+      <HintPath>C:\Program Files\Unity\Hub\Editor\6000.2.6f2\Editor\Data\PlaybackEngines\WebGLSupport\UnityEditor.WebGL.Extensions.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEditor.WindowsStandalone.Extensions">
+      <HintPath>C:\Program Files\Unity\Hub\Editor\6000.2.6f2\Editor\Data\PlaybackEngines\WindowsStandaloneSupport\UnityEditor.WindowsStandalone.Extensions.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEditor.Android.Extensions">
+      <HintPath>C:\Program Files\Unity\Hub\Editor\6000.2.6f2\Editor\Data\PlaybackEngines\AndroidPlayer\UnityEditor.Android.Extensions.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Microsoft.IdentityModel.Logging">
+      <HintPath>Assets\PlayFabSdk\ExampleTestProject\Assets\PlayFabEditorExtensions\Editor\Resources\Microsoft.IdentityModel.Logging.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="System.IdentityModel.Tokens.Jwt">
+      <HintPath>Assets\PlayFabSdk\ExampleTestProject\Assets\PlayFabEditorExtensions\Editor\Resources\System.IdentityModel.Tokens.Jwt.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.VisualScripting.YamlDotNet">
+      <HintPath>Library\PackageCache\com.unity.visualscripting@6279e2b7c485\Editor\VisualScripting.Core\Dependencies\YamlDotNet\Unity.VisualScripting.YamlDotNet.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Google.VersionHandler">
+      <HintPath>Assets\ExternalDependencyManager\Editor\Google.VersionHandler.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="GoogleMobileAds.Common">
       <HintPath>Assets\GoogleMobileAds\GoogleMobileAds.Common.dll</HintPath>
       <Private>False</Private>
@@ -667,8 +612,44 @@
       <HintPath>Assets\GoogleMobileAds\GoogleMobileAds.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="Google.IOSResolver">
+      <HintPath>Assets\ExternalDependencyManager\Editor\1.2.186\Google.IOSResolver.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.Plastic.Antlr3.Runtime">
+      <HintPath>Library\PackageCache\com.unity.collab-proxy@ab839cc7d2ad\Lib\Editor\Unity.Plastic.Antlr3.Runtime.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Microsoft.IdentityModel.Clients.ActiveDirectory">
+      <HintPath>Assets\PlayFabSdk\ExampleTestProject\Assets\PlayFabEditorExtensions\Editor\Resources\Microsoft.IdentityModel.Clients.ActiveDirectory.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Microsoft.IdentityModel.Tokens">
+      <HintPath>Assets\PlayFabSdk\ExampleTestProject\Assets\PlayFabEditorExtensions\Editor\Resources\Microsoft.IdentityModel.Tokens.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.Plastic.Newtonsoft.Json">
+      <HintPath>Library\PackageCache\com.unity.collab-proxy@ab839cc7d2ad\Lib\Editor\Unity.Plastic.Newtonsoft.Json.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="GoogleMobileAds.Core">
       <HintPath>Assets\GoogleMobileAds\GoogleMobileAds.Core.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Microsoft.IdentityModel.JsonWebTokens">
+      <HintPath>Assets\PlayFabSdk\ExampleTestProject\Assets\PlayFabEditorExtensions\Editor\Resources\Microsoft.IdentityModel.JsonWebTokens.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="log4netPlastic">
+      <HintPath>Library\PackageCache\com.unity.collab-proxy@ab839cc7d2ad\Lib\Editor\log4netPlastic.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.VisualScripting.IonicZip">
+      <HintPath>Library\PackageCache\com.unity.visualscripting@6279e2b7c485\Editor\VisualScripting.Core\Dependencies\DotNetZip\Unity.VisualScripting.IonicZip.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="unityplastic">
+      <HintPath>Library\PackageCache\com.unity.collab-proxy@ab839cc7d2ad\Lib\Editor\unityplastic.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="System.IO.Hashing">
@@ -679,8 +660,16 @@
       <HintPath>Assets\GoogleMobileAds\GoogleMobileAds.Ump.Unity.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="Google.PackageManagerResolver">
+      <HintPath>Assets\ExternalDependencyManager\Editor\1.2.186\Google.PackageManagerResolver.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="GoogleMobileAds.Ump">
       <HintPath>Assets\GoogleMobileAds\GoogleMobileAds.Ump.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Google.VersionHandlerImpl">
+      <HintPath>Assets\ExternalDependencyManager\Editor\1.2.186\Google.VersionHandlerImpl.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Unity.VisualScripting.Antlr3.Runtime">
@@ -691,6 +680,10 @@
       <HintPath>Library\PackageCache\com.unity.collections@d49facba0036\Unity.Collections.Tests\System.Runtime.CompilerServices.Unsafe\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="Google.JarResolver">
+      <HintPath>Assets\ExternalDependencyManager\Editor\1.2.186\Google.JarResolver.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="GoogleMobileAds.Unity">
       <HintPath>Assets\GoogleMobileAds\GoogleMobileAds.Unity.dll</HintPath>
       <Private>False</Private>
@@ -699,8 +692,20 @@
       <HintPath>Library\PackageCache\com.unity.nuget.newtonsoft-json@74deb55db2a0\Runtime\Newtonsoft.Json.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="AiEditorToolsSdk">
+      <HintPath>Library\PackageCache\com.unity.ai.toolkit@48a271771d1a\Modules\Sdk\Editor\AiEditorToolsSdk.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.VisualScripting.TextureAssets">
+      <HintPath>Library\PackageCache\com.unity.visualscripting@6279e2b7c485\Editor\VisualScripting.Core\EditorAssetResources\Unity.VisualScripting.TextureAssets.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="Mono.Cecil">
       <HintPath>Library\PackageCache\com.unity.nuget.mono-cecil@d78732e851eb\Mono.Cecil.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Microsoft.Identity.Client">
+      <HintPath>Assets\PlayFabSdk\ExampleTestProject\Assets\PlayFabEditorExtensions\Editor\Resources\Microsoft.Identity.Client.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Unity.Android.Types">
@@ -1199,348 +1204,18 @@
       <HintPath>C:\Program Files\Unity\Hub\Editor\6000.2.6f2\Editor\Data\NetStandard\compat\2.1.0\shims\netfx\System.Xml.Serialization.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Unity.2D.Common.Path.Editor">
-      <HintPath>Library\ScriptAssemblies\Unity.2D.Common.Path.Editor.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Unity.2D.Sprite.Editor">
-      <HintPath>Library\ScriptAssemblies\Unity.2D.Sprite.Editor.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Unity.InternalAPIEngineBridge.001">
-      <HintPath>Library\ScriptAssemblies\Unity.InternalAPIEngineBridge.001.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Unity.TextMeshPro">
-      <HintPath>Library\ScriptAssemblies\Unity.TextMeshPro.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="PsdPlugin">
-      <HintPath>Library\ScriptAssemblies\PsdPlugin.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Unity.RenderPipelines.Core.ShaderLibrary">
-      <HintPath>Library\ScriptAssemblies\Unity.RenderPipelines.Core.ShaderLibrary.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Unity.VisualScripting.SettingsProvider.Editor">
-      <HintPath>Library\ScriptAssemblies\Unity.VisualScripting.SettingsProvider.Editor.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Unity.2D.Enhancers.Editor.AIBridge">
-      <HintPath>Library\ScriptAssemblies\Unity.2D.Enhancers.Editor.AIBridge.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Unity.InternalAPIEditorBridge.001">
-      <HintPath>Library\ScriptAssemblies\Unity.InternalAPIEditorBridge.001.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="PPv2URPConverters">
-      <HintPath>Library\ScriptAssemblies\PPv2URPConverters.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Unity.2D.Common.Editor">
-      <HintPath>Library\ScriptAssemblies\Unity.2D.Common.Editor.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Unity.2D.Animation.Runtime">
-      <HintPath>Library\ScriptAssemblies\Unity.2D.Animation.Runtime.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Unity.RenderPipelines.Core.Runtime.Shared">
-      <HintPath>Library\ScriptAssemblies\Unity.RenderPipelines.Core.Runtime.Shared.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Unity.RenderPipelines.Universal.2D.Runtime">
-      <HintPath>Library\ScriptAssemblies\Unity.RenderPipelines.Universal.2D.Runtime.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Unity.InferenceEngine.ONNX.Editor">
-      <HintPath>Library\ScriptAssemblies\Unity.InferenceEngine.ONNX.Editor.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Unity.2D.Aseprite.Common">
-      <HintPath>Library\ScriptAssemblies\Unity.2D.Aseprite.Common.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Unity.Cursor.Editor">
-      <HintPath>Library\ScriptAssemblies\Unity.Cursor.Editor.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Unity.Rendering.LightTransport.Editor">
-      <HintPath>Library\ScriptAssemblies\Unity.Rendering.LightTransport.Editor.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Unity.InferenceEngine.MacBLAS">
-      <HintPath>Library\ScriptAssemblies\Unity.InferenceEngine.MacBLAS.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Unity.AI.Assistant.Bridge.Editor">
-      <HintPath>Library\ScriptAssemblies\Unity.AI.Assistant.Bridge.Editor.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Unity.2D.Aseprite.Editor">
-      <HintPath>Library\ScriptAssemblies\Unity.2D.Aseprite.Editor.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Unity.InferenceEngine.Editor">
-      <HintPath>Library\ScriptAssemblies\Unity.InferenceEngine.Editor.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Unity.RenderPipelines.ShaderGraph.ShaderGraphLibrary">
-      <HintPath>Library\ScriptAssemblies\Unity.RenderPipelines.ShaderGraph.ShaderGraphLibrary.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Unity.VisualScripting.Flow">
-      <HintPath>Library\ScriptAssemblies\Unity.VisualScripting.Flow.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Unity.TextMeshPro.Editor">
-      <HintPath>Library\ScriptAssemblies\Unity.TextMeshPro.Editor.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Unity.2D.Tilemap.Extras.Editor">
-      <HintPath>Library\ScriptAssemblies\Unity.2D.Tilemap.Extras.Editor.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Unity.VisualStudio.Editor">
-      <HintPath>Library\ScriptAssemblies\Unity.VisualStudio.Editor.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Unity.2D.Tilemap.Editor">
-      <HintPath>Library\ScriptAssemblies\Unity.2D.Tilemap.Editor.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Unity.InputSystem.ForUI">
-      <HintPath>Library\ScriptAssemblies\Unity.InputSystem.ForUI.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Unity.RenderPipelines.GPUDriven.Runtime">
-      <HintPath>Library\ScriptAssemblies\Unity.RenderPipelines.GPUDriven.Runtime.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Unity.VisualScripting.State.Editor">
-      <HintPath>Library\ScriptAssemblies\Unity.VisualScripting.State.Editor.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Unity.RenderPipelines.Universal.Shaders">
-      <HintPath>Library\ScriptAssemblies\Unity.RenderPipelines.Universal.Shaders.dll</HintPath>
+    <Reference Include="UnityEditor.UI">
+      <HintPath>Library\ScriptAssemblies\UnityEditor.UI.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="UnityEngine.UI">
       <HintPath>Library\ScriptAssemblies\UnityEngine.UI.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Unity.RenderPipelines.Universal.Runtime">
-      <HintPath>Library\ScriptAssemblies\Unity.RenderPipelines.Universal.Runtime.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Unity.AI.Assistant.AvatarHelper.Editor">
-      <HintPath>Library\ScriptAssemblies\Unity.AI.Assistant.AvatarHelper.Editor.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Unity.RenderPipelines.Universal.Config.Runtime">
-      <HintPath>Library\ScriptAssemblies\Unity.RenderPipelines.Universal.Config.Runtime.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Unity.AppUI">
-      <HintPath>Library\ScriptAssemblies\Unity.AppUI.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Unity.2D.Sprite.AIIntegration.Editor">
-      <HintPath>Library\ScriptAssemblies\Unity.2D.Sprite.AIIntegration.Editor.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Unity.RenderPipelines.Core.Editor.Shared">
-      <HintPath>Library\ScriptAssemblies\Unity.RenderPipelines.Core.Editor.Shared.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Unity.2D.SpriteShape.Editor">
-      <HintPath>Library\ScriptAssemblies\Unity.2D.SpriteShape.Editor.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Unity.2D.Enhancers.Editor">
-      <HintPath>Library\ScriptAssemblies\Unity.2D.Enhancers.Editor.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Unity.InputSystem">
-      <HintPath>Library\ScriptAssemblies\Unity.InputSystem.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Unity.AppUI.Redux">
-      <HintPath>Library\ScriptAssemblies\Unity.AppUI.Redux.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Unity.RenderPipelines.Core.Editor">
-      <HintPath>Library\ScriptAssemblies\Unity.RenderPipelines.Core.Editor.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Unity.2D.IK.Runtime">
-      <HintPath>Library\ScriptAssemblies\Unity.2D.IK.Runtime.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Unity.2D.Animation.Editor">
-      <HintPath>Library\ScriptAssemblies\Unity.2D.Animation.Editor.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Unity.RenderPipelines.Universal.Editor">
-      <HintPath>Library\ScriptAssemblies\Unity.RenderPipelines.Universal.Editor.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Unity.Timeline">
-      <HintPath>Library\ScriptAssemblies\Unity.Timeline.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Unity.VisualScripting.Shared.Editor">
-      <HintPath>Library\ScriptAssemblies\Unity.VisualScripting.Shared.Editor.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Unity.Searcher.Editor">
-      <HintPath>Library\ScriptAssemblies\Unity.Searcher.Editor.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Unity.PlasticSCM.Editor">
-      <HintPath>Library\ScriptAssemblies\Unity.PlasticSCM.Editor.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Unity.Burst.Editor">
-      <HintPath>Library\ScriptAssemblies\Unity.Burst.Editor.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Unity.VisualScripting.Core">
-      <HintPath>Library\ScriptAssemblies\Unity.VisualScripting.Core.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Unity.Mathematics.Editor">
-      <HintPath>Library\ScriptAssemblies\Unity.Mathematics.Editor.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Unity.2D.Psdimporter.Editor">
-      <HintPath>Library\ScriptAssemblies\Unity.2D.Psdimporter.Editor.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Unity.RenderPipelines.Core.Runtime">
-      <HintPath>Library\ScriptAssemblies\Unity.RenderPipelines.Core.Runtime.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Unity.2D.Tilemap.Extras">
-      <HintPath>Library\ScriptAssemblies\Unity.2D.Tilemap.Extras.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Unity.VisualScripting.Flow.Editor">
-      <HintPath>Library\ScriptAssemblies\Unity.VisualScripting.Flow.Editor.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Unity.2D.IK.Editor">
-      <HintPath>Library\ScriptAssemblies\Unity.2D.IK.Editor.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Unity.2D.SpriteShape.Runtime">
-      <HintPath>Library\ScriptAssemblies\Unity.2D.SpriteShape.Runtime.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Unity.2D.Common.Runtime">
-      <HintPath>Library\ScriptAssemblies\Unity.2D.Common.Runtime.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Unity.Collections">
-      <HintPath>Library\ScriptAssemblies\Unity.Collections.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Unity.AI.Assistant.Agent.Dynamic.Extension.Editor">
-      <HintPath>Library\ScriptAssemblies\Unity.AI.Assistant.Agent.Dynamic.Extension.Editor.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Unity.Timeline.Editor">
-      <HintPath>Library\ScriptAssemblies\Unity.Timeline.Editor.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Unity.AppUI.Editor">
-      <HintPath>Library\ScriptAssemblies\Unity.AppUI.Editor.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Unity.Mathematics">
-      <HintPath>Library\ScriptAssemblies\Unity.Mathematics.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Unity.Serialization">
-      <HintPath>Library\ScriptAssemblies\Unity.Serialization.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Unity.Multiplayer.Center.Common">
-      <HintPath>Library\ScriptAssemblies\Unity.Multiplayer.Center.Common.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Unity.Burst">
-      <HintPath>Library\ScriptAssemblies\Unity.Burst.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Unity.VisualScripting.Core.Editor">
-      <HintPath>Library\ScriptAssemblies\Unity.VisualScripting.Core.Editor.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Unity.Multiplayer.Center.Editor">
-      <HintPath>Library\ScriptAssemblies\Unity.Multiplayer.Center.Editor.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Unity.Rendering.LightTransport.Runtime">
-      <HintPath>Library\ScriptAssemblies\Unity.Rendering.LightTransport.Runtime.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Unity.VisualScripting.State">
-      <HintPath>Library\ScriptAssemblies\Unity.VisualScripting.State.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Unity.AppUI.Navigation.Editor">
-      <HintPath>Library\ScriptAssemblies\Unity.AppUI.Navigation.Editor.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Unity.RenderPipeline.Universal.ShaderLibrary">
-      <HintPath>Library\ScriptAssemblies\Unity.RenderPipeline.Universal.ShaderLibrary.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Unity.Collections.Editor">
-      <HintPath>Library\ScriptAssemblies\Unity.Collections.Editor.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Unity.Serialization.Editor">
-      <HintPath>Library\ScriptAssemblies\Unity.Serialization.Editor.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Unity.ShaderGraph.Editor">
-      <HintPath>Library\ScriptAssemblies\Unity.ShaderGraph.Editor.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Unity.InferenceEngine.iOSBLAS">
-      <HintPath>Library\ScriptAssemblies\Unity.InferenceEngine.iOSBLAS.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Unity.Settings.Editor">
-      <HintPath>Library\ScriptAssemblies\Unity.Settings.Editor.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="UnityEditor.UI">
-      <HintPath>Library\ScriptAssemblies\UnityEditor.UI.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Unity.InferenceEngine">
-      <HintPath>Library\ScriptAssemblies\Unity.InferenceEngine.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="Google.Play.Games.Editor.csproj" />
-    <ProjectReference Include="GoogleMobileAds.Editor.csproj" />
     <ProjectReference Include="Google.Play.Common.csproj" />
-    <ProjectReference Include="PlayFab.csproj" />
-    <ProjectReference Include="Google.Play.Integrity.csproj" />
     <ProjectReference Include="Google.Play.Core.csproj" />
-    <ProjectReference Include="PlayFabEditorExtensions.csproj" />
-    <ProjectReference Include="Google.Play.Games.csproj" />
-    <ProjectReference Include="PlayFabTesting.csproj" />
-    <ProjectReference Include="Google.Play.Review.csproj" />
-    <ProjectReference Include="PlayFabTestingEditor.csproj" />
-    <ProjectReference Include="PlayFabSDKEditor.csproj" />
   </ItemGroup>
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
   <ItemGroup>

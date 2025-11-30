@@ -16,9 +16,10 @@ MonoBehaviour:
   levelName: Palenque
   location: Chiapas, Mexico
   levelDescription: Stack 45 blocks with even faster swinging!
-  requiredStackHeight: 45
-  oneStarScore: 2000
-  twoStarScore: 3000
-  threeStarScore: 4000
+  siteImage: {fileID: 0}
+  requiredStackHeight: 37
+  oneStarScore: 3000
+  twoStarScore: 3800
+  threeStarScore: 4600
   swingSpeedMultiplier: 1.5
   swingAmplitudeMultiplier: 1.3

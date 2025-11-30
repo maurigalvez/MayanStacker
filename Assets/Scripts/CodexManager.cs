@@ -18,6 +18,7 @@ public class CodexManager : MonoBehaviour
 
     [Header("Shared Detail Panel")]
     [SerializeField] private GameObject sharedDetailPanel;
+    [SerializeField] private ScrollRect detailPanelScrollRect; // The ScrollRect for the detail panel content
     [SerializeField] private Button closeDetailPanelButton;
     [SerializeField] private TextMeshProUGUI detailLevelNameText;
     [SerializeField] private TextMeshProUGUI detailLocationText;
@@ -73,6 +74,16 @@ public class CodexManager : MonoBehaviour
             if (entriesScrollRect == null)
             {
                 Debug.LogWarning("CodexManager: ScrollRect not found in codex panel hierarchy. Scroll position reset will not work.");
+            }
+        }
+
+        // Find detail panel ScrollRect if not assigned
+        if (detailPanelScrollRect == null && sharedDetailPanel != null)
+        {
+            detailPanelScrollRect = sharedDetailPanel.GetComponentInChildren<ScrollRect>();
+            if (detailPanelScrollRect == null)
+            {
+                Debug.LogWarning("CodexManager: ScrollRect not found in shared detail panel hierarchy. Detail panel scroll position reset will not work.");
             }
         }
 
@@ -337,6 +348,12 @@ public class CodexManager : MonoBehaviour
 
         // Update the shared detail panel with the selected entry's data
         UpdateSharedDetailPanel(clickedEntry);
+
+        // Reset detail panel scroll position to top when selecting a new entry
+        if (detailPanelScrollRect != null)
+        {
+            detailPanelScrollRect.verticalNormalizedPosition = 1f;
+        }
 
         Debug.Log($"CodexManager: Selected {clickedEntry.GetLevelData().levelName}");
 

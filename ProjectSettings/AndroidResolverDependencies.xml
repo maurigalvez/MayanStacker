@@ -5,6 +5,8 @@
     <package>com.google.android.gms:play-services-ads:24.5.0</package>
     <package>com.google.android.play:core-common:2.0.4</package>
     <package>com.google.android.play:integrity:1.4.0</package>
+    <package>com.google.android.play:integrity:1.6.0</package>
+    <package>com.google.android.play:review:2.0.2</package>
     <package>com.google.android.ump:user-messaging-platform:3.2.0</package>
     <package>com.google.games:gpgs-plugin-support:2.1.0</package>
   </packages>

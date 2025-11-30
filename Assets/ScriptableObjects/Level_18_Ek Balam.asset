@@ -16,9 +16,10 @@ MonoBehaviour:
   levelName: Ek Balam
   location: "Yucat\xE1n, Mexico"
   levelDescription: Stack 45 blocks with even faster swinging!
-  requiredStackHeight: 45
-  oneStarScore: 2000
-  twoStarScore: 3000
-  threeStarScore: 4000
+  siteImage: {fileID: 0}
+  requiredStackHeight: 41
+  oneStarScore: 3300
+  twoStarScore: 4100
+  threeStarScore: 4600
   swingSpeedMultiplier: 1.5
   swingAmplitudeMultiplier: 1.3

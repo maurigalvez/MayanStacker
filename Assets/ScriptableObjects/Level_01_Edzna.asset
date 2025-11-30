@@ -15,23 +15,17 @@ MonoBehaviour:
   levelNumber: 1
   levelName: Edzna
   location: Campeche, Mexico
-  levelDescription: "Long before the jungle reclaimed its stones, Edzn\xE1 thrived
-    as a powerful Mayan city.\nIts name means \u201CHouse of the Itzaes\u201D, echoing
-    through centuries of mystery.\n\nThe Great Temple\nRising 40 meters high, the
-    main temple overlooks the plaza below \u2014 a watchtower of faith and power.\n\nThe
-    Ball Court\nTwo long walls mark where sacred games were played.\nAbove, rooms
-    once guarded images of the gods and ritual offerings.\n\nThrough Time\n- First
-    settlers arrived around 400 BC\n- Reached its height by 200 AD\n- Flourished
-    under the Calakmul polity\n- Blended styles of the Puuc tradition\n- Abandoned
-    mysteriously by 1500 AD\n\nRediscovery\nLost to time until 1907, when explorers
-    uncovered its ruins.\nBy 1958, excavation began.\nIn 1986, new life returned
-    as Guatemalan refugees helped restore Edzn\xE1, guided by international aid.\n\nThe
-    stones remember \u2014 even when the world forgets.\n"
-  siteImage: {fileID: 0}
+  levelDescription: "The stones remember \u2014 even when the world forgets.\n\nA
+    Legacy in Stone\nOnce a major Maya city, Edzn\xE1\u2019s name \u2014 \u201CHouse
+    of the Itzaes\u201D \u2014 still echoes through its ruins.\n\nHighlights\nGreat
+    Temple: 40-meter pyramid overlooking the plaza\nBall Court: Parallel walls marking
+    the site of sacred games\n\nTimeline\n400 BC: First settlers\n200 AD: Height
+    of power\nInfluenced by Calakmul and Puuc styles\n~1500 AD: Abandoned\n\nRediscovery\nFound
+    in 1907, excavated in 1958, and restored in 1986 with international support."
+  siteImage: {fileID: 21300000, guid: 973910f7bc8b4e04fa37739fce4fd280, type: 3}
   requiredStackHeight: 8
   oneStarScore: 250
   twoStarScore: 500
   threeStarScore: 800
   swingSpeedMultiplier: 1
   swingAmplitudeMultiplier: 1
-  mapPosition: {x: 1687, y: -3230}

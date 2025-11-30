@@ -16,9 +16,10 @@ MonoBehaviour:
   levelName: Uxmal
   location: "Yucat\xE1n, Mexico"
   levelDescription: Stack 45 blocks with even faster swinging!
-  requiredStackHeight: 45
-  oneStarScore: 2000
-  twoStarScore: 3000
-  threeStarScore: 4000
+  siteImage: {fileID: 0}
+  requiredStackHeight: 42
+  oneStarScore: 3400
+  twoStarScore: 4200
+  threeStarScore: 4700
   swingSpeedMultiplier: 1.5
   swingAmplitudeMultiplier: 1.3

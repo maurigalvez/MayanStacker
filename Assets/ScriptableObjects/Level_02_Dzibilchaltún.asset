@@ -15,18 +15,18 @@ MonoBehaviour:
   levelNumber: 2
   levelName: "Dzibilchalt\xFAn"
   location: Yucatan, Mexico
-  levelDescription: "Ancient even among the Maya, Dzibilchalt\xFAn was a city of
-    scholars and traders.\nIts famous Temple of the Seven Dolls aligns perfectly
-    with the sunrise on the equinox, flooding its doorways with light.\n\nThe site
-    thrived for over 2,000 years, linking the coast to inland cities through salt
-    and obsidian trade.\nIts cenote, a natural well, offered life-giving water and
-    a sacred link to the underworld.\n\nThough later absorbed by Spanish colonial
-    influence, the city\u2019s stones still whisper of ceremony, learning, and cosmic
-    order.\nWhen the sun passes through the temple\u2019s eyes, the ancient day begins
-    anew."
+  levelDescription: "City of Light and Knowledge\n\nAncient even among Maya cities,
+    Dzibilchalt\xFAn was a center of scholars and trade.\n\nHighlights\nTemple of
+    the Seven Dolls: Aligns with the equinox sunrise, illuminating its doorways.\nTrade
+    Hub: Connected the coast and inland cities for over 2,000 years, moving salt
+    and obsidian.\nSacred Cenote: Provided fresh water and served as a spiritual
+    gateway.\n\nLegacy\nShaped later by Spanish influence, the city still reflects
+    a world of ritual, learning, and cosmic order\u2014renewed each equinox when
+    sunlight passes through the temple\u2019s \u201Ceyes.\u201D"
+  siteImage: {fileID: 21300000, guid: 341225cdc9513034a80e8907cbe32916, type: 3}
   requiredStackHeight: 10
   oneStarScore: 500
-  twoStarScore: 1000
-  threeStarScore: 1500
+  twoStarScore: 750
+  threeStarScore: 1200
   swingSpeedMultiplier: 1
   swingAmplitudeMultiplier: 1

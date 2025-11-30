@@ -16,9 +16,10 @@ MonoBehaviour:
   levelName: "Yaxh\xE1"
   location: "Pet\xE9n, Guatemala"
   levelDescription: Stack 45 blocks with even faster swinging!
-  requiredStackHeight: 45
-  oneStarScore: 2000
-  twoStarScore: 3000
-  threeStarScore: 4000
+  siteImage: {fileID: 0}
+  requiredStackHeight: 32
+  oneStarScore: 2700
+  twoStarScore: 3600
+  threeStarScore: 4200
   swingSpeedMultiplier: 1.5
   swingAmplitudeMultiplier: 1.3

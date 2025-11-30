@@ -24,6 +24,7 @@ MonoBehaviour:
     once home to a thriving elite lineage deeply connected to the rise of centers
     like Xunantunich and Caracol.\n\nFrom this high ridge, generations of nobles
     watched their world become a civilization."
+  siteImage: {fileID: 21300000, guid: c9558bd1e258309408f5972f516e7d79, type: 3}
   requiredStackHeight: 25
   oneStarScore: 1800
   twoStarScore: 2500
