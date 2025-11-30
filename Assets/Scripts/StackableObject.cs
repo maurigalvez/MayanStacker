@@ -216,7 +216,10 @@ public class StackableObject : MonoBehaviour
     private void CalculateLandingAccuracy(StackableObject otherObject)
     {
         // Calculate how centered this object is on top of the other
-        float centerDistance = Mathf.Abs(transform.position.x - otherObject.transform.position.x);
+        // Use collider bounds center to get the actual center of the object, not the transform pivot
+        Vector2 thisCenter = col.bounds.center;
+        Vector2 otherCenter = otherObject.Collider.bounds.center;
+        float centerDistance = Mathf.Abs(thisCenter.x - otherCenter.x);
 
         // Get collider sizes for accurate calculations using references
         BoxCollider2D thisCollider = col as BoxCollider2D;
