@@ -68,6 +68,10 @@ public class UIManager : MonoBehaviour
     [SerializeField] private Image kukulkanWrathFillImage; // Fill image that goes up based on consecutive perfects
     [SerializeField] private Image kukulkanWrathBackgroundImage; // Background/display image (optional, for styling)
 
+    [Header("Achievement Notification")]
+    [SerializeField] private GameObject achievementNotificationPrefab; // Prefab for achievement notifications
+    [SerializeField] private Transform achievementNotificationParent; // Transform parent for spawned notifications (typically canvas root)
+
     [Header("Pause Menu")]
     [SerializeField] private GameObject pauseMenuPanel;
     [SerializeField] private Button pauseButton;
@@ -116,6 +120,7 @@ public class UIManager : MonoBehaviour
     private StackManager stackManager;
     private LevelManager levelManager;
     private GameSoundManager gameSoundManager;
+    private GameObject achievementNotificationInstance; // Spawned instance of achievement notification UI
 
     // State
     private Coroutine landingAccuracyCoroutine;
@@ -140,6 +145,9 @@ public class UIManager : MonoBehaviour
     {
         // Register with dependency registry
         DependencyRegistry.Register<UIManager>(this);
+
+        // Spawn achievement notification UI if prefab is assigned
+        SpawnAchievementNotificationUI();
 
         // Subscribe to OnGameStart early to avoid missing events (Android timing fix)
         // Try to find GameManager early - it might already be registered if it persists across scenes
@@ -311,6 +319,37 @@ public class UIManager : MonoBehaviour
         {
             InitializeLevelUI();
         }
+    }
+
+    /// <summary>
+    /// Spawns the achievement notification UI prefab at the specified transform
+    /// </summary>
+    private void SpawnAchievementNotificationUI()
+    {
+        // Check if prefab is assigned
+        if (achievementNotificationPrefab == null)
+        {
+            Debug.LogWarning("UIManager: Achievement Notification Prefab not assigned. Skipping spawn.");
+            return;
+        }
+
+        // Determine parent transform (use this transform if not specified)
+        Transform parentTransform = achievementNotificationParent != null ? achievementNotificationParent : transform;
+
+        // Spawn the notification UI
+        achievementNotificationInstance = Instantiate(achievementNotificationPrefab, parentTransform);
+
+        // Reset RectTransform position to zero
+        RectTransform rectTransform = achievementNotificationInstance.GetComponent<RectTransform>();
+        if (rectTransform != null)
+        {
+            rectTransform.anchoredPosition = Vector2.zero;
+            rectTransform.offsetMin = Vector2.zero; // Left and Bottom offsets
+            rectTransform.offsetMax = Vector2.zero; // Right and Top offsets (negative values in inspector)
+            rectTransform.localScale = Vector3.one;
+        }
+
+        Debug.Log($"UIManager: Achievement Notification UI spawned at {parentTransform.name} with position reset to zero");
     }
 
     /// <summary>
@@ -1941,6 +1980,12 @@ public class UIManager : MonoBehaviour
         if (perfectHitStreakCoroutine != null)
         {
             StopCoroutine(perfectHitStreakCoroutine);
+        }
+
+        // Clean up spawned achievement notification UI
+        if (achievementNotificationInstance != null)
+        {
+            Destroy(achievementNotificationInstance);
         }
     }
 

@@ -1,0 +1,291 @@
+{
+  "achievements": [
+    {
+      "id": "first_steps",
+      "googlePlayId": "Cgkli7zMkqgUEAIQAg",
+      "title": "First Steps of the Explorer",
+      "description": "Complete your first site",
+      "iconPath": "Achievements/first_steps",
+      "type": "Incremental",
+      "targetValue": 1,
+      "category": "sites",
+      "condition": {
+        "type": "SitesCompleted",
+        "value": 1
+      }
+    },
+    {
+      "id": "path_of_jaguar",
+      "googlePlayId": "Cgkli7zMkqgUEAIQAW",
+      "title": "Path of the Jaguar",
+      "description": "Complete 5 sites",
+      "iconPath": "Achievements/path_of_jaguar",
+      "type": "Incremental",
+      "targetValue": 5,
+      "category": "sites",
+      "condition": {
+        "type": "SitesCompleted",
+        "value": 5
+      }
+    },
+    {
+      "id": "maya_wanderer",
+      "googlePlayId": "Cgkli7zMkqgUEAIQBA",
+      "title": "Maya Wanderer",
+      "description": "Complete 10 sites",
+      "iconPath": "Achievements/maya_wanderer",
+      "type": "Incremental",
+      "targetValue": 10,
+      "category": "sites",
+      "condition": {
+        "type": "SitesCompleted",
+        "value": 10
+      }
+    },
+    {
+      "id": "temple_traveler",
+      "googlePlayId": "Cgkli7zMkqgUEAIQBQ",
+      "title": "Temple Traveler",
+      "description": "Complete 15 sites",
+      "iconPath": "Achievements/temple_traveler",
+      "type": "Incremental",
+      "targetValue": 15,
+      "category": "sites",
+      "condition": {
+        "type": "SitesCompleted",
+        "value": 15
+      }
+    },
+    {
+      "id": "keeper_of_ruins",
+      "googlePlayId": "CgkIi7zMkqgUEAIQBg",
+      "title": "Keeper of Ruins",
+      "description": "Complete 20 sites",
+      "iconPath": "Achievements/keeper_of_ruins",
+      "type": "Incremental",
+      "targetValue": 20,
+      "category": "sites",
+      "condition": {
+        "type": "SitesCompleted",
+        "value": 20
+      }
+    },
+    {
+      "id": "world_of_maya",
+      "googlePlayId": "Cgkli7zMkqgUEAIQBW",
+      "title": "World of the Maya",
+      "description": "Complete all 27 sites",
+      "iconPath": "Achievements/world_of_maya",
+      "type": "Incremental",
+      "targetValue": 27,
+      "category": "sites",
+      "condition": {
+        "type": "SitesCompleted",
+        "value": 27
+      }
+    },
+    {
+      "id": "survivor",
+      "googlePlayId": "Cgkli7zMkqgUEAIQCA",
+      "title": "Survivor",
+      "description": "Reach 25 blocks in Infinite Stacker",
+      "iconPath": "Achievements/survivor",
+      "type": "Incremental",
+      "targetValue": 25,
+      "category": "infinite",
+      "condition": {
+        "type": "InfiniteHeight",
+        "value": 25
+      }
+    },
+    {
+      "id": "peak_ascender",
+      "googlePlayId": "Cgkli7zMkqgUEAIQCQ",
+      "title": "Peak Ascender",
+      "description": "Reach 50 blocks in Infinite Stacker",
+      "iconPath": "Achievements/peak_ascender",
+      "type": "Incremental",
+      "targetValue": 50,
+      "category": "infinite",
+      "condition": {
+        "type": "InfiniteHeight",
+        "value": 50
+      }
+    },
+    {
+      "id": "sky_piercer",
+      "googlePlayId": "Cgkli7zMkqgUEAIQCg",
+      "title": "Sky Piercer",
+      "description": "Reach 100 blocks in Infinite Stacker",
+      "iconPath": "Achievements/sky_piercer",
+      "type": "Incremental",
+      "targetValue": 100,
+      "category": "infinite",
+      "condition": {
+        "type": "InfiniteHeight",
+        "value": 100
+      }
+    },
+    {
+      "id": "page_keeper",
+      "googlePlayId": "Cgkli7zMkqgUEAIQCw",
+      "title": "Page Keeper",
+      "description": "Unlock 3 codex entries",
+      "iconPath": "Achievements/page_keeper",
+      "type": "Incremental",
+      "targetValue": 3,
+      "category": "codex",
+      "condition": {
+        "type": "CodexEntries",
+        "value": 3
+      }
+    },
+    {
+      "id": "lore_seeker",
+      "googlePlayId": "Cgkli7zMkqgUEAIQDA",
+      "title": "Lore Seeker",
+      "description": "Unlock 10 codex entries",
+      "iconPath": "Achievements/lore_seeker",
+      "type": "Incremental",
+      "targetValue": 10,
+      "category": "codex",
+      "condition": {
+        "type": "CodexEntries",
+        "value": 10
+      }
+    },
+    {
+      "id": "codex_scholar",
+      "googlePlayId": "Cgkli7zMkqgUEAIQDQ",
+      "title": "Codex Scholar",
+      "description": "Unlock 20 codex entries",
+      "iconPath": "Achievements/codex_scholar",
+      "type": "Incremental",
+      "targetValue": 20,
+      "category": "codex",
+      "condition": {
+        "type": "CodexEntries",
+        "value": 20
+      }
+    },
+    {
+      "id": "perfect_dropper",
+      "googlePlayId": "Cgkli7zMkqgUEAIQDg",
+      "title": "Perfect Dropper",
+      "description": "Make 10 perfect placements in a row in Infinite Stacker",
+      "iconPath": "Achievements/perfect_dropper",
+      "type": "Incremental",
+      "targetValue": 10,
+      "category": "perfect",
+      "condition": {
+        "type": "PerfectPlacements",
+        "value": 10
+      }
+    },
+    {
+      "id": "stone_stack_specialist",
+      "googlePlayId": "Cgkli7zMkqgUEAIQDW",
+      "title": "Stone-Stack Specialist",
+      "description": "Make 25 perfects in a row in Infinite Stacker",
+      "iconPath": "Achievements/stone_stack_specialist",
+      "type": "Incremental",
+      "targetValue": 25,
+      "category": "perfect",
+      "condition": {
+        "type": "PerfectPlacements",
+        "value": 25
+      }
+    },
+    {
+      "id": "temple_guardian",
+      "googlePlayId": "Cgkli7zMkqgUEAIQEA",
+      "title": "Temple Guardian",
+      "description": "Get in one of the first 5 placements in a level leaderboard",
+      "iconPath": "Achievements/temple_guardian",
+      "type": "OneTime",
+      "targetValue": 5,
+      "category": "perfect",
+      "hidden": false,
+      "condition": {
+        "type": "LeaderboardRank",
+        "value": 5
+      }
+    },
+    {
+      "id": "perfectionist_architect",
+      "googlePlayId": "Cgkli7zMkqgUEAIQEQ",
+      "title": "Perfectionist Architect",
+      "description": "Beat a site with only perfect drops",
+      "iconPath": "Achievements/perfectionist_architect",
+      "type": "Incremental",
+      "targetValue": 1,
+      "category": "perfect_level",
+      "hidden": true,
+      "condition": {
+        "type": "PerfectLevelCompletions",
+        "value": 1
+      }
+    },
+    {
+      "id": "zero_room_for_error",
+      "googlePlayId": "Cgkli7zMkqgUEAIQEg",
+      "title": "Zero Room for Error",
+      "description": "Beat a level 10+ with only perfect drops",
+      "iconPath": "Achievements/zero_room_for_error",
+      "type": "OneTime",
+      "targetValue": 10,
+      "category": "perfect_level",
+      "hidden": true,
+      "condition": {
+        "type": "PerfectHighLevelCompletion",
+        "value": 10
+      }
+    },
+    {
+      "id": "feathered_serpent_blessing",
+      "googlePlayId": "Cgkli7zMkqgUEAIQEW",
+      "title": "Feathered Serpent's Blessing",
+      "description": "Finish 5 levels with perfect drops",
+      "iconPath": "Achievements/feathered_serpent_blessing",
+      "type": "Incremental",
+      "targetValue": 5,
+      "category": "perfect_level",
+      "hidden": true,
+      "condition": {
+        "type": "PerfectLevelCompletions",
+        "value": 5
+      }
+    },
+    {
+      "id": "sunrise_builder",
+      "googlePlayId": "Cgkli7zMkqgUEAIQFA",
+      "title": "Sunrise Builder",
+      "description": "Play the game early in the morning",
+      "iconPath": "Achievements/sunrise_builder",
+      "type": "OneTime",
+      "targetValue": 1,
+      "category": "secret",
+      "hidden": true,
+      "condition": {
+        "type": "TimeMorning",
+        "value": 1
+      }
+    },
+    {
+      "id": "midnight_builder",
+      "googlePlayId": "Cgkli7zMkqgUEAIQFQ",
+      "title": "Midnight Builder",
+      "description": "Play the game late in the evening",
+      "iconPath": "Achievements/midnight_builder",
+      "type": "OneTime",
+      "targetValue": 1,
+      "category": "secret",
+      "hidden": true,
+      "condition": {
+        "type": "TimeNight",
+        "value": 1
+      }
+    }
+  ]
+}
+

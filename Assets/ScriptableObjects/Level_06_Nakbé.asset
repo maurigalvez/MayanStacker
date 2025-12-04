@@ -25,7 +25,7 @@ MonoBehaviour:
     Classic Maya kingdoms.\n\nIn these first cities, the Maya learned to build upward,
     unify people, and carve the earliest echoes of kingship."
   siteImage: {fileID: 21300000, guid: 5ce3d3e5cd7c49f42a309c5aa4b6f6d9, type: 3}
-  requiredStackHeight: 17
+  requiredStackHeight: 18
   oneStarScore: 1250
   twoStarScore: 2000
   threeStarScore: 2600

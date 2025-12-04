@@ -142,21 +142,14 @@ public class LevelManager : MonoBehaviour, ILevelManager
 
     /// <summary>
     /// Apply level-specific settings to game systems
+    /// Note: Swing settings are now handled by SpawnerHolder subscribing to OnLevelLoaded event
     /// </summary>
     private void ApplyLevelSettings(LevelData level)
     {
         if (level == null) return;
 
-        // Apply swing settings to spawner holder
-        var spawnerHolder = DependencyRegistry.Find<SpawnerHolder>();
-        if (spawnerHolder != null)
-        {
-            float baseSpeed = spawnerHolder.SwingSpeed;
-            float baseAmplitude = spawnerHolder.SwingAmplitude;
-
-            spawnerHolder.SetSwingSpeed(baseSpeed * level.swingSpeedMultiplier);
-            spawnerHolder.SetSwingAmplitude(baseAmplitude * level.swingAmplitudeMultiplier);
-        }
+        // Swing settings are now applied automatically by SpawnerHolder when it receives OnLevelLoaded event
+        // No need to manually set them here to avoid race conditions or double-application
     }
 
     /// <summary>

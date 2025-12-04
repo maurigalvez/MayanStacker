@@ -32,6 +32,12 @@ public class PlayerProgressData
     public long lastSyncTimestamp = 0;
 
     /// <summary>
+    /// Achievement progress data (JSON serialized)
+    /// Stored as JSON string for flexibility
+    /// </summary>
+    public string achievementProgressJson = "";
+
+    /// <summary>
     /// Creates a new empty PlayerProgressData
     /// </summary>
     public PlayerProgressData()
@@ -40,6 +46,7 @@ public class PlayerProgressData
         levelHighScores = new Dictionary<int, int>();
         infiniteStackerHighScore = 0;
         lastSyncTimestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+        achievementProgressJson = "";
     }
 
     /// <summary>
@@ -55,7 +62,8 @@ public class PlayerProgressData
             levelHighScoresKeys = new List<int>(levelHighScores.Keys),
             levelHighScoresValues = new List<int>(levelHighScores.Values),
             infiniteStackerHighScore = this.infiniteStackerHighScore,
-            lastSyncTimestamp = this.lastSyncTimestamp
+            lastSyncTimestamp = this.lastSyncTimestamp,
+            achievementProgressJson = this.achievementProgressJson
         };
 
         return JsonUtility.ToJson(wrapper);
@@ -77,7 +85,8 @@ public class PlayerProgressData
             var data = new PlayerProgressData
             {
                 infiniteStackerHighScore = wrapper.infiniteStackerHighScore,
-                lastSyncTimestamp = wrapper.lastSyncTimestamp
+                lastSyncTimestamp = wrapper.lastSyncTimestamp,
+                achievementProgressJson = wrapper.achievementProgressJson ?? ""
             };
 
             // Reconstruct dictionaries
@@ -120,6 +129,7 @@ public class PlayerProgressData
         public List<int> levelHighScoresValues = new List<int>();
         public int infiniteStackerHighScore = 0;
         public long lastSyncTimestamp = 0;
+        public string achievementProgressJson = "";
     }
 }
 

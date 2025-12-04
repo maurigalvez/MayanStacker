@@ -21,6 +21,14 @@ public class LeaderboardPanel : MonoBehaviour
     [Header("Mode Selection")]
     [SerializeField] private Button infiniteStackerModeButton;
     [SerializeField] private Button levelsModeButton;
+    [SerializeField] private TextMeshProUGUI infiniteStackerModeButtonText;
+    [SerializeField] private TextMeshProUGUI levelsModeButtonText;
+
+    [Header("Mode Button Highlighting")]
+    [SerializeField] private Color normalModeButtonColor = new Color(1f, 1f, 1f, 1f);
+    [SerializeField] private Color selectedModeButtonColor = new Color(1f, 0.9f, 0.6f, 1f);
+    [SerializeField] private Color normalModeButtonTextColor = new Color(0.2f, 0.2f, 0.2f, 1f);
+    [SerializeField] private Color selectedModeButtonTextColor = new Color(1f, 0.8f, 0.4f, 1f);
 
     [Header("Navigation Buttons")]
     [SerializeField] private Button previousButton;
@@ -124,6 +132,7 @@ public class LeaderboardPanel : MonoBehaviour
     private void SwitchToInfiniteMode()
     {
         currentMode = LeaderboardMode.InfiniteStacker;
+        UpdateModeButtonHighlighting();
         UpdateNavigationVisibility();
         LoadInfiniteStackerLeaderboard();
     }
@@ -135,6 +144,7 @@ public class LeaderboardPanel : MonoBehaviour
     {
         currentMode = LeaderboardMode.Levels;
         currentLevelNumber = 1; // Start at level 1
+        UpdateModeButtonHighlighting();
         UpdateNavigationVisibility();
         LoadCurrentLevelLeaderboard();
     }
@@ -168,6 +178,55 @@ public class LeaderboardPanel : MonoBehaviour
         if (nextButton != null)
         {
             nextButton.gameObject.SetActive(showNavigation);
+        }
+    }
+
+    /// <summary>
+    /// Update mode button highlighting based on current mode
+    /// </summary>
+    private void UpdateModeButtonHighlighting()
+    {
+        bool isInfiniteSelected = (currentMode == LeaderboardMode.InfiniteStacker);
+        bool isLevelsSelected = (currentMode == LeaderboardMode.Levels);
+
+        // Update Infinite Stacker button
+        if (infiniteStackerModeButton != null)
+        {
+            Image buttonImage = infiniteStackerModeButton.GetComponent<Image>();
+            if (buttonImage != null)
+            {
+                buttonImage.color = isInfiniteSelected
+                    ? selectedModeButtonColor
+                    : normalModeButtonColor;
+            }
+        }
+
+        // Update Infinite Stacker button text
+        if (infiniteStackerModeButtonText != null)
+        {
+            infiniteStackerModeButtonText.color = isInfiniteSelected
+                ? selectedModeButtonTextColor
+                : normalModeButtonTextColor;
+        }
+
+        // Update Levels button
+        if (levelsModeButton != null)
+        {
+            Image buttonImage = levelsModeButton.GetComponent<Image>();
+            if (buttonImage != null)
+            {
+                buttonImage.color = isLevelsSelected
+                    ? selectedModeButtonColor
+                    : normalModeButtonColor;
+            }
+        }
+
+        // Update Levels button text
+        if (levelsModeButtonText != null)
+        {
+            levelsModeButtonText.color = isLevelsSelected
+                ? selectedModeButtonTextColor
+                : normalModeButtonTextColor;
         }
     }
 
@@ -255,7 +314,7 @@ public class LeaderboardPanel : MonoBehaviour
             var levelData = levels.Find(l => l.levelNumber == currentLevelNumber);
             if (levelData != null)
             {
-                displayName = levelData.levelName;
+                displayName = $"Level {levelData.levelNumber}\n{levelData.levelName}";
             }
         }
 

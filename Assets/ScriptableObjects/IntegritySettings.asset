@@ -9,7 +9,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0, type: 3}
+  m_Script: {fileID: 11500000, guid: dd5313d34785bfe4386c86511d6de690, type: 3}
   m_Name: IntegritySettings
   m_EditorClassIdentifier: 
   enableIntegrityChecks: 1
@@ -19,5 +19,16 @@ MonoBehaviour:
   checkBeforeLeaderboardSubmission: 1
   verboseLogging: 1
   allowGameplayOnFailure: 1
-  setupInstructions: "1. Link your app to Google Play Console\n2. Enable Play Integrity API in Play Console\n3. (Optional) Set Cloud Project Number if distributing outside Play Store\n4. Build and test on Android device with Google Play Services\n\nSee GOOGLE_PLAY_INTEGRITY_SETUP.md for detailed instructions."
+  setupInstructions: '1. Link your app to Google Play Console
 
+    2. Enable Play
+    Integrity API in Play Console
+
+    3. (Optional) Set Cloud Project Number if
+    distributing outside Play Store
+
+    4. Build and test on Android device with
+    Google Play Services
+
+
+    See GOOGLE_PLAY_INTEGRITY_SETUP.md for detailed instructions.'

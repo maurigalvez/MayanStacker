@@ -29,11 +29,23 @@ public class SpawnerHolder : MonoBehaviour
     [SerializeField] private ObjectSpawner objectSpawner; // Reference to the spawner to move
     [SerializeField] private Vector3 spawnerOffset = new Vector3(0f, 0f, 0f); // Offset from holder position
 
+    [Header("Neck Follow Settings")]
+    [SerializeField] private Transform[] neckPieces = new Transform[3]; // Array of neck pieces (top to bottom, top piece follows spawner)
+    [SerializeField] private bool enableNeckFollow = true; // Enable neck following movement
+    [SerializeField] private float neckFollowSpeed = 8f; // How fast the neck follows (higher = more responsive)
+    [SerializeField] private float neckMovementReduction = 0.6f; // How much each piece reduces movement relative to the one above (0-1, lower = less movement)
+    [SerializeField] private float neckRotationReduction = 0.4f; // How much each piece reduces rotation relative to the one above (0-1, lower = less rotation)
 
     [Header("Stack Height Settings")]
     [SerializeField] private float consistentHeightOffset = 2f; // Consistent height above the highest point (ground or stack)
     [SerializeField] private float heightAnimationSpeed = 5f; // How fast the holder animates to new height (units per second)
 
+    [Header("Height-Based Swing Scaling (InfiniteStacker Only)")]
+    [SerializeField] private bool enableHeightBasedScaling = true; // Enable swing scaling based on block count
+    [SerializeField] private int scalingStartBlockCount = 10; // Number of blocks at which scaling begins
+    [SerializeField] private float maxSwingSpeedMultiplier = 2.5f; // Maximum swing speed multiplier at high stacks
+    [SerializeField] private float maxSwingAmplitudeMultiplier = 2f; // Maximum swing amplitude multiplier at high stacks
+    [SerializeField] private float scalingCurve = 1.5f; // Curve of the scaling (1 = linear, >1 = exponential, <1 = logarithmic)
 
     [Header("Swing Constraints")]
     [SerializeField] private bool constrainToScreen = true; // Keep swing within screen bounds
@@ -54,9 +66,30 @@ public class SpawnerHolder : MonoBehaviour
     private float spawnerAngularVelocity = 0f;
     private float recoilTimer = 0f;
     private float originalSwingSpeed = 0f;
+    private float originalSwingAmplitude = 0f;
     private float originalRotationMultiplier = 0f;
+    private float currentScaledSwingSpeed = 0f; // Current base swing speed after height scaling (used by recoil)
+    private float currentScaledSwingAmplitude = 0f; // Current base swing amplitude after height scaling
+    private float levelSwingSpeedMultiplier = 1f; // Level-specific swing speed multiplier (from LevelData)
+    private float levelSwingAmplitudeMultiplier = 1f; // Level-specific swing amplitude multiplier (from LevelData)
+
+    // Neck chain tracking - each piece follows the one above it
+    private struct NeckPieceData
+    {
+        public Vector3 targetPosition;
+        public Vector3 baseOffset;
+        public float originalRotationZ; // Original orientation to preserve
+        public float targetRotationZ; // Target rotation (original + follow offset)
+        public float currentRotationZ; // Current smoothed rotation
+        public float followRotationOffset; // Rotation offset from following (added to original)
+    }
+    private NeckPieceData[] neckPieceData; // Data for each neck piece
+    private Vector3[] neckPiecePositions; // Current positions for smooth following
+
     private GameObject lastDroppedObject;
     private Ground ground;
+    private GameManager gameManager;
+    private LevelManager levelManager;
 
     // Events
 
@@ -106,16 +139,42 @@ public class SpawnerHolder : MonoBehaviour
             initialSpawnerPosition = objectSpawner.transform.position;
         }
 
-        // Store original values for recoil restoration
+        // Store original values for recoil restoration and height scaling
         originalSwingSpeed = swingSpeed;
+        originalSwingAmplitude = swingAmplitude;
         originalRotationMultiplier = rotationMultiplier;
+
+        // Initialize neck pieces if assigned
+        if (neckPieces != null && neckPieces.Length > 0)
+        {
+            // Initialize arrays
+            neckPieceData = new NeckPieceData[neckPieces.Length];
+            neckPiecePositions = new Vector3[neckPieces.Length];
+
+            // Store base offsets and initial values for each neck piece
+            for (int i = 0; i < neckPieces.Length; i++)
+            {
+                if (neckPieces[i] != null)
+                {
+                    neckPieceData[i].baseOffset = neckPieces[i].position - holderCenterPosition;
+                    neckPieceData[i].targetPosition = neckPieces[i].position;
+                    neckPiecePositions[i] = neckPieces[i].position;
+
+                    // Store original rotation to preserve orientation
+                    neckPieceData[i].originalRotationZ = neckPieces[i].eulerAngles.z;
+                    neckPieceData[i].followRotationOffset = 0f;
+                    neckPieceData[i].currentRotationZ = neckPieceData[i].originalRotationZ;
+                    neckPieceData[i].targetRotationZ = neckPieceData[i].originalRotationZ;
+                }
+            }
+        }
     }
 
 
     private void Start()
     {
         // Subscribe to game events if available
-        var gameManager = DependencyRegistry.Find<GameManager>();
+        gameManager = DependencyRegistry.Find<GameManager>();
         if (gameManager != null)
         {
             gameManager.OnGameStart += OnGameStart;
@@ -136,12 +195,28 @@ public class SpawnerHolder : MonoBehaviour
         {
             stackManager.OnObjectAddedToStack += OnObjectAddedToStack;
         }
+
+        // Subscribe to level manager events to apply level-specific settings
+        levelManager = DependencyRegistry.Find<LevelManager>();
+        if (levelManager != null)
+        {
+            levelManager.OnLevelLoaded += OnLevelLoaded;
+
+            // If a level is already loaded, apply its settings now
+            if (levelManager.CurrentLevel != null)
+            {
+                OnLevelLoaded(levelManager.CurrentLevel);
+            }
+        }
     }
 
 
     private void Update()
     {
         if (objectSpawner == null) return;
+
+        // Update height-based scaling for InfiniteStacker mode
+        UpdateHeightBasedScaling();
 
         // Update recoil effect
         UpdateRecoilEffect();
@@ -154,6 +229,9 @@ public class SpawnerHolder : MonoBehaviour
 
         // Apply the swing to the spawner
         ApplySwingToSpawner();
+
+        // Update neck follow movement
+        UpdateNeckFollow();
     }
 
 
@@ -211,6 +289,92 @@ public class SpawnerHolder : MonoBehaviour
 
             // Update the stored center position
             holderCenterPosition = transform.position;
+        }
+    }
+
+    /// <summary>
+    /// Updates swing speed and amplitude based on block count (InfiniteStacker mode only)
+    /// or applies level settings (StackerLevels mode)
+    /// </summary>
+    private void UpdateHeightBasedScaling()
+    {
+        // Check if we're in level mode - use level multipliers
+        if (gameManager != null && gameManager.CurrentGameMode == GameMode.StackerLevels)
+        {
+            // In level mode, apply level multipliers to original values
+            currentScaledSwingSpeed = originalSwingSpeed * levelSwingSpeedMultiplier;
+            currentScaledSwingAmplitude = originalSwingAmplitude * levelSwingAmplitudeMultiplier;
+
+            // Apply level-modified values only if recoil is not active
+            if (recoilTimer <= 0f)
+            {
+                swingSpeed = currentScaledSwingSpeed;
+                swingAmplitude = currentScaledSwingAmplitude;
+            }
+            return;
+        }
+
+        // Reset level multipliers when not in level mode
+        if (levelSwingSpeedMultiplier != 1f || levelSwingAmplitudeMultiplier != 1f)
+        {
+            levelSwingSpeedMultiplier = 1f;
+            levelSwingAmplitudeMultiplier = 1f;
+        }
+
+        // Only apply height-based scaling in InfiniteStacker mode
+        if (!enableHeightBasedScaling || gameManager == null || gameManager.CurrentGameMode != GameMode.InfiniteStacker)
+        {
+            // Reset to original values if not in InfiniteStacker mode or scaling is disabled
+            currentScaledSwingSpeed = originalSwingSpeed;
+            currentScaledSwingAmplitude = originalSwingAmplitude;
+            if (recoilTimer <= 0f)
+            {
+                swingSpeed = originalSwingSpeed;
+                swingAmplitude = originalSwingAmplitude;
+            }
+            return;
+        }
+
+        // Get current block count from StackManager
+        var stackManager = DependencyRegistry.Find<StackManager>();
+        int currentBlockCount = stackManager != null ? stackManager.GetStackCount() : 0;
+
+        // Only apply scaling if we have enough blocks
+        if (currentBlockCount < scalingStartBlockCount)
+        {
+            // Below start block count, use original values
+            currentScaledSwingSpeed = originalSwingSpeed;
+            currentScaledSwingAmplitude = originalSwingAmplitude;
+            if (recoilTimer <= 0f)
+            {
+                swingSpeed = originalSwingSpeed;
+                swingAmplitude = originalSwingAmplitude;
+            }
+            return;
+        }
+
+        // Calculate normalized progress (0 = at start block count, 1 = very high stacks)
+        // Use a reasonable maximum block count for scaling calculation (e.g., 50 blocks above start)
+        int maxScalingBlockCount = scalingStartBlockCount + 50;
+        int blocksAboveStart = currentBlockCount - scalingStartBlockCount;
+        float normalizedProgress = Mathf.Clamp01((float)blocksAboveStart / (float)(maxScalingBlockCount - scalingStartBlockCount));
+
+        // Apply curve to the normalized progress
+        float curvedProgress = Mathf.Pow(normalizedProgress, 1f / scalingCurve);
+
+        // Calculate multipliers (1.0 at start, maxMultiplier at high stacks)
+        float speedMultiplier = Mathf.Lerp(1f, maxSwingSpeedMultiplier, curvedProgress);
+        float amplitudeMultiplier = Mathf.Lerp(1f, maxSwingAmplitudeMultiplier, curvedProgress);
+
+        // Calculate and store scaled base values
+        currentScaledSwingSpeed = originalSwingSpeed * speedMultiplier;
+        currentScaledSwingAmplitude = originalSwingAmplitude * amplitudeMultiplier;
+
+        // Apply scaled values only if recoil is not active (recoil will override)
+        if (recoilTimer <= 0f)
+        {
+            swingSpeed = currentScaledSwingSpeed;
+            swingAmplitude = currentScaledSwingAmplitude;
         }
     }
 
@@ -296,8 +460,8 @@ public class SpawnerHolder : MonoBehaviour
         // Start the recoil timer
         recoilTimer = recoilDuration;
 
-        // Boost the swing speed temporarily
-        swingSpeed = originalSwingSpeed * recoilSwingBoost;
+        // Boost the swing speed temporarily (use current scaled speed as base, not original)
+        swingSpeed = currentScaledSwingSpeed * recoilSwingBoost;
 
         // Boost the rotation multiplier temporarily
         if (enableRotation)
@@ -319,8 +483,8 @@ public class SpawnerHolder : MonoBehaviour
         // Cancel any ongoing recoil
         recoilTimer = 0f;
 
-        // Immediately restore original values
-        swingSpeed = originalSwingSpeed;
+        // Immediately restore to scaled values (height-based scaling will set these correctly)
+        swingSpeed = currentScaledSwingSpeed;
         rotationMultiplier = originalRotationMultiplier;
     }
 
@@ -333,11 +497,12 @@ public class SpawnerHolder : MonoBehaviour
             // Calculate the progress of the recoil recovery (0 = just started, 1 = finished)
             float recoveryProgress = 1f - (recoilTimer / recoilDuration);
 
-            // Smoothly interpolate back to original values using ease-out
+            // Smoothly interpolate back to scaled values using ease-out
             float easedProgress = 1f - Mathf.Pow(1f - recoveryProgress, 2f);
 
-            // Restore swing speed
-            swingSpeed = Mathf.Lerp(originalSwingSpeed * recoilSwingBoost, originalSwingSpeed, easedProgress);
+            // Interpolate swing speed from recoiled to scaled base (use current scaled speed as target)
+            float recoiledSpeed = currentScaledSwingSpeed * recoilSwingBoost;
+            swingSpeed = Mathf.Lerp(recoiledSpeed, currentScaledSwingSpeed, easedProgress);
 
             // Restore rotation multiplier
             if (enableRotation)
@@ -345,10 +510,10 @@ public class SpawnerHolder : MonoBehaviour
                 rotationMultiplier = Mathf.Lerp(originalRotationMultiplier * recoilRotationBoost, originalRotationMultiplier, easedProgress);
             }
 
-            // If timer is done, ensure we're back to exact original values
+            // If timer is done, ensure we're back to exact scaled values
             if (recoilTimer <= 0f)
             {
-                swingSpeed = originalSwingSpeed;
+                swingSpeed = currentScaledSwingSpeed;
                 rotationMultiplier = originalRotationMultiplier;
             }
         }
@@ -477,6 +642,63 @@ public class SpawnerHolder : MonoBehaviour
         // Notify listeners
 
         OnSpawnerPositionChanged?.Invoke(finalSpawnerPosition);
+
+        // Update neck pieces target positions and rotations in a chain (top piece follows spawner)
+        if (neckPieces != null && neckPieces.Length > 0 && enableNeckFollow && neckPieceData != null)
+        {
+            // Calculate the movement difference from holder center to spawner
+            Vector3 spawnerBasePosition = holderCenterPosition + spawnerOffset;
+            Vector3 spawnerMovement = finalSpawnerPosition - spawnerBasePosition;
+            float spawnerRotationOffset = enableRotation ? currentRotationZ : 0f; // Spawner's rotation as an offset from identity
+
+            // Process each neck piece in order (top to bottom)
+            Vector3 previousPiecePosition = finalSpawnerPosition;
+            float previousPieceRotationOffset = spawnerRotationOffset; // Rotation offset to pass down the chain
+
+            for (int i = 0; i < neckPieces.Length; i++)
+            {
+                if (neckPieces[i] == null) continue;
+
+                // Calculate movement from the piece/spawner above (relative to its base position)
+                Vector3 previousBasePosition = i == 0 ? spawnerBasePosition : (holderCenterPosition + neckPieceData[i - 1].baseOffset);
+                Vector3 movementFromPrevious = previousPiecePosition - previousBasePosition;
+
+                // Apply reduction factor for this piece's movement
+                // Each piece moves less than the one above it
+                neckPieceData[i].targetPosition = holderCenterPosition + neckPieceData[i].baseOffset + (movementFromPrevious * neckMovementReduction);
+
+                // Apply rotation reduction for this piece (as an offset to original orientation)
+                // Add the reduced rotation offset to the original orientation
+                neckPieceData[i].followRotationOffset = previousPieceRotationOffset * neckRotationReduction;
+                neckPieceData[i].targetRotationZ = neckPieceData[i].originalRotationZ + neckPieceData[i].followRotationOffset;
+
+                // Update for next piece to follow this one (pass down the follow offset)
+                previousPiecePosition = neckPieceData[i].targetPosition;
+                previousPieceRotationOffset = neckPieceData[i].followRotationOffset;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Updates all neck pieces' positions and rotations to smoothly follow in a chain with lag
+    /// </summary>
+    private void UpdateNeckFollow()
+    {
+        if (neckPieces == null || neckPieces.Length == 0 || !enableNeckFollow || neckPieceData == null) return;
+
+        // Smoothly lerp each neck piece towards its target
+        for (int i = 0; i < neckPieces.Length; i++)
+        {
+            if (neckPieces[i] == null) continue;
+
+            // Smoothly lerp position towards target
+            neckPiecePositions[i] = Vector3.Lerp(neckPiecePositions[i], neckPieceData[i].targetPosition, neckFollowSpeed * Time.deltaTime);
+            neckPieces[i].position = neckPiecePositions[i];
+
+            // Smoothly lerp rotation towards target (preserving original orientation)
+            neckPieceData[i].currentRotationZ = Mathf.LerpAngle(neckPieceData[i].currentRotationZ, neckPieceData[i].targetRotationZ, neckFollowSpeed * Time.deltaTime);
+            neckPieces[i].rotation = Quaternion.Euler(0f, 0f, neckPieceData[i].currentRotationZ);
+        }
     }
 
 
@@ -673,8 +895,25 @@ public class SpawnerHolder : MonoBehaviour
         recoilTimer = 0f;
         lastDroppedObject = null;
 
-        // Restore original swing and rotation values
-        swingSpeed = originalSwingSpeed;
+        // Re-apply level settings if in level mode, otherwise restore original values
+        if (gameManager != null && gameManager.CurrentGameMode == GameMode.StackerLevels && levelManager != null && levelManager.CurrentLevel != null)
+        {
+            // Re-apply level multipliers
+            levelSwingSpeedMultiplier = levelManager.CurrentLevel.swingSpeedMultiplier;
+            levelSwingAmplitudeMultiplier = levelManager.CurrentLevel.swingAmplitudeMultiplier;
+            currentScaledSwingSpeed = originalSwingSpeed * levelSwingSpeedMultiplier;
+            currentScaledSwingAmplitude = originalSwingAmplitude * levelSwingAmplitudeMultiplier;
+        }
+        else
+        {
+            // Restore original swing and rotation values
+            levelSwingSpeedMultiplier = 1f;
+            levelSwingAmplitudeMultiplier = 1f;
+            currentScaledSwingSpeed = originalSwingSpeed;
+            currentScaledSwingAmplitude = originalSwingAmplitude;
+        }
+
+        swingSpeed = currentScaledSwingSpeed;
         rotationMultiplier = originalRotationMultiplier;
 
         // Reset holder height to be above ground with consistent offset (animated, not snapped)
@@ -688,6 +927,23 @@ public class SpawnerHolder : MonoBehaviour
         {
             objectSpawner.transform.position = holderCenterPosition + spawnerOffset;
             objectSpawner.transform.rotation = Quaternion.identity;
+        }
+
+        // Reset neck pieces positions and rotations to original orientations
+        if (neckPieces != null && neckPieces.Length > 0 && neckPieceData != null)
+        {
+            for (int i = 0; i < neckPieces.Length; i++)
+            {
+                if (neckPieces[i] != null)
+                {
+                    neckPieceData[i].targetPosition = neckPieces[i].position;
+                    neckPiecePositions[i] = neckPieces[i].position;
+                    neckPieceData[i].followRotationOffset = 0f;
+                    neckPieceData[i].currentRotationZ = neckPieceData[i].originalRotationZ;
+                    neckPieceData[i].targetRotationZ = neckPieceData[i].originalRotationZ;
+                    neckPieces[i].rotation = Quaternion.Euler(0f, 0f, neckPieceData[i].originalRotationZ);
+                }
+            }
         }
 
         // Update stack height to ensure proper positioning
@@ -722,6 +978,37 @@ public class SpawnerHolder : MonoBehaviour
             gameManager.OnGameOver -= OnGameOver;
             gameManager.OnGameRestart -= OnGameRestart;
         }
+
+        // Unsubscribe from level manager events
+        if (levelManager != null)
+        {
+            levelManager.OnLevelLoaded -= OnLevelLoaded;
+        }
+    }
+
+    /// <summary>
+    /// Called when a level is loaded - applies level-specific swing settings from LevelData
+    /// </summary>
+    private void OnLevelLoaded(LevelData levelData)
+    {
+        if (levelData == null) return;
+
+        // Store level multipliers
+        levelSwingSpeedMultiplier = levelData.swingSpeedMultiplier;
+        levelSwingAmplitudeMultiplier = levelData.swingAmplitudeMultiplier;
+
+        // Apply level multipliers to original base values
+        currentScaledSwingSpeed = originalSwingSpeed * levelSwingSpeedMultiplier;
+        currentScaledSwingAmplitude = originalSwingAmplitude * levelSwingAmplitudeMultiplier;
+
+        // Apply immediately if no recoil is active
+        if (recoilTimer <= 0f)
+        {
+            swingSpeed = currentScaledSwingSpeed;
+            swingAmplitude = currentScaledSwingAmplitude;
+        }
+
+        Debug.Log($"SpawnerHolder: Applied level settings - Speed: {levelSwingSpeedMultiplier}x, Amplitude: {levelSwingAmplitudeMultiplier}x");
     }
 
     // Gizmos for visualization in Scene view

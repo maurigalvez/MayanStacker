@@ -842,8 +842,8 @@ Transform:
   m_GameObject: {fileID: 1068835102}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: -0.7071068, w: 0.7071068}
-  m_LocalPosition: {x: 0.29, y: 1.7930002, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalPosition: {x: 0.29, y: 2.1499, z: 0}
+  m_LocalScale: {x: 1.1376, y: 0.75, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1559832334}
@@ -1262,6 +1262,7 @@ MonoBehaviour:
   stabilizedAngularDragMultiplier: 10
   stabilizedFrictionMultiplier: 2
   freezeXPositionAfterStraightening: 1
+  cacheUpdateInterval: 3
 --- !u!1 &1559832333
 GameObject:
   m_ObjectHideFlags: 0
@@ -1292,8 +1293,8 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 1741812448}
   - {fileID: 1721587805}
+  - {fileID: 1741812448}
   - {fileID: 1068835103}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -1325,8 +1326,21 @@ MonoBehaviour:
   recoilDirectionStrength: 2
   objectSpawner: {fileID: 144379237}
   spawnerOffset: {x: 0, y: -4, z: 0}
+  neckPieces:
+  - {fileID: 1068835103}
+  - {fileID: 1741812448}
+  - {fileID: 1721587805}
+  enableNeckFollow: 1
+  neckFollowSpeed: 10
+  neckMovementReduction: 0.25
+  neckRotationReduction: 0.25
   consistentHeightOffset: 15
   heightAnimationSpeed: 5
+  enableHeightBasedScaling: 1
+  scalingStartBlockCount: 10
+  maxSwingSpeedMultiplier: 4
+  maxSwingAmplitudeMultiplier: 3
+  scalingCurve: 0.5
   constrainToScreen: 1
   screenMargin: 1
 --- !u!1 &1705766542
@@ -1535,7 +1549,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: -0.7071068, w: 0.7071068}
   m_LocalPosition: {x: 0.29, y: 11.95, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 1, y: 0.9, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1559832334}
@@ -1586,7 +1600,7 @@ SpriteRenderer:
   m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 3
+  m_SortingOrder: 4
   m_Sprite: {fileID: -6979487629971368772, guid: 8686129ae7405e84496cef8ff838fc4e, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 1
@@ -1624,8 +1638,8 @@ Transform:
   m_GameObject: {fileID: 1741812447}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: -0.7071068, w: 0.7071068}
-  m_LocalPosition: {x: 0.29, y: 6.89, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalPosition: {x: 0.29, y: 7.3362, z: 0}
+  m_LocalScale: {x: 1.1719, y: 0.85, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1559832334}
@@ -2030,6 +2044,10 @@ PrefabInstance:
       propertyPath: m_AnchorMin.y
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 2051652316032471799, guid: 60441e2117e89ce48a769a889c2ee4ca, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 3072199511613321717, guid: 60441e2117e89ce48a769a889c2ee4ca, type: 3}
       propertyPath: m_Name
       value: Game Scene UI
@@ -2124,6 +2142,10 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7244201993073100091, guid: 60441e2117e89ce48a769a889c2ee4ca, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8208812781904062549, guid: 60441e2117e89ce48a769a889c2ee4ca, type: 3}
+      propertyPath: m_IsActive
       value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []

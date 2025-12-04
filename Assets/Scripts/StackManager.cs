@@ -33,7 +33,15 @@ public class StackManager : MonoBehaviour
     private List<StackableObject> stackObjects = new List<StackableObject>();
     private List<StackableObject> droppedObjects = new List<StackableObject>(); // Track all dropped objects
     private Dictionary<StackableObject, float> landingTimes = new Dictionary<StackableObject, float>(); // Track when objects landed
+    private HashSet<StackableObject> stabilizedBlocks = new HashSet<StackableObject>(); // Blocks that have been aligned by Kukulkan's shift - no longer need fall detection
     private bool isCheckingStability = false;
+
+    // Cached values for performance (recalculated when stack changes or periodically)
+    private float cachedStackTopY = 0f;
+    private float cachedStackCenterX = 0f;
+    private bool stackCacheDirty = true; // Flag to indicate cache needs recalculation
+    [SerializeField] private int cacheUpdateInterval = 3; // Update cache every N FixedUpdates (balance between accuracy and performance)
+    private int fixedUpdateCount = 0;
 
     // Ground reference
     private Ground ground;
@@ -91,12 +99,35 @@ public class StackManager : MonoBehaviour
         {
             ground = FindFirstObjectByType<Ground>();
         }
+
+        // Initialize cache
+        UpdateStackCache();
     }
 
     private void FixedUpdate()
     {
+        fixedUpdateCount++;
+
+        // Update cached values periodically (every N FixedUpdates) to account for stack tilting/movement
+        // Also update immediately if stack structure changed (objects added/removed)
+        if (stackCacheDirty || fixedUpdateCount >= cacheUpdateInterval)
+        {
+            UpdateStackCache();
+            fixedUpdateCount = 0;
+        }
+
         // Continuously monitor dropped objects for fall conditions
         CheckDroppedObjectsForFalls();
+    }
+
+    /// <summary>
+    /// Updates cached stack values (top Y and center X) for performance
+    /// </summary>
+    private void UpdateStackCache()
+    {
+        cachedStackTopY = CalculateStackTopY();
+        cachedStackCenterX = CalculateStackCenterX();
+        stackCacheDirty = false;
     }
 
     /// <summary>
@@ -123,10 +154,28 @@ public class StackManager : MonoBehaviour
         // Check each dropped object - ONLY for critical failures
         float fallThreshold = groundLevel - fallMargin * 3f; // Much more lenient - 3x the margin
 
+        // Pre-calculate stack bounds for efficiency (use cached values)
+        float stackTopY = cachedStackTopY;
+        float stackCenterX = cachedStackCenterX;
+
         foreach (StackableObject obj in droppedObjects)
         {
             if (obj == null) continue;
             if (!obj.IsDropped) continue;
+
+            // Skip blocks that have been stabilized by Kukulkan's shift - they're safe and don't need monitoring
+            if (stabilizedBlocks.Contains(obj))
+            {
+                continue;
+            }
+
+            // Early exit optimization: Skip objects that are clearly safe (well above threshold)
+            // This avoids expensive checks for objects that are clearly not falling
+            float objY = obj.transform.position.y;
+            if (objY > fallThreshold + 5f) // 5 units above threshold - clearly safe
+            {
+                continue;
+            }
 
             // Check if object is within grace period (recently landed)
             bool inGracePeriod = false;
@@ -139,29 +188,32 @@ public class StackManager : MonoBehaviour
             // ONLY CHECK: Fallen significantly below ground threshold
             // This is the ONLY reliable check - block has clearly fallen off the world
             // Skip if in grace period to allow initial settling
-            if (!inGracePeriod && obj.transform.position.y < fallThreshold)
+            if (!inGracePeriod && objY < fallThreshold)
             {
-                Debug.Log($"Game Over: Block fell below ground! Object Y: {obj.transform.position.y:F2}, Threshold: {fallThreshold:F2}");
+                Debug.Log($"Game Over: Block fell below ground! Object Y: {objY:F2}, Threshold: {fallThreshold:F2}");
                 TriggerStackFall();
                 return;
             }
 
             // SECONDARY CHECK: Block is falling fast AND far from stack
             // Only trigger if BOTH conditions are true to avoid false positives
-            if (!inGracePeriod && obj.HasLanded && stackObjects.Count >= 2)
+            // Only check if object is actually near or below stack level (optimization)
+            if (!inGracePeriod && obj.HasLanded && stackObjects.Count >= 2 && objY < stackTopY + 2f)
             {
                 Rigidbody2D rb = obj.GetComponent<Rigidbody2D>();
-                float stackTopY = GetStackTopY();
+                if (rb == null) continue;
 
                 // Must be falling fast AND be far below the stack AND far horizontally
-                bool fallingFast = rb != null && rb.linearVelocity.y < fallVelocityThreshold;
-                bool farBelowStack = obj.transform.position.y < stackTopY - stackHeightFallThreshold;
-                bool farFromCenter = Mathf.Abs(obj.transform.position.x - GetStackCenterX()) > horizontalDistanceThreshold;
+                float velocityY = rb.linearVelocity.y;
+                bool fallingFast = velocityY < fallVelocityThreshold;
+                bool farBelowStack = objY < stackTopY - stackHeightFallThreshold;
+                float distanceFromCenter = Mathf.Abs(obj.transform.position.x - stackCenterX);
+                bool farFromCenter = distanceFromCenter > horizontalDistanceThreshold;
 
                 // Only trigger if ALL THREE conditions are met (very conservative)
                 if (fallingFast && farBelowStack && farFromCenter)
                 {
-                    Debug.Log($"Game Over: Block clearly falling off! Velocity: {rb.linearVelocity.y:F2}, Y: {obj.transform.position.y:F2}, Stack Top: {stackTopY:F2}");
+                    Debug.Log($"Game Over: Block clearly falling off! Velocity: {velocityY:F2}, Y: {objY:F2}, Stack Top: {stackTopY:F2}");
                     TriggerStackFall();
                     return;
                 }
@@ -176,6 +228,8 @@ public class StackManager : MonoBehaviour
     {
         if (stackableObject == null || droppedObjects.Contains(stackableObject)) return;
         droppedObjects.Add(stackableObject);
+        // Mark cache as dirty since dropped objects affect stack top calculation
+        stackCacheDirty = true;
     }
 
     /// <summary>
@@ -189,6 +243,9 @@ public class StackManager : MonoBehaviour
 
         // Record landing time for grace period
         landingTimes[stackableObject] = Time.time;
+
+        // Mark cache as dirty so it gets recalculated
+        stackCacheDirty = true;
 
         OnObjectAddedToStack?.Invoke(stackableObject);
 
@@ -209,12 +266,15 @@ public class StackManager : MonoBehaviour
         bool removed = stackObjects.Remove(stackableObject);
         if (removed)
         {
+            // Mark cache as dirty so it gets recalculated
+            stackCacheDirty = true;
             OnObjectRemovedFromStack?.Invoke(stackableObject);
         }
 
-        // Also remove from dropped objects list and landing times
+        // Also remove from dropped objects list, landing times, and stabilized blocks
         droppedObjects.Remove(stackableObject);
         landingTimes.Remove(stackableObject);
+        stabilizedBlocks.Remove(stackableObject);
     }
 
     /// <summary>
@@ -446,6 +506,11 @@ public class StackManager : MonoBehaviour
         stackObjects.Clear();
         droppedObjects.Clear();
         landingTimes.Clear();
+        stabilizedBlocks.Clear(); // Clear stabilized blocks when stack is cleared
+
+        // Reset cache
+        stackCacheDirty = true;
+        UpdateStackCache();
     }
 
     /// <summary>
@@ -468,9 +533,21 @@ public class StackManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Get the horizontal center position of the stack
+    /// Get the horizontal center position of the stack (uses cached value)
     /// </summary>
     private float GetStackCenterX()
+    {
+        if (stackCacheDirty)
+        {
+            UpdateStackCache();
+        }
+        return cachedStackCenterX;
+    }
+
+    /// <summary>
+    /// Calculate the horizontal center position of the stack (internal calculation)
+    /// </summary>
+    private float CalculateStackCenterX()
     {
         if (stackObjects.Count == 0 && droppedObjects.Count == 0)
         {
@@ -509,9 +586,21 @@ public class StackManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Get the Y position of the top of the stack
+    /// Get the Y position of the top of the stack (uses cached value)
     /// </summary>
     private float GetStackTopY()
+    {
+        if (stackCacheDirty)
+        {
+            UpdateStackCache();
+        }
+        return cachedStackTopY;
+    }
+
+    /// <summary>
+    /// Calculate the Y position of the top of the stack (internal calculation)
+    /// </summary>
+    private float CalculateStackTopY()
     {
         if (stackObjects.Count == 0 && droppedObjects.Count == 0)
         {
@@ -739,15 +828,21 @@ public class StackManager : MonoBehaviour
             // Reset velocities
             rb.linearVelocity = Vector2.zero;
             rb.angularVelocity = 0f;
+
+            // Mark this block as stabilized - it no longer needs fall detection monitoring
+            stabilizedBlocks.Add(obj);
         }
 
-        Debug.Log("Stack straightened and stabilized!");
+        Debug.Log($"Stack straightened and stabilized! {sortedObjects.Count} blocks marked as stabilized.");
     }
 
     private void OnGameRestart()
     {
         // Clear the stack when game restarts
         ClearStack();
+
+        // Clear stabilized blocks set
+        stabilizedBlocks.Clear();
 
         // Reset stability checking state
         isCheckingStability = false;

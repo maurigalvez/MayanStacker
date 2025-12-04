@@ -23,7 +23,7 @@ MonoBehaviour:
     bear the glyphs of power and ancestry, linking it to the greater Maya world.\n\nThe
     forest keeps its ruins close \u2014 but the past still breathes beneath the leaves."
   siteImage: {fileID: 21300000, guid: 8bcb762a1606d484381e22eb7bd14d5b, type: 3}
-  requiredStackHeight: 15
+  requiredStackHeight: 16
   oneStarScore: 900
   twoStarScore: 1600
   threeStarScore: 2200

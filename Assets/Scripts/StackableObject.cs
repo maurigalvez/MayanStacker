@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 [RequireComponent(typeof(Rigidbody2D))]
@@ -17,6 +18,8 @@ public class StackableObject : MonoBehaviour
     [SerializeField] private Color normalColor = Color.white;
     [SerializeField] private Color perfectLandingColor = Color.green;
     [SerializeField] private Color poorLandingColor = Color.red;
+    [SerializeField] private bool enableDistanceCulling = true; // Disable rendering for blocks far below camera
+    [SerializeField] private float cullingDistance = 15f; // Distance below camera to disable rendering
 
     [Header("Particle Effects")]
     [SerializeField] private ParticleSystem landingParticleEffect;
@@ -33,6 +36,7 @@ public class StackableObject : MonoBehaviour
     [SerializeField] private int perfectScore = 100;
     [SerializeField] private int goodScore = 50;
     [SerializeField] private int poorScore = 10;
+    [SerializeField] private float rotationUnlockDelay = 0.15f; // Delay before unlocking rotation after landing (allows block to settle)
 
     // Components
     private Rigidbody2D rb;
@@ -100,6 +104,37 @@ public class StackableObject : MonoBehaviour
         }
     }
 
+    private void Update()
+    {
+        // Update sprite renderer visibility based on distance from camera
+        if (enableDistanceCulling && spriteRenderer != null && hasLanded)
+        {
+            UpdateRendererVisibility();
+        }
+    }
+
+    /// <summary>
+    /// Updates sprite renderer visibility based on distance from camera
+    /// Disables rendering for blocks far below the camera to improve performance
+    /// </summary>
+    private void UpdateRendererVisibility()
+    {
+        Camera mainCamera = Camera.main;
+        if (mainCamera == null) return;
+
+        // Calculate distance below camera
+        float cameraY = mainCamera.transform.position.y;
+        float blockY = transform.position.y;
+        float distanceBelowCamera = cameraY - blockY;
+
+        // Disable renderer if block is far below camera
+        bool shouldBeVisible = distanceBelowCamera <= cullingDistance;
+        if (spriteRenderer.enabled != shouldBeVisible)
+        {
+            spriteRenderer.enabled = shouldBeVisible;
+        }
+    }
+
     public void Drop()
     {
         if (isDropped) return;
@@ -155,6 +190,15 @@ public class StackableObject : MonoBehaviour
         bool landedOnGround = collision.gameObject.CompareTag("Ground");
         landedOnStackable = collision.gameObject.CompareTag("Stackable");
 
+        // Lock rotation immediately to prevent tilting from affecting accuracy calculation
+        // This ensures the block is stable before we calculate landing accuracy
+        if (rb != null)
+        {
+            rb.constraints = RigidbodyConstraints2D.FreezeRotation;
+            // Snap rotation to 0 to ensure accurate bounds calculation
+            transform.rotation = Quaternion.identity;
+        }
+
         // Calculate landing accuracy based on how centered we are
         if (landedOnStackable)
         {
@@ -193,6 +237,10 @@ public class StackableObject : MonoBehaviour
             gameManager.AddScoreWithCombo(baseScore, landingAccuracy);
         }
 
+        // Unlock rotation after a short delay - allows block to settle before it can tilt/fall
+        // This maintains the danger element while ensuring accurate scoring
+        StartCoroutine(UnlockRotationAfterDelay());
+
         // Add this object to the stack
         if (stackManager == null)
         {
@@ -216,7 +264,8 @@ public class StackableObject : MonoBehaviour
     private void CalculateLandingAccuracy(StackableObject otherObject)
     {
         // Calculate how centered this object is on top of the other
-        // Use collider bounds center to get the actual center of the object, not the transform pivot
+        // Rotation is already locked and snapped to 0, so bounds.center is now accurate
+        // This gives us the actual center of the collider, accounting for any pivot offset
         Vector2 thisCenter = col.bounds.center;
         Vector2 otherCenter = otherObject.Collider.bounds.center;
         float centerDistance = Mathf.Abs(thisCenter.x - otherCenter.x);
@@ -285,6 +334,19 @@ public class StackableObject : MonoBehaviour
     }
 
     /// <summary>
+    /// Unlocks rotation after a short delay to allow the block to settle before it can tilt/fall
+    /// </summary>
+    private IEnumerator UnlockRotationAfterDelay()
+    {
+        yield return new WaitForSeconds(rotationUnlockDelay);
+
+        if (rb != null && hasLanded)
+        {
+            rb.constraints = RigidbodyConstraints2D.None;
+        }
+    }
+
+    /// <summary>
     /// Check if object fell off the stack and hit the ground
     /// </summary>
     private void CheckFallOffStack()
@@ -331,6 +393,7 @@ public class StackableObject : MonoBehaviour
         if (spriteRenderer != null)
         {
             spriteRenderer.color = normalColor;
+            spriteRenderer.enabled = true; // Re-enable renderer on restart
         }
 
         // Reset position and rotation

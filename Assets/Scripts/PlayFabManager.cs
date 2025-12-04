@@ -338,6 +338,9 @@ public class PlayFabManager : MonoBehaviour
             Debug.LogWarning("This may cause leaderboards to show entity IDs instead of player names");
         }
 
+        // Sync achievements with Google Play Games now that we're authenticated
+        SyncAchievementsWithGooglePlay();
+
         // Get the server auth code for PlayFab with OPEN_ID scope (required for ID token)
 #if DEBUG_MODE
         Debug.Log("Requesting server-side access token with OPEN_ID scope for PlayFab...");
@@ -1567,6 +1570,17 @@ public class PlayFabManager : MonoBehaviour
             data.infiniteStackerHighScore = gameManager.HighScore;
         }
 
+        // Get achievement progress from AchievementManager
+        var achievementManager = DependencyRegistry.Find<TamalStacker.Achievements.AchievementManager>();
+        if (achievementManager != null && achievementManager.IsInitialized)
+        {
+            var achievementProgressData = achievementManager.GetProgressData();
+            if (achievementProgressData != null)
+            {
+                data.achievementProgressJson = achievementProgressData.ToJson();
+            }
+        }
+
         // Save to cloud (fire-and-forget - don't block gameplay)
         SaveProgressToCloud(data,
             onSuccess: () =>
@@ -1579,6 +1593,47 @@ public class PlayFabManager : MonoBehaviour
             {
                 Debug.LogWarning($"Failed to save current progress: {error}");
             });
+    }
+
+    #endregion
+
+    #region Achievement Sync
+
+    /// <summary>
+    /// Sync achievements with Google Play Games after authentication
+    /// This will upload any locally unlocked achievements to Google Play Games
+    /// Adds a delay to ensure Google Play Games SDK is fully ready
+    /// </summary>
+    private void SyncAchievementsWithGooglePlay()
+    {
+        StartCoroutine(SyncAchievementsWithDelay());
+    }
+
+    /// <summary>
+    /// Coroutine to sync achievements with a delay
+    /// Google Play Games needs time to fully initialize after authentication
+    /// </summary>
+    private IEnumerator SyncAchievementsWithDelay()
+    {
+        // Wait 1.5 seconds for Google Play Games to fully initialize
+        Debug.Log("[PlayFabManager] Waiting for Google Play Games to fully initialize before syncing achievements...");
+        yield return new WaitForSeconds(1.5f);
+
+        var achievementManager = DependencyRegistry.Find<TamalStacker.Achievements.AchievementManager>();
+        if (achievementManager == null)
+        {
+            Debug.LogWarning("[PlayFabManager] AchievementManager not found, cannot sync achievements");
+            yield break;
+        }
+
+        if (!achievementManager.IsInitialized)
+        {
+            Debug.LogWarning("[PlayFabManager] AchievementManager not initialized yet, will sync later");
+            yield break;
+        }
+
+        Debug.Log("[PlayFabManager] Now syncing achievements with Google Play Games...");
+        achievementManager.SyncWithGooglePlay();
     }
 
     #endregion

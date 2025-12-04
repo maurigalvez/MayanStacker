@@ -16,6 +16,7 @@ public class MainMenuManager : MonoBehaviour
     [SerializeField] private GameObject levelSelectionPanel;
     [SerializeField] private GameObject codexPanel;
     [SerializeField] private GameObject leaderboardPanel;
+    [SerializeField] private GameObject achievementPanel;
 
     [Header("Main Menu Buttons")]
     [SerializeField] private Button infiniteModeButton;
@@ -24,6 +25,7 @@ public class MainMenuManager : MonoBehaviour
     [SerializeField] private Button creditsButton;
     [SerializeField] private Button codexButton;
     [SerializeField] private Button leaderboardButton;
+    [SerializeField] private Button achievementButton;
 
     [Header("Settings Panel Buttons")]
     [SerializeField] private Button backFromSettingsButton;
@@ -36,6 +38,9 @@ public class MainMenuManager : MonoBehaviour
 
     [Header("Leaderboard Panel Buttons")]
     [SerializeField] private Button backFromLeaderboardButton;
+
+    [Header("Achievement Panel Buttons")]
+    [SerializeField] private Button backFromAchievementButton;
 
     [Header("Level Selection")]
     [SerializeField] private Button backFromLevelSelectionButton;
@@ -66,6 +71,7 @@ public class MainMenuManager : MonoBehaviour
     private CodexManager codexManager;
     private MainMenuSoundManager soundManager;
     private LeaderboardPanel leaderboardPanelComponent;
+    private TamalStacker.Achievements.AchievementPanelUI achievementPanelComponent;
     private PlayFabManager playFabManager;
 
     // Spawned UI elements
@@ -136,14 +142,21 @@ public class MainMenuManager : MonoBehaviour
             leaderboardPanelComponent = leaderboardPanel.GetComponent<LeaderboardPanel>();
         }
 
+        // Get achievement panel component (it's on this GameObject, not the panel GameObject)
+        achievementPanelComponent = GetComponent<TamalStacker.Achievements.AchievementPanelUI>();
+        if (achievementPanelComponent == null)
+        {
+            Debug.LogWarning("MainMenuManager: AchievementPanelUI component not found on MainMenuManager GameObject!");
+        }
+
         InitializeUI();
         SetupButtonListeners();
         ShowMainMenu();
-        
+
         // Perform app startup integrity check
         PerformStartupIntegrityCheck();
     }
-    
+
     /// <summary>
     /// Perform Standard Integrity check on app startup (one-time check per session)
     /// </summary>
@@ -156,20 +169,20 @@ public class MainMenuManager : MonoBehaviour
             if (!integrityManager.HasPerformedStartupCheck)
             {
                 Debug.Log("[MainMenuManager] Performing app startup integrity check...");
-                
+
                 // Optionally show sync panel during check
                 if (syncPanel != null && syncStatusText != null)
                 {
                     syncPanel.SetActive(true);
                     syncStatusText.text = "Verifying app integrity...";
                 }
-                
+
                 integrityManager.PerformStartupCheck((result) =>
                 {
                     if (result.Success)
                     {
                         Debug.Log("[MainMenuManager] App startup integrity check passed.");
-                        
+
                         // Hide sync panel after short delay
                         if (syncPanel != null)
                         {
@@ -179,7 +192,7 @@ public class MainMenuManager : MonoBehaviour
                     else
                     {
                         Debug.LogWarning($"[MainMenuManager] App startup integrity check failed: {result.ErrorMessage}");
-                        
+
                         // Hide sync panel on failure too (game continues)
                         if (syncPanel != null)
                         {
@@ -194,7 +207,7 @@ public class MainMenuManager : MonoBehaviour
             }
         }
     }
-    
+
     /// <summary>
     /// Coroutine to hide sync panel after a delay
     /// </summary>
@@ -252,6 +265,9 @@ public class MainMenuManager : MonoBehaviour
         if (leaderboardButton != null)
             leaderboardButton.onClick.AddListener(OnLeaderboardFromMainMenu);
 
+        if (achievementButton != null)
+            achievementButton.onClick.AddListener(OnAchievementFromMainMenu);
+
         // Settings
         if (backFromSettingsButton != null)
             backFromSettingsButton.onClick.AddListener(ShowMainMenu);
@@ -267,6 +283,10 @@ public class MainMenuManager : MonoBehaviour
         // Leaderboard
         if (backFromLeaderboardButton != null)
             backFromLeaderboardButton.onClick.AddListener(OnBackFromLeaderboard);
+
+        // Achievement
+        if (backFromAchievementButton != null)
+            backFromAchievementButton.onClick.AddListener(OnBackFromAchievement);
 
         // Level Selection
         if (backFromLevelSelectionButton != null)
@@ -838,6 +858,7 @@ public class MainMenuManager : MonoBehaviour
         if (creditsPanel != null && creditsPanel != panelToShow) creditsPanel.SetActive(false);
         if (levelSelectionPanel != null && levelSelectionPanel != panelToShow) levelSelectionPanel.SetActive(false);
         if (leaderboardPanel != null && leaderboardPanel != panelToShow) leaderboardPanel.SetActive(false);
+        if (achievementPanel != null && achievementPanel != panelToShow) achievementPanel.SetActive(false);
 
         // Hide codex if switching away from it (with animation)
         if (isSwitchingFromCodex && codexManager != null)
@@ -1077,6 +1098,61 @@ public class MainMenuManager : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Handle achievement button click from main menu
+    /// </summary>
+    private void OnAchievementFromMainMenu()
+    {
+        ShowAchievementPanel(mainMenuPanel);
+    }
+
+    /// <summary>
+    /// Show the achievement panel
+    /// </summary>
+    private void ShowAchievementPanel(GameObject returnToPanel = null)
+    {
+        soundManager?.PlayButtonClick();
+        soundManager?.PlayPanelOpen();
+
+        // Store the panel to return to (default to main menu if not specified)
+        previousPanel = returnToPanel != null ? returnToPanel : mainMenuPanel;
+
+        SetActivePanel(achievementPanel);
+
+        // Initialize/refresh achievement panel
+        if (achievementPanelComponent != null)
+        {
+            achievementPanelComponent.ShowPanel();
+        }
+    }
+
+    /// <summary>
+    /// Handle back button from achievement - returns to previous panel
+    /// </summary>
+    private void OnBackFromAchievement()
+    {
+        soundManager?.PlayBackButton();
+        soundManager?.PlayPanelClose();
+
+        // Return to the previous panel (main menu or level selection)
+        if (previousPanel != null)
+        {
+            if (previousPanel == levelSelectionPanel)
+            {
+                ShowLevelSelection();
+            }
+            else
+            {
+                ShowMainMenu();
+            }
+        }
+        else
+        {
+            // Fallback to main menu if previous panel is not set
+            ShowMainMenu();
+        }
+    }
+
     // Cloud Sync UI Methods
 
     /// <summary>
@@ -1198,6 +1274,9 @@ public class MainMenuManager : MonoBehaviour
         if (leaderboardButton != null)
             leaderboardButton.onClick.RemoveAllListeners();
 
+        if (achievementButton != null)
+            achievementButton.onClick.RemoveAllListeners();
+
         if (backFromSettingsButton != null)
             backFromSettingsButton.onClick.RemoveAllListeners();
 
@@ -1209,6 +1288,9 @@ public class MainMenuManager : MonoBehaviour
 
         if (backFromLeaderboardButton != null)
             backFromLeaderboardButton.onClick.RemoveAllListeners();
+
+        if (backFromAchievementButton != null)
+            backFromAchievementButton.onClick.RemoveAllListeners();
 
         if (backFromLevelSelectionButton != null)
             backFromLevelSelectionButton.onClick.RemoveAllListeners();

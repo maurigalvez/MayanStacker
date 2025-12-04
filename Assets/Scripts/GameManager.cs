@@ -422,6 +422,7 @@ public class GameManager : MonoBehaviour
         OnGameRestart?.Invoke();
         OnScoreChanged?.Invoke(currentScore);
         OnComboChanged?.Invoke(currentCombo, GetComboMultiplier());
+        OnHighScoreChanged?.Invoke(highScore); // Refresh high score UI with current value
 
         // Restart the game after a brief delay
         Invoke(nameof(StartGame), 0.5f);

@@ -19,6 +19,7 @@ public class StackOverviewUI : MonoBehaviour
     [SerializeField] private bool showOutline = true;
     [SerializeField] private bool debugMode = false; // Enable debug logging
     [SerializeField] private int minBlocksToShow = 5; // Minimum number of blocks before showing the overview
+    [SerializeField] private int maxBlocksToRender = 30; // Maximum number of blocks to render in UI (top blocks only)
 
     [Header("Size Settings")]
     [SerializeField] private float defaultSizePercent = 0.15f; // 15% of screen
@@ -283,8 +284,42 @@ public class StackOverviewUI : MonoBehaviour
             }
         }
 
-        // Create/update images for current stack objects
-        foreach (StackableObject obj in cachedStackObjects)
+        // Sort blocks by Y position (top to bottom) and only render top N blocks
+        List<StackableObject> sortedBlocks = new List<StackableObject>(cachedStackObjects);
+        sortedBlocks.Sort((a, b) => 
+        {
+            if (a == null || b == null) return 0;
+            return b.transform.position.y.CompareTo(a.transform.position.y); // Descending order (top first)
+        });
+
+        // Only process top N blocks for performance
+        int blocksToProcess = Mathf.Min(sortedBlocks.Count, maxBlocksToRender);
+        List<StackableObject> blocksToRender = sortedBlocks.GetRange(0, blocksToProcess);
+
+        // Remove images for blocks that are no longer in the top N
+        List<StackableObject> blocksToRemoveFromUI = new List<StackableObject>();
+        foreach (var kvp in blockImageMap)
+        {
+            if (!blocksToRender.Contains(kvp.Key))
+            {
+                blocksToRemoveFromUI.Add(kvp.Key);
+            }
+        }
+
+        foreach (StackableObject obj in blocksToRemoveFromUI)
+        {
+            if (blockImageMap.ContainsKey(obj))
+            {
+                if (blockImageMap[obj] != null)
+                {
+                    Destroy(blockImageMap[obj]);
+                }
+                blockImageMap.Remove(obj);
+            }
+        }
+
+        // Create/update images for top N blocks only
+        foreach (StackableObject obj in blocksToRender)
         {
             if (obj == null) continue;
 
