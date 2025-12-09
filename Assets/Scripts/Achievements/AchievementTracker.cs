@@ -451,9 +451,25 @@ namespace TamalStacker.Achievements
                 var achievement = achievementManager.GetAchievement(achievementId);
                 if (achievement != null)
                 {
-                    // Manually trigger the unlock event to show notification
                     Debug.Log($"[AchievementTracker] Showing notification for {achievement.title} at height {currentHeight}");
-                    achievementManager.OnAchievementUnlocked?.Invoke(achievement);
+
+                    // Check if already unlocked (first time ever vs. this session)
+                    bool isAlreadyUnlocked = achievementManager.IsUnlocked(achievementId);
+
+                    if (isAlreadyUnlocked)
+                    {
+                        // Achievement was unlocked before - just show notification without unlocking again
+                        // This shows the notification on every run after first unlock
+                        achievementManager.OnAchievementUnlocked?.Invoke(achievement);
+                    }
+                    else
+                    {
+                        // First time unlocking - use UnlockAchievement which will:
+                        // 1. Mark as unlocked in progress data
+                        // 2. Trigger OnAchievementUnlocked event (shows notification)
+                        // 3. Report to Google Play Games
+                        achievementManager.UnlockAchievement(achievementId);
+                    }
                 }
             }
         }

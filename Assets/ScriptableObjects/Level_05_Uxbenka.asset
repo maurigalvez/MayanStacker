@@ -15,13 +15,14 @@ MonoBehaviour:
   levelNumber: 5
   levelName: Uxbenka
   location: Toledo, Belice
-  levelDescription: "Hidden among mist-covered hills, Uxbenk\xE1 is one of Belize\u2019s
-    oldest known Maya centers, dating to around 250 BC.\nIts plazas and carved stones
-    speak of an early kingdom tied to trade routes between the Guatemalan highlands
-    and the coast.\n\nHere, leaders ruled from terraced hills, surrounded by farmers
-    and artisans.\nThough small compared to later cities, Uxbenk\xE1\u2019s stelae
-    bear the glyphs of power and ancestry, linking it to the greater Maya world.\n\nThe
-    forest keeps its ruins close \u2014 but the past still breathes beneath the leaves."
+  levelDescription: "The forest keeps its ruins close \u2014 but the past still breathes
+    beneath the leaves.\n\nHidden among mist-covered hills, Uxbenk\xE1 is one of
+    Belize\u2019s oldest known Maya centers, dating to around 250 BC.\nIts plazas
+    and carved stones speak of an early kingdom tied to trade routes between the
+    Guatemalan highlands and the coast.\n\nHere, leaders ruled from terraced hills,
+    surrounded by farmers and artisans.\nThough small compared to later cities, Uxbenk\xE1\u2019s
+    stelae bear the glyphs of power and ancestry, linking it to the greater Maya
+    world."
   siteImage: {fileID: 21300000, guid: 8bcb762a1606d484381e22eb7bd14d5b, type: 3}
   requiredStackHeight: 16
   oneStarScore: 900
@@ -29,3 +30,4 @@ MonoBehaviour:
   threeStarScore: 2200
   swingSpeedMultiplier: 1.2
   swingAmplitudeMultiplier: 1.2
+  gameMusic: {fileID: 8300000, guid: f2ce965d9c6cbe549a4d5f319321c81e, type: 3}

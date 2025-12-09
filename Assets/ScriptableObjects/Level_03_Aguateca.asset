@@ -29,3 +29,4 @@ MonoBehaviour:
   threeStarScore: 1500
   swingSpeedMultiplier: 1.1
   swingAmplitudeMultiplier: 1.1
+  gameMusic: {fileID: 8300000, guid: f2ce965d9c6cbe549a4d5f319321c81e, type: 3}

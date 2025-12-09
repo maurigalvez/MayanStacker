@@ -14,9 +14,13 @@ public class LevelPathRenderer : MonoBehaviour
     [SerializeField] private Sprite pathSprite; // Optional sprite for the path (if null, uses default white sprite)
 
     [Header("Next Level Path (Highlighted)")]
-    [Tooltip("The path leading to the next unlocked level will use this color and width")]
+    [Tooltip("The path from current selected level to next available level will use this color and width")]
     [SerializeField] private Color nextLevelPathColor = new Color(1f, 0.4f, 0.2f, 1f); // Orange/red highlight color
     [SerializeField] private float nextLevelPathWidth = 8f; // Wider than default to make it stand out
+    [Tooltip("Special texture for the highlighted path (will animate on X axis)")]
+    [SerializeField] private Sprite animatedPathSprite; // Special sprite for animated path
+    [Tooltip("UV width for the animated texture (affects tiling/repeat). Higher values show more texture repeats")]
+    [SerializeField] private float animatedTextureWidth = 2.5f; // Width of the UV rect for animated texture
 
     [Header("Next Level Path Animation")]
     [Tooltip("Enable pulsing animation for the next level path")]
@@ -26,6 +30,8 @@ public class LevelPathRenderer : MonoBehaviour
     [SerializeField] private float pulseMaxScale = 1.1f; // Maximum scale during pulse (1.1 = 110% of original)
     [SerializeField] private float pulseMinAlpha = 0.7f; // Minimum alpha during pulse
     [SerializeField] private float pulseMaxAlpha = 1f; // Maximum alpha during pulse
+    [Tooltip("Speed of texture scrolling animation on X axis")]
+    [SerializeField] private float textureScrollSpeed = 1f; // Speed of texture scrolling
 
     [Header("Path Connection")]
     [SerializeField] private Vector2 startOffset = Vector2.zero; // Offset from level button center for path start
@@ -60,6 +66,7 @@ public class LevelPathRenderer : MonoBehaviour
     // Next level path animation
     private GameObject nextLevelPathObject = null;
     private Image nextLevelPathImage = null;
+    private RawImage nextLevelPathRawImage = null; // RawImage for animated texture (if using animated sprite)
     private RectTransform nextLevelPathRect = null;
     private float nextLevelPathBaseWidth = 0f;
     private Color nextLevelPathBaseColor;
@@ -325,39 +332,75 @@ public class LevelPathRenderer : MonoBehaviour
             yield break;
         }
 
-        // Find the next playable level (first unlocked level with 0 stars)
-        int nextPlayableLevelIndex = GetNextPlayableLevelIndex();
+        // Find the last completed level (highest level with stars > 0)
+        int lastCompletedIndex = GetLastCompletedLevelIndex();
 
-        // Create paths between consecutive unlocked levels
-        for (int i = 0; i < totalLevels - 1; i++)
+        // Find the next available level (next unlocked level after last completed)
+        int nextAvailableIndex = GetNextAvailableLevelIndex(lastCompletedIndex);
+
+        // Only create path to the next level (from last completed to next available)
+        if (lastCompletedIndex >= 0 && nextAvailableIndex >= 0 && nextAvailableIndex > lastCompletedIndex)
         {
-            int currentLevelNumber = i + 1;
-            int nextLevelNumber = i + 2;
+            // Verify both levels are unlocked
+            int lastCompletedLevelNumber = lastCompletedIndex + 1;
+            int nextAvailableLevelNumber = nextAvailableIndex + 1;
 
-            // Check if both levels are unlocked
-            bool currentUnlocked = levelManager.IsLevelUnlocked(currentLevelNumber);
-            bool nextUnlocked = levelManager.IsLevelUnlocked(nextLevelNumber);
+            bool lastCompletedUnlocked = levelManager.IsLevelUnlocked(lastCompletedLevelNumber);
+            bool nextAvailableUnlocked = levelManager.IsLevelUnlocked(nextAvailableLevelNumber);
 
-            // Only draw path if both levels are unlocked
-            if (currentUnlocked && nextUnlocked)
+            if (lastCompletedUnlocked && nextAvailableUnlocked)
             {
-                // Check if this path leads to the next playable level
-                bool isNextLevelPath = (nextPlayableLevelIndex >= 0 && (i + 1) == nextPlayableLevelIndex);
+                // Create the path from last completed to next available level
+                // This is always the highlighted path since it's the only one shown
+                GameObject pathObj = CreatePathBetweenLevels(
+                    lastCompletedIndex,
+                    nextAvailableIndex,
+                    nextLevelPathColor,
+                    nextLevelPathWidth,
+                    true // Always highlighted since it's the only path
+                );
 
-                // Use unique color/width for next level path, default for others
-                Color segmentColor = isNextLevelPath ? nextLevelPathColor : pathColor;
-                float segmentWidth = isNextLevelPath ? nextLevelPathWidth : pathWidth;
-
-                GameObject pathObj = CreatePathBetweenLevels(i, i + 1, segmentColor, segmentWidth);
-
-                // Store reference to next level path for animation
-                if (isNextLevelPath && pathObj != null)
+                // Store reference to the path for animation
+                if (pathObj != null)
                 {
                     nextLevelPathObject = pathObj;
                     nextLevelPathImage = pathObj.GetComponent<Image>();
+                    nextLevelPathRawImage = pathObj.GetComponent<RawImage>();
                     nextLevelPathRect = pathObj.GetComponent<RectTransform>();
-                    nextLevelPathBaseWidth = segmentWidth;
-                    nextLevelPathBaseColor = segmentColor;
+                    nextLevelPathBaseWidth = nextLevelPathWidth;
+                    nextLevelPathBaseColor = nextLevelPathColor;
+                }
+            }
+        }
+        else if (lastCompletedIndex < 0 && nextAvailableIndex >= 0)
+        {
+            // No levels completed yet - show path from level 0 (or first level) to first available
+            // Find the first level (index 0) and create path to next available
+            int firstLevelNumber = 1;
+            int nextAvailableLevelNumber = nextAvailableIndex + 1;
+
+            bool firstLevelUnlocked = levelManager.IsLevelUnlocked(firstLevelNumber);
+            bool nextAvailableUnlocked = levelManager.IsLevelUnlocked(nextAvailableLevelNumber);
+
+            if (firstLevelUnlocked && nextAvailableUnlocked && nextAvailableIndex > 0)
+            {
+                // Create path from first level to next available
+                GameObject pathObj = CreatePathBetweenLevels(
+                    0,
+                    nextAvailableIndex,
+                    nextLevelPathColor,
+                    nextLevelPathWidth,
+                    true
+                );
+
+                if (pathObj != null)
+                {
+                    nextLevelPathObject = pathObj;
+                    nextLevelPathImage = pathObj.GetComponent<Image>();
+                    nextLevelPathRawImage = pathObj.GetComponent<RawImage>();
+                    nextLevelPathRect = pathObj.GetComponent<RectTransform>();
+                    nextLevelPathBaseWidth = nextLevelPathWidth;
+                    nextLevelPathBaseColor = nextLevelPathColor;
                 }
             }
         }
@@ -367,29 +410,66 @@ public class LevelPathRenderer : MonoBehaviour
     }
 
     /// <summary>
-    /// Find the next playable level (first unlocked level with 0 stars)
+    /// Find the last completed level (highest level with stars > 0)
     /// </summary>
-    /// <returns>Zero-based index of the next playable level, or -1 if none found</returns>
-    private int GetNextPlayableLevelIndex()
+    /// <returns>Zero-based index of the last completed level, or -1 if none found</returns>
+    private int GetLastCompletedLevelIndex()
+    {
+        if (levelManager == null) return -1;
+
+        int totalLevels = levelManager.TotalLevels;
+        int lastCompleted = -1;
+
+        // Find the highest level with stars > 0
+        for (int i = 0; i < totalLevels; i++)
+        {
+            int levelNumber = i + 1; // Convert to 1-based
+            int stars = levelManager.GetLevelStars(levelNumber);
+            if (stars > 0)
+            {
+                lastCompleted = i;
+            }
+        }
+
+        return lastCompleted;
+    }
+
+    /// <summary>
+    /// Find the next available level (next unlocked level after the specified level)
+    /// </summary>
+    /// <param name="fromIndex">The level index to start from (0-based), or -1 to find first unlocked</param>
+    /// <returns>Zero-based index of the next available level, or -1 if none found</returns>
+    private int GetNextAvailableLevelIndex(int fromIndex)
     {
         if (levelManager == null) return -1;
 
         int totalLevels = levelManager.TotalLevels;
 
-        // Find the first unlocked level that hasn't been completed (0 stars)
-        for (int i = 0; i < totalLevels; i++)
+        // If no starting level, find the first unlocked level
+        if (fromIndex < 0)
+        {
+            for (int i = 0; i < totalLevels; i++)
+            {
+                int levelNumber = i + 1; // Convert to 1-based
+                if (levelManager.IsLevelUnlocked(levelNumber))
+                {
+                    return i;
+                }
+            }
+            return -1;
+        }
+
+        // Find the next unlocked level after the starting one
+        for (int i = fromIndex + 1; i < totalLevels; i++)
         {
             int levelNumber = i + 1; // Convert to 1-based
-            bool isUnlocked = levelManager.IsLevelUnlocked(levelNumber);
-            int stars = levelManager.GetLevelStars(levelNumber);
-
-            if (isUnlocked && stars == 0)
+            if (levelManager.IsLevelUnlocked(levelNumber))
             {
-                return i; // Return the index (0-based)
+                return i;
             }
         }
 
-        // If all levels are completed, return -1
+        // If no level found after starting level, return -1
         return -1;
     }
 
@@ -400,8 +480,9 @@ public class LevelPathRenderer : MonoBehaviour
     /// <param name="toLevelIndex">Zero-based index of the ending level</param>
     /// <param name="segmentColor">Color for this path segment</param>
     /// <param name="segmentWidth">Width for this path segment</param>
+    /// <param name="isHighlighted">Whether this is the highlighted path that should use animated texture</param>
     /// <returns>The created path GameObject</returns>
-    private GameObject CreatePathBetweenLevels(int fromLevelIndex, int toLevelIndex, Color segmentColor, float segmentWidth)
+    private GameObject CreatePathBetweenLevels(int fromLevelIndex, int toLevelIndex, Color segmentColor, float segmentWidth, bool isHighlighted = false)
     {
         // Get level button references
         LevelButtonUI fromButton = mainMenuManager.GetLevelButton(fromLevelIndex);
@@ -478,20 +559,44 @@ public class LevelPathRenderer : MonoBehaviour
         pathRect.sizeDelta = new Vector2(distance, segmentWidth);
         pathRect.localRotation = Quaternion.Euler(0, 0, angle);
 
-        // Add Image component for rendering
-        Image pathImage = pathObj.AddComponent<Image>();
-        pathImage.color = segmentColor;
-        pathImage.raycastTarget = false; // Don't block UI interactions
-
-        // Set sprite if provided, otherwise use default
-        if (pathSprite != null)
+        // For highlighted paths with animated sprite, use RawImage with material for texture scrolling
+        // For other paths, use Image
+        if (isHighlighted && animatedPathSprite != null && animatedPathSprite.texture != null)
         {
-            pathImage.sprite = pathSprite;
+            // Use RawImage for animated texture scrolling on highlighted path
+            RawImage pathRawImage = pathObj.AddComponent<RawImage>();
+            pathRawImage.texture = animatedPathSprite.texture;
+            pathRawImage.color = segmentColor; // Use highlighted color
+            pathRawImage.raycastTarget = false; // Don't block UI interactions
+
+            // For RawImage scrolling, set initial UV rect with configurable width
+            // The texture should be set to "Repeat" in its import settings for seamless scrolling
+            pathRawImage.uvRect = new Rect(0f, 0f, animatedTextureWidth, 1f);
         }
         else
         {
-            // Use a simple white sprite (Unity's default)
-            pathImage.sprite = Resources.GetBuiltinResource<Sprite>("UI/Skin/UISprite.psd");
+            // Use regular Image component
+            Image pathImage = pathObj.AddComponent<Image>();
+            pathImage.color = segmentColor;
+            pathImage.raycastTarget = false; // Don't block UI interactions
+
+            // For highlighted paths without animated sprite, use pathSprite if available
+            // For regular paths, use pathSprite or default
+            if (isHighlighted && pathSprite != null)
+            {
+                // Highlighted path uses pathSprite with highlighted color
+                pathImage.sprite = pathSprite;
+            }
+            else if (!isHighlighted && pathSprite != null)
+            {
+                // Regular path uses pathSprite with regular color
+                pathImage.sprite = pathSprite;
+            }
+            else
+            {
+                // Use a simple white sprite (Unity's default)
+                pathImage.sprite = Resources.GetBuiltinResource<Sprite>("UI/Skin/UISprite.psd");
+            }
         }
 
         // Set sorting order to be behind level buttons
@@ -509,7 +614,7 @@ public class LevelPathRenderer : MonoBehaviour
     private void Update()
     {
         // Animate the next level path if enabled
-        if (enablePathAnimation && nextLevelPathObject != null && nextLevelPathImage != null && nextLevelPathRect != null)
+        if (enablePathAnimation && nextLevelPathObject != null && nextLevelPathRect != null)
         {
             animationTimer += Time.deltaTime * animationSpeed;
 
@@ -521,11 +626,33 @@ public class LevelPathRenderer : MonoBehaviour
             Vector2 currentSize = nextLevelPathRect.sizeDelta;
             nextLevelPathRect.sizeDelta = new Vector2(currentSize.x, currentWidth);
 
-            // Pulse the alpha
+            // Pulse the alpha and update color
             float currentAlpha = Mathf.Lerp(pulseMinAlpha, pulseMaxAlpha, normalizedPulse);
             Color currentColor = nextLevelPathBaseColor;
             currentColor.a = currentAlpha;
-            nextLevelPathImage.color = currentColor;
+
+            // Update color for either Image or RawImage
+            if (nextLevelPathImage != null)
+            {
+                nextLevelPathImage.color = currentColor;
+            }
+            if (nextLevelPathRawImage != null)
+            {
+                nextLevelPathRawImage.color = currentColor;
+            }
+
+            // Animate texture scrolling on X axis if using RawImage with animated sprite
+            // Note: Texture Wrap Mode must be set to "Repeat" in import settings for seamless scrolling
+            if (nextLevelPathRawImage != null && animatedPathSprite != null)
+            {
+                // Scroll texture on X axis by updating UV rect position
+                // This approach preserves the size and only modifies the position
+                Vector2 scrollDelta = new Vector2(textureScrollSpeed * Time.deltaTime, 0f);
+                nextLevelPathRawImage.uvRect = new Rect(
+                    nextLevelPathRawImage.uvRect.position + scrollDelta,
+                    nextLevelPathRawImage.uvRect.size
+                );
+            }
         }
     }
 
@@ -554,6 +681,7 @@ public class LevelPathRenderer : MonoBehaviour
         // Clear animation references
         nextLevelPathObject = null;
         nextLevelPathImage = null;
+        nextLevelPathRawImage = null;
         nextLevelPathRect = null;
         animationTimer = 0f;
     }
@@ -573,6 +701,7 @@ public class LevelPathRenderer : MonoBehaviour
         // Clear animation references
         nextLevelPathObject = null;
         nextLevelPathImage = null;
+        nextLevelPathRawImage = null;
         nextLevelPathRect = null;
         animationTimer = 0f;
 

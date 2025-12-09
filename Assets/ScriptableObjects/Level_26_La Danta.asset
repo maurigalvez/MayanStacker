@@ -1,0 +1,38 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6, type: 3}
+  m_Name: Level_26_La Danta
+  m_EditorClassIdentifier: 
+  levelNumber: 26
+  levelName: La Danta
+  location: "Pet\xE9n, Guatemala"
+  levelDescription: "In the heart of El Mirador, La Danta towers as the giant of
+    the Maya world.\n\nLa Danta, located in the El Mirador basin of northern Pet\xE9n,
+    Guatemala, is one of the largest pyramids in the world by volume. Built during
+    the Preclassic Period (c. 300 BC\u2013100 AD), it rises about 72 meters (236
+    feet) above the jungle and covers a massive platform, making it a monumental
+    achievement of Maya engineering.\r\n\r\nThe pyramid\u2019s name, La Danta (\u201CThe
+    Tapir\u201D), reflects its immense size and strength. Archaeologists estimate
+    that constructing La Danta required moving millions of stone blocks and organizing
+    vast labor forces, showing the power and sophistication of El Mirador\u2019s
+    rulers.\r\n\r\nLa Danta was part of a ceremonial complex that included plazas,
+    causeways, and smaller temples, linking El Mirador to other Preclassic Maya centers.
+    Its scale suggests the city was a major political and religious hub long before
+    the Classic Period."
+  siteImage: {fileID: 21300000, guid: 34f4bcda39dadb140a2901ba3158f14f, type: 3}
+  requiredStackHeight: 48
+  oneStarScore: 4100
+  twoStarScore: 4800
+  threeStarScore: 7000
+  swingSpeedMultiplier: 1.5
+  swingAmplitudeMultiplier: 1.3
+  gameMusic: {fileID: 8300000, guid: 20f2e874c2c59eb45a147d95739dbf17, type: 3}

@@ -15,11 +15,20 @@ MonoBehaviour:
   levelNumber: 12
   levelName: "Yaxh\xE1"
   location: "Pet\xE9n, Guatemala"
-  levelDescription: Stack 45 blocks with even faster swinging!
-  siteImage: {fileID: 0}
+  levelDescription: "By blue-green waters, pyramids and ballcourts echoed with the
+    voices of a thriving Maya city.\n\nYaxha, meaning \u201CBlue-Green Water\u201D
+    in Maya, was one of the largest cities in the Pet\xE9n region of Guatemala. Rising
+    on a ridge beside Lake Yaxha, it thrived during the Preclassic and Classic periods
+    (c. 600 BC\u2013900 AD).\r\n\r\nThe site holds over 500 structures, including
+    nine pyramids, two ballcourts, and many altars and stelae. Its plazas were connected
+    by sacbeob (raised stone roads), showing how the Maya linked sacred spaces. At
+    its height, Yaxha was the third-largest city in the region, rivaling nearby Tikal
+    and Nakum"
+  siteImage: {fileID: 21300000, guid: fb2e24eedf7c270459be7ddf73e0001d, type: 3}
   requiredStackHeight: 32
   oneStarScore: 2700
   twoStarScore: 3600
   threeStarScore: 4200
   swingSpeedMultiplier: 1.5
   swingAmplitudeMultiplier: 1.3
+  gameMusic: {fileID: 8300000, guid: 2f71c528f7b56a64fa17bf1c9caf9823, type: 3}

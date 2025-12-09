@@ -14,12 +14,24 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   levelNumber: 17
   levelName: Copan
-  location: "Yucat\xE1n, Mexico"
-  levelDescription: Stack 45 blocks with even faster swinging!
-  siteImage: {fileID: 0}
+  location: Copan, Honduras
+  levelDescription: "Where kings carved history in stone, Cop\xE1n shines as the
+    Maya\u2019s city of glyphs.\n\nLocated in western Honduras near the Guatemalan
+    border, was one of the most important Maya capitals during the Classic Period
+    (c. 400\u2013900 AD). Known for its artistry and scholarship, Cop\xE1n became
+    a center of astronomy, hieroglyphic writing, and sculpture.\r\n\r\nThe city is
+    famous for its Hieroglyphic Stairway, the longest known Maya inscription, carved
+    with over 2,000 glyphs that record dynastic history. Cop\xE1n also features richly
+    decorated temples, ballcourts, and stelae portraying its rulers, especially King
+    Uaxaclajuun Ub\u2019aah K\u2019awiil (18 Rabbit), who oversaw its golden age.\r\n\r\nDespite
+    later decline, Cop\xE1n\u2019s legacy endures as a UNESCO World Heritage Site,
+    admired for its detailed carvings and monumental architecture that reveal the
+    intellectual and spiritual life of the Maya."
+  siteImage: {fileID: 21300000, guid: 1f980ed15778a3d4492c2818ec0f813a, type: 3}
   requiredStackHeight: 40
   oneStarScore: 3200
   twoStarScore: 4000
   threeStarScore: 4500
   swingSpeedMultiplier: 1.5
   swingAmplitudeMultiplier: 1.3
+  gameMusic: {fileID: 8300000, guid: 81c7c67fd9b57b24687ca3d54d8c683a, type: 3}

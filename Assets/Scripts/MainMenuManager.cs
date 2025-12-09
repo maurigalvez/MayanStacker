@@ -105,6 +105,15 @@ public class MainMenuManager : MonoBehaviour
         return spawnedLevelButtons.Count;
     }
 
+    /// <summary>
+    /// Get the currently selected level index (0-based)
+    /// </summary>
+    /// <returns>The currently selected level index, or -1 if none selected</returns>
+    public int GetCurrentSelectedLevelIndex()
+    {
+        return currentSelectedLevelIndex;
+    }
+
     private void Awake()
     {
         // Register with dependency registry

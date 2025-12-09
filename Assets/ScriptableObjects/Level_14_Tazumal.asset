@@ -15,11 +15,26 @@ MonoBehaviour:
   levelNumber: 14
   levelName: Tazumal
   location: Chalchuapa, El Salvador
-  levelDescription: Stack 45 blocks with even faster swinging!
-  siteImage: {fileID: 0}
+  levelDescription: "Where towering pyramids rose above Chalchuapa, Tazumal kept
+    the fire of Maya ceremony alive.\n\nTazumal, located in Chalchuapa, western El
+    Salvador, is one of the most important Maya sites in the country. Its name means
+    \u201CThe place where souls are burned\u201D in K\u2019iche\u2019 Maya. The city
+    flourished between 100 AD and 1200 AD, serving as a ceremonial and trade center
+    connected to wider Mesoamerican networks.\r\n\r\nThe site\u2019s centerpiece
+    is a stepped pyramid rising over 24 meters, the largest in El Salvador. Excavations
+    revealed burials, offerings, and evidence of rituals, including incense burners
+    and jade ornaments. Tazumal also shows influence from distant cultures\u2014its
+    ballcourt and architectural style reflect ties with central Mexico.\r\n\r\nLater,
+    during the Postclassic period, Tazumal remained active until the Spanish conquest,
+    after which the structures were partly dismantled and reused. Today, the ruins
+    stand as a reminder of El Salvador\u2019s deep Maya heritage, preserved within
+    the Chalchuapa Archaeological Zone alongside other nearby sites like Casa Blanca
+    and El Trapiche"
+  siteImage: {fileID: 21300000, guid: 8ee1d3ccfcb2f7a4184cc3cc8421a9ce, type: 3}
   requiredStackHeight: 35
   oneStarScore: 2900
   twoStarScore: 3750
   threeStarScore: 4500
   swingSpeedMultiplier: 1.5
   swingAmplitudeMultiplier: 1.3
+  gameMusic: {fileID: 8300000, guid: 2f71c528f7b56a64fa17bf1c9caf9823, type: 3}

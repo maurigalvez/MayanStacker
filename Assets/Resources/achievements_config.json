@@ -2,7 +2,7 @@
   "achievements": [
     {
       "id": "first_steps",
-      "googlePlayId": "Cgkli7zMkqgUEAIQAg",
+      "googlePlayId": "CgkIi7zMkqgUEAIQAg",
       "title": "First Steps of the Explorer",
       "description": "Complete your first site",
       "iconPath": "Achievements/first_steps",
@@ -16,7 +16,7 @@
     },
     {
       "id": "path_of_jaguar",
-      "googlePlayId": "Cgkli7zMkqgUEAIQAW",
+      "googlePlayId": "CgkIi7zMkqgUEAIQAw",
       "title": "Path of the Jaguar",
       "description": "Complete 5 sites",
       "iconPath": "Achievements/path_of_jaguar",
@@ -30,7 +30,7 @@
     },
     {
       "id": "maya_wanderer",
-      "googlePlayId": "Cgkli7zMkqgUEAIQBA",
+      "googlePlayId": "CgkIi7zMkqgUEAIQBA",
       "title": "Maya Wanderer",
       "description": "Complete 10 sites",
       "iconPath": "Achievements/maya_wanderer",
@@ -44,7 +44,7 @@
     },
     {
       "id": "temple_traveler",
-      "googlePlayId": "Cgkli7zMkqgUEAIQBQ",
+      "googlePlayId": "CgkIi7zMkqgUEAIQBQ",
       "title": "Temple Traveler",
       "description": "Complete 15 sites",
       "iconPath": "Achievements/temple_traveler",
@@ -72,7 +72,7 @@
     },
     {
       "id": "world_of_maya",
-      "googlePlayId": "Cgkli7zMkqgUEAIQBW",
+      "googlePlayId": "CgkIi7zMkqgUEAIQBw",
       "title": "World of the Maya",
       "description": "Complete all 27 sites",
       "iconPath": "Achievements/world_of_maya",
@@ -86,7 +86,7 @@
     },
     {
       "id": "survivor",
-      "googlePlayId": "Cgkli7zMkqgUEAIQCA",
+      "googlePlayId": "CgkIi7zMkqgUEAIQCA",
       "title": "Survivor",
       "description": "Reach 25 blocks in Infinite Stacker",
       "iconPath": "Achievements/survivor",
@@ -100,7 +100,7 @@
     },
     {
       "id": "peak_ascender",
-      "googlePlayId": "Cgkli7zMkqgUEAIQCQ",
+      "googlePlayId": "CgkIi7zMkqgUEAIQCQ",
       "title": "Peak Ascender",
       "description": "Reach 50 blocks in Infinite Stacker",
       "iconPath": "Achievements/peak_ascender",
@@ -114,7 +114,7 @@
     },
     {
       "id": "sky_piercer",
-      "googlePlayId": "Cgkli7zMkqgUEAIQCg",
+      "googlePlayId": "CgkIi7zMkqgUEAIQCg",
       "title": "Sky Piercer",
       "description": "Reach 100 blocks in Infinite Stacker",
       "iconPath": "Achievements/sky_piercer",
@@ -128,7 +128,7 @@
     },
     {
       "id": "page_keeper",
-      "googlePlayId": "Cgkli7zMkqgUEAIQCw",
+      "googlePlayId": "CgkIi7zMkqgUEAIQCw",
       "title": "Page Keeper",
       "description": "Unlock 3 codex entries",
       "iconPath": "Achievements/page_keeper",
@@ -142,7 +142,7 @@
     },
     {
       "id": "lore_seeker",
-      "googlePlayId": "Cgkli7zMkqgUEAIQDA",
+      "googlePlayId": "CgkIi7zMkqgUEAIQDA",
       "title": "Lore Seeker",
       "description": "Unlock 10 codex entries",
       "iconPath": "Achievements/lore_seeker",
@@ -156,7 +156,7 @@
     },
     {
       "id": "codex_scholar",
-      "googlePlayId": "Cgkli7zMkqgUEAIQDQ",
+      "googlePlayId": "CgkIi7zMkqgUEAIQDQ",
       "title": "Codex Scholar",
       "description": "Unlock 20 codex entries",
       "iconPath": "Achievements/codex_scholar",
@@ -170,7 +170,7 @@
     },
     {
       "id": "perfect_dropper",
-      "googlePlayId": "Cgkli7zMkqgUEAIQDg",
+      "googlePlayId": "CgkIi7zMkqgUEAIQDg",
       "title": "Perfect Dropper",
       "description": "Make 10 perfect placements in a row in Infinite Stacker",
       "iconPath": "Achievements/perfect_dropper",
@@ -184,7 +184,7 @@
     },
     {
       "id": "stone_stack_specialist",
-      "googlePlayId": "Cgkli7zMkqgUEAIQDW",
+      "googlePlayId": "CgkIi7zMkqgUEAIQDw",
       "title": "Stone-Stack Specialist",
       "description": "Make 25 perfects in a row in Infinite Stacker",
       "iconPath": "Achievements/stone_stack_specialist",
@@ -198,7 +198,7 @@
     },
     {
       "id": "temple_guardian",
-      "googlePlayId": "Cgkli7zMkqgUEAIQEA",
+      "googlePlayId": "CgkIi7zMkqgUEAIQEA",
       "title": "Temple Guardian",
       "description": "Get in one of the first 5 placements in a level leaderboard",
       "iconPath": "Achievements/temple_guardian",
@@ -213,7 +213,7 @@
     },
     {
       "id": "perfectionist_architect",
-      "googlePlayId": "Cgkli7zMkqgUEAIQEQ",
+      "googlePlayId": "CgkIi7zMkqgUEAIQEQ",
       "title": "Perfectionist Architect",
       "description": "Beat a site with only perfect drops",
       "iconPath": "Achievements/perfectionist_architect",
@@ -228,7 +228,7 @@
     },
     {
       "id": "zero_room_for_error",
-      "googlePlayId": "Cgkli7zMkqgUEAIQEg",
+      "googlePlayId": "CgkIi7zMkqgUEAIQEg",
       "title": "Zero Room for Error",
       "description": "Beat a level 10+ with only perfect drops",
       "iconPath": "Achievements/zero_room_for_error",
@@ -243,7 +243,7 @@
     },
     {
       "id": "feathered_serpent_blessing",
-      "googlePlayId": "Cgkli7zMkqgUEAIQEW",
+      "googlePlayId": "CgkIi7zMkqgUEAIQEw",
       "title": "Feathered Serpent's Blessing",
       "description": "Finish 5 levels with perfect drops",
       "iconPath": "Achievements/feathered_serpent_blessing",
@@ -258,7 +258,7 @@
     },
     {
       "id": "sunrise_builder",
-      "googlePlayId": "Cgkli7zMkqgUEAIQFA",
+      "googlePlayId": "CgkIi7zMkqgUEAIQFA",
       "title": "Sunrise Builder",
       "description": "Play the game early in the morning",
       "iconPath": "Achievements/sunrise_builder",
@@ -273,7 +273,7 @@
     },
     {
       "id": "midnight_builder",
-      "googlePlayId": "Cgkli7zMkqgUEAIQFQ",
+      "googlePlayId": "CgkIi7zMkqgUEAIQFQ",
       "title": "Midnight Builder",
       "description": "Play the game late in the evening",
       "iconPath": "Achievements/midnight_builder",
@@ -288,4 +288,3 @@
     }
   ]
 }
-

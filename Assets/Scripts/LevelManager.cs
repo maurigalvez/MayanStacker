@@ -1,5 +1,8 @@
 using System.Collections.Generic;
 using UnityEngine;
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 
 /// <summary>
 /// Manages level progression, level data, and player progress in Stacker Levels mode
@@ -9,6 +12,12 @@ public class LevelManager : MonoBehaviour, ILevelManager
     [Header("Demo Settings")]
     [SerializeField] private bool isDemoVersion = false;
     [SerializeField] private int demoMaxLevel = 5;
+
+#if UNITY_EDITOR
+    [Header("Editor Only - Testing")]
+    [SerializeField] private bool unlockAllLevelsInEditor = false;
+    [Tooltip("When enabled in editor, all levels will be unlocked (given 1 star) on Start")]
+#endif
 
     [Header("Level Configuration")]
     [SerializeField] private List<LevelData> levels = new List<LevelData>();
@@ -70,6 +79,14 @@ public class LevelManager : MonoBehaviour, ILevelManager
         {
             playFabManager.OnProgressSynced += OnProgressSyncedFromCloud;
         }
+
+#if UNITY_EDITOR
+        // Editor-only: Unlock all levels if enabled
+        if (unlockAllLevelsInEditor)
+        {
+            UnlockAllLevels();
+        }
+#endif
     }
 
     /// <summary>
@@ -498,5 +515,41 @@ public class LevelManager : MonoBehaviour, ILevelManager
             playFabManager.OnProgressSynced -= OnProgressSyncedFromCloud;
         }
     }
+
+#if UNITY_EDITOR
+    /// <summary>
+    /// Editor-only: Unlock all levels by giving them at least 1 star (for testing)
+    /// </summary>
+    [ContextMenu("Unlock All Levels (Editor Only)")]
+    public void UnlockAllLevels()
+    {
+        if (!Application.isEditor)
+        {
+            Debug.LogWarning("UnlockAllLevels can only be called in the Unity Editor!");
+            return;
+        }
+
+        int unlockedCount = 0;
+
+        foreach (var level in levels)
+        {
+            if (level == null) continue;
+
+            int levelNumber = level.levelNumber;
+
+            // Give level at least 1 star if it doesn't have any
+            int currentStars = GetLevelStars(levelNumber);
+            if (currentStars == 0)
+            {
+                levelStars[levelNumber] = 1;
+                PlayerPrefs.SetInt($"Level_{levelNumber}_Stars", 1);
+                unlockedCount++;
+            }
+        }
+
+        PlayerPrefs.Save();
+        Debug.Log($"LevelManager (Editor): Unlocked {unlockedCount} levels! All levels are now playable.");
+    }
+#endif
 }
 

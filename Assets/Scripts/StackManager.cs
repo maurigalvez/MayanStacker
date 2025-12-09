@@ -16,6 +16,8 @@ public class StackManager : MonoBehaviour
     [Header("Stack Straightening")]
     [Tooltip("Duration of the straightening animation in seconds")]
     [SerializeField] private float straighteningDuration = 0.5f;
+    [Tooltip("Particle effect to play when Kukulkan shift is triggered")]
+    [SerializeField] private ParticleSystem kukulkanShiftParticles;
     [Tooltip("Whether to freeze rotation after straightening")]
     [SerializeField] private bool freezeRotationAfterStraightening = false;
     [Tooltip("Mass multiplier to make blocks heavier after straightening")]
@@ -654,6 +656,12 @@ public class StackManager : MonoBehaviour
         }
 
         Debug.Log($"Straightening stack with {stackObjects.Count} objects");
+
+        // Play particle effect for Kukulkan shift
+        if (kukulkanShiftParticles != null)
+        {
+            kukulkanShiftParticles.Play();
+        }
 
         // Notify that stack straightening is starting (for UI display)
         OnStackStraightened?.Invoke();

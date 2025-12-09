@@ -15,11 +15,28 @@ MonoBehaviour:
   levelNumber: 13
   levelName: "San Andr\xE9s"
   location: La Libertad, El Salvador
-  levelDescription: Stack 45 blocks with even faster swinging!
-  siteImage: {fileID: 0}
+  levelDescription: "From volcanic ash rose a valley capital, where pyramids guarded
+    trade, ceremony, and time itself.\n\nThe Valley Capital of the Maya, located
+    in the Zapotit\xE1n Valley of central El Salvador, was first settled around 900
+    BC. After being abandoned due to the massive Ilopango volcanic eruption (c. 250
+    AD), it was reoccupied in the 5th century and rose to prominence during the Late
+    Classic period (600\u2013900 AD).\r\n\r\nAt its height, San Andr\xE9s served
+    as a regional capital, controlling nearby settlements and acting as a hub for
+    political and ceremonial life. The site includes an acropolis with pyramids,
+    plazas, and more than 60 identified mounds. Farmers in the surrounding valley
+    grew staples like corn, beans, and squash, supporting the city\u2019s population.\r\n\r\nArchaeologists
+    have also uncovered evidence of trade links with Cop\xE1n in Honduras and the
+    Guatemalan highlands, showing San Andr\xE9s was part of a wider Maya network.
+    Later, during colonial times, the area became an indigo plantation, and remnants
+    of this history can still be seen alongside the ancient ruins.\r\n\r\nToday,
+    San Andr\xE9s is preserved as an archaeological park, where visitors can explore
+    its pyramids, plazas, and museum exhibits that connect the Maya past with El
+    Salvador\u2019s broader heritage"
+  siteImage: {fileID: 21300000, guid: 4dfadb4d94e2fde4e927910b54a830d5, type: 3}
   requiredStackHeight: 34
   oneStarScore: 2800
   twoStarScore: 3700
   threeStarScore: 4400
   swingSpeedMultiplier: 1.5
   swingAmplitudeMultiplier: 1.3
+  gameMusic: {fileID: 8300000, guid: 2f71c528f7b56a64fa17bf1c9caf9823, type: 3}

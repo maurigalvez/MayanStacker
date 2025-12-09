@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 
 /// <summary>
 /// Manages the Codex panel, which displays information about unlocked levels
@@ -32,6 +35,12 @@ public class CodexManager : MonoBehaviour
     [Header("Animation Settings")]
     [SerializeField] private float scrollUpAnimationDuration = 0.8f;
     [SerializeField] private AnimationCurve scrollAnimationCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
+
+#if UNITY_EDITOR
+    [Header("Editor Only - Testing")]
+    [SerializeField] private bool unlockAllCodexEntriesInEditor = false;
+    [Tooltip("When enabled in editor, all codex entries will be unlocked on Start")]
+#endif
 
     // References (found via DependencyRegistry)
     private LevelManager levelManager;
@@ -104,6 +113,14 @@ public class CodexManager : MonoBehaviour
         {
             closeDetailPanelButton.onClick.AddListener(CloseDetailPanel);
         }
+
+#if UNITY_EDITOR
+        // Editor-only: Unlock all codex entries if enabled
+        if (unlockAllCodexEntriesInEditor)
+        {
+            UnlockAllCodexEntries();
+        }
+#endif
     }
 
     /// <summary>
@@ -506,5 +523,64 @@ public class CodexManager : MonoBehaviour
         // Clean up spawned entries
         ClearEntries();
     }
+
+#if UNITY_EDITOR
+    /// <summary>
+    /// Editor-only: Unlock all codex entries for testing
+    /// Also gives each level at least 1 star so they show as completed in the codex
+    /// </summary>
+    [ContextMenu("Unlock All Codex Entries (Editor Only)")]
+    public void UnlockAllCodexEntries()
+    {
+        if (!Application.isEditor)
+        {
+            Debug.LogWarning("UnlockAllCodexEntries can only be called in the Unity Editor!");
+            return;
+        }
+
+        if (levelManager == null)
+        {
+            levelManager = DependencyRegistry.Find<LevelManager>();
+            if (levelManager == null)
+            {
+                Debug.LogError("CodexManager: Cannot unlock codex entries without LevelManager!");
+                return;
+            }
+        }
+
+        List<LevelData> allLevels = levelManager.GetAllLevels();
+        int unlockedCount = 0;
+        int completedCount = 0;
+
+        foreach (LevelData level in allLevels)
+        {
+            if (level == null) continue;
+
+            int levelNumber = level.levelNumber;
+            
+            // Mark codex as unlocked
+            PlayerPrefs.SetInt($"Level_{levelNumber}_CodexUnlocked", 1);
+            unlockedCount++;
+
+            // Give level at least 1 star so it shows as completed in codex
+            int currentStars = levelManager.GetLevelStars(levelNumber);
+            if (currentStars == 0)
+            {
+                PlayerPrefs.SetInt($"Level_{levelNumber}_Stars", 1);
+                completedCount++;
+            }
+        }
+
+        PlayerPrefs.Save();
+        
+        // Reload progress in LevelManager to reflect the changes immediately
+        // Using reflection to call private LoadProgress method (editor-only, so safe)
+        var loadProgressMethod = levelManager.GetType().GetMethod("LoadProgress", 
+            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+        loadProgressMethod?.Invoke(levelManager, null);
+        
+        Debug.Log($"CodexManager (Editor): Unlocked all {unlockedCount} codex entries and marked {completedCount} levels as completed!");
+    }
+#endif
 }
 

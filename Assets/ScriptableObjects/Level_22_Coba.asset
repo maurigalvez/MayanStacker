@@ -15,11 +15,23 @@ MonoBehaviour:
   levelNumber: 22
   levelName: "Cob\xE1"
   location: Quintana Roo, Mexico
-  levelDescription: Stack 45 blocks with even faster swinging!
-  siteImage: {fileID: 0}
+  levelDescription: "Where stone roads crossed the jungle, Cob\xE1 rose with pyramids
+    and power.\n\nCob\xE1, meaning \u201CWaters Stirred by the Wind\u201D in Maya,
+    was once one of the largest cities in the northern Yucat\xE1n. Flourishing between
+    600\u2013900 AD, it controlled trade routes and rivaled Chich\xE9n Itz\xE1 in
+    power.\r\n\r\nThe site is famous for its vast network of sacbeob (white stone
+    roads), the longest stretching over 100 km, connecting Cob\xE1 to other Maya
+    centers. Its most iconic structure is Nohoch Mul, a pyramid rising about 42 meters,
+    the tallest in the Yucat\xE1n Peninsula.\r\n\r\nCob\xE1\u2019s stelae record
+    dynastic rulers and alliances, offering insight into its political influence.
+    Surrounded by lakes and jungle, the city thrived as a hub of commerce, ritual,
+    and astronomy. Today, Cob\xE1 remains partly covered by forest, giving visitors
+    a sense of discovery as they walk ancient causeways."
+  siteImage: {fileID: 21300000, guid: d3a7189a20445cd4a8f2106316a9572d, type: 3}
   requiredStackHeight: 44
   oneStarScore: 3700
   twoStarScore: 4400
   threeStarScore: 5100
   swingSpeedMultiplier: 1.5
   swingAmplitudeMultiplier: 1.3
+  gameMusic: {fileID: 8300000, guid: 20f2e874c2c59eb45a147d95739dbf17, type: 3}

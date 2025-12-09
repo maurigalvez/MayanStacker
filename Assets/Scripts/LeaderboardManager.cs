@@ -115,17 +115,32 @@ public class LeaderboardManager : MonoBehaviour
 
     /// <summary>
     /// Get leaderboard with player position included if not in top entries
+    /// Checks cache first and only refreshes if cache doesn't exist
     /// </summary>
     /// <param name="leaderboardName">Name of the leaderboard statistic</param>
     /// <param name="topCount">Number of top entries to retrieve</param>
     /// <param name="onSuccess">Callback with combined leaderboard entries</param>
     /// <param name="onFailure">Callback with error message</param>
+    /// <param name="forceRefresh">If true, bypasses cache and forces a refresh</param>
     public void GetLeaderboardWithPlayerPosition(
         string leaderboardName,
         int topCount,
         System.Action<List<LeaderboardEntry>> onSuccess,
-        System.Action<string> onFailure)
+        System.Action<string> onFailure,
+        bool forceRefresh = false)
     {
+        // Check cache first unless forcing refresh
+        if (!forceRefresh)
+        {
+            List<LeaderboardEntry> cachedData = GetCachedLeaderboard(leaderboardName);
+            if (cachedData != null)
+            {
+                Debug.Log($"Using cached leaderboard data for: {leaderboardName}");
+                onSuccess?.Invoke(cachedData);
+                return;
+            }
+        }
+
         if (playFabManager == null || !playFabManager.IsLoggedIn)
         {
             onFailure?.Invoke("PlayFab not available or not logged in");
@@ -152,7 +167,10 @@ public class LeaderboardManager : MonoBehaviour
         if (topEntries == null || topEntries.Count == 0)
         {
             Debug.Log($"No entries found for leaderboard: {leaderboardName}");
-            onSuccess?.Invoke(new List<LeaderboardEntry>());
+            var emptyList = new List<LeaderboardEntry>();
+            // Cache empty result to avoid repeated requests
+            CacheLeaderboard(leaderboardName, emptyList);
+            onSuccess?.Invoke(emptyList);
             return;
         }
 
@@ -162,17 +180,21 @@ public class LeaderboardManager : MonoBehaviour
         if (playerInTop || !showPlayerIfNotInTop)
         {
             // Player is already in top entries or we don't need to show player separately
+            // Cache the result before returning
+            CacheLeaderboard(leaderboardName, topEntries);
             onSuccess?.Invoke(topEntries);
             return;
         }
 
         // Player not in top, get their position
         playFabManager.GetPlayerLeaderboardPosition(leaderboardName, playerContextEntries,
-            playerEntries => OnPlayerEntriesReceived(topEntries, playerEntries, onSuccess),
+            playerEntries => OnPlayerEntriesReceived(leaderboardName, topEntries, playerEntries, onSuccess),
             error =>
             {
                 // If we can't get player position, just return the top entries
                 Debug.LogWarning($"Could not get player position: {error}");
+                // Cache the result even on error
+                CacheLeaderboard(leaderboardName, topEntries);
                 onSuccess?.Invoke(topEntries);
             }
         );
@@ -183,6 +205,7 @@ public class LeaderboardManager : MonoBehaviour
     /// Combines top entries with player position
     /// </summary>
     private void OnPlayerEntriesReceived(
+        string leaderboardName,
         List<LeaderboardEntry> topEntries,
         List<LeaderboardEntry> playerEntries,
         System.Action<List<LeaderboardEntry>> onSuccess)
@@ -190,6 +213,8 @@ public class LeaderboardManager : MonoBehaviour
         if (playerEntries == null || playerEntries.Count == 0)
         {
             // Player has no score on this leaderboard
+            // Cache the result before returning
+            CacheLeaderboard(leaderboardName, topEntries);
             onSuccess?.Invoke(topEntries);
             return;
         }
@@ -200,6 +225,8 @@ public class LeaderboardManager : MonoBehaviour
         if (playerEntry == null)
         {
             // No player entry found, just return top entries
+            // Cache the result before returning
+            CacheLeaderboard(leaderboardName, topEntries);
             onSuccess?.Invoke(topEntries);
             return;
         }
@@ -209,6 +236,8 @@ public class LeaderboardManager : MonoBehaviour
 
         if (playerAlreadyInTop)
         {
+            // Cache the result before returning
+            CacheLeaderboard(leaderboardName, topEntries);
             onSuccess?.Invoke(topEntries);
             return;
         }
@@ -227,6 +256,8 @@ public class LeaderboardManager : MonoBehaviour
         // Add player entries (should include player and some context around them)
         combinedEntries.AddRange(playerEntries);
 
+        // Cache the combined result
+        CacheLeaderboard(leaderboardName, combinedEntries);
         onSuccess?.Invoke(combinedEntries);
     }
 

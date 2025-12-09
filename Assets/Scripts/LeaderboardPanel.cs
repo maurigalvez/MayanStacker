@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
@@ -37,6 +38,7 @@ public class LeaderboardPanel : MonoBehaviour
     [Header("Settings")]
     [SerializeField] private int maxEntriesToShow = 20;
     [SerializeField] private bool showPlayerIfNotInTop = true;
+    [SerializeField] private float leaderboardRefreshDelay = 0.5f; // Delay before refreshing when selecting a temple/level
 
     // State
     private List<GameObject> spawnedEntries = new List<GameObject>();
@@ -49,6 +51,9 @@ public class LeaderboardPanel : MonoBehaviour
     private LeaderboardMode currentMode = LeaderboardMode.InfiniteStacker;
     private int currentLevelNumber = 1; // For Levels mode
     private int totalLevels = 0;
+
+    // Delay coroutine tracking
+    private Coroutine pendingRefreshCoroutine = null;
 
     private void Awake()
     {
@@ -120,7 +125,9 @@ public class LeaderboardPanel : MonoBehaviour
                 return false;
             }
 
+#if DEBUG_MODE
             Debug.Log("LeaderboardPanel: Successfully found LeaderboardManager");
+#endif
         }
 
         return true;
@@ -146,7 +153,7 @@ public class LeaderboardPanel : MonoBehaviour
         currentLevelNumber = 1; // Start at level 1
         UpdateModeButtonHighlighting();
         UpdateNavigationVisibility();
-        LoadCurrentLevelLeaderboard();
+        LoadCurrentLevelLeaderboardWithDelay();
     }
 
     /// <summary>
@@ -248,7 +255,7 @@ public class LeaderboardPanel : MonoBehaviour
             currentLevelNumber = GetMaxAccessibleLevel();
         }
 
-        LoadCurrentLevelLeaderboard();
+        LoadCurrentLevelLeaderboardWithDelay();
     }
 
     /// <summary>
@@ -270,7 +277,7 @@ public class LeaderboardPanel : MonoBehaviour
             currentLevelNumber = 1;
         }
 
-        LoadCurrentLevelLeaderboard();
+        LoadCurrentLevelLeaderboardWithDelay();
     }
 
     /// <summary>
@@ -286,13 +293,48 @@ public class LeaderboardPanel : MonoBehaviour
     }
 
     /// <summary>
-    /// Load the leaderboard for the current level number
+    /// Load the leaderboard for the current level number with delay
     /// </summary>
-    private void LoadCurrentLevelLeaderboard()
+    private void LoadCurrentLevelLeaderboardWithDelay()
     {
         if (!EnsureLeaderboardManager())
         {
             ShowError("Leaderboard system not available");
+            return;
+        }
+
+        // Get display name first (for title update)
+        string displayName = $"Level {currentLevelNumber}";
+        if (levelManager != null)
+        {
+            var levels = levelManager.GetAllLevels();
+            var levelData = levels.Find(l => l.levelNumber == currentLevelNumber);
+            if (levelData != null)
+            {
+                displayName = $"Level {levelData.levelNumber}\n{levelData.levelName}";
+            }
+        }
+
+        // Update title immediately
+        if (titleText != null)
+        {
+            titleText.text = displayName;
+        }
+
+        // Check if level is unlocked
+        if (levelManager != null && !levelManager.IsLevelUnlocked(currentLevelNumber))
+        {
+            ClearEntries();
+            ShowLoading(false);
+            // Use ShowNoData pattern to display the message (same as "No scores yet")
+            if (statusText != null)
+            {
+                statusText.gameObject.SetActive(true);
+                statusText.text = "Complete this level to unlock leaderboard";
+            }
+#if DEBUG_MODE
+            Debug.Log($"Attempted to load leaderboard for locked level {currentLevelNumber}");
+#endif
             return;
         }
 
@@ -305,9 +347,31 @@ public class LeaderboardPanel : MonoBehaviour
         }
 
         string leaderboardName = leaderboardManager.GetStackerLevelLeaderboardName(currentLevelNumber);
-        string displayName = $"Level {currentLevelNumber}";
 
-        // Get the actual level name if available
+        // Cancel any pending refresh
+        if (pendingRefreshCoroutine != null)
+        {
+            StopCoroutine(pendingRefreshCoroutine);
+            pendingRefreshCoroutine = null;
+        }
+
+        // Start delayed refresh
+        pendingRefreshCoroutine = StartCoroutine(LoadLeaderboardWithDelay(leaderboardName, displayName, false));
+    }
+
+    /// <summary>
+    /// Load the leaderboard for the current level number (immediate, used for initial load)
+    /// </summary>
+    private void LoadCurrentLevelLeaderboard()
+    {
+        if (!EnsureLeaderboardManager())
+        {
+            ShowError("Leaderboard system not available");
+            return;
+        }
+
+        // Get display name first (for title update)
+        string displayName = $"Level {currentLevelNumber}";
         if (levelManager != null)
         {
             var levels = levelManager.GetAllLevels();
@@ -318,6 +382,38 @@ public class LeaderboardPanel : MonoBehaviour
             }
         }
 
+        // Update title immediately
+        if (titleText != null)
+        {
+            titleText.text = displayName;
+        }
+
+        // Check if level is unlocked
+        if (levelManager != null && !levelManager.IsLevelUnlocked(currentLevelNumber))
+        {
+            ClearEntries();
+            ShowLoading(false);
+            // Use ShowNoData pattern to display the message (same as "No scores yet")
+            if (statusText != null)
+            {
+                statusText.gameObject.SetActive(true);
+                statusText.text = "Complete this level to unlock leaderboard";
+            }
+#if DEBUG_MODE
+            Debug.Log($"Attempted to load leaderboard for locked level {currentLevelNumber}");
+#endif
+            return;
+        }
+
+        // Check if level is accessible
+        if (!leaderboardManager.IsLevelAccessible(currentLevelNumber))
+        {
+            ShowError("This level is not available in demo mode");
+            Debug.LogWarning($"Attempted to load leaderboard for inaccessible level {currentLevelNumber}");
+            return;
+        }
+
+        string leaderboardName = leaderboardManager.GetStackerLevelLeaderboardName(currentLevelNumber);
         LoadLeaderboard(leaderboardName, displayName);
     }
 
@@ -357,9 +453,12 @@ public class LeaderboardPanel : MonoBehaviour
     }
 
     /// <summary>
-    /// Load and display a specific leaderboard
+    /// Load and display a specific leaderboard with optional delay
     /// </summary>
-    public void LoadLeaderboard(string leaderboardName, string displayTitle)
+    /// <param name="leaderboardName">Name of the leaderboard</param>
+    /// <param name="displayTitle">Title to display</param>
+    /// <param name="forceRefresh">If true, bypasses cache and forces a refresh</param>
+    public void LoadLeaderboard(string leaderboardName, string displayTitle, bool forceRefresh = false)
     {
         if (!EnsureLeaderboardManager())
         {
@@ -379,24 +478,47 @@ public class LeaderboardPanel : MonoBehaviour
         ShowLoading(true);
         ClearEntries();
 
-        // Request leaderboard data
+        // Request leaderboard data (will use cache if available unless forceRefresh is true)
         leaderboardManager.GetLeaderboardWithPlayerPosition(
             leaderboardName,
             maxEntriesToShow,
             OnLeaderboardLoaded,
-            OnLeaderboardError
+            OnLeaderboardError,
+            forceRefresh
         );
     }
 
     /// <summary>
-    /// Refresh the current leaderboard
+    /// Coroutine to load leaderboard with delay
+    /// </summary>
+    private IEnumerator LoadLeaderboardWithDelay(string leaderboardName, string displayTitle, bool forceRefresh)
+    {
+        // Update title immediately for better UX
+        if (titleText != null)
+        {
+            titleText.text = displayTitle;
+        }
+
+        // Wait for the delay
+        yield return new WaitForSeconds(leaderboardRefreshDelay);
+
+        // Clear pending coroutine reference
+        pendingRefreshCoroutine = null;
+
+        // Now load the leaderboard
+        LoadLeaderboard(leaderboardName, displayTitle, forceRefresh);
+    }
+
+    /// <summary>
+    /// Refresh the current leaderboard (forces refresh, bypasses cache)
     /// </summary>
     private void RefreshCurrentLeaderboard()
     {
         if (!string.IsNullOrEmpty(currentLeaderboardName))
         {
             string displayTitle = titleText != null ? titleText.text.Replace(" Leaderboard", "") : "Leaderboard";
-            LoadLeaderboard(currentLeaderboardName, displayTitle);
+            // Force refresh when user explicitly clicks refresh button
+            LoadLeaderboard(currentLeaderboardName, displayTitle, forceRefresh: true);
         }
     }
 

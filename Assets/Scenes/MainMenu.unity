@@ -904,6 +904,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 7372702067826005740, guid: 23215e23a59cf8243b4a17cf47c43f5e, type: 3}
+      propertyPath: useGooglePlayGames
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 8745447753479278976, guid: 23215e23a59cf8243b4a17cf47c43f5e, type: 3}
       propertyPath: m_Name
       value: PlayFab Manager
@@ -972,6 +976,10 @@ PrefabInstance:
     - target: {fileID: 4316829900831077214, guid: 74a40cd5abedcda4b90ec0e20018ae0e, type: 3}
       propertyPath: m_Name
       value: Main Menu Canvas
+      objectReference: {fileID: 0}
+    - target: {fileID: 4690574841634264256, guid: 74a40cd5abedcda4b90ec0e20018ae0e, type: 3}
+      propertyPath: gameVersion
+      value: 0.9.2
       objectReference: {fileID: 0}
     - target: {fileID: 6812175529766804833, guid: 74a40cd5abedcda4b90ec0e20018ae0e, type: 3}
       propertyPath: m_Pivot.x
@@ -1085,6 +1093,10 @@ PrefabInstance:
     - target: {fileID: 1565339869559337300, guid: 74245513ed4e29a4c8d30d56f2bd23dd, type: 3}
       propertyPath: m_Name
       value: Level Manager
+      objectReference: {fileID: 0}
+    - target: {fileID: 2521145821110808670, guid: 74245513ed4e29a4c8d30d56f2bd23dd, type: 3}
+      propertyPath: unlockAllLevelsInEditor
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4691793053310730478, guid: 74245513ed4e29a4c8d30d56f2bd23dd, type: 3}
       propertyPath: m_LocalPosition.x

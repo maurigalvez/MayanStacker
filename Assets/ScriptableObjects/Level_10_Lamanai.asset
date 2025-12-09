@@ -25,10 +25,11 @@ MonoBehaviour:
     Few Maya cities demonstrate such endurance, complexity, and cultural continuity.\n\nBy
     the river\u2019s edge, Lamanai survived age after age, its temples witnessing
     every turning of Maya history"
-  siteImage: {fileID: 9191206007319775398, guid: 7046cc57f50a2a64e8557e055eac902a, type: 3}
+  siteImage: {fileID: 21300000, guid: 7046cc57f50a2a64e8557e055eac902a, type: 3}
   requiredStackHeight: 27
   oneStarScore: 2000
   twoStarScore: 3000
   threeStarScore: 3500
   swingSpeedMultiplier: 1.5
   swingAmplitudeMultiplier: 1.5
+  gameMusic: {fileID: 8300000, guid: 81c7c67fd9b57b24687ca3d54d8c683a, type: 3}

@@ -15,11 +15,23 @@ MonoBehaviour:
   levelNumber: 27
   levelName: Tonina
   location: Chiapas, Mexico
-  levelDescription: Stack 40 blocks with even faster swinging!
-  siteImage: {fileID: 0}
+  levelDescription: "From its towering acropolis, Tonin\xE1 carved power and legend
+    into stone.\n\nTonin\xE1, located in the highlands of Chiapas, Mexico, was a
+    powerful Maya city that flourished between 600\u2013900 AD. Its name means \u201CHouse
+    of Stone\u201D, and it is renowned for its towering acropolis, which rises over
+    70 meters, making it one of the tallest structures in Mesoamerica.\r\n\r\nTonin\xE1
+    was a fierce rival of Palenque, and its monuments record victories in warfare,
+    including the capture of Palenque\u2019s rulers. The site is notable for its
+    hieroglyphic inscriptions, stucco reliefs, and carved monuments, which depict
+    gods, warriors, and dynastic events.\r\n\r\nThe acropolis itself is a labyrinth
+    of terraces, temples, and palaces, symbolizing both political power and spiritual
+    authority. Archaeologists have also uncovered ballcourts, tombs, and evidence
+    of Tonin\xE1\u2019s role as a regional capital."
+  siteImage: {fileID: 21300000, guid: 65f2d76bc52374f419023f5df19fc846, type: 3}
   requiredStackHeight: 50
   oneStarScore: 4200
   twoStarScore: 5000
   threeStarScore: 7500
   swingSpeedMultiplier: 1.5
   swingAmplitudeMultiplier: 1.3
+  gameMusic: {fileID: 8300000, guid: 20f2e874c2c59eb45a147d95739dbf17, type: 3}

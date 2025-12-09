@@ -15,11 +15,20 @@ MonoBehaviour:
   levelNumber: 15
   levelName: Palenque
   location: Chiapas, Mexico
-  levelDescription: Stack 45 blocks with even faster swinging!
-  siteImage: {fileID: 0}
+  levelDescription: "Where jungle meets stone, Palenque whispers the legacy of Pakal
+    the Great.\n\nPalenque, known to the Maya as Lakamha (\u201CBig Water\u201D),
+    was a powerful city-state in the lush foothills of Chiapas, Mexico. Founded around
+    226 BC and flourishing between 600\u2013750 AD, it became one of the most influential
+    Maya capitals of the Classic Period.\n\nThe city is best known for the Temple
+    of the Inscriptions, which houses the tomb of K\u2019inich Janaab\u2019 Pakal
+    (Pakal the Great), one of the most celebrated Maya rulers. Palenque\u2019s architecture
+    is distinguished by its graceful palaces, temples, and carved panels, many of
+    which record dynastic history and religious ceremonies."
+  siteImage: {fileID: 21300000, guid: 73d4f5b89e2a1d043950e363d495e018, type: 3}
   requiredStackHeight: 37
   oneStarScore: 3000
   twoStarScore: 3800
   threeStarScore: 4600
   swingSpeedMultiplier: 1.5
   swingAmplitudeMultiplier: 1.3
+  gameMusic: {fileID: 8300000, guid: 2f71c528f7b56a64fa17bf1c9caf9823, type: 3}

@@ -13,13 +13,25 @@ MonoBehaviour:
   m_Name: Level_23_Kaana
   m_EditorClassIdentifier: 
   levelNumber: 23
-  levelName: Kaana
+  levelName: Caana
   location: Cayo District, Belize
-  levelDescription: Stack 45 blocks with even faster swinging!
-  siteImage: {fileID: 0}
+  levelDescription: "From the Sky Palace, Caracol\u2019s kings ruled above jungle
+    and stone.\n\nCaana, meaning \u201CSky Palace\u201D in Maya, is the tallest structure
+    at the Caracol archaeological site in western Belize. Rising about 43 meters
+    (141 feet), it remains the tallest man-made building in the entire country, towering
+    above the jungle canopy.\r\n\r\nBuilt during the Classic Period (c. 600\u2013900
+    AD), Caana served as the royal palace and ceremonial heart of Caracol. Its complex
+    includes temples, courtyards, and residential chambers, where rulers conducted
+    rituals, governance, and daily life. From its summit, the Maya could survey their
+    vast city, which at its peak housed tens of thousands of people and rivaled Tikal
+    in power.\r\n\r\nToday, climbing Caana offers breathtaking views of the surrounding
+    rainforest, connecting visitors to the grandeur and ingenuity of the ancient
+    Maya.\r\n"
+  siteImage: {fileID: 21300000, guid: 4d30730d713f8254c836f69b3fcdbb55, type: 3}
   requiredStackHeight: 45
   oneStarScore: 3800
   twoStarScore: 4500
   threeStarScore: 5200
   swingSpeedMultiplier: 1.5
   swingAmplitudeMultiplier: 1.3
+  gameMusic: {fileID: 8300000, guid: 20f2e874c2c59eb45a147d95739dbf17, type: 3}

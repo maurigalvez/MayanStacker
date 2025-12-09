@@ -64,7 +64,7 @@ namespace TamalStacker.Achievements
             if (playFabManager != null)
             {
                 playFabManager.OnProgressSynced += OnProgressSyncedFromCloud;
-                
+
                 // If PlayFab is already logged in (returning from game scene), sync achievements
                 if (playFabManager.IsLoggedIn)
                 {
@@ -73,7 +73,7 @@ namespace TamalStacker.Achievements
                 }
             }
         }
-        
+
         /// <summary>
         /// Sync with Google Play after a delay to ensure SDK is ready
         /// </summary>
@@ -81,7 +81,7 @@ namespace TamalStacker.Achievements
         {
             // Wait 1 second to ensure Google Play Games is ready
             yield return new WaitForSeconds(1f);
-            
+
             LogDebug("Now syncing achievements with Google Play...");
             SyncWithGooglePlay();
         }
@@ -130,6 +130,20 @@ namespace TamalStacker.Achievements
                 return;
             }
 
+            // DEBUG: Show what file is actually loaded
+            string first200 = configAsset.text.Length > 200 ? configAsset.text.Substring(0, 200) : configAsset.text;
+            Debug.Log($"=== LOADED CONFIG FILE (first 200 chars) ===\n{first200}");
+
+            // Check for the specific ID pattern
+            if (configAsset.text.Contains("\"Cgkli"))
+            {
+                Debug.LogError("⚠️ CONFIG FILE CONTAINS OLD IDs WITH LOWERCASE 'l' - Unity is using CACHED version!");
+            }
+            else if (configAsset.text.Contains("\"CgkIi"))
+            {
+                Debug.Log("✓ CONFIG FILE CONTAINS CORRECT IDs WITH UPPERCASE 'I'");
+            }
+
             try
             {
                 AchievementConfig config = JsonUtility.FromJson<AchievementConfig>(configAsset.text);
@@ -145,6 +159,16 @@ namespace TamalStacker.Achievements
                     if (achievement.IsValid())
                     {
                         achievements[achievement.id] = achievement;
+
+                        // DEBUG: Verify googlePlayId is loaded
+                        if (string.IsNullOrEmpty(achievement.googlePlayId))
+                        {
+                            Debug.LogWarning($"Achievement '{achievement.id}' ({achievement.title}) loaded with EMPTY googlePlayId!");
+                        }
+                        else
+                        {
+                            LogDebug($"Loaded achievement '{achievement.id}' with googlePlayId: {achievement.googlePlayId}");
+                        }
                     }
                 }
 
@@ -295,7 +319,14 @@ namespace TamalStacker.Achievements
             // Report to Google Play Games
             if (achievement.GetAchievementType() == AchievementType.Incremental)
             {
-                googlePlayService?.ReportProgress(achievement.googlePlayId, newProgress, achievement.targetValue);
+                if (!string.IsNullOrEmpty(achievement.googlePlayId))
+                {
+                    googlePlayService?.ReportProgress(achievement.googlePlayId, newProgress, achievement.targetValue);
+                }
+                else
+                {
+                    LogDebug($"Achievement '{achievement.id}' has no googlePlayId - skipping Google Play sync");
+                }
             }
         }
 
@@ -342,7 +373,14 @@ namespace TamalStacker.Achievements
             OnAchievementUnlocked?.Invoke(achievement);
 
             // Report to Google Play Games
-            googlePlayService?.UnlockAchievement(achievement.googlePlayId);
+            if (!string.IsNullOrEmpty(achievement.googlePlayId))
+            {
+                googlePlayService?.UnlockAchievement(achievement.googlePlayId);
+            }
+            else
+            {
+                LogDebug($"Achievement '{achievement.id}' has no googlePlayId - skipping Google Play sync");
+            }
         }
 
         /// <summary>
@@ -474,6 +512,42 @@ namespace TamalStacker.Achievements
             Debug.Log($"page_keeper: {GetProgress("page_keeper")}/3 - Unlocked: {IsUnlocked("page_keeper")}");
 
             Debug.Log("=== END DEBUG ===");
+        }
+
+        /// <summary>
+        /// Debug: Verify all Google Play IDs are assigned
+        /// </summary>
+        [ContextMenu("Debug: Verify Google Play IDs")]
+        public void DebugVerifyGooglePlayIds()
+        {
+            Debug.Log("=== GOOGLE PLAY ID VERIFICATION ===");
+            Debug.Log($"Total Achievements: {achievements.Count}");
+
+            int missingIds = 0;
+            foreach (var kvp in achievements)
+            {
+                var ach = kvp.Value;
+                if (string.IsNullOrEmpty(ach.googlePlayId))
+                {
+                    Debug.LogWarning($"❌ '{ach.id}' ({ach.title}) - MISSING googlePlayId!");
+                    missingIds++;
+                }
+                else
+                {
+                    Debug.Log($"✅ '{ach.id}' ({ach.title}) - googlePlayId: {ach.googlePlayId}");
+                }
+            }
+
+            if (missingIds == 0)
+            {
+                Debug.Log($"<color=green>✅ All {achievements.Count} achievements have Google Play IDs assigned!</color>");
+            }
+            else
+            {
+                Debug.LogWarning($"<color=red>⚠️ {missingIds} achievements are missing Google Play IDs!</color>");
+            }
+
+            Debug.Log("=== END VERIFICATION ===");
         }
 
         /// <summary>

@@ -565,7 +565,7 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 101.35
+  m_fontSize: 101.3
   m_fontSizeBase: 110
   m_fontWeight: 400
   m_enableAutoSizing: 1
@@ -3396,7 +3396,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 0, y: 0.000029297546}
-  m_SizeDelta: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: 2900}
   m_Pivot: {x: 0.5, y: 1}
 --- !u!114 &652649049289932238
 MonoBehaviour:
@@ -5660,7 +5660,7 @@ MonoBehaviour:
   syncStatusText: {fileID: 8686632556115698734}
   syncCompleteDisplayDuration: 1
   gameSceneName: GameScene
-  gameVersion: 0.8.5
+  gameVersion: 0.9.0
 --- !u!114 &5733294060283004849
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5713,6 +5713,7 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+  unlockAllCodexEntriesInEditor: 0
 --- !u!114 &6730720016796563187
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -6816,7 +6817,7 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 95.5
+  m_fontSize: 95.45
   m_fontSizeBase: 110
   m_fontWeight: 400
   m_enableAutoSizing: 1
@@ -11342,14 +11343,17 @@ MonoBehaviour:
   pathWidth: 5
   pathColor: {r: 0.49056602, g: 0.2664271, b: 0.053221796, a: 0.78431374}
   pathSprite: {fileID: 21300000, guid: 11df6bf26cd964d49a88220c7d1a6cb1, type: 3}
-  nextLevelPathColor: {r: 1, g: 0.8000001, b: 0.20000002, a: 1}
+  nextLevelPathColor: {r: 1, g: 1, b: 1, a: 1}
   nextLevelPathWidth: 8
+  animatedPathSprite: {fileID: 21300000, guid: cf35a6231084b1744b06003da78874f8, type: 3}
+  animatedTextureWidth: 2.5
   enablePathAnimation: 1
   animationSpeed: 2
   pulseMinScale: 0.9
   pulseMaxScale: 1.1
-  pulseMinAlpha: 0.7
+  pulseMinAlpha: 1
   pulseMaxAlpha: 1
+  textureScrollSpeed: -0.5
   startOffset: {x: 0, y: 0}
   endOffset: {x: 0, y: 0}
   updateOnLevelChange: 1
