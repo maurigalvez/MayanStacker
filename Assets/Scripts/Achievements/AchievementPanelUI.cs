@@ -47,6 +47,7 @@ namespace TamalStacker.Achievements
         // References
         private AchievementManager achievementManager;
         private GooglePlayAchievementService googlePlayService;
+        private MainMenuSoundManager soundManager;
 
         // State
         private List<GameObject> spawnedEntries = new List<GameObject>();
@@ -62,6 +63,7 @@ namespace TamalStacker.Achievements
         {
             // Find achievement manager
             achievementManager = DependencyRegistry.Find<AchievementManager>();
+            soundManager = DependencyRegistry.Find<MainMenuSoundManager>();
 
             if (achievementManager == null)
             {
@@ -302,6 +304,13 @@ namespace TamalStacker.Achievements
         private void SetFilter(string filter)
         {
             currentFilter = filter;
+            
+            // Play category-specific sound effect
+            if (soundManager != null)
+            {
+                soundManager.PlayAchievementCategory(filter);
+            }
+            
             UpdateButtonHighlight();
             RefreshPanel();
         }

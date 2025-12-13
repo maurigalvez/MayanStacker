@@ -23,6 +23,7 @@ public class EnvironmentSpawner : MonoBehaviour
     // Private variables
     private StackManager stackManager;
     private CameraController cameraController;
+    private StyleManager styleManager;
     private List<EnvironmentAsset> activeAssets = new List<EnvironmentAsset>();
     private float leftBound;
     private float rightBound;
@@ -48,6 +49,9 @@ public class EnvironmentSpawner : MonoBehaviour
 
         // Get camera controller
         cameraController = DependencyRegistry.Find<CameraController>();
+
+        // Get style manager
+        styleManager = DependencyRegistry.Find<StyleManager>();
 
         // Calculate screen bounds
         CalculateScreenBounds();
@@ -279,6 +283,12 @@ public class EnvironmentSpawner : MonoBehaviour
         }
 
         environmentAsset.Initialize(selectedAsset, spawnFromLeft, leftBound, rightBound);
+
+        // Register sprite renderers with StyleManager (EnvironmentAsset will also register in Start, but this ensures immediate registration)
+        if (styleManager != null)
+        {
+            styleManager.RegisterEnvironmentSpriteRenderers(spawnedObject);
+        }
 
         // Track the asset
         activeAssets.Add(environmentAsset);

@@ -32,6 +32,7 @@ public class EnvironmentAsset : MonoBehaviour
     private SpriteRenderer spriteRenderer;
     private Color originalColor;
     private float curveTime = 0f;
+    private StyleManager styleManager;
 
     // Time-based despawning
     private float lifetime;
@@ -53,6 +54,21 @@ public class EnvironmentAsset : MonoBehaviour
     {
         startPosition = transform.position;
         totalDistance = Mathf.Abs(rightBound - leftBound);
+
+        // Register sprite renderers with StyleManager
+        RegisterWithStyleManager();
+    }
+
+    /// <summary>
+    /// Register all sprite renderers with StyleManager
+    /// </summary>
+    private void RegisterWithStyleManager()
+    {
+        styleManager = DependencyRegistry.Find<StyleManager>();
+        if (styleManager != null)
+        {
+            styleManager.RegisterEnvironmentSpriteRenderers(gameObject);
+        }
     }
 
     private void Update()
@@ -212,6 +228,12 @@ public class EnvironmentAsset : MonoBehaviour
     {
         OnDespawn?.Invoke(this);
         Destroy(gameObject);
+    }
+
+    private void OnDestroy()
+    {
+        // Note: StyleManager will handle cleanup of destroyed renderers
+        // by checking for null references when applying tints
     }
 
     // Public getters

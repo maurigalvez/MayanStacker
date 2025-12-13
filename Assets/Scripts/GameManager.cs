@@ -501,24 +501,31 @@ public class GameManager : MonoBehaviour
     }
 
     /// <summary>
+    /// Get the PlayerPrefs key for the current game mode's high score
+    /// Centralized key generation to prevent duplication and ensure consistency
+    /// </summary>
+    private string GetHighScorePlayerPrefsKey()
+    {
+        if (currentGameMode == GameMode.InfiniteStacker)
+        {
+            return "HighScore_InfiniteStacker";
+        }
+        else if (currentLevelNumber > 0)
+        {
+            return $"Level_{currentLevelNumber}_HighScore";
+        }
+        else
+        {
+            return "HighScore_Levels";
+        }
+    }
+
+    /// <summary>
     /// Fallback method to load high score from PlayerPrefs
     /// </summary>
     private void LoadHighScoreFromPlayerPrefs()
     {
-        string key;
-        if (currentGameMode == GameMode.InfiniteStacker)
-        {
-            key = "HighScore_InfiniteStacker";
-        }
-        else if (currentLevelNumber > 0)
-        {
-            key = $"Level_{currentLevelNumber}_HighScore";
-        }
-        else
-        {
-            key = "HighScore_Levels";
-        }
-
+        string key = GetHighScorePlayerPrefsKey();
         highScore = PlayerPrefs.GetInt(key, 0);
         OnHighScoreChanged?.Invoke(highScore);
         Debug.Log($"Loaded high score from PlayerPrefs: {highScore} (Key: {key})");
@@ -532,10 +539,14 @@ public class GameManager : MonoBehaviour
         highScore = loadedHighScore;
         OnHighScoreChanged?.Invoke(highScore);
         Debug.Log($"Loaded high score from PlayFab: {highScore}");
+
+        // Save to PlayerPrefs so it's available when offline
+        SaveHighScoreValueToPlayerPrefs(loadedHighScore);
     }
 
     /// <summary>
     /// Save high score to PlayFab (only if it's a new high score and hasn't been saved yet)
+    /// If offline, queues the score for later sync
     /// </summary>
     public void SaveHighScoreIfNeeded()
     {
@@ -552,53 +563,62 @@ public class GameManager : MonoBehaviour
             return;
         }
 
+        // Always save to PlayerPrefs as backup (works offline)
+        SaveHighScoreToPlayerPrefs();
+
         var playFabManager = DependencyRegistry.Find<PlayFabManager>();
         if (playFabManager != null && playFabManager.IsLoggedIn)
         {
+            string leaderboardName = null;
             if (currentGameMode == GameMode.InfiniteStacker)
             {
-                playFabManager.SubmitScore("InfiniteStackerHighScores", currentScore);
-                Debug.Log($"Saving InfiniteStacker high score to PlayFab: {currentScore}");
+                leaderboardName = "InfiniteStackerHighScores";
             }
             else if (currentGameMode == GameMode.StackerLevels && currentLevelNumber > 0)
             {
-                string leaderboardName = $"StackerLevel_{currentLevelNumber}";
-                playFabManager.SubmitScore(leaderboardName, currentScore);
-                Debug.Log($"Saving StackerLevel {currentLevelNumber} high score to PlayFab: {currentScore}");
+                leaderboardName = $"StackerLevel_{currentLevelNumber}";
             }
 
-            // Also save to PlayerPrefs as backup
-            SaveHighScoreToPlayerPrefs();
+            if (!string.IsNullOrEmpty(leaderboardName))
+            {
+                // SubmitScore will handle offline queueing automatically
+                playFabManager.SubmitScore(leaderboardName, currentScore);
+                Debug.Log($"Saving {leaderboardName} high score: {currentScore}");
+            }
 
             highScoreSaved = true;
         }
         else
         {
-            Debug.LogWarning("PlayFab not ready, saving to PlayerPrefs only");
-            SaveHighScoreToPlayerPrefs();
+            // PlayFab not ready - queue score for later sync if we have network
+            // If offline, the score is already saved to PlayerPrefs and will be synced when online
+            if (currentGameMode == GameMode.InfiniteStacker)
+            {
+                OfflineScoreQueue.QueueScore("InfiniteStackerHighScores", currentScore);
+                Debug.LogWarning("PlayFab not ready, queued InfiniteStacker score for later sync");
+            }
+            else if (currentGameMode == GameMode.StackerLevels && currentLevelNumber > 0)
+            {
+                string leaderboardName = $"StackerLevel_{currentLevelNumber}";
+                OfflineScoreQueue.QueueScore(leaderboardName, currentScore);
+                Debug.LogWarning($"PlayFab not ready, queued StackerLevel {currentLevelNumber} score for later sync");
+            }
+            else
+            {
+                Debug.LogWarning("PlayFab not ready, saving to PlayerPrefs only");
+            }
+
             highScoreSaved = true;
         }
     }
 
     /// <summary>
     /// Save high score to PlayerPrefs as backup
+    /// Used when player achieves a new high score during gameplay
     /// </summary>
     private void SaveHighScoreToPlayerPrefs()
     {
-        string key;
-        if (currentGameMode == GameMode.InfiniteStacker)
-        {
-            key = "HighScore_InfiniteStacker";
-        }
-        else if (currentLevelNumber > 0)
-        {
-            key = $"Level_{currentLevelNumber}_HighScore";
-        }
-        else
-        {
-            key = "HighScore_Levels";
-        }
-
+        string key = GetHighScorePlayerPrefsKey();
         PlayerPrefs.SetInt(key, currentScore);
         PlayerPrefs.Save();
         Debug.Log($"Saved high score to PlayerPrefs: {currentScore} (Key: {key})");
@@ -612,28 +632,57 @@ public class GameManager : MonoBehaviour
     }
 
     /// <summary>
+    /// Save a high score value to PlayerPrefs for offline access
+    /// Used when loading/syncing scores from PlayFab to ensure they're cached locally
+    /// Only saves if the score is higher than or equal to what's currently saved (prevents overwriting with lower values)
+    /// </summary>
+    /// <param name="score">The score value to save</param>
+    /// <param name="forceSave">If true, saves even if score is 0 or lower than current (used for syncing)</param>
+    private void SaveHighScoreValueToPlayerPrefs(int score, bool forceSave = false)
+    {
+        if (score <= 0 && !forceSave) return; // Don't save zero scores unless forced
+
+        string key = GetHighScorePlayerPrefsKey();
+        int currentSaved = PlayerPrefs.GetInt(key, 0);
+
+        // Only update if the score is higher than or equal to what's currently saved
+        // This ensures synced scores from PlayFab are available when offline
+        // while preventing overwriting with lower values
+        if (forceSave || score >= currentSaved)
+        {
+            PlayerPrefs.SetInt(key, score);
+            PlayerPrefs.Save();
+            Debug.Log($"Saved high score to PlayerPrefs: {score} (Key: {key}, previous: {currentSaved})");
+        }
+    }
+
+    /// <summary>
     /// Called when progress is synced from cloud (after login)
     /// Updates local high score if cloud has a higher value (server authoritative)
+    /// Always saves synced score to PlayerPrefs for offline access
     /// </summary>
     private void OnProgressSyncedFromCloud(PlayerProgressData data)
     {
         if (data == null) return;
 
-        // Update Infinite Stacker high score from cloud
-        if (currentGameMode == GameMode.InfiniteStacker)
+        // Always save Infinite Stacker high score to PlayerPrefs (regardless of current game mode)
+        // This ensures synced scores are available offline even if player is in a different mode
+        if (data.infiniteStackerHighScore > 0)
         {
-            if (data.infiniteStackerHighScore > highScore)
-            {
-                Debug.Log($"Updating Infinite Stacker high score from cloud: {data.infiniteStackerHighScore}");
-                highScore = data.infiniteStackerHighScore;
+            // Save directly to PlayerPrefs using the correct key
+            PlayerPrefs.SetInt("HighScore_InfiniteStacker", data.infiniteStackerHighScore);
+            PlayerPrefs.Save();
+            Debug.Log($"Saved synced Infinite Stacker high score to PlayerPrefs: {data.infiniteStackerHighScore}");
+        }
 
-                // Update PlayerPrefs cache
-                PlayerPrefs.SetInt("HighScore_InfiniteStacker", highScore);
-                PlayerPrefs.Save();
+        // Update in-memory high score if we're in Infinite Stacker mode and cloud has a higher value
+        if (currentGameMode == GameMode.InfiniteStacker && data.infiniteStackerHighScore > highScore)
+        {
+            Debug.Log($"Updating Infinite Stacker high score from cloud: {data.infiniteStackerHighScore}");
+            highScore = data.infiniteStackerHighScore;
 
-                // Notify UI
-                OnHighScoreChanged?.Invoke(highScore);
-            }
+            // Notify UI
+            OnHighScoreChanged?.Invoke(highScore);
         }
         // Level mode high scores are handled by LevelManager
     }

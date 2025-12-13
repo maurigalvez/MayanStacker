@@ -1,10 +1,10 @@
+using System.Collections;
+using System.Linq;
 using PlayFab;
 using PlayFab.ClientModels;
 using PlayFab.ProgressionModels;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using System.Collections;
-using System.Linq;
 
 #if UNITY_ANDROID
 using GooglePlayGames;
@@ -539,6 +539,9 @@ public class PlayFabManager : MonoBehaviour
 
         // Sync progress from cloud after login
         SyncProgressOnLogin();
+
+        // Sync any queued scores from offline play
+        SyncQueuedScores();
     }
 
     /// <summary>
@@ -849,6 +852,9 @@ public class PlayFabManager : MonoBehaviour
 
         // Sync progress from cloud after login
         SyncProgressOnLogin();
+
+        // Sync any queued scores from offline play
+        SyncQueuedScores();
     }
 
     /// <summary>
@@ -925,12 +931,22 @@ public class PlayFabManager : MonoBehaviour
     /// Submit a score to a specific leaderboard using the new Statistics V2 API
     /// Ensures display name is set from Google Play Games before submission
     /// Performs Classic Integrity check before submission for security
+    /// If offline, queues the score for later sync
     /// </summary>
     public void SubmitScore(string leaderboardName, int score)
     {
         if (!isLoggedIn)
         {
-            Debug.LogWarning("Cannot submit score - not logged into PlayFab");
+            Debug.LogWarning("Cannot submit score - not logged into PlayFab. Queueing for later sync.");
+            OfflineScoreQueue.QueueScore(leaderboardName, score);
+            return;
+        }
+
+        // Check network connectivity
+        if (NetworkUtility.IsOffline())
+        {
+            Debug.LogWarning($"Cannot submit score - device is offline. Queueing score {score} for {leaderboardName} for later sync.");
+            OfflineScoreQueue.QueueScore(leaderboardName, score);
             return;
         }
 
@@ -939,7 +955,7 @@ public class PlayFabManager : MonoBehaviour
         {
             // Generate a nonce for this score submission
             string nonce = IntegrityManager.GenerateNonce(32);
-            
+
 #if DEBUG_MODE
             Debug.Log($"[PlayFabManager] Requesting integrity check before submitting score {score} to {leaderboardName}");
 #endif
@@ -1008,28 +1024,42 @@ public class PlayFabManager : MonoBehaviour
                 Debug.Log($"Integrity token available (length: {integrityToken.Length}) - should be verified server-side");
             }
 #endif
-            PlayFabProgressionAPI.UpdateStatistics(request, OnScoreSubmitSuccess, OnScoreSubmitFailure);
+            // Use closures to capture leaderboard name and score for error handling
+            PlayFabProgressionAPI.UpdateStatistics(request,
+                (result) => OnScoreSubmitSuccess(result, leaderboardName, score),
+                (error) => OnScoreSubmitFailure(error, leaderboardName, score));
         });
     }
 
     /// <summary>
     /// Called when score submission is successful
     /// </summary>
-    private void OnScoreSubmitSuccess(PlayFab.ProgressionModels.UpdateStatisticsResponse result)
+    private void OnScoreSubmitSuccess(PlayFab.ProgressionModels.UpdateStatisticsResponse result, string leaderboardName, int score)
     {
 #if DEBUG_MODE
-        Debug.Log("Score submitted to PlayFab successfully!");
+        Debug.Log($"Score {score} submitted to PlayFab successfully for {leaderboardName}!");
 #endif
-        OnScoreSubmitted?.Invoke(0); // Could pass the score if needed
+        // Clear this score from queue if it was queued
+        OfflineScoreQueue.ClearQueuedScore(leaderboardName, score);
+        OnScoreSubmitted?.Invoke(score);
     }
 
     /// <summary>
     /// Called when score submission fails
+    /// If it's a network error, queues the score for later sync
     /// </summary>
-    private void OnScoreSubmitFailure(PlayFabError error)
+    private void OnScoreSubmitFailure(PlayFabError error, string leaderboardName, int score)
     {
         string errorMessage = $"Score submission failed: {error.GenerateErrorReport()}";
         Debug.LogWarning(errorMessage);
+
+        // If it's a network error, queue the score for later sync
+        if (IsNetworkError(error) || NetworkUtility.IsOffline())
+        {
+            Debug.LogWarning($"Score submission failed due to network error. Queueing score {score} for {leaderboardName} for later sync.");
+            OfflineScoreQueue.QueueScore(leaderboardName, score);
+        }
+
         OnScoreSubmissionFailed?.Invoke(errorMessage);
     }
 
@@ -1117,6 +1147,14 @@ public class PlayFabManager : MonoBehaviour
             return;
         }
 
+        // Check network connectivity
+        if (NetworkUtility.IsOffline())
+        {
+            Debug.LogWarning("Cannot get leaderboard - device is offline");
+            onFailure?.Invoke("Connect to a Network to See This Leaderboard");
+            return;
+        }
+
         // Clamp maxResults to valid range (1-100)
         maxResults = System.Math.Max(1, System.Math.Min(100, maxResults));
 
@@ -1168,11 +1206,20 @@ public class PlayFabManager : MonoBehaviour
 
     /// <summary>
     /// Called when leaderboard retrieval fails
+    /// Normalizes error messages for user-friendly display
     /// </summary>
     private void OnGetLeaderboardFailure(PlayFabError error, System.Action<string> onFailure)
     {
-        string errorMessage = $"Failed to get leaderboard: {error.GenerateErrorReport()}";
-        Debug.LogWarning(errorMessage);
+        string errorMessage;
+        if (IsNetworkError(error) || NetworkUtility.IsOffline())
+        {
+            errorMessage = "Connect to a Network to See This Leaderboard";
+        }
+        else
+        {
+            errorMessage = "Something Went wrong when Retrieving Leaderboard, Try Again Later";
+        }
+        Debug.LogWarning($"Failed to get leaderboard: {error.GenerateErrorReport()}");
         onFailure?.Invoke(errorMessage);
     }
 
@@ -1189,6 +1236,14 @@ public class PlayFabManager : MonoBehaviour
         {
             Debug.LogWarning("Cannot get leaderboard position - not logged into PlayFab");
             onFailure?.Invoke("Not logged into PlayFab");
+            return;
+        }
+
+        // Check network connectivity
+        if (NetworkUtility.IsOffline())
+        {
+            Debug.LogWarning("Cannot get leaderboard position - device is offline");
+            onFailure?.Invoke("Connect to a Network to See This Leaderboard");
             return;
         }
 
@@ -1260,11 +1315,20 @@ public class PlayFabManager : MonoBehaviour
 
     /// <summary>
     /// Called when player position retrieval fails
+    /// Normalizes error messages for user-friendly display
     /// </summary>
     private void OnGetPlayerPositionFailure(PlayFabError error, System.Action<string> onFailure)
     {
-        string errorMessage = $"Failed to get player position: {error.GenerateErrorReport()}";
-        Debug.LogWarning(errorMessage);
+        string errorMessage;
+        if (IsNetworkError(error) || NetworkUtility.IsOffline())
+        {
+            errorMessage = "Connect to a Network to See This Leaderboard";
+        }
+        else
+        {
+            errorMessage = "Something Went wrong when Retrieving Leaderboard, Try Again Later";
+        }
+        Debug.LogWarning($"Failed to get player position: {error.GenerateErrorReport()}");
         onFailure?.Invoke(errorMessage);
     }
 
@@ -1581,6 +1645,14 @@ public class PlayFabManager : MonoBehaviour
             }
         }
 
+        // Get theme unlock status from ThemeManager
+        var themeManager = DependencyRegistry.Find<ThemeManager>();
+        if (themeManager != null)
+        {
+            data.sunsetThemeUnlocked = themeManager.IsSunsetUnlocked;
+            data.nightThemeUnlocked = themeManager.IsNightUnlocked;
+        }
+
         // Save to cloud (fire-and-forget - don't block gameplay)
         SaveProgressToCloud(data,
             onSuccess: () =>
@@ -1593,6 +1665,91 @@ public class PlayFabManager : MonoBehaviour
             {
                 Debug.LogWarning($"Failed to save current progress: {error}");
             });
+    }
+
+    #endregion
+
+    #region Offline Score Sync
+
+    /// <summary>
+    /// Check if a PlayFab error is network-related
+    /// </summary>
+    /// <param name="error">PlayFab error to check</param>
+    /// <returns>True if error is network-related, false otherwise</returns>
+    private bool IsNetworkError(PlayFabError error)
+    {
+        if (error == null) return false;
+
+        // Check for common network error codes
+        // PlayFab error codes that indicate network issues
+        string errorCode = error.Error.ToString();
+        string errorMessage = error.ErrorMessage ?? "";
+        string errorReport = error.GenerateErrorReport() ?? "";
+
+        // Check for network-related error codes
+        if (errorCode.Contains("ConnectionError") ||
+            errorCode.Contains("Timeout") ||
+            errorCode.Contains("NetworkError") ||
+            errorCode.Contains("ServiceUnavailable") ||
+            errorCode.Contains("HttpError"))
+        {
+            return true;
+        }
+
+        // Check error message for network-related keywords
+        string lowerMessage = errorMessage.ToLower() + " " + errorReport.ToLower();
+        if (lowerMessage.Contains("timeout") ||
+            lowerMessage.Contains("connection") ||
+            lowerMessage.Contains("network") ||
+            lowerMessage.Contains("unreachable") ||
+            lowerMessage.Contains("no internet") ||
+            lowerMessage.Contains("offline"))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// Sync queued scores from offline play to PlayFab
+    /// Called after successful login when network is available
+    /// </summary>
+    private void SyncQueuedScores()
+    {
+        if (!isLoggedIn)
+        {
+            Debug.LogWarning("Cannot sync queued scores - not logged into PlayFab");
+            return;
+        }
+
+        if (NetworkUtility.IsOffline())
+        {
+            Debug.LogWarning("Cannot sync queued scores - device is offline");
+            return;
+        }
+
+        var queuedScores = OfflineScoreQueue.GetQueuedScores();
+        if (queuedScores == null || queuedScores.Count == 0)
+        {
+#if DEBUG_MODE
+            Debug.Log("No queued scores to sync");
+#endif
+            return;
+        }
+
+        Debug.Log($"Syncing {queuedScores.Count} queued score(s) from offline play...");
+
+        // Sync each queued score
+        // Note: SubmitScore will handle integrity checks and display name
+        // OnScoreSubmitSuccess will clear successfully synced scores from the queue
+        // OnScoreSubmitFailure will re-queue scores if network error occurs
+        foreach (var queuedScore in queuedScores)
+        {
+            SubmitScore(queuedScore.leaderboardName, queuedScore.score);
+        }
+
+        Debug.Log($"Initiated sync for {queuedScores.Count} queued score(s). Scores will be removed from queue on successful submission.");
     }
 
     #endregion

@@ -65,6 +65,9 @@ public class MainMenuManager : MonoBehaviour
     [SerializeField] private string gameSceneName = "GameScene";
     [SerializeField] private string gameVersion = "1.0.0";
 
+    [Header("Theme Selection")]
+    [SerializeField] private ThemeSelectionUI themeSelectionUI;
+
     // References
     private SettingsManager settingsManager;
     private LevelManager levelManager;
@@ -239,7 +242,6 @@ public class MainMenuManager : MonoBehaviour
         if (versionText != null)
         {
             string versionDisplay = $"v{gameVersion}";
-
             // Add DEMO tag if in demo mode
             if (levelManager != null && levelManager.IsDemoVersion)
             {
@@ -839,6 +841,12 @@ public class MainMenuManager : MonoBehaviour
         SetActivePanel(levelSelectionPanel);
         InitializeLevelSelection(); // Refresh level states
 
+        // Enable theme selection UI
+        if (themeSelectionUI != null)
+        {
+            themeSelectionUI.EnableThemeSelection();
+        }
+
         // Notify path renderer to update paths
         var pathRenderer = DependencyRegistry.Find<LevelPathRenderer>();
         if (pathRenderer != null)
@@ -859,6 +867,15 @@ public class MainMenuManager : MonoBehaviour
         if (isSwitchingFromCodex && panelToShow != null)
         {
             panelToShow.SetActive(true);
+        }
+
+        // Disable theme selection UI if hiding level selection panel
+        if (levelSelectionPanel != null && levelSelectionPanel != panelToShow && levelSelectionPanel.activeSelf)
+        {
+            if (themeSelectionUI != null)
+            {
+                themeSelectionUI.DisableThemeSelection();
+            }
         }
 
         // Hide all panels (except codex if we're animating it, and the target panel if already shown)

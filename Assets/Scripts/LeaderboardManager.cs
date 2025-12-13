@@ -141,17 +141,66 @@ public class LeaderboardManager : MonoBehaviour
             }
         }
 
+        // Check network connectivity first
+        if (NetworkUtility.IsOffline())
+        {
+            Debug.LogWarning("Cannot load leaderboard - device is offline");
+            onFailure?.Invoke("Connect to a Network to See This Leaderboard");
+            return;
+        }
+
         if (playFabManager == null || !playFabManager.IsLoggedIn)
         {
-            onFailure?.Invoke("PlayFab not available or not logged in");
+            // Treat not logged in as offline scenario for user-friendly message
+            onFailure?.Invoke("Connect to a Network to See This Leaderboard");
             return;
         }
 
         // First, get the top entries
         playFabManager.GetLeaderboard(leaderboardName, topCount,
             topEntries => OnTopEntriesReceived(leaderboardName, topEntries, topCount, onSuccess, onFailure),
-            onFailure
+            error => OnLeaderboardError(error, onFailure)
         );
+    }
+
+    /// <summary>
+    /// Normalize error messages for user-friendly display
+    /// </summary>
+    private string NormalizeErrorMessage(string error)
+    {
+        if (string.IsNullOrEmpty(error))
+        {
+            return "Something Went wrong when Retrieving Leaderboard, Try Again Later";
+        }
+
+        // Check if it's already a user-friendly message
+        if (error.Contains("Connect to a Network"))
+        {
+            return error; // Already user-friendly
+        }
+
+        // Check if it's a network-related error
+        if (NetworkUtility.IsOffline() || 
+            error.ToLower().Contains("network") ||
+            error.ToLower().Contains("timeout") ||
+            error.ToLower().Contains("connection") ||
+            error.ToLower().Contains("offline") ||
+            error.ToLower().Contains("not logged"))
+        {
+            return "Connect to a Network to See This Leaderboard";
+        }
+
+        // All other errors get the generic message
+        return "Something Went wrong when Retrieving Leaderboard, Try Again Later";
+    }
+
+    /// <summary>
+    /// Handle leaderboard errors and normalize messages
+    /// </summary>
+    private void OnLeaderboardError(string error, System.Action<string> onFailure)
+    {
+        string normalizedError = NormalizeErrorMessage(error);
+        onFailure?.Invoke(normalizedError);
     }
 
     /// <summary>
@@ -191,11 +240,21 @@ public class LeaderboardManager : MonoBehaviour
             playerEntries => OnPlayerEntriesReceived(leaderboardName, topEntries, playerEntries, onSuccess),
             error =>
             {
-                // If we can't get player position, just return the top entries
-                Debug.LogWarning($"Could not get player position: {error}");
-                // Cache the result even on error
-                CacheLeaderboard(leaderboardName, topEntries);
-                onSuccess?.Invoke(topEntries);
+                // If we can't get player position, check if it's a network error
+                // If it's a network error, propagate it; otherwise just return top entries
+                if (error.Contains("Connect to a Network") || NetworkUtility.IsOffline())
+                {
+                    // Network error - propagate to caller
+                    onFailure?.Invoke(error);
+                }
+                else
+                {
+                    // Other error - just return the top entries we have
+                    Debug.LogWarning($"Could not get player position: {error}");
+                    // Cache the result even on error
+                    CacheLeaderboard(leaderboardName, topEntries);
+                    onSuccess?.Invoke(topEntries);
+                }
             }
         );
     }

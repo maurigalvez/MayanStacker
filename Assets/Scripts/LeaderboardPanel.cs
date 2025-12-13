@@ -45,6 +45,7 @@ public class LeaderboardPanel : MonoBehaviour
     private string currentLeaderboardName = "";
     private LeaderboardManager leaderboardManager;
     private LevelManager levelManager;
+    private MainMenuSoundManager soundManager;
 
     // Navigation state
     private enum LeaderboardMode { InfiniteStacker, Levels }
@@ -94,6 +95,7 @@ public class LeaderboardPanel : MonoBehaviour
         // Find managers
         leaderboardManager = DependencyRegistry.Find<LeaderboardManager>();
         levelManager = DependencyRegistry.Find<LevelManager>();
+        soundManager = DependencyRegistry.Find<MainMenuSoundManager>();
 
         if (leaderboardManager == null)
         {
@@ -141,6 +143,13 @@ public class LeaderboardPanel : MonoBehaviour
         currentMode = LeaderboardMode.InfiniteStacker;
         UpdateModeButtonHighlighting();
         UpdateNavigationVisibility();
+        
+        // Play sound effect
+        if (soundManager != null)
+        {
+            soundManager.PlayInfiniteModeSelect();
+        }
+        
         LoadInfiniteStackerLeaderboard();
     }
 
@@ -153,6 +162,13 @@ public class LeaderboardPanel : MonoBehaviour
         currentLevelNumber = 1; // Start at level 1
         UpdateModeButtonHighlighting();
         UpdateNavigationVisibility();
+        
+        // Play sound effect
+        if (soundManager != null)
+        {
+            soundManager.PlayLevelModeSelect();
+        }
+        
         LoadCurrentLevelLeaderboardWithDelay();
     }
 
@@ -247,6 +263,12 @@ public class LeaderboardPanel : MonoBehaviour
             return; // No navigation in Infinite mode
         }
 
+        // Play navigation sound effect
+        if (soundManager != null)
+        {
+            soundManager.PlayLeaderboardNavigation();
+        }
+
         // Loop backwards
         currentLevelNumber--;
         if (currentLevelNumber < 1)
@@ -266,6 +288,12 @@ public class LeaderboardPanel : MonoBehaviour
         if (currentMode == LeaderboardMode.InfiniteStacker)
         {
             return; // No navigation in Infinite mode
+        }
+
+        // Play navigation sound effect
+        if (soundManager != null)
+        {
+            soundManager.PlayLeaderboardNavigation();
         }
 
         // Loop forwards

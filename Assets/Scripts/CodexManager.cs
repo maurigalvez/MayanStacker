@@ -44,6 +44,7 @@ public class CodexManager : MonoBehaviour
 
     // References (found via DependencyRegistry)
     private LevelManager levelManager;
+    private MainMenuSoundManager soundManager;
 
     // State
     private List<CodexEntryUI> spawnedEntries = new List<CodexEntryUI>();
@@ -60,6 +61,7 @@ public class CodexManager : MonoBehaviour
     {
         // Find dependencies
         levelManager = DependencyRegistry.Find<LevelManager>();
+        soundManager = DependencyRegistry.Find<MainMenuSoundManager>();
 
         if (levelManager == null)
         {
@@ -353,6 +355,12 @@ public class CodexManager : MonoBehaviour
             return;
         }
 
+        // Play codex selection sound effect
+        if (soundManager != null)
+        {
+            soundManager.PlayCodexSelect();
+        }
+
         // Deselect previous entry
         if (currentlySelectedEntry != null)
         {
@@ -400,6 +408,12 @@ public class CodexManager : MonoBehaviour
     /// </summary>
     public void CloseDetailPanel()
     {
+        // Play codex close sound effect
+        if (soundManager != null)
+        {
+            soundManager.PlayCodexClose();
+        }
+
         DeselectCurrentEntry();
     }
 

@@ -630,9 +630,9 @@ public class GameSoundManager : MonoBehaviour
         // Ensure relative combo is at least 0
         relativeComboCount = Mathf.Max(0, relativeComboCount);
 
-        // Calculate pitch: base + (relative combo count * increment), capped at max
-        // Relative combo count of 1 = base + increment, relative combo count of 2 = base + 2*increment, etc.
-        float calculatedPitch = comboBasePitch + (relativeComboCount * comboPitchIncrement);
+        // Calculate pitch: base + ((relative combo count - 1) * increment), capped at max
+        // Relative combo count of 1 = base pitch, relative combo count of 2 = base + increment, etc.
+        float calculatedPitch = comboBasePitch + ((relativeComboCount - 1) * comboPitchIncrement);
         return Mathf.Clamp(calculatedPitch, comboBasePitch, comboMaxPitch);
     }
 

@@ -482,6 +482,14 @@ public class LevelManager : MonoBehaviour, ILevelManager
             }
         }
 
+        // Sync theme unlock status from cloud
+        var themeManager = DependencyRegistry.Find<ThemeManager>();
+        if (themeManager != null)
+        {
+            themeManager.SetThemeUnlockStatus(data.sunsetThemeUnlocked, data.nightThemeUnlocked);
+            Debug.Log($"Synced theme unlocks from cloud - Sunset: {data.sunsetThemeUnlocked}, Night: {data.nightThemeUnlocked}");
+        }
+
         // Save updated cache to disk
         PlayerPrefs.Save();
 

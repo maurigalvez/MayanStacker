@@ -38,6 +38,16 @@ public class PlayerProgressData
     public string achievementProgressJson = "";
 
     /// <summary>
+    /// Theme unlock status - Sunset theme unlocked
+    /// </summary>
+    public bool sunsetThemeUnlocked = false;
+
+    /// <summary>
+    /// Theme unlock status - Night theme unlocked
+    /// </summary>
+    public bool nightThemeUnlocked = false;
+
+    /// <summary>
     /// Creates a new empty PlayerProgressData
     /// </summary>
     public PlayerProgressData()
@@ -47,6 +57,8 @@ public class PlayerProgressData
         infiniteStackerHighScore = 0;
         lastSyncTimestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
         achievementProgressJson = "";
+        sunsetThemeUnlocked = false;
+        nightThemeUnlocked = false;
     }
 
     /// <summary>
@@ -63,7 +75,9 @@ public class PlayerProgressData
             levelHighScoresValues = new List<int>(levelHighScores.Values),
             infiniteStackerHighScore = this.infiniteStackerHighScore,
             lastSyncTimestamp = this.lastSyncTimestamp,
-            achievementProgressJson = this.achievementProgressJson
+            achievementProgressJson = this.achievementProgressJson,
+            sunsetThemeUnlocked = this.sunsetThemeUnlocked,
+            nightThemeUnlocked = this.nightThemeUnlocked
         };
 
         return JsonUtility.ToJson(wrapper);
@@ -86,7 +100,9 @@ public class PlayerProgressData
             {
                 infiniteStackerHighScore = wrapper.infiniteStackerHighScore,
                 lastSyncTimestamp = wrapper.lastSyncTimestamp,
-                achievementProgressJson = wrapper.achievementProgressJson ?? ""
+                achievementProgressJson = wrapper.achievementProgressJson ?? "",
+                sunsetThemeUnlocked = wrapper.sunsetThemeUnlocked,
+                nightThemeUnlocked = wrapper.nightThemeUnlocked
             };
 
             // Reconstruct dictionaries
@@ -130,6 +146,8 @@ public class PlayerProgressData
         public int infiniteStackerHighScore = 0;
         public long lastSyncTimestamp = 0;
         public string achievementProgressJson = "";
+        public bool sunsetThemeUnlocked = false;
+        public bool nightThemeUnlocked = false;
     }
 }
 

@@ -23,6 +23,22 @@ public class MainMenuSoundManager : MonoBehaviour
     [SerializeField] private AudioClip levelModeSelectSound;
     [SerializeField] private AudioClip levelButtonClickSound;
 
+    [Header("Leaderboard Navigation Sounds")]
+    [SerializeField] private AudioClip leaderboardNavigationSound;
+
+    [Header("Codex Sounds")]
+    [SerializeField] private AudioClip codexSelectSound;
+    [SerializeField] private AudioClip codexCloseSound;
+
+    [Header("Achievement Category Sounds")]
+    [SerializeField] private AudioClip achievementCategoryAllSound;
+    [SerializeField] private AudioClip achievementCategorySitesSound;
+    [SerializeField] private AudioClip achievementCategoryInfiniteSound;
+    [SerializeField] private AudioClip achievementCategoryCodexSound;
+    [SerializeField] private AudioClip achievementCategoryPerfectSound;
+    [SerializeField] private AudioClip achievementCategoryPerfectLevelSound;
+    [SerializeField] private AudioClip achievementCategorySecretSound;
+
     [Header("Settings")]
     [SerializeField] private float defaultVolume = 0.7f;
     [SerializeField] private bool allowSimultaneousSounds = true;
@@ -154,6 +170,70 @@ public class MainMenuSoundManager : MonoBehaviour
     public void PlayLevelButtonClick()
     {
         PlaySound(levelButtonClickSound);
+    }
+
+    /// <summary>
+    /// Plays the leaderboard navigation sound (for next/previous buttons)
+    /// </summary>
+    public void PlayLeaderboardNavigation()
+    {
+        PlaySound(leaderboardNavigationSound);
+    }
+
+    /// <summary>
+    /// Plays the codex entry selection sound
+    /// </summary>
+    public void PlayCodexSelect()
+    {
+        PlaySound(codexSelectSound);
+    }
+
+    /// <summary>
+    /// Plays the codex detail panel close sound
+    /// </summary>
+    public void PlayCodexClose()
+    {
+        PlaySound(codexCloseSound);
+    }
+
+    /// <summary>
+    /// Plays a distinct sound effect based on achievement category
+    /// </summary>
+    /// <param name="category">The achievement category name</param>
+    public void PlayAchievementCategory(string category)
+    {
+        AudioClip clipToPlay = null;
+
+        switch (category?.ToLower())
+        {
+            case "all":
+                clipToPlay = achievementCategoryAllSound;
+                break;
+            case "sites":
+                clipToPlay = achievementCategorySitesSound;
+                break;
+            case "infinite":
+                clipToPlay = achievementCategoryInfiniteSound;
+                break;
+            case "codex":
+                clipToPlay = achievementCategoryCodexSound;
+                break;
+            case "perfect":
+                clipToPlay = achievementCategoryPerfectSound;
+                break;
+            case "perfect_level":
+                clipToPlay = achievementCategoryPerfectLevelSound;
+                break;
+            case "secret":
+                clipToPlay = achievementCategorySecretSound;
+                break;
+            default:
+                // Fallback to default button click if category not found
+                clipToPlay = buttonClickSound;
+                break;
+        }
+
+        PlaySound(clipToPlay);
     }
 
     /// <summary>

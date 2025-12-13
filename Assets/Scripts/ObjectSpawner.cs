@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 public class ObjectSpawner : MonoBehaviour
@@ -36,6 +37,7 @@ public class ObjectSpawner : MonoBehaviour
     private LevelManager levelManager;
     private GameManager gameManager;
     private StackManager stackManager;
+    private StyleManager styleManager;
 
     private void Start()
     {
@@ -44,6 +46,7 @@ public class ObjectSpawner : MonoBehaviour
         levelManager = DependencyRegistry.Find<LevelManager>();
         gameManager = DependencyRegistry.Find<GameManager>();
         stackManager = DependencyRegistry.Find<StackManager>();
+        styleManager = DependencyRegistry.Find<StyleManager>();
 
         // Subscribe to game events
         if (gameManager != null)
@@ -125,6 +128,12 @@ public class ObjectSpawner : MonoBehaviour
     {
         if (!canSpawn) return;
 
+        // Refresh StyleManager reference before spawning to ensure we have the latest theme
+        if (styleManager == null)
+        {
+            styleManager = DependencyRegistry.Find<StyleManager>();
+        }
+
         // Create new object
         GameObject newObject = CreateStackableObject();
 
@@ -194,32 +203,83 @@ public class ObjectSpawner : MonoBehaviour
             // Set a random color for visual variety
             Color randomColor = objectColors[Random.Range(0, objectColors.Length)];
 
-            // Store the original sprite from the prefab (if it exists)
+            // Store the original sprite from the prefab (if it exists) for fallback only
             Sprite originalSprite = spriteRenderer.sprite;
+
+            // Clear the sprite first to avoid using prefab sprite when StyleManager should be used
+            spriteRenderer.sprite = null;
 
             // If this is the last block in level mode and we have a special sprite, use it
             if (isLastBlock && lastBlockSprite != null)
             {
                 spriteRenderer.sprite = lastBlockSprite;
             }
-            // Otherwise, ensure we have a sprite (use original if it exists, or create a default one)
+            // Otherwise, check StyleManager for time-of-day sprites
             else
             {
-                // Use the original sprite if it exists
-                if (originalSprite != null)
+                // Refresh StyleManager reference if null (in case it wasn't available at Start)
+                if (styleManager == null)
                 {
-                    spriteRenderer.sprite = originalSprite;
+                    styleManager = DependencyRegistry.Find<StyleManager>();
                 }
-                // Create a default sprite only if no sprite exists
-                else if (spriteRenderer.sprite == null)
-                {
-                    // Create a simple colored rectangle sprite only if no sprite exists
-                    Texture2D texture = new Texture2D(1, 1);
-                    texture.SetPixel(0, 0, randomColor);
-                    texture.Apply();
 
-                    Sprite sprite = Sprite.Create(texture, new Rect(0, 0, 1, 1), new Vector2(0.5f, 0.5f));
-                    spriteRenderer.sprite = sprite;
+                if (styleManager != null)
+                {
+                    Sprite styleSprite = styleManager.GetCurrentStackableSprite();
+                    if (styleSprite != null)
+                    {
+                        // Use StyleManager sprite for time of day
+                        spriteRenderer.sprite = styleSprite;
+                    }
+                    else
+                    {
+                        // StyleManager exists but returned null - use original sprite as fallback
+                        // This ensures blocks have a visible texture even if StyleManager isn't configured
+                        if (originalSprite != null)
+                        {
+                            spriteRenderer.sprite = originalSprite;
+                            Debug.LogWarning("StyleManager returned null sprite. Using prefab sprite as fallback. Check if overrideStackableSprites is enabled and sprites are assigned in StyleManager.");
+                        }
+                        else
+                        {
+                            // Create a properly sized default sprite if no original sprite exists
+                            int textureWidth = 64;
+                            int textureHeight = 64;
+                            Texture2D texture = new Texture2D(textureWidth, textureHeight);
+
+                            // Fill texture with the random color
+                            Color[] pixels = new Color[textureWidth * textureHeight];
+                            for (int i = 0; i < pixels.Length; i++)
+                            {
+                                pixels[i] = randomColor;
+                            }
+                            texture.SetPixels(pixels);
+                            texture.Apply();
+
+                            Sprite sprite = Sprite.Create(texture, new Rect(0, 0, textureWidth, textureHeight), new Vector2(0.5f, 0.5f));
+                            spriteRenderer.sprite = sprite;
+
+                            Debug.LogWarning("StyleManager returned null sprite and no prefab sprite available. Created default colored sprite. Check if overrideStackableSprites is enabled and sprites are assigned in StyleManager.");
+                        }
+                    }
+                }
+                else
+                {
+                    // StyleManager doesn't exist - use original sprite or create default
+                    if (originalSprite != null)
+                    {
+                        spriteRenderer.sprite = originalSprite;
+                    }
+                    else
+                    {
+                        // Create a default sprite
+                        Texture2D texture = new Texture2D(1, 1);
+                        texture.SetPixel(0, 0, randomColor);
+                        texture.Apply();
+
+                        Sprite sprite = Sprite.Create(texture, new Rect(0, 0, 1, 1), new Vector2(0.5f, 0.5f));
+                        spriteRenderer.sprite = sprite;
+                    }
                 }
             }
 
@@ -228,25 +288,100 @@ public class ObjectSpawner : MonoBehaviour
 
             spriteRenderer.color = randomColor;
 
-            // Set sprite renderer local scale for visual scaling
-            spriteRenderer.transform.localScale *= objectSize;
-        }
+            // Get the sprite's actual size in world units AFTER setting the final sprite
+            // This ensures we're calculating scale based on the sprite that will actually be displayed
+            Vector2 spriteSize = spriteRenderer.sprite != null
+                ? spriteRenderer.sprite.bounds.size
+                : Vector2.one;
 
-        // Set up collider using StackableObject reference
-        BoxCollider2D collider = stackableObject.Collider as BoxCollider2D;
-        if (collider != null)
-        {
-            // Check if this is the last block in level mode
-            bool isLastBlock = IsLastBlockInLevel();
+            Vector3 spriteScale;
+            Vector2 actualVisualSize;
 
-            // Set collider size - adjust Y scale for last block if needed
-            Vector2 colliderSize = objectSize;
-            if (isLastBlock && lastBlockColliderYScale != 1f)
+            // For the last block sprite, maintain aspect ratio to avoid squishing
+            if (isLastBlock && lastBlockSprite != null)
             {
-                colliderSize.y = objectSize.y * lastBlockColliderYScale;
+                // Scale to match width while maintaining aspect ratio
+                // This ensures the sprite isn't squished and maintains its natural proportions
+                float scaleX = objectSize.x / spriteSize.x;
+                float scaleY = scaleX; // Use same scale for both axes to maintain aspect ratio
+                spriteScale = new Vector3(scaleX, scaleY, 1f);
+
+                // Calculate the actual visual size after scaling (maintains aspect ratio)
+                actualVisualSize = new Vector2(
+                    spriteSize.x * spriteScale.x,
+                    spriteSize.y * spriteScale.y
+                );
+            }
+            else
+            {
+                // For all other sprites, scale to match objectSize exactly (original behavior)
+                // Formula: scale = desiredSize / spriteSize
+                spriteScale = new Vector3(
+                    objectSize.x / spriteSize.x,
+                    objectSize.y / spriteSize.y,
+                    1f
+                );
+
+                // Visual size matches objectSize for regular blocks
+                actualVisualSize = objectSize;
             }
 
-            collider.size = colliderSize;
+            // Set sprite renderer local scale for visual scaling
+            // Note: If spriteRenderer is on a child object, this scales the child, not the parent
+            spriteRenderer.transform.localScale = spriteScale;
+
+            // Set up collider using StackableObject reference
+            BoxCollider2D collider = stackableObject.Collider as BoxCollider2D;
+            if (collider != null)
+            {
+                Vector2 colliderSize;
+
+                // For the last block, use the actual visual size (which maintains aspect ratio)
+                if (isLastBlock && lastBlockSprite != null)
+                {
+                    // Set collider size to match the actual visual size after scaling
+                    colliderSize = actualVisualSize;
+
+                    // Reduce Y size by 5% to eliminate gaps between blocks
+                    colliderSize.y = actualVisualSize.y * 0.95f;
+
+                    // Adjust Y scale for last block in level mode if needed
+                    // This multiplier adjusts the collider to account for different sprite proportions
+                    if (lastBlockColliderYScale != 1f)
+                    {
+                        colliderSize.y = actualVisualSize.y * lastBlockColliderYScale * 0.95f;
+                    }
+                }
+                else
+                {
+                    // For all other cases, use objectSize (original behavior)
+                    colliderSize = objectSize;
+
+                    // Reduce Y size by 5% to eliminate gaps between blocks
+                    colliderSize.y = objectSize.y * 0.95f;
+                }
+
+                collider.size = colliderSize;
+            }
+        }
+        else
+        {
+            // If no sprite renderer, still set up collider with default size
+            BoxCollider2D collider = stackableObject.Collider as BoxCollider2D;
+            if (collider != null)
+            {
+                bool isLastBlock = IsLastBlockInLevel();
+                Vector2 colliderSize = objectSize;
+
+                // Reduce Y size by 5% to eliminate gaps between blocks
+                colliderSize.y = objectSize.y * 0.95f;
+
+                if (isLastBlock && lastBlockColliderYScale != 1f)
+                {
+                    colliderSize.y = objectSize.y * lastBlockColliderYScale * 0.95f;
+                }
+                collider.size = colliderSize;
+            }
         }
     }
 
@@ -293,6 +428,50 @@ public class ObjectSpawner : MonoBehaviour
         // Spawn immediately when game starts, even if title is still showing
         // This allows players to start dropping blocks before the title disappears
         if (currentObject == null)
+        {
+            // Use coroutine to ensure StyleManager is ready (handles race condition)
+            StartCoroutine(SpawnFirstObjectWhenReady());
+        }
+    }
+
+    /// <summary>
+    /// Coroutine to spawn the first object, ensuring StyleManager is ready first
+    /// This handles race conditions where OnGameStart is called before StyleManager initializes
+    /// </summary>
+    private IEnumerator SpawnFirstObjectWhenReady()
+    {
+        // Wait one frame to ensure all managers have initialized
+        yield return null;
+
+        // Refresh StyleManager reference
+        if (styleManager == null)
+        {
+            styleManager = DependencyRegistry.Find<StyleManager>();
+        }
+
+        // If StyleManager exists, wait until it has a sprite available (or give up after a few frames)
+        if (styleManager != null)
+        {
+            int maxWaitFrames = 5;
+            int framesWaited = 0;
+
+            while (framesWaited < maxWaitFrames)
+            {
+                Sprite testSprite = styleManager.GetCurrentStackableSprite();
+                if (testSprite != null)
+                {
+                    // StyleManager has a sprite ready, we can spawn
+                    break;
+                }
+
+                // Wait another frame
+                yield return null;
+                framesWaited++;
+            }
+        }
+
+        // Now spawn the object
+        if (currentObject == null && canSpawn)
         {
             SpawnNewObject();
         }

@@ -167,6 +167,51 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &432206882
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 432206883}
+  - component: {fileID: 432206884}
+  m_Layer: 0
+  m_Name: Theme Manager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &432206883
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 432206882}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 850.9731, y: 2358.6052, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &432206884
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 432206882}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 40413d65a364aca45932c6cd53222704, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ThemeManager
+  showDebugOptions: 0
 --- !u!1 &612015170
 GameObject:
   m_ObjectHideFlags: 0
@@ -742,6 +787,16 @@ MonoBehaviour:
   infiniteModeSelectSound: {fileID: 8300000, guid: f81ce32cfa2e2e04193092c76e41119a, type: 3}
   levelModeSelectSound: {fileID: 8300000, guid: f81ce32cfa2e2e04193092c76e41119a, type: 3}
   levelButtonClickSound: {fileID: 8300000, guid: f81ce32cfa2e2e04193092c76e41119a, type: 3}
+  leaderboardNavigationSound: {fileID: 0}
+  codexSelectSound: {fileID: 0}
+  codexCloseSound: {fileID: 0}
+  achievementCategoryAllSound: {fileID: 0}
+  achievementCategorySitesSound: {fileID: 0}
+  achievementCategoryInfiniteSound: {fileID: 0}
+  achievementCategoryCodexSound: {fileID: 0}
+  achievementCategoryPerfectSound: {fileID: 0}
+  achievementCategoryPerfectLevelSound: {fileID: 0}
+  achievementCategorySecretSound: {fileID: 0}
   defaultVolume: 0.7
   allowSimultaneousSounds: 1
 --- !u!82 &1842219270
@@ -941,6 +996,34 @@ PrefabInstance:
       propertyPath: m_AnchoredPosition.y
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 1499902473688505700, guid: 74a40cd5abedcda4b90ec0e20018ae0e, type: 3}
+      propertyPath: m_Colors.m_DisabledColor.a
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1499902473688505700, guid: 74a40cd5abedcda4b90ec0e20018ae0e, type: 3}
+      propertyPath: m_Colors.m_DisabledColor.b
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1499902473688505700, guid: 74a40cd5abedcda4b90ec0e20018ae0e, type: 3}
+      propertyPath: m_Colors.m_DisabledColor.g
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1499902473688505700, guid: 74a40cd5abedcda4b90ec0e20018ae0e, type: 3}
+      propertyPath: m_Colors.m_DisabledColor.r
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2762820292790496102, guid: 74a40cd5abedcda4b90ec0e20018ae0e, type: 3}
+      propertyPath: lockedButtonColor.b
+      value: 0.46751517
+      objectReference: {fileID: 0}
+    - target: {fileID: 2762820292790496102, guid: 74a40cd5abedcda4b90ec0e20018ae0e, type: 3}
+      propertyPath: lockedButtonColor.g
+      value: 0.7407348
+      objectReference: {fileID: 0}
+    - target: {fileID: 2762820292790496102, guid: 74a40cd5abedcda4b90ec0e20018ae0e, type: 3}
+      propertyPath: lockedButtonColor.r
+      value: 0.9622642
+      objectReference: {fileID: 0}
     - target: {fileID: 2930395391735033449, guid: 74a40cd5abedcda4b90ec0e20018ae0e, type: 3}
       propertyPath: m_AnchorMax.y
       value: 0
@@ -976,10 +1059,6 @@ PrefabInstance:
     - target: {fileID: 4316829900831077214, guid: 74a40cd5abedcda4b90ec0e20018ae0e, type: 3}
       propertyPath: m_Name
       value: Main Menu Canvas
-      objectReference: {fileID: 0}
-    - target: {fileID: 4690574841634264256, guid: 74a40cd5abedcda4b90ec0e20018ae0e, type: 3}
-      propertyPath: gameVersion
-      value: 0.9.2
       objectReference: {fileID: 0}
     - target: {fileID: 6812175529766804833, guid: 74a40cd5abedcda4b90ec0e20018ae0e, type: 3}
       propertyPath: m_Pivot.x
@@ -1061,6 +1140,26 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 7027605486435502396, guid: 74a40cd5abedcda4b90ec0e20018ae0e, type: 3}
+      propertyPath: m_Colors.m_DisabledColor.a
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7027605486435502396, guid: 74a40cd5abedcda4b90ec0e20018ae0e, type: 3}
+      propertyPath: m_Colors.m_DisabledColor.b
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7027605486435502396, guid: 74a40cd5abedcda4b90ec0e20018ae0e, type: 3}
+      propertyPath: m_Colors.m_DisabledColor.g
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7027605486435502396, guid: 74a40cd5abedcda4b90ec0e20018ae0e, type: 3}
+      propertyPath: m_Colors.m_DisabledColor.r
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7330975308391084957, guid: 74a40cd5abedcda4b90ec0e20018ae0e, type: 3}
+      propertyPath: m_IgnoreReversedGraphics
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 7865393932041858131, guid: 74a40cd5abedcda4b90ec0e20018ae0e, type: 3}
       propertyPath: m_AnchorMax.y
       value: 0
@@ -1076,6 +1175,22 @@ PrefabInstance:
     - target: {fileID: 7865393932041858131, guid: 74a40cd5abedcda4b90ec0e20018ae0e, type: 3}
       propertyPath: m_AnchoredPosition.y
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8896555239878336946, guid: 74a40cd5abedcda4b90ec0e20018ae0e, type: 3}
+      propertyPath: m_Colors.m_DisabledColor.a
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8896555239878336946, guid: 74a40cd5abedcda4b90ec0e20018ae0e, type: 3}
+      propertyPath: m_Colors.m_DisabledColor.b
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8896555239878336946, guid: 74a40cd5abedcda4b90ec0e20018ae0e, type: 3}
+      propertyPath: m_Colors.m_DisabledColor.g
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8896555239878336946, guid: 74a40cd5abedcda4b90ec0e20018ae0e, type: 3}
+      propertyPath: m_Colors.m_DisabledColor.r
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -1159,3 +1274,4 @@ SceneRoots:
   - {fileID: 1681292953}
   - {fileID: 641558302}
   - {fileID: 327796629}
+  - {fileID: 432206883}
