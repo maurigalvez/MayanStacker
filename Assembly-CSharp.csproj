@@ -81,6 +81,7 @@
     <Compile Include="Assets\Scripts\LeaderboardEntryUI.cs" />
     <Compile Include="Assets\Scripts\GameSettings.cs" />
     <Compile Include="Assets\Scripts\ObjectSpawnerAnimator.cs" />
+    <Compile Include="Assets\Scripts\ThemeMainMenuBackground.cs" />
     <Compile Include="Assets\Scripts\UIManager.cs" />
     <Compile Include="Assets\Scripts\Achievements\AchievementDefinition.cs" />
     <Compile Include="Assets\Scripts\GameSoundManager.cs" />
@@ -100,6 +101,7 @@
     <Compile Include="Assets\GooglePlayPlugins\com.google.play.integrity\Samples\IntegrityTestApp\Scripts\RequestIntegrityTokenAction.cs" />
     <Compile Include="Assets\Scripts\ReviewManagerHelper.cs" />
     <Compile Include="Assets\Scripts\ObjectSpawner.cs" />
+    <Compile Include="Assets\Scripts\ThemeMapSprite.cs" />
     <Compile Include="Assets\Scripts\LeaderboardEntry.cs" />
     <Compile Include="Assets\Scripts\CodexManager.cs" />
     <Compile Include="Assets\Scripts\ThemeManager.cs" />

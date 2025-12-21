@@ -211,7 +211,6 @@ MonoBehaviour:
   objectSize: {x: 4, y: 2}
   objectColors:
   - {r: 1, g: 1, b: 1, a: 1}
-  lastBlockSprite: {fileID: -1971845008274128344, guid: 9c9ef6c67af71ec4392943b01a3c36c0, type: 3}
   lastBlockColliderYScale: 1
 --- !u!4 &144379238
 Transform:
@@ -684,7 +683,7 @@ GameObject:
   - component: {fileID: 670578490}
   - component: {fileID: 670578491}
   m_Layer: 0
-  m_Name: Ground Layer 2
+  m_Name: Closer Range_Layer2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -762,7 +761,7 @@ SpriteRenderer:
   m_Size: {x: 0.16, y: 0.16}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
-  m_WasSpriteAssigned: 1
+  m_WasSpriteAssigned: 0
   m_SpriteSortPoint: 0
 --- !u!4 &691184287 stripped
 Transform:
@@ -920,7 +919,7 @@ GameObject:
   - component: {fileID: 1136594896}
   - component: {fileID: 1136594897}
   m_Layer: 0
-  m_Name: Ground Layer 2 (1)
+  m_Name: Closer Range_Layer2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -998,7 +997,7 @@ SpriteRenderer:
   m_Size: {x: 0.16, y: 0.16}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
-  m_WasSpriteAssigned: 1
+  m_WasSpriteAssigned: 0
   m_SpriteSortPoint: 0
 --- !u!1 &1189733182
 GameObject:
@@ -1102,7 +1101,7 @@ GameObject:
   - component: {fileID: 1270397518}
   - component: {fileID: 1270397519}
   m_Layer: 0
-  m_Name: Ground Layer 3
+  m_Name: Mountain Range_Layer3
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1180,7 +1179,7 @@ SpriteRenderer:
   m_Size: {x: 0.16, y: 0.16}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
-  m_WasSpriteAssigned: 1
+  m_WasSpriteAssigned: 0
   m_SpriteSortPoint: 0
 --- !u!1 &1286817092
 GameObject:
@@ -6354,7 +6353,7 @@ GameObject:
   - component: {fileID: 1715220074}
   - component: {fileID: 1715220075}
   m_Layer: 0
-  m_Name: Ground Sprite
+  m_Name: Ground_Layer1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -6432,7 +6431,7 @@ SpriteRenderer:
   m_Size: {x: 15.36, y: 10.22}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
-  m_WasSpriteAssigned: 1
+  m_WasSpriteAssigned: 0
   m_SpriteSortPoint: 0
 --- !u!1 &1721587804
 GameObject:
@@ -6822,21 +6821,35 @@ MonoBehaviour:
   - {fileID: 1721587806}
   stackableSpriteMorning: {fileID: 21300000, guid: 51f0d2801232f18439de6dc656e42696, type: 3}
   stackableSpriteSunset: {fileID: -2148973495147553003, guid: 3ffa0b1ff607eda42a6482e8e4af20ba, type: 3}
-  stackableSpriteNight: {fileID: 3336831150393225829, guid: 6d8642bfc6f74d04c893f24a07b67eff, type: 3}
+  stackableSpriteNight: {fileID: 507677232, guid: 6d8642bfc6f74d04c893f24a07b67eff, type: 3}
   overrideStackableSprites: 1
+  lastBlockSpriteMorning: {fileID: -1971845008274128344, guid: 9c9ef6c67af71ec4392943b01a3c36c0, type: 3}
+  lastBlockSpriteSunset: {fileID: 308578285, guid: 6d8642bfc6f74d04c893f24a07b67eff, type: 3}
+  lastBlockSpriteNight: {fileID: -6751778288368631152, guid: 6d8642bfc6f74d04c893f24a07b67eff, type: 3}
   skySpriteMorning: {fileID: 21300000, guid: 5353ec2b8c3795f4d8b4f3dc32d50c07, type: 3}
   skySpriteSunset: {fileID: 21300000, guid: e3746065afc445a4e9cb67c11069758c, type: 3}
   skySpriteNight: {fileID: 21300000, guid: ed3c60d1d2aec7d48ab13bb27feae51a, type: 3}
   skySpriteRenderer: {fileID: 2144171693}
   useSkySpriteSwap: 1
   morningTint: {r: 1, g: 1, b: 1, a: 1}
-  sunsetTint: {r: 1, g: 1, b: 1, a: 1}
-  nightTint: {r: 1, g: 1, b: 1, a: 1}
+  sunsetTint: {r: 0.7264151, g: 0.7264151, b: 0.7264151, a: 1}
+  nightTint: {r: 0.3019608, g: 0.3019608, b: 0.5019608, a: 1}
   environmentSpriteRenderersArray:
-  - {fileID: 1715220075}
-  - {fileID: 1136594897}
-  - {fileID: 670578491}
-  - {fileID: 1270397519}
+  - renderer: {fileID: 1715220075}
+    spriteName: T_MayanStacker_Layer1
+  - renderer: {fileID: 1136594897}
+    spriteName: T_MayanStacker_Layer2
+  - renderer: {fileID: 670578491}
+    spriteName: T_MayanStacker_Layer2
+  - renderer: {fileID: 1270397519}
+    spriteName: T_MayanStacker_Layer3
+  morningTintSpawned: {r: 1, g: 1, b: 1, a: 1}
+  sunsetTintSpawned: {r: 0.6226415, g: 0.15131696, b: 0.0029369951, a: 1}
+  nightTintSpawned: {r: 0.3, g: 0.3, b: 0.5, a: 1}
+  environmentAtlasMorning: {fileID: 100100200, guid: ebd86a83770cd3741a2398192dbc41fa, type: 3}
+  environmentAtlasSunset: {fileID: 100100200, guid: 37c43cc1ea4afa04b83306c373109a0b, type: 3}
+  environmentAtlasNight: {fileID: 100100200, guid: ebd86a83770cd3741a2398192dbc41fa, type: 3}
+  useEnvironmentSpriteAtlas: 1
 --- !u!1 &2144171692
 GameObject:
   m_ObjectHideFlags: 0

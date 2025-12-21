@@ -60,14 +60,14 @@ public class EnvironmentAsset : MonoBehaviour
     }
 
     /// <summary>
-    /// Register all sprite renderers with StyleManager
+    /// Register all sprite renderers with StyleManager as spawned assets
     /// </summary>
     private void RegisterWithStyleManager()
     {
         styleManager = DependencyRegistry.Find<StyleManager>();
         if (styleManager != null)
         {
-            styleManager.RegisterEnvironmentSpriteRenderers(gameObject);
+            styleManager.RegisterEnvironmentSpriteRenderers(gameObject, true);
         }
     }
 

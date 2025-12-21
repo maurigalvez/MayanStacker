@@ -284,10 +284,10 @@ public class EnvironmentSpawner : MonoBehaviour
 
         environmentAsset.Initialize(selectedAsset, spawnFromLeft, leftBound, rightBound);
 
-        // Register sprite renderers with StyleManager (EnvironmentAsset will also register in Start, but this ensures immediate registration)
+        // Register sprite renderers with StyleManager as spawned assets (EnvironmentAsset will also register in Start, but this ensures immediate registration)
         if (styleManager != null)
         {
-            styleManager.RegisterEnvironmentSpriteRenderers(spawnedObject);
+            styleManager.RegisterEnvironmentSpriteRenderers(spawnedObject, true);
         }
 
         // Track the asset

@@ -329,9 +329,16 @@ public class ThemeSelectionUI : MonoBehaviour
 
     /// <summary>
     /// Enable this component (called by MainMenuManager when showing level selection)
+    /// Re-checks theme unlocks in case progress was synced from cloud
     /// </summary>
     public void EnableThemeSelection()
     {
+        // Re-check theme unlocks (important after cloud sync or when reopening UI)
+        if (themeManager != null)
+        {
+            themeManager.CheckAndUnlockThemes();
+        }
+
         UpdateThemeButtonStates();
     }
 

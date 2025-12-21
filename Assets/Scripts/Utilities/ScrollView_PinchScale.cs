@@ -158,9 +158,6 @@ public class ScrollView_PinchScale : MonoBehaviour, IDragHandler, IScrollHandler
             // Calculate current distance between touches
             float currentDistance = Vector2.Distance(touchZero.screenPosition, touchOne.screenPosition);
 
-            // Calculate the midpoint (pinch center) between the two touches
-            Vector2 pinchCenter = (touchZero.screenPosition + touchOne.screenPosition) / 2f;
-
             // On first frame of two-touch gesture, just store the distance
             if (!isPinching ||
                 touchZero.phase == UnityEngine.InputSystem.TouchPhase.Began ||
@@ -184,10 +181,10 @@ public class ScrollView_PinchScale : MonoBehaviour, IDragHandler, IScrollHandler
 
             previousTouchDistance = currentDistance;
 
-            // Apply zoom based on distance change, using the pinch center as focal point
+            // Apply zoom based on distance change, using the screen center as focal point
             if (Mathf.Abs(distanceDelta) > 0.1f) // Add threshold to avoid jitter
             {
-                Zoom(distanceDelta * pinchSensitivity, pinchCenter);
+                Zoom(distanceDelta * pinchSensitivity);
             }
         }
         else
@@ -246,9 +243,6 @@ public class ScrollView_PinchScale : MonoBehaviour, IDragHandler, IScrollHandler
 
             float currentDistance = Vector2.Distance(pos0, pos1);
 
-            // Calculate the midpoint (pinch center) between the two touches
-            Vector2 pinchCenter = (pos0 + pos1) / 2f;
-
             if (!isPinching)
             {
                 previousTouchDistance = currentDistance;
@@ -270,7 +264,7 @@ public class ScrollView_PinchScale : MonoBehaviour, IDragHandler, IScrollHandler
 
             if (Mathf.Abs(distanceDelta) > 0.1f)
             {
-                Zoom(distanceDelta * pinchSensitivity, pinchCenter);
+                Zoom(distanceDelta * pinchSensitivity);
             }
         }
         else

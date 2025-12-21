@@ -1,6 +1,20 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.U2D;
+
+/// <summary>
+/// Serializable class that pairs a SpriteRenderer with its sprite name for atlas lookup
+/// </summary>
+[System.Serializable]
+public class EnvironmentSpriteRendererEntry
+{
+    [Tooltip("The SpriteRenderer to apply sprites to")]
+    public SpriteRenderer renderer;
+
+    [Tooltip("The sprite name to look up in the sprite atlas (should match across all atlases)")]
+    public string spriteName;
+}
 
 /// <summary>
 /// Manages visual style changes based on time of day
@@ -48,6 +62,14 @@ public class StyleManager : MonoBehaviour
     [Tooltip("If true, uses sprites from StyleManager. If false, uses prefab sprites")]
     [SerializeField] private bool overrideStackableSprites = true;
 
+    [Header("Last Block Sprites (Level Mode)")]
+    [Tooltip("Sprite to use for the last block in level mode - Morning/Day theme")]
+    [SerializeField] private Sprite lastBlockSpriteMorning;
+    [Tooltip("Sprite to use for the last block in level mode - Sunset theme")]
+    [SerializeField] private Sprite lastBlockSpriteSunset;
+    [Tooltip("Sprite to use for the last block in level mode - Night theme")]
+    [SerializeField] private Sprite lastBlockSpriteNight;
+
     [Header("Sky Sprites")]
     [SerializeField] private Sprite skySpriteMorning;
     [SerializeField] private Sprite skySpriteSunset;
@@ -61,8 +83,24 @@ public class StyleManager : MonoBehaviour
     [SerializeField] private Color morningTint = Color.white;
     [SerializeField] private Color sunsetTint = new Color(1f, 0.7f, 0.5f, 1f); // Warm orange
     [SerializeField] private Color nightTint = new Color(0.3f, 0.3f, 0.5f, 1f); // Cool blue
-    [Tooltip("References to environment sprite renderers - assign in Inspector")]
-    [SerializeField] private SpriteRenderer[] environmentSpriteRenderersArray;
+    [Tooltip("References to environment sprite renderers with their sprite names - assign in Inspector")]
+    [SerializeField] private EnvironmentSpriteRendererEntry[] environmentSpriteRenderersArray;
+
+    [Header("Spawned Environment Color Tints")]
+    [Tooltip("Color tints for assets spawned by EnvironmentSpawner - separate from static environment tints")]
+    [SerializeField] private Color morningTintSpawned = Color.white;
+    [SerializeField] private Color sunsetTintSpawned = new Color(1f, 0.7f, 0.5f, 1f); // Warm orange
+    [SerializeField] private Color nightTintSpawned = new Color(0.3f, 0.3f, 0.5f, 1f); // Cool blue
+
+    [Header("Environment Sprite Atlases")]
+    [Tooltip("SpriteAtlas for Morning/Day theme - sprite names should match across all atlases")]
+    [SerializeField] private SpriteAtlas environmentAtlasMorning;
+    [Tooltip("SpriteAtlas for Sunset theme - sprite names should match across all atlases")]
+    [SerializeField] private SpriteAtlas environmentAtlasSunset;
+    [Tooltip("SpriteAtlas for Night theme - sprite names should match across all atlases")]
+    [SerializeField] private SpriteAtlas environmentAtlasNight;
+    [Tooltip("If true, applies sprites from atlases. If false, only applies color tint")]
+    [SerializeField] private bool useEnvironmentSpriteAtlas = true;
 
     // References
     private ObjectSpawner objectSpawner;
@@ -70,6 +108,8 @@ public class StyleManager : MonoBehaviour
     private GameManager gameManager;
     private ThemeManager themeManager;
     private List<SpriteRenderer> environmentSpriteRenderers = new List<SpriteRenderer>();
+    private Dictionary<SpriteRenderer, string> environmentSpriteNames = new Dictionary<SpriteRenderer, string>();
+    private HashSet<SpriteRenderer> spawnedEnvironmentRenderers = new HashSet<SpriteRenderer>();
     private int lastStackHeight = 0;
 
     // Events
@@ -234,14 +274,24 @@ public class StyleManager : MonoBehaviour
     private void InitializeEnvironmentSpriteRenderers()
     {
         environmentSpriteRenderers.Clear();
+        environmentSpriteNames.Clear();
 
         if (environmentSpriteRenderersArray != null)
         {
-            foreach (SpriteRenderer renderer in environmentSpriteRenderersArray)
+            foreach (EnvironmentSpriteRendererEntry entry in environmentSpriteRenderersArray)
             {
-                if (renderer != null && !environmentSpriteRenderers.Contains(renderer))
+                if (entry != null && entry.renderer != null)
                 {
-                    environmentSpriteRenderers.Add(renderer);
+                    if (!environmentSpriteRenderers.Contains(entry.renderer))
+                    {
+                        environmentSpriteRenderers.Add(entry.renderer);
+                    }
+
+                    // Store sprite name if provided
+                    if (!string.IsNullOrEmpty(entry.spriteName))
+                    {
+                        environmentSpriteNames[entry.renderer] = entry.spriteName;
+                    }
                 }
             }
         }
@@ -440,11 +490,43 @@ public class StyleManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Apply environment color tint based on time of day
+    /// Get last block sprite for the specified time of day
+    /// </summary>
+    public Sprite GetLastBlockSpriteForTimeOfDay(TimeOfDay timeOfDay)
+    {
+        switch (timeOfDay)
+        {
+            case TimeOfDay.Morning:
+                return lastBlockSpriteMorning;
+            case TimeOfDay.Sunset:
+                return lastBlockSpriteSunset;
+            case TimeOfDay.Night:
+                return lastBlockSpriteNight;
+            default:
+                return lastBlockSpriteMorning;
+        }
+    }
+
+    /// <summary>
+    /// Get current last block sprite (for level mode)
+    /// </summary>
+    public Sprite GetCurrentLastBlockSprite()
+    {
+        // Only return sprite if in StackerLevels mode
+        if (!IsStackerLevelsMode())
+        {
+            return null;
+        }
+
+        return GetLastBlockSpriteForTimeOfDay(currentTimeOfDay);
+    }
+
+    /// <summary>
+    /// Apply environment color tint and sprites based on time of day
     /// </summary>
     private void ApplyEnvironmentTint(TimeOfDay timeOfDay)
     {
-        Color targetTint = GetEnvironmentTintForTimeOfDay(timeOfDay);
+        SpriteAtlas targetAtlas = GetEnvironmentAtlasForTimeOfDay(timeOfDay);
 
         // Clean up null references before applying tints
         CleanupEnvironmentSpriteRenderers();
@@ -454,6 +536,16 @@ public class StyleManager : MonoBehaviour
         {
             if (renderer != null)
             {
+                // Apply sprite from atlas if enabled and atlas is available
+                if (useEnvironmentSpriteAtlas && targetAtlas != null)
+                {
+                    ApplySpriteFromAtlas(renderer, targetAtlas);
+                }
+
+                // Apply appropriate color tint (different for spawned vs static)
+                Color targetTint = IsSpawnedRenderer(renderer)
+                    ? GetSpawnedEnvironmentTintForTimeOfDay(timeOfDay)
+                    : GetEnvironmentTintForTimeOfDay(timeOfDay);
                 renderer.color = targetTint;
             }
         }
@@ -478,6 +570,76 @@ public class StyleManager : MonoBehaviour
     }
 
     /// <summary>
+    /// Get spawned environment color tint for the specified time of day
+    /// </summary>
+    private Color GetSpawnedEnvironmentTintForTimeOfDay(TimeOfDay timeOfDay)
+    {
+        switch (timeOfDay)
+        {
+            case TimeOfDay.Morning:
+                return morningTintSpawned;
+            case TimeOfDay.Sunset:
+                return sunsetTintSpawned;
+            case TimeOfDay.Night:
+                return nightTintSpawned;
+            default:
+                return morningTintSpawned;
+        }
+    }
+
+    /// <summary>
+    /// Check if a renderer is from a spawned environment asset
+    /// </summary>
+    private bool IsSpawnedRenderer(SpriteRenderer renderer)
+    {
+        return renderer != null && spawnedEnvironmentRenderers.Contains(renderer);
+    }
+
+    /// <summary>
+    /// Get environment SpriteAtlas for the specified time of day
+    /// </summary>
+    private SpriteAtlas GetEnvironmentAtlasForTimeOfDay(TimeOfDay timeOfDay)
+    {
+        switch (timeOfDay)
+        {
+            case TimeOfDay.Morning:
+                return environmentAtlasMorning;
+            case TimeOfDay.Sunset:
+                return environmentAtlasSunset;
+            case TimeOfDay.Night:
+                return environmentAtlasNight;
+            default:
+                return environmentAtlasMorning;
+        }
+    }
+
+    /// <summary>
+    /// Apply sprite from atlas to a renderer based on stored sprite name
+    /// </summary>
+    private void ApplySpriteFromAtlas(SpriteRenderer renderer, SpriteAtlas atlas)
+    {
+        if (renderer == null || atlas == null) return;
+
+        // Get the sprite name for this renderer from dictionary (set via inspector or registration)
+        if (!environmentSpriteNames.TryGetValue(renderer, out string spriteName) || string.IsNullOrEmpty(spriteName))
+        {
+            // No sprite name available, skip sprite assignment
+            return;
+        }
+
+        // Try to get sprite from atlas
+        Sprite newSprite = atlas.GetSprite(spriteName);
+        if (newSprite != null)
+        {
+            renderer.sprite = newSprite;
+        }
+        else
+        {
+            Debug.LogWarning($"StyleManager: Sprite '{spriteName}' not found in atlas '{atlas.name}'. Keeping current sprite.");
+        }
+    }
+
+    /// <summary>
     /// Refresh the list of environment sprite renderers
     /// Useful when new environment objects are spawned
     /// </summary>
@@ -494,7 +656,25 @@ public class StyleManager : MonoBehaviour
     /// </summary>
     public void CleanupEnvironmentSpriteRenderers()
     {
+        // Remove null renderers from list
         environmentSpriteRenderers.RemoveAll(renderer => renderer == null);
+
+        // Remove null renderers from sprite names dictionary
+        List<SpriteRenderer> keysToRemove = new List<SpriteRenderer>();
+        foreach (var kvp in environmentSpriteNames)
+        {
+            if (kvp.Key == null)
+            {
+                keysToRemove.Add(kvp.Key);
+            }
+        }
+        foreach (var key in keysToRemove)
+        {
+            environmentSpriteNames.Remove(key);
+        }
+
+        // Remove null renderers from spawned renderers set
+        spawnedEnvironmentRenderers.RemoveWhere(renderer => renderer == null);
     }
 
     /// <summary>
@@ -504,12 +684,23 @@ public class StyleManager : MonoBehaviour
     /// <param name="environmentObject">The GameObject containing environment sprite renderers</param>
     public void RegisterEnvironmentSpriteRenderers(GameObject environmentObject)
     {
+        RegisterEnvironmentSpriteRenderers(environmentObject, false);
+    }
+
+    /// <summary>
+    /// Register sprite renderers from an environment GameObject
+    /// Automatically finds all SpriteRenderers in the GameObject and its children
+    /// </summary>
+    /// <param name="environmentObject">The GameObject containing environment sprite renderers</param>
+    /// <param name="isSpawned">If true, marks these renderers as spawned assets (will use spawned tints)</param>
+    public void RegisterEnvironmentSpriteRenderers(GameObject environmentObject, bool isSpawned)
+    {
         if (environmentObject == null) return;
 
         SpriteRenderer[] renderers = environmentObject.GetComponentsInChildren<SpriteRenderer>(true);
         foreach (SpriteRenderer renderer in renderers)
         {
-            RegisterEnvironmentSpriteRenderer(renderer);
+            RegisterEnvironmentSpriteRenderer(renderer, null, isSpawned);
         }
     }
 
@@ -519,6 +710,27 @@ public class StyleManager : MonoBehaviour
     /// <param name="renderer">The SpriteRenderer to register</param>
     public void RegisterEnvironmentSpriteRenderer(SpriteRenderer renderer)
     {
+        RegisterEnvironmentSpriteRenderer(renderer, null, false);
+    }
+
+    /// <summary>
+    /// Register a single environment sprite renderer with an explicit sprite name
+    /// </summary>
+    /// <param name="renderer">The SpriteRenderer to register</param>
+    /// <param name="spriteName">The sprite name to use for atlas lookup (if null, will use sprite's current name)</param>
+    public void RegisterEnvironmentSpriteRenderer(SpriteRenderer renderer, string spriteName)
+    {
+        RegisterEnvironmentSpriteRenderer(renderer, spriteName, false);
+    }
+
+    /// <summary>
+    /// Register a single environment sprite renderer with an explicit sprite name and spawn status
+    /// </summary>
+    /// <param name="renderer">The SpriteRenderer to register</param>
+    /// <param name="spriteName">The sprite name to use for atlas lookup (if null, will use sprite's current name)</param>
+    /// <param name="isSpawned">If true, marks this renderer as a spawned asset (will use spawned tints)</param>
+    public void RegisterEnvironmentSpriteRenderer(SpriteRenderer renderer, string spriteName, bool isSpawned)
+    {
         if (renderer == null) return;
 
         // Add to list if not already there
@@ -527,10 +739,45 @@ public class StyleManager : MonoBehaviour
             environmentSpriteRenderers.Add(renderer);
         }
 
-        // Apply current tint if in InfiniteStacker mode or StackerLevels mode
+        // Mark as spawned if applicable
+        if (isSpawned)
+        {
+            spawnedEnvironmentRenderers.Add(renderer);
+        }
+
+        // Store sprite name for atlas lookup
+        if (!string.IsNullOrEmpty(spriteName))
+        {
+            // Use explicitly provided sprite name
+            environmentSpriteNames[renderer] = spriteName;
+        }
+        else if (renderer.sprite != null && !string.IsNullOrEmpty(renderer.sprite.name))
+        {
+            // Fallback: use current sprite name and store it for future use
+            string currentSpriteName = renderer.sprite.name;
+            // Remove "(Clone)" suffix if present (Unity adds this when instantiating)
+            if (currentSpriteName.EndsWith("(Clone)"))
+            {
+                currentSpriteName = currentSpriteName.Substring(0, currentSpriteName.Length - 7).Trim();
+            }
+            environmentSpriteNames[renderer] = currentSpriteName;
+        }
+
+        // Apply current style if in InfiniteStacker mode or StackerLevels mode
         if (IsInfiniteStackerMode() || IsStackerLevelsMode())
         {
-            Color targetTint = GetEnvironmentTintForTimeOfDay(currentTimeOfDay);
+            Color targetTint = isSpawned
+                ? GetSpawnedEnvironmentTintForTimeOfDay(currentTimeOfDay)
+                : GetEnvironmentTintForTimeOfDay(currentTimeOfDay);
+            SpriteAtlas targetAtlas = GetEnvironmentAtlasForTimeOfDay(currentTimeOfDay);
+
+            // Apply sprite from atlas if enabled
+            if (useEnvironmentSpriteAtlas && targetAtlas != null)
+            {
+                ApplySpriteFromAtlas(renderer, targetAtlas);
+            }
+
+            // Apply color tint
             renderer.color = targetTint;
         }
     }
@@ -679,11 +926,17 @@ public class StyleManager : MonoBehaviour
             skySpriteRenderer.sprite = skySpriteMorning;
         }
 
-        // Reset environment tints to white
+        // Reset environment tints to white and sprites if atlases are enabled
+        SpriteAtlas defaultAtlas = environmentAtlasMorning;
         foreach (SpriteRenderer renderer in environmentSpriteRenderers)
         {
             if (renderer != null)
             {
+                if (useEnvironmentSpriteAtlas && defaultAtlas != null)
+                {
+                    ApplySpriteFromAtlas(renderer, defaultAtlas);
+                }
+                // Reset to white (both spawned and static use white when resetting)
                 renderer.color = Color.white;
             }
         }

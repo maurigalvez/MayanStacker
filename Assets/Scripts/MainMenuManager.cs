@@ -776,6 +776,13 @@ public class MainMenuManager : MonoBehaviour
         }
 
         SetActivePanel(mainMenuPanel);
+
+        // Refresh main menu background theme to match current selection
+        var themeBackground = DependencyRegistry.Find<ThemeMainMenuBackground>();
+        if (themeBackground != null)
+        {
+            themeBackground.RefreshTheme();
+        }
     }
 
     private void ShowSettingsPanel()
@@ -845,6 +852,13 @@ public class MainMenuManager : MonoBehaviour
         if (themeSelectionUI != null)
         {
             themeSelectionUI.EnableThemeSelection();
+        }
+
+        // Refresh map theme sprite to match current selection
+        var themeMapSprite = DependencyRegistry.Find<ThemeMapSprite>();
+        if (themeMapSprite != null)
+        {
+            themeMapSprite.RefreshTheme();
         }
 
         // Notify path renderer to update paths

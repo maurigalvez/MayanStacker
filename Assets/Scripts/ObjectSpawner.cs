@@ -12,8 +12,6 @@ public class ObjectSpawner : MonoBehaviour
     [SerializeField] private Color[] objectColors = { Color.red, Color.blue, Color.green, Color.yellow, Color.magenta };
 
     [Header("Level Mode Settings")]
-    [Tooltip("Sprite to use for the last block in level mode")]
-    [SerializeField] private Sprite lastBlockSprite;
     [Tooltip("Y scale multiplier for the last block's collider (to match different texture height)")]
     [SerializeField] private float lastBlockColliderYScale = 1f;
 
@@ -209,10 +207,44 @@ public class ObjectSpawner : MonoBehaviour
             // Clear the sprite first to avoid using prefab sprite when StyleManager should be used
             spriteRenderer.sprite = null;
 
-            // If this is the last block in level mode and we have a special sprite, use it
-            if (isLastBlock && lastBlockSprite != null)
+            // If this is the last block in level mode, get sprite from StyleManager
+            if (isLastBlock)
             {
-                spriteRenderer.sprite = lastBlockSprite;
+                // Refresh StyleManager reference if null (in case it wasn't available at Start)
+                if (styleManager == null)
+                {
+                    styleManager = DependencyRegistry.Find<StyleManager>();
+                }
+
+                if (styleManager != null)
+                {
+                    Sprite lastBlockSprite = styleManager.GetCurrentLastBlockSprite();
+                    if (lastBlockSprite != null)
+                    {
+                        spriteRenderer.sprite = lastBlockSprite;
+                    }
+                    else
+                    {
+                        // Fallback to regular stackable sprite if last block sprite not set
+                        Sprite styleSprite = styleManager.GetCurrentStackableSprite();
+                        if (styleSprite != null)
+                        {
+                            spriteRenderer.sprite = styleSprite;
+                        }
+                        else if (originalSprite != null)
+                        {
+                            spriteRenderer.sprite = originalSprite;
+                        }
+                    }
+                }
+                else
+                {
+                    // StyleManager doesn't exist - use original sprite or create default
+                    if (originalSprite != null)
+                    {
+                        spriteRenderer.sprite = originalSprite;
+                    }
+                }
             }
             // Otherwise, check StyleManager for time-of-day sprites
             else
@@ -298,19 +330,39 @@ public class ObjectSpawner : MonoBehaviour
             Vector2 actualVisualSize;
 
             // For the last block sprite, maintain aspect ratio to avoid squishing
-            if (isLastBlock && lastBlockSprite != null)
+            if (isLastBlock)
             {
-                // Scale to match width while maintaining aspect ratio
-                // This ensures the sprite isn't squished and maintains its natural proportions
-                float scaleX = objectSize.x / spriteSize.x;
-                float scaleY = scaleX; // Use same scale for both axes to maintain aspect ratio
-                spriteScale = new Vector3(scaleX, scaleY, 1f);
+                // Refresh StyleManager reference if null
+                if (styleManager == null)
+                {
+                    styleManager = DependencyRegistry.Find<StyleManager>();
+                }
 
-                // Calculate the actual visual size after scaling (maintains aspect ratio)
-                actualVisualSize = new Vector2(
-                    spriteSize.x * spriteScale.x,
-                    spriteSize.y * spriteScale.y
-                );
+                Sprite lastBlockSprite = styleManager != null ? styleManager.GetCurrentLastBlockSprite() : null;
+                if (lastBlockSprite != null)
+                {
+                    // Scale to match width while maintaining aspect ratio
+                    // This ensures the sprite isn't squished and maintains its natural proportions
+                    float scaleX = objectSize.x / spriteSize.x;
+                    float scaleY = scaleX; // Use same scale for both axes to maintain aspect ratio
+                    spriteScale = new Vector3(scaleX, scaleY, 1f);
+
+                    // Calculate the actual visual size after scaling (maintains aspect ratio)
+                    actualVisualSize = new Vector2(
+                        spriteSize.x * spriteScale.x,
+                        spriteSize.y * spriteScale.y
+                    );
+                }
+                else
+                {
+                    // Last block sprite not available, use regular scaling
+                    spriteScale = new Vector3(
+                        objectSize.x / spriteSize.x,
+                        objectSize.y / spriteSize.y,
+                        1f
+                    );
+                    actualVisualSize = objectSize;
+                }
             }
             else
             {
@@ -337,19 +389,35 @@ public class ObjectSpawner : MonoBehaviour
                 Vector2 colliderSize;
 
                 // For the last block, use the actual visual size (which maintains aspect ratio)
-                if (isLastBlock && lastBlockSprite != null)
+                if (isLastBlock)
                 {
-                    // Set collider size to match the actual visual size after scaling
-                    colliderSize = actualVisualSize;
-
-                    // Reduce Y size by 5% to eliminate gaps between blocks
-                    colliderSize.y = actualVisualSize.y * 0.95f;
-
-                    // Adjust Y scale for last block in level mode if needed
-                    // This multiplier adjusts the collider to account for different sprite proportions
-                    if (lastBlockColliderYScale != 1f)
+                    // Refresh StyleManager reference if null
+                    if (styleManager == null)
                     {
-                        colliderSize.y = actualVisualSize.y * lastBlockColliderYScale * 0.95f;
+                        styleManager = DependencyRegistry.Find<StyleManager>();
+                    }
+
+                    Sprite lastBlockSprite = styleManager != null ? styleManager.GetCurrentLastBlockSprite() : null;
+                    if (lastBlockSprite != null)
+                    {
+                        // Set collider size to match the actual visual size after scaling
+                        colliderSize = actualVisualSize;
+
+                        // Reduce Y size by 5% to eliminate gaps between blocks
+                        colliderSize.y = actualVisualSize.y * 0.95f;
+
+                        // Adjust Y scale for last block in level mode if needed
+                        // This multiplier adjusts the collider to account for different sprite proportions
+                        if (lastBlockColliderYScale != 1f)
+                        {
+                            colliderSize.y = actualVisualSize.y * lastBlockColliderYScale * 0.95f;
+                        }
+                    }
+                    else
+                    {
+                        // Last block sprite not available, use regular collider size
+                        colliderSize = objectSize;
+                        colliderSize.y = objectSize.y * 0.95f;
                     }
                 }
                 else

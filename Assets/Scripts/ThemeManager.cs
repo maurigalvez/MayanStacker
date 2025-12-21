@@ -134,8 +134,10 @@ public class ThemeManager : MonoBehaviour
 
     /// <summary>
     /// Check completed level count and unlock themes if requirements are met
+    /// Public method to allow external components to trigger unlock checks
+    /// (e.g., when theme selection UI is opened, to catch unlocks after cloud sync)
     /// </summary>
-    private void CheckAndUnlockThemes()
+    public void CheckAndUnlockThemes()
     {
         int completedLevels = GetCompletedLevelCount();
 
