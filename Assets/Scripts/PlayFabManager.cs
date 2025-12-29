@@ -607,15 +607,12 @@ public class PlayFabManager : MonoBehaviour
             },
             error =>
             {
-                // AccountAlreadyLinked is OK - it means the device is already linked (possibly to this or another account)
-                if (error.Error == PlayFabErrorCode.LinkedDeviceAlreadyLinked)
+                // Check if device is already linked - this is usually OK for account recovery
+                // PlayFab may return LinkedAccountAlreadyLinked or similar errors
+                string errorReport = error.GenerateErrorReport().ToLower();
+                if (errorReport.Contains("already linked") || errorReport.Contains("linkedaccount"))
                 {
-                    Debug.Log("[Account Recovery] Android Device ID already linked (this is OK for account recovery)");
-                }
-                else if (error.Error == PlayFabErrorCode.DeviceAlreadyLinked)
-                {
-                    Debug.Log("[Account Recovery] Android Device ID already linked to another account. " +
-                        "If this causes issues, the user may need to unlink from PlayFab dashboard.");
+                    Debug.Log("[Account Recovery] Android Device ID already linked to an account (this is expected for returning users)");
                 }
                 else
                 {
