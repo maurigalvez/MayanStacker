@@ -100,6 +100,8 @@ public class PlayFabManager : MonoBehaviour
     private string lastIntegrityToken = null; // Store last integrity token for logging
     private bool usedGoogleLogin = false; // Track if current session used Google login
     private bool usedFallbackLogin = false; // Track if fallback was used (important for debugging)
+    private string lastGoogleLoginError = null; // Store error from failed Google login for event logging
+    private string lastFailedGooglePlayerId = null; // Store Google Player ID from failed login
 
     // Cloud save constants
     private const string PLAYER_PROGRESS_KEY = "PlayerProgress";
@@ -387,6 +389,8 @@ public class PlayFabManager : MonoBehaviour
                         Debug.LogWarning("[ACCOUNT WARNING] Falling back to Android Device ID (empty auth code). " +
                             "This may result in a DIFFERENT PlayFab account!");
                         usedFallbackLogin = true;
+                        lastGoogleLoginError = "server_auth_code_empty";
+                        lastFailedGooglePlayerId = playerID;
                         LoginWithAndroidDeviceID();
                     }
                 }
@@ -400,6 +404,8 @@ public class PlayFabManager : MonoBehaviour
                     Debug.LogWarning("[ACCOUNT WARNING] Falling back to Android Device ID (null auth response). " +
                         "This may result in a DIFFERENT PlayFab account!");
                     usedFallbackLogin = true;
+                    lastGoogleLoginError = "server_auth_response_null";
+                    lastFailedGooglePlayerId = playerID;
                     LoginWithAndroidDeviceID();
                 }
             }
@@ -471,7 +477,8 @@ public class PlayFabManager : MonoBehaviour
             result => OnGoogleLoginSuccessCallback(result, playerID, displayName),
             (error) =>
             {
-                Debug.LogError($"[ACCOUNT WARNING] PlayFab login with Google Play Games failed: {error.GenerateErrorReport()}");
+                string errorReport = error.GenerateErrorReport();
+                Debug.LogError($"[ACCOUNT WARNING] PlayFab login with Google Play Games failed: {errorReport}");
 
                 // Fallback to Device ID if enabled
                 if (fallbackToDeviceID)
@@ -482,6 +489,9 @@ public class PlayFabManager : MonoBehaviour
                     Debug.LogWarning($"[ACCOUNT WARNING] Google Player ID that failed: {playerID}");
 
                     usedFallbackLogin = true;
+                    // Store error info for logging after fallback login succeeds
+                    lastGoogleLoginError = errorReport;
+                    lastFailedGooglePlayerId = playerID;
                     LoginWithAndroidDeviceID();
                 }
                 else
@@ -604,6 +614,7 @@ public class PlayFabManager : MonoBehaviour
             {
                 Debug.Log("[Account Recovery] ✓ Android Device ID successfully linked to this account");
                 Debug.Log("[Account Recovery] If Google login fails in the future, Device ID login will find this same account");
+                LogDeviceLinkingEvent(true);
             },
             error =>
             {
@@ -613,10 +624,12 @@ public class PlayFabManager : MonoBehaviour
                 if (errorReport.Contains("already linked") || errorReport.Contains("linkedaccount"))
                 {
                     Debug.Log("[Account Recovery] Android Device ID already linked to an account (this is expected for returning users)");
+                    LogDeviceLinkingEvent(true, "already_linked");
                 }
                 else
                 {
                     Debug.LogWarning($"[Account Recovery] Could not link Android Device ID: {error.GenerateErrorReport()}");
+                    LogDeviceLinkingEvent(false, error.GenerateErrorReport());
                 }
             });
 #endif
@@ -918,6 +931,23 @@ public class PlayFabManager : MonoBehaviour
         Debug.Log($"PlayFab login successful! PlayFabId: {playFabId}");
 #endif
 
+        // LOG PLAYFAB EVENTS for fallback scenarios (logged after login so we have a valid session)
+        if (usedFallbackLogin)
+        {
+            // Log the Google login failure event (now that we're logged in)
+            if (!string.IsNullOrEmpty(lastGoogleLoginError))
+            {
+                LogGoogleLoginFailureEvent(lastGoogleLoginError, lastFailedGooglePlayerId);
+            }
+
+            // Log that fallback was used
+            LogAccountFallbackEvent(lastGoogleLoginError ?? "unknown_error", lastFailedGooglePlayerId);
+
+            // Clear the stored error info
+            lastGoogleLoginError = null;
+            lastFailedGooglePlayerId = null;
+        }
+
         // IMPORTANT: Check for account mismatch (especially after fallback from Google login failure)
         CheckForAccountMismatch(result);
 
@@ -982,17 +1012,8 @@ public class PlayFabManager : MonoBehaviour
             return;
         }
 
-        // MISMATCH DETECTED!
-        Debug.LogError("═══════════════════════════════════════════════════════════════");
-        Debug.LogError("[ACCOUNT MISMATCH] ⚠️ DIFFERENT PLAYFAB ACCOUNT DETECTED!");
-        Debug.LogError("═══════════════════════════════════════════════════════════════");
-        Debug.LogError($"[ACCOUNT MISMATCH] Expected PlayFab ID: {expectedPlayFabId}");
-        Debug.LogError($"[ACCOUNT MISMATCH] Actual PlayFab ID:   {playFabId}");
-        Debug.LogError($"[ACCOUNT MISMATCH] Last Google Player ID: {lastGooglePlayerId}");
-        Debug.LogError($"[ACCOUNT MISMATCH] Fallback was used: {usedFallbackLogin}");
-        Debug.LogError($"[ACCOUNT MISMATCH] Account newly created: {result.NewlyCreated}");
-        Debug.LogError("[ACCOUNT MISMATCH] This means the player's progress may be on a different account!");
-        Debug.LogError("═══════════════════════════════════════════════════════════════");
+        // MISMATCH DETECTED - Log to PlayFab for remote tracking
+        LogAccountMismatchEvent(expectedPlayFabId, playFabId, result.NewlyCreated);
 
         // Fire event so UI can potentially warn the user
         OnAccountMismatchDetected?.Invoke(expectedPlayFabId, playFabId);
@@ -2039,6 +2060,135 @@ public class PlayFabManager : MonoBehaviour
 
         Debug.Log("[PlayFabManager] Now syncing achievements with Google Play Games...");
         achievementManager.SyncWithGooglePlay();
+    }
+
+    #endregion
+
+    #region PlayFab Event Logging
+
+    /// <summary>
+    /// Logs a custom event to PlayFab for tracking account-related issues
+    /// Events can be viewed in PlayFab Dashboard > Analytics > Event History
+    /// </summary>
+    /// <param name="eventName">Name of the event (e.g., "account_fallback_used")</param>
+    /// <param name="eventData">Dictionary of event properties</param>
+    private void LogPlayFabEvent(string eventName, System.Collections.Generic.Dictionary<string, object> eventData = null)
+    {
+        if (!isLoggedIn)
+        {
+            Debug.LogWarning($"[PlayFab Events] Cannot log event '{eventName}' - not logged in yet");
+            return;
+        }
+
+        var request = new WriteClientPlayerEventRequest
+        {
+            EventName = eventName,
+            Body = eventData ?? new System.Collections.Generic.Dictionary<string, object>()
+        };
+
+        PlayFabClientAPI.WritePlayerEvent(request,
+            result =>
+            {
+#if DEBUG_MODE
+                Debug.Log($"[PlayFab Events] Event '{eventName}' logged successfully");
+#endif
+            },
+            error =>
+            {
+                Debug.LogWarning($"[PlayFab Events] Failed to log event '{eventName}': {error.GenerateErrorReport()}");
+            });
+    }
+
+    /// <summary>
+    /// Logs an account fallback event when Google login fails and Device ID is used
+    /// </summary>
+    private void LogAccountFallbackEvent(string reason, string googlePlayerId = null)
+    {
+        var eventData = new System.Collections.Generic.Dictionary<string, object>
+        {
+            { "reason", reason },
+            { "device_id", SystemInfo.deviceUniqueIdentifier },
+            { "timestamp", System.DateTime.UtcNow.ToString("o") }
+        };
+
+        if (!string.IsNullOrEmpty(googlePlayerId))
+        {
+            eventData["google_player_id"] = googlePlayerId;
+        }
+
+        string expectedId = PlayerPrefs.GetString(EXPECTED_PLAYFAB_ID_KEY, "");
+        if (!string.IsNullOrEmpty(expectedId))
+        {
+            eventData["expected_playfab_id"] = expectedId;
+        }
+
+        LogPlayFabEvent("account_fallback_used", eventData);
+    }
+
+    /// <summary>
+    /// Logs an account mismatch event when logged-in account differs from expected
+    /// </summary>
+    private void LogAccountMismatchEvent(string expectedId, string actualId, bool newlyCreated)
+    {
+        var eventData = new System.Collections.Generic.Dictionary<string, object>
+        {
+            { "expected_playfab_id", expectedId },
+            { "actual_playfab_id", actualId },
+            { "newly_created", newlyCreated },
+            { "used_fallback", usedFallbackLogin },
+            { "device_id", SystemInfo.deviceUniqueIdentifier },
+            { "timestamp", System.DateTime.UtcNow.ToString("o") }
+        };
+
+        string lastGoogleId = PlayerPrefs.GetString(LAST_GOOGLE_PLAYER_ID_KEY, "");
+        if (!string.IsNullOrEmpty(lastGoogleId))
+        {
+            eventData["last_google_player_id"] = lastGoogleId;
+        }
+
+        LogPlayFabEvent("account_mismatch_detected", eventData);
+    }
+
+    /// <summary>
+    /// Logs a successful device linking event
+    /// </summary>
+    private void LogDeviceLinkingEvent(bool success, string errorMessage = null)
+    {
+        var eventData = new System.Collections.Generic.Dictionary<string, object>
+        {
+            { "success", success },
+            { "device_id", SystemInfo.deviceUniqueIdentifier },
+            { "timestamp", System.DateTime.UtcNow.ToString("o") }
+        };
+
+        if (!string.IsNullOrEmpty(errorMessage))
+        {
+            eventData["error"] = errorMessage;
+        }
+
+        LogPlayFabEvent("device_linking_attempt", eventData);
+    }
+
+    /// <summary>
+    /// Logs a Google login failure event
+    /// </summary>
+    private void LogGoogleLoginFailureEvent(string errorMessage, string googlePlayerId = null)
+    {
+        var eventData = new System.Collections.Generic.Dictionary<string, object>
+        {
+            { "error", errorMessage },
+            { "device_id", SystemInfo.deviceUniqueIdentifier },
+            { "timestamp", System.DateTime.UtcNow.ToString("o") }
+        };
+
+        if (!string.IsNullOrEmpty(googlePlayerId))
+        {
+            eventData["google_player_id"] = googlePlayerId;
+        }
+
+        // Note: This event is logged after fallback login succeeds, 
+        // so we can track what errors caused the fallback
+        LogPlayFabEvent("google_login_failed", eventData);
     }
 
     #endregion
