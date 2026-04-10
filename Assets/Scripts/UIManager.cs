@@ -113,6 +113,8 @@ public class UIManager : MonoBehaviour
     };
     [SerializeField] private float comboScalePulse = 1.3f;
     [SerializeField] private float comboScalePulseDuration = 0.2f;
+    [SerializeField] private float comboPopInOvershoot = 1.5f;
+    [SerializeField] private float comboPopInDuration = 0.35f;
     [SerializeField] private bool showComboTimer = true;
 
     // References
@@ -125,6 +127,7 @@ public class UIManager : MonoBehaviour
     // State
     private Coroutine landingAccuracyCoroutine;
     private Coroutine comboPulseCoroutine;
+    private bool isComboPoppingIn = false;
     private Coroutine gameTitleCoroutine;
     private Coroutine levelCompleteCoroutine;
     private Coroutine perfectHitStreakCoroutine;
@@ -1156,11 +1159,13 @@ public class UIManager : MonoBehaviour
     private void UpdateComboDisplay(int combo, float multiplier)
     {
         // Show/hide combo display based on combo count and multiplier (only show when multiplier > 1)
+        bool wasShowing = comboDisplay != null && comboDisplay.activeSelf;
+        bool shouldShow = combo > 0 && multiplier > 1f;
         if (comboDisplay != null)
         {
-            bool shouldShow = combo > 0 && multiplier > 1f;
             comboDisplay.SetActive(shouldShow);
         }
+        bool justAppeared = shouldShow && !wasShowing;
 
         // Update multiplier text with color coding (only show when multiplier > 1)
         if (multiplierText != null && multiplier > 1f)
@@ -1183,7 +1188,10 @@ public class UIManager : MonoBehaviour
         // Trigger pulse animation when combo increases (only when multiplier > 1)
         if (combo > 0 && multiplier > 1f)
         {
-            TriggerComboPulse();
+            if (justAppeared)
+                TriggerComboPopIn();
+            else if (!isComboPoppingIn)
+                TriggerComboPulse();
 
             // Start updating combo timer if not already
             if (!isUpdatingComboTimer)
@@ -1310,6 +1318,66 @@ public class UIManager : MonoBehaviour
 
         // Ensure we end at original scale
         rectTransform.localScale = originalScale;
+    }
+
+    /// <summary>
+    /// Triggers a pop-in scale animation when the combo first appears
+    /// </summary>
+    private void TriggerComboPopIn()
+    {
+        if (comboDisplay == null) return;
+
+        if (comboPulseCoroutine != null)
+        {
+            StopCoroutine(comboPulseCoroutine);
+        }
+
+        comboPulseCoroutine = StartCoroutine(ComboPopInAnimation());
+    }
+
+    /// <summary>
+    /// Animates a pop-in (scale 0 -> overshoot -> 1) on the combo display
+    /// </summary>
+    private IEnumerator ComboPopInAnimation()
+    {
+        RectTransform rectTransform = comboDisplay.GetComponent<RectTransform>();
+        if (rectTransform == null) yield break;
+
+        isComboPoppingIn = true;
+        rectTransform.localScale = Vector3.zero;
+
+        Vector3 startScale = Vector3.zero;
+        Vector3 overshootScale = Vector3.one * comboPopInOvershoot;
+        Vector3 endScale = Vector3.one;
+
+        float elapsedTime = 0f;
+        float upDuration = comboPopInDuration * 0.6f;
+        float downDuration = comboPopInDuration * 0.4f;
+
+        // Scale up with ease-out from 0 to overshoot
+        while (elapsedTime < upDuration)
+        {
+            elapsedTime += Time.deltaTime;
+            float progress = Mathf.Clamp01(elapsedTime / upDuration);
+            float eased = 1f - Mathf.Pow(1f - progress, 3f);
+            rectTransform.localScale = Vector3.LerpUnclamped(startScale, overshootScale, eased);
+            yield return null;
+        }
+
+        elapsedTime = 0f;
+
+        // Settle back from overshoot to 1
+        while (elapsedTime < downDuration)
+        {
+            elapsedTime += Time.deltaTime;
+            float progress = Mathf.Clamp01(elapsedTime / downDuration);
+            float eased = progress * progress * (3f - 2f * progress);
+            rectTransform.localScale = Vector3.LerpUnclamped(overshootScale, endScale, eased);
+            yield return null;
+        }
+
+        rectTransform.localScale = endScale;
+        isComboPoppingIn = false;
     }
 
     private void RestartGame()

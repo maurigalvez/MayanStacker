@@ -559,7 +559,7 @@ AudioSource:
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: 0}
   m_audioClip: {fileID: 0}
-  m_Resource: {fileID: 8300000, guid: 86ee157bd513bec47b4cb61d8c1c9d61, type: 3}
+  m_Resource: {fileID: 8300000, guid: adcb936c5fafcf744a0b7e2f88ba2b0f, type: 3}
   m_PlayOnAwake: 1
   m_Volume: 0.5
   m_Pitch: 1
@@ -782,6 +782,10 @@ MonoBehaviour:
   buttonClickSound: {fileID: 8300000, guid: f81ce32cfa2e2e04193092c76e41119a, type: 3}
   buttonHoverSound: {fileID: 0}
   backButtonSound: {fileID: 8300000, guid: 33a121df7bdea704a80b185a30171bbc, type: 3}
+  dayThemeMusic: {fileID: 8300000, guid: adcb936c5fafcf744a0b7e2f88ba2b0f, type: 3}
+  sunsetThemeMusic: {fileID: 8300000, guid: b00b25fad4044b24fb07ad9b10f011ed, type: 3}
+  nightThemeMusic: {fileID: 8300000, guid: baa8d59be2ec0374a944fb32a4fabf90, type: 3}
+  musicCrossfadeDuration: 0.5
   panelOpenSound: {fileID: 8300000, guid: f81ce32cfa2e2e04193092c76e41119a, type: 3}
   panelCloseSound: {fileID: 8300000, guid: 33a121df7bdea704a80b185a30171bbc, type: 3}
   infiniteModeSelectSound: {fileID: 8300000, guid: f81ce32cfa2e2e04193092c76e41119a, type: 3}
@@ -980,13 +984,61 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 1467398864711830271, guid: 74a40cd5abedcda4b90ec0e20018ae0e, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1467398864711830271, guid: 74a40cd5abedcda4b90ec0e20018ae0e, type: 3}
+      propertyPath: m_AnchorMin.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1467398864711830271, guid: 74a40cd5abedcda4b90ec0e20018ae0e, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1467398864711830271, guid: 74a40cd5abedcda4b90ec0e20018ae0e, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2930395391735033449, guid: 74a40cd5abedcda4b90ec0e20018ae0e, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2930395391735033449, guid: 74a40cd5abedcda4b90ec0e20018ae0e, type: 3}
+      propertyPath: m_AnchorMin.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2930395391735033449, guid: 74a40cd5abedcda4b90ec0e20018ae0e, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2930395391735033449, guid: 74a40cd5abedcda4b90ec0e20018ae0e, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4095795547163363620, guid: 74a40cd5abedcda4b90ec0e20018ae0e, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4095795547163363620, guid: 74a40cd5abedcda4b90ec0e20018ae0e, type: 3}
+      propertyPath: m_AnchorMin.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4095795547163363620, guid: 74a40cd5abedcda4b90ec0e20018ae0e, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4095795547163363620, guid: 74a40cd5abedcda4b90ec0e20018ae0e, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 4316829900831077214, guid: 74a40cd5abedcda4b90ec0e20018ae0e, type: 3}
       propertyPath: m_Name
       value: Main Menu Canvas
       objectReference: {fileID: 0}
     - target: {fileID: 4690574841634264256, guid: 74a40cd5abedcda4b90ec0e20018ae0e, type: 3}
       propertyPath: gameVersion
-      value: 1.1.0
+      value: 1.0.2
       objectReference: {fileID: 0}
     - target: {fileID: 6812175529766804833, guid: 74a40cd5abedcda4b90ec0e20018ae0e, type: 3}
       propertyPath: m_Pivot.x
@@ -1066,6 +1118,22 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6812175529766804833, guid: 74a40cd5abedcda4b90ec0e20018ae0e, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7865393932041858131, guid: 74a40cd5abedcda4b90ec0e20018ae0e, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7865393932041858131, guid: 74a40cd5abedcda4b90ec0e20018ae0e, type: 3}
+      propertyPath: m_AnchorMin.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7865393932041858131, guid: 74a40cd5abedcda4b90ec0e20018ae0e, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7865393932041858131, guid: 74a40cd5abedcda4b90ec0e20018ae0e, type: 3}
+      propertyPath: m_AnchoredPosition.y
       value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []

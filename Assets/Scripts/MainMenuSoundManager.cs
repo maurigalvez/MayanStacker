@@ -14,6 +14,12 @@ public class MainMenuSoundManager : MonoBehaviour
     [SerializeField] private AudioClip buttonHoverSound;
     [SerializeField] private AudioClip backButtonSound;
 
+    [Header("Theme Music")]
+    [SerializeField] private AudioClip dayThemeMusic;
+    [SerializeField] private AudioClip sunsetThemeMusic;
+    [SerializeField] private AudioClip nightThemeMusic;
+    [SerializeField] private float musicCrossfadeDuration = 0.5f;
+
     [Header("Panel Transition Sounds")]
     [SerializeField] private AudioClip panelOpenSound;
     [SerializeField] private AudioClip panelCloseSound;
@@ -45,9 +51,11 @@ public class MainMenuSoundManager : MonoBehaviour
 
     // References
     private SettingsManager settingsManager;
+    private ThemeManager themeManager;
 
     // State
     private bool isInitialized = false;
+    private Coroutine musicFadeRoutine;
 
     private void Awake()
     {
@@ -82,10 +90,84 @@ public class MainMenuSoundManager : MonoBehaviour
             UpdateVolume();
         }
 
+        // Set initial music clip based on the currently selected theme
+        themeManager = DependencyRegistry.Find<ThemeManager>();
+        if (themeManager != null)
+        {
+            AudioClip themeClip = GetMusicClipForTheme(themeManager.GetSelectedTheme());
+            if (themeClip != null && musicAudioSource != null)
+            {
+                musicAudioSource.clip = themeClip;
+            }
+            themeManager.OnThemeChanged += OnThemeChanged;
+        }
+
         // Start playing music if available
         PlayMusic();
 
         isInitialized = true;
+    }
+
+    /// <summary>
+    /// Returns the music clip assigned to the given theme, or null if none is assigned.
+    /// </summary>
+    private AudioClip GetMusicClipForTheme(GameTheme theme)
+    {
+        switch (theme)
+        {
+            case GameTheme.Day: return dayThemeMusic;
+            case GameTheme.Sunset: return sunsetThemeMusic;
+            case GameTheme.Night: return nightThemeMusic;
+            default: return null;
+        }
+    }
+
+    /// <summary>
+    /// Called when the selected theme changes - swap the background music clip.
+    /// </summary>
+    private void OnThemeChanged(GameTheme theme)
+    {
+        AudioClip newClip = GetMusicClipForTheme(theme);
+        if (newClip == null || musicAudioSource == null) return;
+        if (musicAudioSource.clip == newClip) return;
+
+        if (musicFadeRoutine != null)
+        {
+            StopCoroutine(musicFadeRoutine);
+        }
+        musicFadeRoutine = StartCoroutine(CrossfadeToClip(newClip));
+    }
+
+    private System.Collections.IEnumerator CrossfadeToClip(AudioClip newClip)
+    {
+        float targetVolume = musicAudioSource.volume;
+        float duration = Mathf.Max(0.01f, musicCrossfadeDuration);
+
+        // Fade out
+        float t = 0f;
+        float startVolume = musicAudioSource.volume;
+        while (t < duration)
+        {
+            t += Time.unscaledDeltaTime;
+            musicAudioSource.volume = Mathf.Lerp(startVolume, 0f, t / duration);
+            yield return null;
+        }
+
+        // Swap clip
+        musicAudioSource.Stop();
+        musicAudioSource.clip = newClip;
+        musicAudioSource.Play();
+
+        // Fade in
+        t = 0f;
+        while (t < duration)
+        {
+            t += Time.unscaledDeltaTime;
+            musicAudioSource.volume = Mathf.Lerp(0f, targetVolume, t / duration);
+            yield return null;
+        }
+        musicAudioSource.volume = targetVolume;
+        musicFadeRoutine = null;
     }
 
     /// <summary>
@@ -383,6 +465,11 @@ public class MainMenuSoundManager : MonoBehaviour
 
     private void OnDestroy()
     {
+        if (themeManager != null)
+        {
+            themeManager.OnThemeChanged -= OnThemeChanged;
+        }
+
         // Unregister from DependencyRegistry
         DependencyRegistry.Unregister<MainMenuSoundManager>(this);
     }

@@ -20,3 +20,8 @@
 /Assets/Plugins
 /Logs
 /Logs
+/Logs
+/Logs
+*.log
+Logs/AssetImportWorker0-prev.log
+/Logs

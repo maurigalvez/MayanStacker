@@ -24,6 +24,13 @@ public class StackableObject : MonoBehaviour
     [Header("Particle Effects")]
     [SerializeField] private ParticleSystem landingParticleEffect;
 
+    [Header("Squash & Stretch")]
+    [SerializeField] private bool enableSquashStretch = true;
+    [SerializeField] private float squashAmount = 0.4f; // How much to squish vertically (0.4 = 60% height)
+    [SerializeField] private float stretchAmount = 1.15f; // Overshoot on the way back
+    [SerializeField] private float squashDuration = 0.08f;
+    [SerializeField] private float reboundDuration = 0.35f;
+
     [Header("Audio Settings")]
     [SerializeField] private AudioSource audioSource;
     [SerializeField] private AudioClip[] landingAudioClips;
@@ -250,6 +257,12 @@ public class StackableObject : MonoBehaviour
         }
         stackManager.AddObjectToStack(this);
 
+        // Trigger squash & stretch bounce
+        if (enableSquashStretch)
+        {
+            StartCoroutine(SquashAndStretch());
+        }
+
         // Trigger landing particle effect
         TriggerLandingParticleEffect();
 
@@ -315,6 +328,36 @@ public class StackableObject : MonoBehaviour
     private void TriggerLandingParticleEffect()
     {
         if (landingParticleEffect == null) return;
+
+        // Tint the particle effect based on the currently selected theme:
+        // - Day:    keep the block's color (as-is)
+        // - Sunset: smoke (grayscale range)
+        // - Night:  colorful (random vibrant hue per burst)
+        var themeManager = DependencyRegistry.Find<ThemeManager>();
+        GameTheme theme = themeManager != null ? themeManager.GetSelectedTheme() : GameTheme.Day;
+
+        var main = landingParticleEffect.main;
+        switch (theme)
+        {
+            case GameTheme.Sunset:
+                main.startColor = new ParticleSystem.MinMaxGradient(
+                    new Color(0.75f, 0.75f, 0.75f, 0.9f),
+                    new Color(0.35f, 0.35f, 0.35f, 0.9f));
+                break;
+            case GameTheme.Night:
+                main.startColor = new ParticleSystem.MinMaxGradient(
+                    Color.HSVToRGB(Random.value, 0.9f, 1f),
+                    Color.HSVToRGB(Random.value, 0.9f, 1f));
+                break;
+            case GameTheme.Day:
+            default:
+                if (spriteRenderer != null)
+                {
+                    main.startColor = spriteRenderer.color;
+                }
+                break;
+        }
+
         landingParticleEffect.Play();
     }
 
@@ -331,6 +374,51 @@ public class StackableObject : MonoBehaviour
 
         // Play the audio clip
         audioSource.PlayOneShot(randomClip);
+    }
+
+    /// <summary>
+    /// Squashes the block vertically on impact then springs back with an elastic overshoot
+    /// for a juicy, fun landing effect.
+    /// </summary>
+    private IEnumerator SquashAndStretch()
+    {
+        Vector3 baseScale = transform.localScale;
+        // Preserve volume feel: squash Y, widen X
+        Vector3 squashedScale = new Vector3(
+            baseScale.x * (1f + (1f - squashAmount) * 0.5f),
+            baseScale.y * squashAmount,
+            baseScale.z);
+
+        // Quick squash down
+        float t = 0f;
+        while (t < squashDuration)
+        {
+            t += Time.deltaTime;
+            float k = Mathf.Clamp01(t / squashDuration);
+            transform.localScale = Vector3.Lerp(baseScale, squashedScale, k);
+            yield return null;
+        }
+        transform.localScale = squashedScale;
+
+        // Elastic rebound back to base scale (with stretch overshoot)
+        Vector3 stretchedScale = new Vector3(
+            baseScale.x * (2f - stretchAmount),
+            baseScale.y * stretchAmount,
+            baseScale.z);
+
+        t = 0f;
+        while (t < reboundDuration)
+        {
+            t += Time.deltaTime;
+            float k = Mathf.Clamp01(t / reboundDuration);
+            // Damped oscillation: overshoots toward stretched, then settles at base
+            float damp = Mathf.Exp(-5f * k);
+            float osc = Mathf.Sin(k * Mathf.PI * 3f) * damp;
+            transform.localScale = Vector3.Lerp(squashedScale, baseScale, k)
+                + (stretchedScale - baseScale) * osc;
+            yield return null;
+        }
+        transform.localScale = baseScale;
     }
 
     /// <summary>

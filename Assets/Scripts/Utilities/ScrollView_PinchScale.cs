@@ -181,10 +181,12 @@ public class ScrollView_PinchScale : MonoBehaviour, IDragHandler, IScrollHandler
 
             previousTouchDistance = currentDistance;
 
-            // Apply zoom based on distance change, using the screen center as focal point
+            // Apply zoom based on distance change, zooming towards the midpoint between fingers
             if (Mathf.Abs(distanceDelta) > 0.1f) // Add threshold to avoid jitter
             {
-                Zoom(distanceDelta * pinchSensitivity);
+                // Calculate the midpoint between the two touches as the focal point
+                Vector2 pinchCenter = (touchZero.screenPosition + touchOne.screenPosition) / 2f;
+                Zoom(distanceDelta * pinchSensitivity, pinchCenter);
             }
         }
         else
@@ -264,7 +266,9 @@ public class ScrollView_PinchScale : MonoBehaviour, IDragHandler, IScrollHandler
 
             if (Mathf.Abs(distanceDelta) > 0.1f)
             {
-                Zoom(distanceDelta * pinchSensitivity);
+                // Calculate the midpoint between the two touches as the focal point
+                Vector2 pinchCenter = (pos0 + pos1) / 2f;
+                Zoom(distanceDelta * pinchSensitivity, pinchCenter);
             }
         }
         else
@@ -292,7 +296,9 @@ public class ScrollView_PinchScale : MonoBehaviour, IDragHandler, IScrollHandler
             // Only process if there's actual scroll input
             if (scrollDelta.y != 0)
             {
-                Zoom(scrollDelta.y * mouseScrollSensitivity);
+                // Zoom towards the mouse cursor position
+                Vector2 mousePosition = mouse.position.ReadValue();
+                Zoom(scrollDelta.y * mouseScrollSensitivity, mousePosition);
             }
         }
     }
@@ -324,12 +330,14 @@ public class ScrollView_PinchScale : MonoBehaviour, IDragHandler, IScrollHandler
     /// </summary>
     public void OnScroll(PointerEventData eventData)
     {
-        Zoom(eventData.scrollDelta.y * zoomSpeed);
+        // Zoom towards the pointer position
+        Zoom(eventData.scrollDelta.y * zoomSpeed, eventData.position);
     }
 
     /// <summary>
-    /// Applies zoom increment to the map and clamps it within min/max bounds
-    /// Zooms towards a specific screen position or the center of the viewport
+    /// Applies zoom increment to the map and clamps it within min/max bounds.
+    /// Zooms towards a specific screen position (e.g., pinch center or mouse cursor),
+    /// keeping that point stationary on screen while scaling around it.
     /// </summary>
     /// <param name="increment">The amount to zoom (positive = zoom in, negative = zoom out)</param>
     /// <param name="screenPosition">Optional screen position to zoom towards. If null, zooms towards viewport center</param>

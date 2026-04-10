@@ -34,5 +34,5 @@
     "csharp.inlayHints.enableInlayHintsForTypes": true,
     "dotnet.completion.showCompletionItemsFromUnimportedNamespaces": true,
     "dotnet.formatting.organizeImportsOnFormat": true,
-    "dotnet.defaultSolution": "TamalStacker.sln"
+    "dotnet.defaultSolution": "TamalStacker.slnx"
 }
