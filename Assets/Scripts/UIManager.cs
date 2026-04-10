@@ -27,6 +27,14 @@ public class UIManager : MonoBehaviour
     [SerializeField] private TextMeshProUGUI gameModeText;
     [Tooltip("Delay in seconds before showing the level complete panel")]
     [SerializeField] private float levelCompleteDelay = 1f;
+    [Tooltip("Duration in seconds for the final score count-up animation on the level complete panel")]
+    [SerializeField] private float scoreCountUpDuration = 1.25f;
+    [Tooltip("Interval in seconds between score tick sounds while counting up")]
+    [SerializeField] private float scoreCountTickInterval = 0.06f;
+    [Tooltip("Starting pitch for the score count tick sound")]
+    [SerializeField] private float scoreCountStartPitch = 1.0f;
+    [Tooltip("Ending pitch for the score count tick sound (ramps up as count progresses)")]
+    [SerializeField] private float scoreCountEndPitch = 1.6f;
 
     [Header("Codex Unlock Popup")]
     [SerializeField] private GameObject codexUnlockPopup;
@@ -37,6 +45,10 @@ public class UIManager : MonoBehaviour
     [Header("Star Colors")]
     [SerializeField] private Color starInitialColor = new Color(0.3f, 0.3f, 0.3f, 1f); // Dark gray
     [SerializeField] private Color starHighlightColor = new Color(1f, 0.84f, 0f, 1f); // Gold/yellow
+    [Tooltip("Scale multiplier at the peak of the star reveal pop")]
+    [SerializeField] private float starRevealPopScale = 1.5f;
+    [Tooltip("Duration in seconds of the star reveal pop animation")]
+    [SerializeField] private float starRevealPopDuration = 0.25f;
 
     [Header("Game UI")]
     [SerializeField] private GameObject gameUI;
@@ -49,6 +61,12 @@ public class UIManager : MonoBehaviour
     [SerializeField] private StackOverviewUI stackOverviewUI; // Mini-map showing stack overview (shown in all game modes)
     [SerializeField] private TextMeshProUGUI gameTitleText; // Title shown before game starts (Level name or "Infinite Stacker")
     [SerializeField] private float gameTitleDisplayDuration = 2.5f; // How long to show the title before game starts
+
+    [Header("Label Change Animation")]
+    [Tooltip("Scale multiplier at the peak of the pulse when a label value changes")]
+    [SerializeField] private float labelPulseScale = 1.25f;
+    [Tooltip("Duration in seconds of the label pulse animation")]
+    [SerializeField] private float labelPulseDuration = 0.25f;
 
     [Header("Combo UI")]
     [SerializeField] private GameObject comboDisplay;
@@ -378,18 +396,55 @@ public class UIManager : MonoBehaviour
 
     private void UpdateScore(int score)
     {
-        if (scoreText != null)
-        {
-            scoreText.text = string.Format(scoreFormat, score);
-        }
+        SetTextAnimated(scoreText, string.Format(scoreFormat, score));
     }
 
     private void UpdateHighScore(int highScore)
     {
-        if (highScoreText != null)
+        SetTextAnimated(highScoreText, string.Format(highScoreFormat, highScore));
+    }
+
+    /// <summary>
+    /// Sets a TMP label's text and plays a quick scale pulse if the value changed.
+    /// </summary>
+    private void SetTextAnimated(TextMeshProUGUI label, string newText)
+    {
+        if (label == null) return;
+        if (label.text == newText) return;
+
+        label.text = newText;
+
+        if (!isActiveAndEnabled || !label.gameObject.activeInHierarchy) return;
+        if (labelPulseDuration <= 0f || labelPulseScale <= 1f) return;
+
+        StartCoroutine(PulseLabelRoutine(label.rectTransform));
+    }
+
+    private IEnumerator PulseLabelRoutine(RectTransform rt)
+    {
+        if (rt == null) yield break;
+
+        Vector3 baseScale = Vector3.one;
+        Vector3 peakScale = baseScale * labelPulseScale;
+        float half = labelPulseDuration * 0.5f;
+
+        float t = 0f;
+        while (t < half)
         {
-            highScoreText.text = string.Format(highScoreFormat, highScore);
+            t += Time.unscaledDeltaTime;
+            rt.localScale = Vector3.LerpUnclamped(baseScale, peakScale, t / half);
+            yield return null;
         }
+
+        t = 0f;
+        while (t < half)
+        {
+            t += Time.unscaledDeltaTime;
+            rt.localScale = Vector3.LerpUnclamped(peakScale, baseScale, t / half);
+            yield return null;
+        }
+
+        rt.localScale = baseScale;
     }
 
     private void OnGameStart()
@@ -818,7 +873,7 @@ public class UIManager : MonoBehaviour
         if (stackHeightText != null && stackManager != null)
         {
             int height = stackManager.GetStackCount();
-            stackHeightText.text = string.Format(stackHeightFormat, height);
+            SetTextAnimated(stackHeightText, string.Format(stackHeightFormat, height));
         }
     }
 
@@ -1504,7 +1559,7 @@ public class UIManager : MonoBehaviour
         if (levelProgressText == null || levelManager == null || levelManager.CurrentLevel == null) return;
 
         int required = levelManager.CurrentLevel.requiredStackHeight;
-        levelProgressText.text = $"Height: {currentHeight}/{required}";
+        SetTextAnimated(levelProgressText, $"Height: {currentHeight}/{required}");
 
         // Color code the text based on progress
         float progress = (float)currentHeight / required;
@@ -1570,14 +1625,8 @@ public class UIManager : MonoBehaviour
             levelNameText.text = $"Level {levelManager.CurrentLevel.levelNumber}\n{levelManager.CurrentLevel.levelName} Complete!";
         }
 
-        // Update score
-        if (levelScoreText != null)
-        {
-            levelScoreText.text = $"Score: {score}";
-        }
-
-        // Display stars
-        DisplayStars(stars);
+        // Animate the score counting up; stars light up progressively as the count climbs
+        yield return StartCoroutine(AnimateLevelScoreCountUp(score, stars));
 
         // Show/hide next level button based on availability
         if (nextLevelButton != null && levelManager != null)
@@ -1616,6 +1665,147 @@ public class UIManager : MonoBehaviour
                 finalScoreText.text = $"Level Failed!\nReached: {currentHeight}/{levelManager.CurrentLevel.requiredStackHeight}";
             }
         }
+    }
+
+    /// <summary>
+    /// Animates the level complete score text counting up from 0 to the final score,
+    /// playing a tick sound at a fixed interval with a pitch ramp. Stars light up
+    /// progressively at eased progress thresholds while the score climbs.
+    /// </summary>
+    private IEnumerator AnimateLevelScoreCountUp(int finalScore, int earnedStarCount)
+    {
+        if (levelScoreText == null)
+        {
+            yield break;
+        }
+
+        int totalStarSlots = stars != null ? stars.Length : 0;
+
+        // Reset all stars to "unearned" state at normal scale
+        if (stars != null)
+        {
+            for (int i = 0; i < stars.Length; i++)
+            {
+                if (stars[i] != null)
+                {
+                    stars[i].color = starInitialColor;
+                    stars[i].transform.localScale = Vector3.one;
+                }
+            }
+        }
+
+        // If there's nothing to count or duration is effectively zero, snap to the final value
+        // and immediately highlight the earned stars
+        if (finalScore <= 0 || scoreCountUpDuration <= 0f)
+        {
+            levelScoreText.text = $"Score: {finalScore}";
+            for (int i = 0; i < totalStarSlots && i < earnedStarCount; i++)
+            {
+                if (stars[i] != null) stars[i].color = starHighlightColor;
+            }
+            yield break;
+        }
+
+        levelScoreText.text = "Score: 0";
+
+        float elapsed = 0f;
+        float nextTickTime = 0f;
+        int displayedScore = 0;
+        int starsLit = 0;
+        int starsToLight = Mathf.Clamp(earnedStarCount, 0, totalStarSlots);
+
+        while (elapsed < scoreCountUpDuration)
+        {
+            elapsed += Time.unscaledDeltaTime;
+            float t = Mathf.Clamp01(elapsed / scoreCountUpDuration);
+
+            // Ease-out so the count-up decelerates toward the final value
+            float eased = 1f - (1f - t) * (1f - t);
+            int newScore = Mathf.FloorToInt(Mathf.Lerp(0f, finalScore, eased));
+
+            if (newScore != displayedScore)
+            {
+                displayedScore = newScore;
+                levelScoreText.text = $"Score: {displayedScore}";
+            }
+
+            // Light up the next star once eased progress crosses its threshold
+            // e.g., for 3 earned stars: thresholds at 1/3, 2/3, 3/3
+            while (starsLit < starsToLight && eased >= (float)(starsLit + 1) / starsToLight)
+            {
+                LightUpStar(starsLit);
+                starsLit++;
+            }
+
+            if (gameSoundManager != null && elapsed >= nextTickTime && displayedScore < finalScore)
+            {
+                float pitch = Mathf.Lerp(scoreCountStartPitch, scoreCountEndPitch, t);
+                gameSoundManager.PlayScoreCountSound(pitch);
+                nextTickTime = elapsed + Mathf.Max(0.01f, scoreCountTickInterval);
+            }
+
+            yield return null;
+        }
+
+        // Ensure final value is displayed exactly, and play one last tick at max pitch
+        levelScoreText.text = $"Score: {finalScore}";
+        if (gameSoundManager != null)
+        {
+            gameSoundManager.PlayScoreCountSound(scoreCountEndPitch);
+        }
+
+        // Safety: ensure any remaining earned stars are lit (handles rounding edge cases)
+        while (starsLit < starsToLight)
+        {
+            LightUpStar(starsLit);
+            starsLit++;
+        }
+    }
+
+    /// <summary>
+    /// Highlights a single star and starts its pop animation. Fire-and-forget so it
+    /// runs in parallel with the score count-up coroutine.
+    /// </summary>
+    private void LightUpStar(int index)
+    {
+        if (stars == null || index < 0 || index >= stars.Length || stars[index] == null)
+        {
+            return;
+        }
+
+        stars[index].color = starHighlightColor;
+
+        if (gameSoundManager != null)
+        {
+            float pitch = Mathf.Lerp(scoreCountStartPitch, scoreCountEndPitch, (float)(index + 1) / Mathf.Max(1, stars.Length));
+            gameSoundManager.PlayScoreCountSound(pitch);
+        }
+
+        StartCoroutine(StarPopAnimation(stars[index].transform));
+    }
+
+    private IEnumerator StarPopAnimation(Transform starTransform)
+    {
+        if (starTransform == null) yield break;
+
+        float half = Mathf.Max(0.01f, starRevealPopDuration * 0.5f);
+        float elapsed = 0f;
+        while (elapsed < half)
+        {
+            elapsed += Time.unscaledDeltaTime;
+            float t = Mathf.Clamp01(elapsed / half);
+            starTransform.localScale = Vector3.one * Mathf.Lerp(1f, starRevealPopScale, t);
+            yield return null;
+        }
+        elapsed = 0f;
+        while (elapsed < half)
+        {
+            elapsed += Time.unscaledDeltaTime;
+            float t = Mathf.Clamp01(elapsed / half);
+            starTransform.localScale = Vector3.one * Mathf.Lerp(starRevealPopScale, 1f, t);
+            yield return null;
+        }
+        starTransform.localScale = Vector3.one;
     }
 
     private void DisplayStars(int starCount)

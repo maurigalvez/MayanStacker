@@ -116,9 +116,11 @@
     <Compile Include="Assets\Scripts\StackOverviewUI.cs" />
     <Compile Include="Assets\Scripts\Utilities\PositionPingPongAnimation.cs" />
     <Compile Include="Assets\Scripts\LevelProgressUI.cs" />
+    <Compile Include="Assets\Scripts\ThemeTextTint.cs" />
     <Compile Include="Assets\Scripts\DependencyRegistry\ILevelManager.cs" />
     <Compile Include="Assets\Scripts\PlayFabManager.cs" />
     <Compile Include="Assets\Scripts\SceneLoader.cs" />
+    <Compile Include="Assets\Scripts\ThemeUITint.cs" />
     <Compile Include="Assets\Scripts\CameraController.cs" />
     <Compile Include="Assets\Scripts\NetworkUtility.cs" />
   </ItemGroup>

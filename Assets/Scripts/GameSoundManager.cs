@@ -27,6 +27,8 @@ public class GameSoundManager : MonoBehaviour
     [SerializeField] private AudioClip comboLostSound;
     [SerializeField] private AudioClip codexUnlockSound;
     [SerializeField] private AudioClip kukulkanShiftSound;
+    [Tooltip("Tick sound played repeatedly while the final score counts up on the level complete panel")]
+    [SerializeField] private AudioClip scoreCountSound;
 
     [Header("Settings")]
     [SerializeField] private float sfxVolume = 0.7f;
@@ -549,6 +551,23 @@ public class GameSoundManager : MonoBehaviour
         {
             PlaySound(levelCompleteSound);
         }
+    }
+
+    /// <summary>
+    /// Plays the score count tick sound (used while animating score on level complete panel).
+    /// Optional pitch parameter lets callers ramp the tick pitch as the score climbs.
+    /// </summary>
+    public void PlayScoreCountSound(float pitch = 1f)
+    {
+        if (!isInitialized || scoreCountSound == null || sfxSource == null)
+        {
+            return;
+        }
+
+        float originalPitch = sfxSource.pitch;
+        sfxSource.pitch = pitch;
+        sfxSource.PlayOneShot(scoreCountSound);
+        sfxSource.pitch = originalPitch;
     }
 
     /// <summary>

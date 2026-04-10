@@ -5801,6 +5801,9 @@ GameObject:
   - component: {fileID: 6730720016796563187}
   - component: {fileID: 2861368430749406913}
   - component: {fileID: 2762820292790496102}
+  - component: {fileID: 3132339909875388837}
+  - component: {fileID: 1265580166117284842}
+  - component: {fileID: 4996291645299289649}
   m_Layer: 5
   m_Name: Main Menu Canvas
   m_TagString: Untagged
@@ -6108,6 +6111,69 @@ MonoBehaviour:
   lockedButtonColor: {r: 0.9622642, g: 0.7407348, b: 0.46751517, a: 1}
   unlockedButtonColor: {r: 0.6886792, g: 0.6886792, b: 0.6886792, a: 1}
   selectedButtonColor: {r: 1, g: 1, b: 1, a: 1}
+--- !u!114 &3132339909875388837
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4316829900831077214}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 532c01be340e3df4abaca5d81d7589d4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ThemeMainMenuBackground
+  dayBackgroundSprite: {fileID: 21300000, guid: 34bf4c0201729e449bdda590aff95076, type: 3}
+  sunsetBackgroundSprite: {fileID: 21300000, guid: 26b9ea8aef3b2f64f9c975ea2824d8c8, type: 3}
+  nightBackgroundSprite: {fileID: 21300000, guid: da627316da940fc4598e9677ae38a6ad, type: 3}
+  image: {fileID: 3583451484669393765}
+--- !u!114 &1265580166117284842
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4316829900831077214}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 139da90f922815d4db807a5f1389c47c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ThemeUITint
+  targetGraphics:
+  - {fileID: 2670210557387674617}
+  - {fileID: 500739952619954706}
+  - {fileID: 5415174617196094434}
+  - {fileID: 7521111649831802611}
+  - {fileID: 88814837917754421}
+  - {fileID: 7103545306134923364}
+  - {fileID: 8284824041731427842}
+  dayColor: {r: 1, g: 1, b: 1, a: 1}
+  sunsetColor: {r: 1, g: 0.75, b: 0.55, a: 1}
+  nightColor: {r: 0.55, g: 0.6, b: 0.85, a: 1}
+  multiplyWithOriginal: 0
+--- !u!114 &4996291645299289649
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4316829900831077214}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0d817538e3ec4664c8b0a0b5a19abcc5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ThemeTextTint
+  targetTexts:
+  - {fileID: 7765601016763136543}
+  - {fileID: 3146503559796060271}
+  - {fileID: 7180679720714076139}
+  dayFaceColor: {r: 1, g: 1, b: 1, a: 1}
+  sunsetFaceColor: {r: 1, g: 0.9, b: 0.7, a: 1}
+  nightFaceColor: {r: 0.8, g: 0.85, b: 1, a: 1}
+  tintOutline: 0
+  dayOutlineColor: {r: 0, g: 0, b: 0, a: 1}
+  sunsetOutlineColor: {r: 0.4, g: 0.2, b: 0.1, a: 1}
+  nightOutlineColor: {r: 0.1, g: 0.1, b: 0.3, a: 1}
 --- !u!1 &4332407498993627008
 GameObject:
   m_ObjectHideFlags: 0
