@@ -30,7 +30,6 @@ public class CodexManager : MonoBehaviour
 
     [Header("Empty State")]
     [SerializeField] private GameObject emptyStatePanel;
-    [SerializeField] private string emptyStateMessage = "No levels unlocked yet. Play levels to unlock entries in the Codex!";
 
     [Header("Animation Settings")]
     [SerializeField] private float scrollUpAnimationDuration = 0.8f;
@@ -468,7 +467,7 @@ public class CodexManager : MonoBehaviour
         // Update level name - show "????" if not completed
         if (detailLevelNameText != null)
         {
-            detailLevelNameText.text = isCompleted ? levelData.levelName : "????";
+            detailLevelNameText.text = isCompleted ? LocalizationManager.GetLevelName(levelData) : LocalizationManager.Get("codex_hidden_name");
         }
 
         // Update location - hide if not completed
@@ -476,13 +475,14 @@ public class CodexManager : MonoBehaviour
         {
             if (isCompleted)
             {
-                detailLocationText.text = string.IsNullOrEmpty(levelData.location)
-                    ? "Unknown Location"
-                    : levelData.location;
+                string location = LocalizationManager.GetLevelLocation(levelData);
+                detailLocationText.text = string.IsNullOrEmpty(location)
+                    ? LocalizationManager.Get("codex_unknown_location")
+                    : location;
             }
             else
             {
-                detailLocationText.text = "????";
+                detailLocationText.text = LocalizationManager.Get("codex_hidden_name");
             }
         }
 
@@ -491,13 +491,14 @@ public class CodexManager : MonoBehaviour
         {
             if (isCompleted)
             {
-                detailDescriptionText.text = string.IsNullOrEmpty(levelData.levelDescription)
-                    ? "No description available."
-                    : levelData.levelDescription;
+                string description = LocalizationManager.GetLevelDescription(levelData);
+                detailDescriptionText.text = string.IsNullOrEmpty(description)
+                    ? LocalizationManager.Get("codex_no_description")
+                    : description;
             }
             else
             {
-                detailDescriptionText.text = "Complete this level to reveal its secrets...";
+                detailDescriptionText.text = LocalizationManager.Get("codex_hidden_description");
             }
         }
 

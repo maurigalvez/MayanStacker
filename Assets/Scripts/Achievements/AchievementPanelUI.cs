@@ -199,14 +199,14 @@ namespace TamalStacker.Achievements
             if (achievementManager == null)
             {
                 Debug.LogWarning("AchievementPanelUI: AchievementManager not found!");
-                ShowEmptyState(true, "Achievement system not found.");
+                ShowEmptyState(true, LocalizationManager.Get("achievement_not_found"));
                 return;
             }
 
             if (!achievementManager.IsInitialized)
             {
                 Debug.LogWarning("AchievementPanelUI: AchievementManager not initialized yet");
-                ShowEmptyState(true, "Achievement system is initializing...");
+                ShowEmptyState(true, LocalizationManager.Get("achievement_initializing"));
                 return;
             }
 
@@ -228,7 +228,7 @@ namespace TamalStacker.Achievements
 
             if (achievements.Count == 0)
             {
-                ShowEmptyState(true, "No achievements in this category.");
+                ShowEmptyState(true, LocalizationManager.Get("achievement_empty_category"));
                 return;
             }
 

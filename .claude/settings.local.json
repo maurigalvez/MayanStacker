@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(grep -r \"\\\\\"[A-Z][^\\\\\"]*\\\\\"\" /d/Repositories/TamalStacker/Assets/Scripts/*.cs)",
+      "Bash(grep -n \"hiddenTitle\\\\|hiddenDescription\" /d/Repositories/TamalStacker/Assets/Scripts/Achievements/*.cs)",
+      "Bash(grep -rn \"\\\\\"Play\\\\\"\\\\|\\\\\"Start\\\\\"\\\\|\\\\\"Settings\\\\\"\\\\|\\\\\"Back\\\\\"\\\\|\\\\\"Menu\\\\\"\\\\|\\\\\"Quit\\\\\"\\\\|\\\\\"Credits\\\\\"\\\\|\\\\\"Codex\\\\\"\\\\|\\\\\"Leaderboard\\\\\"\\\\|\\\\\"Achievement\\\\\"\" /d/Repositories/TamalStacker/Assets/Scripts/*.cs)",
+      "Bash(grep -n \"button.text\\\\|buttonText\\\\|titleText\\\\|panelTitle\" /d/Repositories/TamalStacker/Assets/Scripts/*.cs)",
+      "Bash(grep -rn \"Error\\\\|Failed\\\\|Cannot\\\\|Must\\\\|Required\" /d/Repositories/TamalStacker/Assets/Scripts/*.cs)",
+      "Bash(grep -rn \"Verifying\\\\|Syncing\\\\|Loading\\\\|Connecting\" /d/Repositories/TamalStacker/Assets/Scripts/*.cs)",
+      "Bash(grep -rn \"newHighScoreMessage\\\\|emptyStateMessage\\\\|hudText\\\\|panel\\\\|label\" /d/Repositories/TamalStacker/Assets/Scripts/*.cs)",
+      "Bash(grep -rn \"Syncing with cloud\\\\|Verifying app integrity\\\\|Kukulkan\" /d/Repositories/TamalStacker/Assets/Scripts/*.cs)",
+      "Bash(node -e \"JSON.parse\\(require\\('fs'\\).readFileSync\\('d:/Repositories/TamalStacker/Assets/Resources/Localization/en.json','utf8'\\)\\); console.log\\('en.json: OK'\\)\")",
+      "Bash(node -e \"JSON.parse\\(require\\('fs'\\).readFileSync\\('d:/Repositories/TamalStacker/Assets/Resources/Localization/es-419.json','utf8'\\)\\); console.log\\('es-419.json: OK'\\)\")",
+      "Bash(node -e \"JSON.parse\\(require\\('fs'\\).readFileSync\\('d:/Repositories/TamalStacker/Assets/Resources/Localization/achievements_es-419.json','utf8'\\)\\); console.log\\('achievements: OK'\\)\")",
+      "Bash(node -e \"JSON.parse\\(require\\('fs'\\).readFileSync\\('d:/Repositories/TamalStacker/Assets/Resources/Localization/levels_es-419.json','utf8'\\)\\); console.log\\('levels: OK'\\)\")",
+      "Bash(node -e \"const en=JSON.parse\\(require\\('fs'\\).readFileSync\\('d:/Repositories/TamalStacker/Assets/Resources/Localization/en.json','utf8'\\)\\); const es=JSON.parse\\(require\\('fs'\\).readFileSync\\('d:/Repositories/TamalStacker/Assets/Resources/Localization/es-419.json','utf8'\\)\\); console.log\\('en keys:', en.entries.length, 'es keys:', es.entries.length\\); const enKeys = en.entries.map\\(e=>e.key\\).sort\\(\\); const esKeys = es.entries.map\\(e=>e.key\\).sort\\(\\); const missing = enKeys.filter\\(k=>!esKeys.includes\\(k\\)\\); const extra = esKeys.filter\\(k=>!enKeys.includes\\(k\\)\\); if\\(missing.length\\) console.log\\('Missing in es-419:', missing\\); if\\(extra.length\\) console.log\\('Extra in es-419:', extra\\); if\\(!missing.length && !extra.length\\) console.log\\('Keys match!'\\)\")",
+      "Bash(node -e \"const d=JSON.parse\\(require\\('fs'\\).readFileSync\\('d:/Repositories/TamalStacker/Assets/Resources/Localization/levels_es-419.json','utf8'\\)\\); console.log\\('Total levels:', d.levels.length\\); let empty=d.levels.filter\\(l=>!l.levelDescription || l.levelDescription.trim\\(\\)===''\\); console.log\\('Empty descriptions:', empty.length\\); if\\(empty.length\\) empty.forEach\\(l=>console.log\\('  Level', l.levelNumber, l.levelName\\)\\); d.levels.slice\\(0,3\\).forEach\\(l=>console.log\\('Level', l.levelNumber, ':', l.levelDescription.substring\\(0,80\\)+'...'\\)\\)\")",
+      "Bash(node -e \"JSON.parse\\(require\\('fs'\\).readFileSync\\('d:/Repositories/TamalStacker/Assets/Resources/Localization/levels_es-419.json','utf8'\\)\\); console.log\\('JSON valid!'\\)\")"
+    ]
+  }
+}

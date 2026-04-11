@@ -179,12 +179,12 @@ public class LeaderboardPanel : MonoBehaviour
     {
         if (!EnsureLeaderboardManager())
         {
-            ShowError("Leaderboard system not available");
+            ShowError(LocalizationManager.Get("leaderboard_not_available"));
             return;
         }
 
         string leaderboardName = leaderboardManager.GetInfiniteStackerLeaderboardName();
-        LoadLeaderboard(leaderboardName, "Infinite Stacker");
+        LoadLeaderboard(leaderboardName, LocalizationManager.Get("mode_infinite_stacker"));
     }
 
     /// <summary>
@@ -327,19 +327,19 @@ public class LeaderboardPanel : MonoBehaviour
     {
         if (!EnsureLeaderboardManager())
         {
-            ShowError("Leaderboard system not available");
+            ShowError(LocalizationManager.Get("leaderboard_not_available"));
             return;
         }
 
         // Get display name first (for title update)
-        string displayName = $"Level {currentLevelNumber}";
+        string displayName = LocalizationManager.Get("leaderboard_level_format", currentLevelNumber);
         if (levelManager != null)
         {
             var levels = levelManager.GetAllLevels();
             var levelData = levels.Find(l => l.levelNumber == currentLevelNumber);
             if (levelData != null)
             {
-                displayName = $"Level {levelData.levelNumber}\n{levelData.levelName}";
+                displayName = LocalizationManager.Get("leaderboard_level_name_format", levelData.levelNumber, LocalizationManager.GetLevelName(levelData));
             }
         }
 
@@ -358,7 +358,7 @@ public class LeaderboardPanel : MonoBehaviour
             if (statusText != null)
             {
                 statusText.gameObject.SetActive(true);
-                statusText.text = "Complete this level to unlock leaderboard";
+                statusText.text = LocalizationManager.Get("leaderboard_unlock_required");
             }
 #if DEBUG_MODE
             Debug.Log($"Attempted to load leaderboard for locked level {currentLevelNumber}");
@@ -369,7 +369,7 @@ public class LeaderboardPanel : MonoBehaviour
         // Check if level is accessible
         if (!leaderboardManager.IsLevelAccessible(currentLevelNumber))
         {
-            ShowError("This level is not available in demo mode");
+            ShowError(LocalizationManager.Get("leaderboard_demo_unavailable"));
             Debug.LogWarning($"Attempted to load leaderboard for inaccessible level {currentLevelNumber}");
             return;
         }
@@ -394,19 +394,19 @@ public class LeaderboardPanel : MonoBehaviour
     {
         if (!EnsureLeaderboardManager())
         {
-            ShowError("Leaderboard system not available");
+            ShowError(LocalizationManager.Get("leaderboard_not_available"));
             return;
         }
 
         // Get display name first (for title update)
-        string displayName = $"Level {currentLevelNumber}";
+        string displayName = LocalizationManager.Get("leaderboard_level_format", currentLevelNumber);
         if (levelManager != null)
         {
             var levels = levelManager.GetAllLevels();
             var levelData = levels.Find(l => l.levelNumber == currentLevelNumber);
             if (levelData != null)
             {
-                displayName = $"Level {levelData.levelNumber}\n{levelData.levelName}";
+                displayName = LocalizationManager.Get("leaderboard_level_name_format", levelData.levelNumber, LocalizationManager.GetLevelName(levelData));
             }
         }
 
@@ -425,7 +425,7 @@ public class LeaderboardPanel : MonoBehaviour
             if (statusText != null)
             {
                 statusText.gameObject.SetActive(true);
-                statusText.text = "Complete this level to unlock leaderboard";
+                statusText.text = LocalizationManager.Get("leaderboard_unlock_required");
             }
 #if DEBUG_MODE
             Debug.Log($"Attempted to load leaderboard for locked level {currentLevelNumber}");
@@ -436,7 +436,7 @@ public class LeaderboardPanel : MonoBehaviour
         // Check if level is accessible
         if (!leaderboardManager.IsLevelAccessible(currentLevelNumber))
         {
-            ShowError("This level is not available in demo mode");
+            ShowError(LocalizationManager.Get("leaderboard_demo_unavailable"));
             Debug.LogWarning($"Attempted to load leaderboard for inaccessible level {currentLevelNumber}");
             return;
         }
@@ -490,7 +490,7 @@ public class LeaderboardPanel : MonoBehaviour
     {
         if (!EnsureLeaderboardManager())
         {
-            ShowError("Leaderboard system not available");
+            ShowError(LocalizationManager.Get("leaderboard_not_available"));
             return;
         }
 
@@ -645,7 +645,7 @@ public class LeaderboardPanel : MonoBehaviour
             statusText.gameObject.SetActive(show);
             if (show)
             {
-                statusText.text = "No scores yet. Be the first!";
+                statusText.text = LocalizationManager.Get("leaderboard_no_scores");
             }
         }
     }

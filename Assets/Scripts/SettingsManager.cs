@@ -1,3 +1,4 @@
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -20,6 +21,9 @@ public class SettingsManager : MonoBehaviour
     [Header("Mute Button Sprites")]
     [SerializeField] private Sprite unmutedSprite;
     [SerializeField] private Sprite mutedSprite;
+
+    [Header("Language Settings")]
+    [SerializeField] private TMP_Dropdown languageDropdown;
 
     [Header("General Settings UI")]
     [SerializeField] private Button resetDefaultsButton;
@@ -91,6 +95,9 @@ public class SettingsManager : MonoBehaviour
         UpdateMuteButtonSprite(masterMuteButton, isMasterMuted);
         UpdateMuteButtonSprite(musicMuteButton, isMusicMuted);
         UpdateMuteButtonSprite(sfxMuteButton, isSFXMuted);
+
+        // Language dropdown
+        InitializeLanguageDropdown();
     }
 
     private void SetupUIListeners()
@@ -114,6 +121,10 @@ public class SettingsManager : MonoBehaviour
 
         if (sfxMuteButton != null)
             sfxMuteButton.onClick.AddListener(ToggleSFXMute);
+
+        // Language Dropdown
+        if (languageDropdown != null)
+            languageDropdown.onValueChanged.AddListener(OnLanguageChanged);
 
         // General Buttons
         if (resetDefaultsButton != null)
@@ -250,6 +261,42 @@ public class SettingsManager : MonoBehaviour
         SaveSettings();
     }
 
+    // Language Settings
+
+    private static readonly string[] LocaleCodes = { "en", "es-419" };
+    private static readonly string[] LanguageNames = { "English", "Espa\u00f1ol (Latinoam\u00e9rica)" };
+
+    private void InitializeLanguageDropdown()
+    {
+        if (languageDropdown == null) return;
+
+        languageDropdown.ClearOptions();
+        languageDropdown.AddOptions(new System.Collections.Generic.List<string>(LanguageNames));
+
+        // Set current selection based on active locale
+        var locManager = DependencyRegistry.Find<LocalizationManager>();
+        if (locManager != null)
+        {
+            string currentLocale = locManager.CurrentLocale;
+            int index = System.Array.IndexOf(LocaleCodes, currentLocale);
+            if (index >= 0)
+            {
+                languageDropdown.SetValueWithoutNotify(index);
+            }
+        }
+    }
+
+    private void OnLanguageChanged(int index)
+    {
+        if (index < 0 || index >= LocaleCodes.Length) return;
+
+        var locManager = DependencyRegistry.Find<LocalizationManager>();
+        if (locManager != null)
+        {
+            locManager.SetLanguage(LocaleCodes[index]);
+        }
+    }
+
     public void ResetToDefaults()
     {
         masterVolume = DEFAULT_MASTER_VOLUME;
@@ -258,6 +305,13 @@ public class SettingsManager : MonoBehaviour
         isMasterMuted = DEFAULT_MUTE == 1;
         isMusicMuted = DEFAULT_MUTE == 1;
         isSFXMuted = DEFAULT_MUTE == 1;
+
+        // Reset language to English
+        var locManager = DependencyRegistry.Find<LocalizationManager>();
+        if (locManager != null)
+        {
+            locManager.SetLanguage("en");
+        }
 
         InitializeSettingsUI();
         ApplySettings();
@@ -298,6 +352,10 @@ public class SettingsManager : MonoBehaviour
 
         if (sfxMuteButton != null)
             sfxMuteButton.onClick.RemoveAllListeners();
+
+        // Clean up language dropdown
+        if (languageDropdown != null)
+            languageDropdown.onValueChanged.RemoveAllListeners();
 
         // Clean up general button listeners
         if (resetDefaultsButton != null)

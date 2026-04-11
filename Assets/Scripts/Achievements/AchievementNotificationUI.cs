@@ -164,11 +164,11 @@ namespace TamalStacker.Achievements
                 yield break;
             }
 
-            // Set achievement data
-            achievementTitle.text = achievement.title;
+            // Set achievement data (localized)
+            achievementTitle.text = LocalizationManager.GetAchievementTitle(achievement.id, achievement.title);
             if (achievementDescription != null)
             {
-                achievementDescription.text = achievement.description;
+                achievementDescription.text = LocalizationManager.GetAchievementDescription(achievement.id, achievement.description);
             }
 
             // Load icon if available

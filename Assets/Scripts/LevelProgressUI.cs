@@ -19,7 +19,7 @@ public class LevelProgressUI : MonoBehaviour
     [SerializeField] private Color progressColorComplete = new Color(0.3f, 1f, 0.3f); // Green
     [SerializeField] private bool animateProgress = true;
     [SerializeField] private float animationSpeed = 5f;
-    [SerializeField] private string targetFormat = "{0} blocks remaining";
+    private string targetFormat => LocalizationManager.Get("blocks_remaining_format");
 
     [Header("Visual Effects")]
     [SerializeField] private bool pulseOnProgress = true;

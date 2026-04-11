@@ -62,9 +62,9 @@ namespace TamalStacker.Achievements
         [Tooltip("Color tint for unlocked achievements")]
         [SerializeField] private Color unlockedIconColor = Color.white;
 
-        [Header("Hidden Achievement Text")]
-        [SerializeField] private string hiddenTitle = "???";
-        [SerializeField] private string hiddenDescription = "Secret Achievement - Unlock to reveal";
+        // Localized hidden achievement text
+        private string hiddenTitle => LocalizationManager.Get("achievement_hidden_title");
+        private string hiddenDescription => LocalizationManager.Get("achievement_hidden_description");
 
         // Cached data
         private AchievementDefinition currentAchievement;
@@ -120,7 +120,7 @@ namespace TamalStacker.Achievements
             }
             else
             {
-                titleText.text = achievement.title;
+                titleText.text = LocalizationManager.GetAchievementTitle(achievement.id, achievement.title);
             }
         }
 
@@ -138,7 +138,7 @@ namespace TamalStacker.Achievements
             }
             else
             {
-                descriptionText.text = achievement.description;
+                descriptionText.text = LocalizationManager.GetAchievementDescription(achievement.id, achievement.description);
             }
         }
 

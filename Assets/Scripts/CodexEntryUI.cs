@@ -56,7 +56,7 @@ public class CodexEntryUI : MonoBehaviour
         if (levelNameText != null)
         {
             // Show "????" if level not completed, otherwise show the level name
-            string displayName = isCompleted ? levelData.levelName : "????";
+            string displayName = isCompleted ? LocalizationManager.GetLevelName(levelData) : LocalizationManager.Get("codex_hidden_name");
             levelNameText.text = $"{levelNumber}. {displayName}";
         }
 

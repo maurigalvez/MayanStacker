@@ -1,0 +1,24 @@
+{
+  "achievements": [
+    { "id": "first_steps", "title": "Primeros Pasos del Explorador", "description": "Completa tu primer sitio" },
+    { "id": "path_of_jaguar", "title": "Camino del Jaguar", "description": "Completa 5 sitios" },
+    { "id": "maya_wanderer", "title": "Viajero Maya", "description": "Completa 10 sitios" },
+    { "id": "temple_traveler", "title": "Viajero de Templos", "description": "Completa 15 sitios" },
+    { "id": "keeper_of_ruins", "title": "Guardi\u00e1n de las Ruinas", "description": "Completa 20 sitios" },
+    { "id": "world_of_maya", "title": "El Mundo Maya", "description": "Completa los 27 sitios" },
+    { "id": "survivor", "title": "Sobreviviente", "description": "Alcanza 25 bloques en Apilador Infinito" },
+    { "id": "peak_ascender", "title": "Escalador de Cimas", "description": "Alcanza 50 bloques en Apilador Infinito" },
+    { "id": "sky_piercer", "title": "Perforador del Cielo", "description": "Alcanza 100 bloques en Apilador Infinito" },
+    { "id": "page_keeper", "title": "Guardi\u00e1n de P\u00e1ginas", "description": "Desbloquea 3 entradas del c\u00f3dice" },
+    { "id": "lore_seeker", "title": "Buscador de Sabidur\u00eda", "description": "Desbloquea 10 entradas del c\u00f3dice" },
+    { "id": "codex_scholar", "title": "Erudito del C\u00f3dice", "description": "Desbloquea 20 entradas del c\u00f3dice" },
+    { "id": "perfect_dropper", "title": "Apilador Perfecto", "description": "Haz 10 colocaciones perfectas seguidas en Apilador Infinito" },
+    { "id": "stone_stack_specialist", "title": "Especialista en Piedra", "description": "Haz 25 perfectos seguidos en Apilador Infinito" },
+    { "id": "temple_guardian", "title": "Guardi\u00e1n del Templo", "description": "Obt\u00e9n uno de los primeros 5 lugares en una tabla de posiciones de nivel" },
+    { "id": "perfectionist_architect", "title": "Arquitecto Perfeccionista", "description": "Completa un sitio solo con colocaciones perfectas" },
+    { "id": "zero_room_for_error", "title": "Sin Margen de Error", "description": "Completa un nivel 10+ solo con colocaciones perfectas" },
+    { "id": "feathered_serpent_blessing", "title": "Bendici\u00f3n de la Serpiente Emplumada", "description": "Completa 5 niveles con colocaciones perfectas" },
+    { "id": "sunrise_builder", "title": "Constructor del Amanecer", "description": "Juega temprano en la ma\u00f1ana" },
+    { "id": "midnight_builder", "title": "Constructor de Medianoche", "description": "Juega tarde en la noche" }
+  ]
+}

@@ -220,14 +220,14 @@ public class ThemeSelectionUI : MonoBehaviour
         switch (theme)
         {
             case GameTheme.Sunset:
-                title = "Sunset Theme";
+                title = LocalizationManager.Get("theme_sunset");
                 int completedLevels = themeManager != null ? themeManager.GetCompletedLevelCountPublic() : 0;
-                description = $"Complete 7 levels to unlock.\n\nProgress: {completedLevels}/7 levels completed";
+                description = LocalizationManager.Get("theme_sunset_unlock_format", completedLevels);
                 break;
             case GameTheme.Night:
-                title = "Night Theme";
+                title = LocalizationManager.Get("theme_night");
                 completedLevels = themeManager != null ? themeManager.GetCompletedLevelCountPublic() : 0;
-                description = $"Complete 15 levels to unlock.\n\nProgress: {completedLevels}/15 levels completed";
+                description = LocalizationManager.Get("theme_night_unlock_format", completedLevels);
                 break;
         }
 
@@ -270,10 +270,10 @@ public class ThemeSelectionUI : MonoBehaviour
         // Set confirmation text
         string themeName = theme.ToString();
         if (confirmationTitle != null)
-            confirmationTitle.text = $"Select {themeName} Theme?";
+            confirmationTitle.text = LocalizationManager.Get("theme_confirm_title_format", themeName);
 
         if (confirmationMessage != null)
-            confirmationMessage.text = $"Are you sure you want to change the theme to {themeName}?";
+            confirmationMessage.text = LocalizationManager.Get("theme_confirm_message_format", themeName);
 
         // Show panel
         confirmationPanel.SetActive(true);

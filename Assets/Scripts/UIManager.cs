@@ -99,11 +99,6 @@ public class UIManager : MonoBehaviour
     [SerializeField] private Button pauseMainMenuButton;
 
     [Header("Settings")]
-    [SerializeField] private string scoreFormat = "Score: {0}";
-    [SerializeField] private string highScoreFormat = "Best: {0}";
-    [SerializeField] private string finalScoreFormat = "Final Score: {0}";
-    [SerializeField] private string newHighScoreMessage = "NEW HIGH SCORE!";
-    [SerializeField] private string stackHeightFormat = "Height: {0}";
     [SerializeField] private float landingAccuracyDisplayDuration = 2f;
     [SerializeField] private float pointsPopupDuration = 2f;
     [SerializeField] private float pointsPopupVerticalOffset = 30f;
@@ -396,12 +391,12 @@ public class UIManager : MonoBehaviour
 
     private void UpdateScore(int score)
     {
-        SetTextAnimated(scoreText, string.Format(scoreFormat, score));
+        SetTextAnimated(scoreText, LocalizationManager.Get("score_format", score));
     }
 
     private void UpdateHighScore(int highScore)
     {
-        SetTextAnimated(highScoreText, string.Format(highScoreFormat, highScore));
+        SetTextAnimated(highScoreText, LocalizationManager.Get("high_score_format", highScore));
     }
 
     /// <summary>
@@ -500,7 +495,7 @@ public class UIManager : MonoBehaviour
         // Update final score
         if (finalScoreText != null && gameManager != null)
         {
-            finalScoreText.text = string.Format(finalScoreFormat, gameManager.CurrentScore);
+            finalScoreText.text = LocalizationManager.Get("final_score_format", gameManager.CurrentScore);
         }
 
         // Check if it's a new high score (only show in Infinite Stacker mode)
@@ -524,7 +519,7 @@ public class UIManager : MonoBehaviour
         // Reset stack height display to zero directly (don't query StackManager as it may not be cleared yet)
         if (stackHeightText != null)
         {
-            stackHeightText.text = string.Format(stackHeightFormat, 0);
+            stackHeightText.text = LocalizationManager.Get("stack_height_format", 0);
         }
 
         // Reset level progress if in level mode
@@ -588,7 +583,7 @@ public class UIManager : MonoBehaviour
         if (instructionsText != null)
         {
             instructionsText.gameObject.SetActive(true);
-            instructionsText.text = "Tap anywhere to drop the block!\nTry to stack them perfectly!";
+            instructionsText.text = LocalizationManager.Get("instructions");
         }
     }
 
@@ -643,16 +638,16 @@ public class UIManager : MonoBehaviour
             // Show level number and level name if available
             if (levelManager != null && levelManager.CurrentLevel != null)
             {
-                titleText = $"Level {levelManager.CurrentLevel.levelNumber}\n{levelManager.CurrentLevel.levelName}";
+                titleText = LocalizationManager.Get("level_title_format", levelManager.CurrentLevel.levelNumber, LocalizationManager.GetLevelName(levelManager.CurrentLevel));
             }
             else
             {
-                titleText = "Level Mode";
+                titleText = LocalizationManager.Get("mode_level");
             }
         }
         else if (gameManager.CurrentGameMode == GameMode.InfiniteStacker)
         {
-            titleText = "Infinite Stacker";
+            titleText = LocalizationManager.Get("mode_infinite_stacker");
         }
 
         // Set the text
@@ -694,7 +689,7 @@ public class UIManager : MonoBehaviour
             isTitleShowing = true;
 
             // Set the text with level information
-            string titleText = $"Level {levelManager.CurrentLevel.levelNumber}\n{levelManager.CurrentLevel.levelName}";
+            string titleText = LocalizationManager.Get("level_title_format", levelManager.CurrentLevel.levelNumber, LocalizationManager.GetLevelName(levelManager.CurrentLevel));
             gameTitleText.text = titleText;
 
             // Ensure UIManager is active before starting coroutine (Android timing fix)
@@ -713,7 +708,7 @@ public class UIManager : MonoBehaviour
             if (gameTitleText != null)
             {
                 isTitleShowing = true;
-                gameTitleText.text = "Level Mode";
+                gameTitleText.text = LocalizationManager.Get("mode_level");
 
                 // Ensure UIManager is active before starting coroutine (Android timing fix)
                 if (gameObject.activeInHierarchy)
@@ -873,7 +868,7 @@ public class UIManager : MonoBehaviour
         if (stackHeightText != null && stackManager != null)
         {
             int height = stackManager.GetStackCount();
-            SetTextAnimated(stackHeightText, string.Format(stackHeightFormat, height));
+            SetTextAnimated(stackHeightText, LocalizationManager.Get("stack_height_format", height));
         }
     }
 
@@ -920,24 +915,24 @@ public class UIManager : MonoBehaviour
         string baseText = "";
         if (accuracy >= 0.9f)
         {
-            baseText = "PERFECT!";
+            baseText = LocalizationManager.Get("accuracy_perfect");
             landingAccuracyText.color = perfectAccuracyColor;
         }
         else if (accuracy >= 0.6f)
         {
-            baseText = "GOOD";
+            baseText = LocalizationManager.Get("accuracy_good");
             landingAccuracyText.color = goodAccuracyColor;
         }
         else
         {
-            baseText = "POOR";
+            baseText = LocalizationManager.Get("accuracy_poor");
             landingAccuracyText.color = poorAccuracyColor;
         }
 
         // Add combo count if active (Perfect landing only)
         if (currentCombo > 0 && accuracy >= 0.9f)
         {
-            landingAccuracyText.text = $"{baseText}\nx{currentCombo} COMBO";
+            landingAccuracyText.text = LocalizationManager.Get("combo_format", baseText, currentCombo);
         }
         else
         {
@@ -1170,7 +1165,7 @@ public class UIManager : MonoBehaviour
         if (newHighScoreText != null)
         {
             newHighScoreText.gameObject.SetActive(true);
-            newHighScoreText.text = newHighScoreMessage;
+            newHighScoreText.text = LocalizationManager.Get("new_high_score");
         }
     }
 
@@ -1499,7 +1494,7 @@ public class UIManager : MonoBehaviour
     {
         if (gameModeText != null)
         {
-            gameModeText.text = mode == GameMode.InfiniteStacker ? "Infinite Mode" : "Level Mode";
+            gameModeText.text = mode == GameMode.InfiniteStacker ? LocalizationManager.Get("mode_infinite") : LocalizationManager.Get("mode_level");
         }
 
         // Show/hide level progress display based on mode (only shown in Level Mode)
@@ -1533,7 +1528,7 @@ public class UIManager : MonoBehaviour
 
         if (levelNameText != null)
         {
-            levelNameText.text = $"Level {level.levelNumber}\n{level.levelName}";
+            levelNameText.text = LocalizationManager.Get("level_title_format", level.levelNumber, LocalizationManager.GetLevelName(level));
         }
 
         UpdateLevelProgress(0);
@@ -1546,10 +1541,11 @@ public class UIManager : MonoBehaviour
         if (gameManager != null && gameManager.CurrentGameMode == GameMode.StackerLevels &&
             isTitleShowing && gameTitleText != null)
         {
-            // Update title text if it was showing "Level Mode" - the coroutine will handle the animation
-            if (gameTitleText.text == "Level Mode" || gameTitleText.text.Contains("Level Mode"))
+            // Update title text if it was showing fallback mode text - the coroutine will handle the animation
+            string modeLabel = LocalizationManager.Get("mode_level");
+            if (gameTitleText.text == modeLabel || gameTitleText.text.Contains(modeLabel))
             {
-                gameTitleText.text = $"Level {level.levelNumber}\n{level.levelName}";
+                gameTitleText.text = LocalizationManager.Get("level_title_format", level.levelNumber, LocalizationManager.GetLevelName(level));
             }
         }
     }
@@ -1559,7 +1555,7 @@ public class UIManager : MonoBehaviour
         if (levelProgressText == null || levelManager == null || levelManager.CurrentLevel == null) return;
 
         int required = levelManager.CurrentLevel.requiredStackHeight;
-        SetTextAnimated(levelProgressText, $"Height: {currentHeight}/{required}");
+        SetTextAnimated(levelProgressText, LocalizationManager.Get("level_height_format", currentHeight, required));
 
         // Color code the text based on progress
         float progress = (float)currentHeight / required;
@@ -1589,7 +1585,7 @@ public class UIManager : MonoBehaviour
         // Show codex unlock popup if this is the first completion
         if (showCodexPopup && levelManager != null && levelManager.CurrentLevel != null)
         {
-            ShowCodexUnlockPopup(levelManager.CurrentLevel.levelName);
+            ShowCodexUnlockPopup(LocalizationManager.GetLevelName(levelManager.CurrentLevel));
 
             // Mark codex as unlocked after showing popup
             levelManager.MarkCodexUnlockedForLevel(levelManager.CurrentLevel.levelNumber);
@@ -1622,7 +1618,7 @@ public class UIManager : MonoBehaviour
         // Update level name
         if (levelNameText != null && levelManager != null && levelManager.CurrentLevel != null)
         {
-            levelNameText.text = $"Level {levelManager.CurrentLevel.levelNumber}\n{levelManager.CurrentLevel.levelName} Complete!";
+            levelNameText.text = LocalizationManager.Get("level_complete_format", levelManager.CurrentLevel.levelNumber, LocalizationManager.GetLevelName(levelManager.CurrentLevel));
         }
 
         // Animate the score counting up; stars light up progressively as the count climbs
@@ -1662,7 +1658,7 @@ public class UIManager : MonoBehaviour
             if (finalScoreText != null && levelManager != null && levelManager.CurrentLevel != null)
             {
                 int currentHeight = stackManager?.GetStackCount() ?? 0;
-                finalScoreText.text = $"Level Failed!\nReached: {currentHeight}/{levelManager.CurrentLevel.requiredStackHeight}";
+                finalScoreText.text = LocalizationManager.Get("level_failed_format", currentHeight, levelManager.CurrentLevel.requiredStackHeight);
             }
         }
     }
@@ -1698,7 +1694,7 @@ public class UIManager : MonoBehaviour
         // and immediately highlight the earned stars
         if (finalScore <= 0 || scoreCountUpDuration <= 0f)
         {
-            levelScoreText.text = $"Score: {finalScore}";
+            levelScoreText.text = LocalizationManager.Get("level_score_format", finalScore);
             for (int i = 0; i < totalStarSlots && i < earnedStarCount; i++)
             {
                 if (stars[i] != null) stars[i].color = starHighlightColor;
@@ -1706,7 +1702,7 @@ public class UIManager : MonoBehaviour
             yield break;
         }
 
-        levelScoreText.text = "Score: 0";
+        levelScoreText.text = LocalizationManager.Get("level_score_format", 0);
 
         float elapsed = 0f;
         float nextTickTime = 0f;
@@ -1726,7 +1722,7 @@ public class UIManager : MonoBehaviour
             if (newScore != displayedScore)
             {
                 displayedScore = newScore;
-                levelScoreText.text = $"Score: {displayedScore}";
+                levelScoreText.text = LocalizationManager.Get("level_score_format", displayedScore);
             }
 
             // Light up the next star once eased progress crosses its threshold
@@ -1902,7 +1898,7 @@ public class UIManager : MonoBehaviour
         if (codexUnlockPopup == null || codexUnlockText == null) return;
 
         // Set the text
-        codexUnlockText.text = $"{levelName} Codex Unlocked";
+        codexUnlockText.text = LocalizationManager.Get("codex_unlock_format", levelName);
 
         // Play codex unlock sound
         if (gameSoundManager != null)
@@ -2261,7 +2257,7 @@ public class UIManager : MonoBehaviour
         }
 
         // Set the text and color
-        kukulkanShiftText.text = "Kukulkan's Shift";
+        kukulkanShiftText.text = LocalizationManager.Get("kukulkan_shift");
         kukulkanShiftText.color = kukulkanShiftColor;
 
         // Show the text

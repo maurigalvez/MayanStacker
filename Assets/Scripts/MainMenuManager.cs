@@ -186,7 +186,7 @@ public class MainMenuManager : MonoBehaviour
                 if (syncPanel != null && syncStatusText != null)
                 {
                     syncPanel.SetActive(true);
-                    syncStatusText.text = "Verifying app integrity...";
+                    syncStatusText.text = LocalizationManager.Get("sync_verifying");
                 }
 
                 integrityManager.PerformStartupCheck((result) =>
@@ -650,7 +650,7 @@ public class MainMenuManager : MonoBehaviour
             if (levelData != null)
             {
                 int levelNumber = currentSelectedLevelIndex + 1; // Convert to 1-based
-                selectedLevelLabel.text = $"Level {levelNumber}\n{levelData.levelName}";
+                selectedLevelLabel.text = LocalizationManager.Get("level_title_format", levelNumber, LocalizationManager.GetLevelName(levelData));
             }
             else
             {
@@ -1200,7 +1200,7 @@ public class MainMenuManager : MonoBehaviour
     /// </summary>
     private void OnLoginStarted()
     {
-        ShowSyncScreen("Authenticating...");
+        ShowSyncScreen(LocalizationManager.Get("sync_authenticating"));
     }
 
     /// <summary>
@@ -1208,7 +1208,7 @@ public class MainMenuManager : MonoBehaviour
     /// </summary>
     private void OnSyncStarted()
     {
-        ShowSyncScreen("Syncing with cloud...");
+        ShowSyncScreen(LocalizationManager.Get("sync_syncing"));
     }
 
     /// <summary>
@@ -1222,11 +1222,11 @@ public class MainMenuManager : MonoBehaviour
         // Show success message with display name
         if (!string.IsNullOrEmpty(displayName))
         {
-            ShowSyncScreen($"Sync complete!\nLogged in as: {displayName}");
+            ShowSyncScreen(LocalizationManager.Get("sync_complete_user_format", displayName));
         }
         else
         {
-            ShowSyncScreen("Sync complete!");
+            ShowSyncScreen(LocalizationManager.Get("sync_complete"));
         }
 
         StartCoroutine(HideSyncScreenAfterDelay());
@@ -1238,7 +1238,7 @@ public class MainMenuManager : MonoBehaviour
     private void OnProgressSyncFailed(string error)
     {
         // Show offline message briefly, then hide
-        ShowSyncScreen("Sync failed. Playing offline.");
+        ShowSyncScreen(LocalizationManager.Get("sync_failed"));
         StartCoroutine(HideSyncScreenAfterDelay());
         Debug.LogWarning($"Cloud sync failed: {error}");
     }

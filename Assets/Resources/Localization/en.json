@@ -1,0 +1,66 @@
+{
+  "entries": [
+    { "key": "score_format", "value": "Score: {0}" },
+    { "key": "high_score_format", "value": "Best: {0}" },
+    { "key": "final_score_format", "value": "Final Score: {0}" },
+    { "key": "new_high_score", "value": "NEW HIGH SCORE!" },
+    { "key": "stack_height_format", "value": "Height: {0}" },
+    { "key": "level_height_format", "value": "Height: {0}/{1}" },
+
+    { "key": "instructions", "value": "Tap anywhere to drop the block!\nTry to stack them perfectly!" },
+
+    { "key": "accuracy_perfect", "value": "PERFECT!" },
+    { "key": "accuracy_good", "value": "GOOD" },
+    { "key": "accuracy_poor", "value": "POOR" },
+    { "key": "combo_format", "value": "{0}\nx{1} COMBO" },
+
+    { "key": "mode_infinite_stacker", "value": "Infinite Stacker" },
+    { "key": "mode_infinite", "value": "Infinite Mode" },
+    { "key": "mode_level", "value": "Level Mode" },
+    { "key": "level_title_format", "value": "Level {0}\n{1}" },
+
+    { "key": "level_complete_format", "value": "Level {0}\n{1} Complete!" },
+    { "key": "level_failed_format", "value": "Level Failed!\nReached: {0}/{1}" },
+    { "key": "level_score_format", "value": "Score: {0}" },
+
+    { "key": "kukulkan_shift", "value": "Kukulkan's Shift" },
+
+    { "key": "leaderboard_not_available", "value": "Leaderboard system not available" },
+    { "key": "leaderboard_no_scores", "value": "No scores yet. Be the first!" },
+    { "key": "leaderboard_unlock_required", "value": "Complete this level to unlock leaderboard" },
+    { "key": "leaderboard_demo_unavailable", "value": "This level is not available in demo mode" },
+    { "key": "leaderboard_level_format", "value": "Level {0}" },
+    { "key": "leaderboard_level_name_format", "value": "Level {0}\n{1}" },
+
+    { "key": "codex_unlock_format", "value": "{0} Codex Unlocked" },
+    { "key": "codex_empty_state", "value": "No levels unlocked yet. Play levels to unlock entries in the Codex!" },
+    { "key": "codex_hidden_name", "value": "????" },
+    { "key": "codex_hidden_description", "value": "Complete this level to reveal its secrets..." },
+    { "key": "codex_unknown_location", "value": "Unknown Location" },
+    { "key": "codex_no_description", "value": "No description available." },
+
+    { "key": "theme_sunset", "value": "Sunset Theme" },
+    { "key": "theme_night", "value": "Night Theme" },
+    { "key": "theme_sunset_unlock_format", "value": "Complete 7 levels to unlock.\n\nProgress: {0}/7 levels completed" },
+    { "key": "theme_night_unlock_format", "value": "Complete 15 levels to unlock.\n\nProgress: {0}/15 levels completed" },
+    { "key": "theme_confirm_title_format", "value": "Select {0} Theme?" },
+    { "key": "theme_confirm_message_format", "value": "Are you sure you want to change the theme to {0}?" },
+
+    { "key": "achievement_hidden_title", "value": "???" },
+    { "key": "achievement_hidden_description", "value": "Secret Achievement - Unlock to reveal" },
+    { "key": "achievement_not_found", "value": "Achievement system not found." },
+    { "key": "achievement_initializing", "value": "Achievement system is initializing..." },
+    { "key": "achievement_empty_category", "value": "No achievements in this category." },
+
+    { "key": "blocks_remaining_format", "value": "{0} blocks remaining" },
+
+    { "key": "sync_verifying", "value": "Verifying app integrity..." },
+    { "key": "sync_authenticating", "value": "Authenticating..." },
+    { "key": "sync_syncing", "value": "Syncing with cloud..." },
+    { "key": "sync_complete", "value": "Sync complete!" },
+    { "key": "sync_complete_user_format", "value": "Sync complete!\nLogged in as: {0}" },
+    { "key": "sync_failed", "value": "Sync failed. Playing offline." },
+
+    { "key": "settings_language", "value": "Language" }
+  ]
+}

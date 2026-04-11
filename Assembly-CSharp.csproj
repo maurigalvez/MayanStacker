@@ -57,6 +57,7 @@
     <Compile Include="Assets\Scripts\Utilities\ScrollView_PinchScale.cs" />
     <Compile Include="Assets\Scripts\PlayerProgressData.cs" />
     <Compile Include="Assets\Scripts\LeaderboardEntryUI.cs" />
+    <Compile Include="Assets\Scripts\Localization\LocalizedText.cs" />
     <Compile Include="Assets\Scripts\ObjectSpawnerAnimator.cs" />
     <Compile Include="Assets\Scripts\UIManager.cs" />
     <Compile Include="Assets\Scripts\GameSoundManager.cs" />
@@ -74,6 +75,7 @@
     <Compile Include="Assets\Scripts\StackManager.cs" />
     <Compile Include="Assets\Scripts\MainMenuManager.cs" />
     <Compile Include="Assets\GooglePlayPlugins\com.google.play.review\Samples\ReviewDemo\Scripts\ReviewDemo.cs" />
+    <Compile Include="Assets\Scripts\Localization\LocalizationManager.cs" />
     <Compile Include="Assets\Scripts\LevelData.cs" />
     <Compile Include="Assets\Scripts\Achievements\AchievementEntryUI.cs" />
     <Compile Include="Assets\Scripts\LevelManager.cs" />
