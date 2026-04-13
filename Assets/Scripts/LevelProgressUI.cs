@@ -285,7 +285,7 @@ public class LevelProgressUI : MonoBehaviour
         if (targetText == null) return;
 
         int remainingBlocks = Mathf.Max(0, requiredHeight - currentHeight);
-        targetText.text = string.Format(targetFormat, remainingBlocks);
+        targetText.text = $"{remainingBlocks}";
     }
 
     /// <summary>

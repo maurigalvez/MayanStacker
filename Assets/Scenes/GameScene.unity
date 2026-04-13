@@ -1226,6 +1226,7 @@ MonoBehaviour:
   comboDecayTime: 5
   enableComboDecay: 1
   perfectHitsRequired: 4
+  fragileStackFailThreshold: 0.7
 --- !u!4 &1286817094
 Transform:
   m_ObjectHideFlags: 0
@@ -6433,6 +6434,51 @@ SpriteRenderer:
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 0
   m_SpriteSortPoint: 0
+--- !u!1 &1718662487
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1718662489}
+  - component: {fileID: 1718662488}
+  m_Layer: 0
+  m_Name: Daily Challenge Manager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1718662488
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1718662487}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2e68828d3fe105443876e2b0e123c017, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DailyChallengeManager
+  speedRunSwingMultiplier: 1.6
+--- !u!4 &1718662489
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1718662487}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 452.82706, y: 2101.3682, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1721587804
 GameObject:
   m_ObjectHideFlags: 0
@@ -6678,6 +6724,7 @@ MonoBehaviour:
   comboLostSound: {fileID: 8300000, guid: 6326ebddf6a1cb544abc3f87f8176305, type: 3}
   codexUnlockSound: {fileID: 0}
   kukulkanShiftSound: {fileID: 8300000, guid: b0d8b62429eee0849a3693195172bf4c, type: 3}
+  scoreCountSound: {fileID: 0}
   sfxVolume: 0.7
   allowSimultaneousSounds: 1
   enablePitchRandomization: 1
@@ -7206,3 +7253,4 @@ SceneRoots:
   - {fileID: 258097688}
   - {fileID: 1850994362}
   - {fileID: 90396140}
+  - {fileID: 1718662489}

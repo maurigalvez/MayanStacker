@@ -21,6 +21,7 @@ public class MainMenuManager : MonoBehaviour
     [Header("Main Menu Buttons")]
     [SerializeField] private Button infiniteModeButton;
     [SerializeField] private Button levelModeButton;
+    [SerializeField] private Button dailyChallengeButton;
     [SerializeField] private Button settingsButton;
     [SerializeField] private Button creditsButton;
     [SerializeField] private Button codexButton;
@@ -263,6 +264,9 @@ public class MainMenuManager : MonoBehaviour
 
         if (levelModeButton != null)
             levelModeButton.onClick.AddListener(OnLevelModeSelected);
+
+        if (dailyChallengeButton != null)
+            dailyChallengeButton.onClick.AddListener(OnDailyChallengeSelected);
 
         if (settingsButton != null)
             settingsButton.onClick.AddListener(ShowSettingsPanel);
@@ -931,6 +935,13 @@ public class MainMenuManager : MonoBehaviour
     {
         // Show level selection screen (sound is played in ShowLevelSelection)
         ShowLevelSelection();
+    }
+
+    private void OnDailyChallengeSelected()
+    {
+        soundManager?.PlayInfiniteModeSelect();
+        Debug.Log("Daily Challenge selected");
+        SceneLoader.LoadGameScene(gameSceneName, GameMode.DailyChallenge);
     }
 
     private void OnLevelButtonClicked(int levelIndex)

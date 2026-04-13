@@ -1,3 +1,4 @@
+using System.Collections;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -29,6 +30,9 @@ public class SettingsManager : MonoBehaviour
     [SerializeField] private Button resetDefaultsButton;
     [SerializeField] private Button applyButton;
 
+    [Header("Feedback")]
+    [SerializeField] private TextMeshProUGUI savedFeedbackText;
+
     // Sound Manager References
     private MainMenuSoundManager mainMenuSoundManager;
     private GameSoundManager gameSoundManager;
@@ -46,6 +50,10 @@ public class SettingsManager : MonoBehaviour
     private const float DEFAULT_MUSIC_VOLUME = 0.7f;
     private const float DEFAULT_SFX_VOLUME = 0.8f;
     private const int DEFAULT_MUTE = 0;
+
+    private Coroutine savedFeedbackCoroutine;
+    private CanvasGroup savedFeedbackCanvasGroup;
+    private static readonly WaitForSeconds savedFeedbackHoldWait = new WaitForSeconds(1.5f);
 
     // Current Settings
     private float masterVolume;
@@ -259,6 +267,55 @@ public class SettingsManager : MonoBehaviour
     {
         ApplySettings();
         SaveSettings();
+
+        // Sound feedback
+        if (mainMenuSoundManager != null)
+            mainMenuSoundManager.PlayButtonClick();
+
+        // Visual feedback
+        ShowSavedFeedback();
+    }
+
+    private void ShowSavedFeedback()
+    {
+        if (savedFeedbackText == null) return;
+
+        if (savedFeedbackCoroutine != null)
+            StopCoroutine(savedFeedbackCoroutine);
+
+        savedFeedbackCoroutine = StartCoroutine(SavedFeedbackRoutine());
+    }
+
+    private IEnumerator SavedFeedbackRoutine()
+    {
+        savedFeedbackText.text = LocalizationManager.Get("settings_saved");
+
+        if (savedFeedbackCanvasGroup == null)
+        {
+            savedFeedbackCanvasGroup = savedFeedbackText.GetComponent<CanvasGroup>();
+            if (savedFeedbackCanvasGroup == null)
+                savedFeedbackCanvasGroup = savedFeedbackText.gameObject.AddComponent<CanvasGroup>();
+        }
+
+        savedFeedbackCanvasGroup.alpha = 1f;
+        savedFeedbackText.gameObject.SetActive(true);
+
+        // Hold visible
+        yield return savedFeedbackHoldWait;
+
+        // Fade out
+        float fadeDuration = 0.5f;
+        float elapsed = 0f;
+        while (elapsed < fadeDuration)
+        {
+            elapsed += Time.deltaTime;
+            savedFeedbackCanvasGroup.alpha = 1f - (elapsed / fadeDuration);
+            yield return null;
+        }
+
+        savedFeedbackCanvasGroup.alpha = 0f;
+        savedFeedbackText.gameObject.SetActive(false);
+        savedFeedbackCoroutine = null;
     }
 
     // Language Settings

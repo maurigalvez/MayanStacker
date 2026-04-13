@@ -34,6 +34,15 @@ public static class SceneLoader
     }
 
     /// <summary>
+    /// Load the game scene for the Daily Challenge mode.
+    /// Convenience wrapper around LoadGameScene(GameMode.DailyChallenge).
+    /// </summary>
+    public static void LoadDailyChallenge()
+    {
+        LoadGameScene(GameMode.DailyChallenge);
+    }
+
+    /// <summary>
     /// Load the game scene with specified game mode and level
     /// </summary>
     /// <param name="sceneName">Name of the game scene to load</param>
@@ -90,6 +99,33 @@ public static class SceneLoader
         if (!pendingGameMode.HasValue) return;
 
         Debug.Log($"Configuring GameManager: Mode={pendingGameMode.Value}, Level={pendingLevelIndex?.ToString() ?? "N/A"}");
+
+        // Daily Challenge: fetch today's modifier from PlayFab Title Data, apply it, then start.
+        if (pendingGameMode.Value == GameMode.DailyChallenge)
+        {
+            var dailyMgr = DependencyRegistry.Find<DailyChallengeManager>();
+            if (dailyMgr != null)
+            {
+                // Initialize mode now so any UI subscribed to OnGameModeChanged sees Daily before StartGame fires.
+                gameManager.InitializeGameMode(GameMode.DailyChallenge);
+
+                dailyMgr.FetchTodaysConfig(cfg =>
+                {
+                    dailyMgr.ApplyModifier(cfg);
+                    gameManager.StartGame();
+                });
+            }
+            else
+            {
+                Debug.LogWarning("DailyChallengeManager not found in scene — starting Daily Challenge without a modifier.");
+                gameManager.InitializeGameMode(GameMode.DailyChallenge);
+                gameManager.StartGame();
+            }
+
+            pendingGameMode = null;
+            pendingLevelIndex = null;
+            return;
+        }
 
         // If a specific level was requested, load it first (this will also set the level number in GameManager)
         if (pendingLevelIndex.HasValue && pendingGameMode.Value == GameMode.StackerLevels)

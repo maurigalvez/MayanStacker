@@ -31,7 +31,15 @@ public class LocalizationManager : MonoBehaviour
 
     private void Awake()
     {
+        // Singleton: if an instance already exists (persisted from a previous scene), destroy this duplicate
+        if (instance != null && instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+
         instance = this;
+        DontDestroyOnLoad(gameObject);
         DependencyRegistry.Register<LocalizationManager>(this);
 
         // Load saved language or detect device language

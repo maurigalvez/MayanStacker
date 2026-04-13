@@ -22,8 +22,10 @@ public class LeaderboardPanel : MonoBehaviour
     [Header("Mode Selection")]
     [SerializeField] private Button infiniteStackerModeButton;
     [SerializeField] private Button levelsModeButton;
+    [SerializeField] private Button dailyModeButton;
     [SerializeField] private TextMeshProUGUI infiniteStackerModeButtonText;
     [SerializeField] private TextMeshProUGUI levelsModeButtonText;
+    [SerializeField] private TextMeshProUGUI dailyModeButtonText;
 
     [Header("Mode Button Highlighting")]
     [SerializeField] private Color normalModeButtonColor = new Color(1f, 1f, 1f, 1f);
@@ -48,7 +50,7 @@ public class LeaderboardPanel : MonoBehaviour
     private MainMenuSoundManager soundManager;
 
     // Navigation state
-    private enum LeaderboardMode { InfiniteStacker, Levels }
+    private enum LeaderboardMode { InfiniteStacker, Levels, Daily }
     private LeaderboardMode currentMode = LeaderboardMode.InfiniteStacker;
     private int currentLevelNumber = 1; // For Levels mode
     private int totalLevels = 0;
@@ -87,6 +89,11 @@ public class LeaderboardPanel : MonoBehaviour
         if (levelsModeButton != null)
         {
             levelsModeButton.onClick.AddListener(SwitchToLevelsMode);
+        }
+
+        if (dailyModeButton != null)
+        {
+            dailyModeButton.onClick.AddListener(SwitchToDailyMode);
         }
     }
 
@@ -173,6 +180,37 @@ public class LeaderboardPanel : MonoBehaviour
     }
 
     /// <summary>
+    /// Switch to Daily Challenge mode
+    /// </summary>
+    private void SwitchToDailyMode()
+    {
+        currentMode = LeaderboardMode.Daily;
+        UpdateModeButtonHighlighting();
+        UpdateNavigationVisibility();
+
+        if (soundManager != null)
+        {
+            soundManager.PlayInfiniteModeSelect();
+        }
+
+        LoadDailyChallengeLeaderboard();
+    }
+
+    /// <summary>
+    /// Load the Daily Challenge leaderboard
+    /// </summary>
+    private void LoadDailyChallengeLeaderboard()
+    {
+        if (!EnsureLeaderboardManager())
+        {
+            ShowError(LocalizationManager.Get("leaderboard_not_available"));
+            return;
+        }
+
+        LoadLeaderboard("DailyChallenge_Leaderboard", LocalizationManager.Get("daily_challenge_title"));
+    }
+
+    /// <summary>
     /// Load the Infinite Stacker leaderboard
     /// </summary>
     private void LoadInfiniteStackerLeaderboard()
@@ -211,6 +249,7 @@ public class LeaderboardPanel : MonoBehaviour
     {
         bool isInfiniteSelected = (currentMode == LeaderboardMode.InfiniteStacker);
         bool isLevelsSelected = (currentMode == LeaderboardMode.Levels);
+        bool isDailySelected = (currentMode == LeaderboardMode.Daily);
 
         // Update Infinite Stacker button
         if (infiniteStackerModeButton != null)
@@ -248,6 +287,26 @@ public class LeaderboardPanel : MonoBehaviour
         if (levelsModeButtonText != null)
         {
             levelsModeButtonText.color = isLevelsSelected
+                ? selectedModeButtonTextColor
+                : normalModeButtonTextColor;
+        }
+
+        // Update Daily button
+        if (dailyModeButton != null)
+        {
+            Image buttonImage = dailyModeButton.GetComponent<Image>();
+            if (buttonImage != null)
+            {
+                buttonImage.color = isDailySelected
+                    ? selectedModeButtonColor
+                    : normalModeButtonColor;
+            }
+        }
+
+        // Update Daily button text
+        if (dailyModeButtonText != null)
+        {
+            dailyModeButtonText.color = isDailySelected
                 ? selectedModeButtonTextColor
                 : normalModeButtonTextColor;
         }
@@ -461,6 +520,15 @@ public class LeaderboardPanel : MonoBehaviour
     {
         gameObject.SetActive(true);
         SwitchToLevelsMode();
+    }
+
+    /// <summary>
+    /// Open the panel in Daily Challenge mode
+    /// </summary>
+    public void OpenPanelDailyMode()
+    {
+        gameObject.SetActive(true);
+        SwitchToDailyMode();
     }
 
     /// <summary>
@@ -693,6 +761,11 @@ public class LeaderboardPanel : MonoBehaviour
         if (levelsModeButton != null)
         {
             levelsModeButton.onClick.RemoveAllListeners();
+        }
+
+        if (dailyModeButton != null)
+        {
+            dailyModeButton.onClick.RemoveAllListeners();
         }
 
         ClearEntries();

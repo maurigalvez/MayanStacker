@@ -18,7 +18,7 @@ public class LocalizedText : MonoBehaviour
         textComponent = GetComponent<TMP_Text>();
     }
 
-    private void OnEnable()
+    private void Start()
     {
         UpdateText();
 
@@ -29,7 +29,7 @@ public class LocalizedText : MonoBehaviour
         }
     }
 
-    private void OnDisable()
+    private void OnDestroy()
     {
         var locManager = LocalizationManager.Instance;
         if (locManager != null)

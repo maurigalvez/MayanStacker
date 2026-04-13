@@ -1,66 +1,252 @@
 {
   "entries": [
-    { "key": "score_format", "value": "Puntos: {0}" },
-    { "key": "high_score_format", "value": "Mejor: {0}" },
-    { "key": "final_score_format", "value": "Puntuaci\u00f3n Final: {0}" },
-    { "key": "new_high_score", "value": "\u00a1NUEVO R\u00c9CORD!" },
-    { "key": "stack_height_format", "value": "Altura: {0}" },
-    { "key": "level_height_format", "value": "Altura: {0}/{1}" },
-
-    { "key": "instructions", "value": "\u00a1Toca en cualquier lugar para soltar el bloque!\n\u00a1Intenta apilarlos perfectamente!" },
-
-    { "key": "accuracy_perfect", "value": "\u00a1PERFECTO!" },
-    { "key": "accuracy_good", "value": "BIEN" },
-    { "key": "accuracy_poor", "value": "MAL" },
-    { "key": "combo_format", "value": "{0}\nx{1} COMBO" },
-
-    { "key": "mode_infinite_stacker", "value": "Apilador Infinito" },
-    { "key": "mode_infinite", "value": "Modo Infinito" },
-    { "key": "mode_level", "value": "Modo Niveles" },
-    { "key": "level_title_format", "value": "Nivel {0}\n{1}" },
-
-    { "key": "level_complete_format", "value": "\u00a1Nivel {0}\n{1} Completado!" },
-    { "key": "level_failed_format", "value": "\u00a1Nivel Fallido!\nAlcanzaste: {0}/{1}" },
-    { "key": "level_score_format", "value": "Puntos: {0}" },
-
-    { "key": "kukulkan_shift", "value": "Cambio de Kukulk\u00e1n" },
-
-    { "key": "leaderboard_not_available", "value": "Sistema de tabla de posiciones no disponible" },
-    { "key": "leaderboard_no_scores", "value": "\u00a1A\u00fan no hay puntuaciones. S\u00e9 el primero!" },
-    { "key": "leaderboard_unlock_required", "value": "Completa este nivel para desbloquear la tabla de posiciones" },
-    { "key": "leaderboard_demo_unavailable", "value": "Este nivel no est\u00e1 disponible en modo demo" },
-    { "key": "leaderboard_level_format", "value": "Nivel {0}" },
-    { "key": "leaderboard_level_name_format", "value": "Nivel {0}\n{1}" },
-
-    { "key": "codex_unlock_format", "value": "C\u00f3dice de {0} Desbloqueado" },
-    { "key": "codex_empty_state", "value": "\u00a1A\u00fan no hay niveles desbloqueados. Juega niveles para desbloquear entradas en el C\u00f3dice!" },
-    { "key": "codex_hidden_name", "value": "????" },
-    { "key": "codex_hidden_description", "value": "Completa este nivel para revelar sus secretos..." },
-    { "key": "codex_unknown_location", "value": "Ubicaci\u00f3n Desconocida" },
-    { "key": "codex_no_description", "value": "Sin descripci\u00f3n disponible." },
-
-    { "key": "theme_sunset", "value": "Tema Atardecer" },
-    { "key": "theme_night", "value": "Tema Nocturno" },
-    { "key": "theme_sunset_unlock_format", "value": "Completa 7 niveles para desbloquear.\n\nProgreso: {0}/7 niveles completados" },
-    { "key": "theme_night_unlock_format", "value": "Completa 15 niveles para desbloquear.\n\nProgreso: {0}/15 niveles completados" },
-    { "key": "theme_confirm_title_format", "value": "\u00bfSeleccionar Tema {0}?" },
-    { "key": "theme_confirm_message_format", "value": "\u00bfEst\u00e1s seguro de que deseas cambiar el tema a {0}?" },
-
-    { "key": "achievement_hidden_title", "value": "???" },
-    { "key": "achievement_hidden_description", "value": "Logro Secreto - Desbl\u00f3quealo para revelar" },
-    { "key": "achievement_not_found", "value": "Sistema de logros no encontrado." },
-    { "key": "achievement_initializing", "value": "El sistema de logros se est\u00e1 inicializando..." },
-    { "key": "achievement_empty_category", "value": "No hay logros en esta categor\u00eda." },
-
-    { "key": "blocks_remaining_format", "value": "{0} bloques restantes" },
-
-    { "key": "sync_verifying", "value": "Verificando integridad de la app..." },
-    { "key": "sync_authenticating", "value": "Autenticando..." },
-    { "key": "sync_syncing", "value": "Sincronizando con la nube..." },
-    { "key": "sync_complete", "value": "\u00a1Sincronizaci\u00f3n completa!" },
-    { "key": "sync_complete_user_format", "value": "\u00a1Sincronizaci\u00f3n completa!\nSesi\u00f3n iniciada como: {0}" },
-    { "key": "sync_failed", "value": "Sincronizaci\u00f3n fallida. Jugando sin conexi\u00f3n." },
-
-    { "key": "settings_language", "value": "Idioma" }
+    {
+      "key": "new_high_score",
+      "value": "\u00a1NUEVO R\u00c9CORD!"
+    },
+    {
+      "key": "instructions",
+      "value": "\u00a1Toca en cualquier lugar para soltar el bloque!\n\u00a1Intenta apilarlos perfectamente!"
+    },
+    {
+      "key": "accuracy_perfect",
+      "value": "\u00a1PERFECTO!"
+    },
+    {
+      "key": "accuracy_good",
+      "value": "BIEN"
+    },
+    {
+      "key": "accuracy_poor",
+      "value": "MAL"
+    },
+    {
+      "key": "combo_format",
+      "value": "{0}\nx{1} COMBO"
+    },
+    {
+      "key": "mode_temple_stacker",
+      "value": "Templo Stacker"
+    },
+    {
+      "key": "mode_infinite_stacker",
+      "value": "Stacker Infinito"
+    },
+    {
+      "key": "mode_infinite",
+      "value": "Modo Infinito"
+    },
+    {
+      "key": "mode_level",
+      "value": "Modo Niveles"
+    },
+    {
+      "key": "level_title_format",
+      "value": "Nivel {0}\n{1}"
+    },
+    {
+      "key": "level_complete_format",
+      "value": "\u00a1Nivel {0}\n{1} Completado!"
+    },
+    {
+      "key": "level_failed_format",
+      "value": "\u00a1Nivel Fallido!\nAlcanzaste: {0}/{1}"
+    },
+    {
+      "key": "level_score_format",
+      "value": "Puntos: {0}"
+    },
+    {
+      "key": "kukulkan_shift",
+      "value": "Cambio de Kukulk\u00e1n"
+    },
+    {
+      "key": "leaderboard_not_available",
+      "value": "Sistema de tabla de posiciones no disponible"
+    },
+    {
+      "key": "leaderboard_no_scores",
+      "value": "\u00a1A\u00fan no hay puntuaciones. S\u00e9 el primero!"
+    },
+    {
+      "key": "leaderboard_unlock_required",
+      "value": "Completa este nivel para desbloquear la tabla de posiciones"
+    },
+    {
+      "key": "leaderboard_demo_unavailable",
+      "value": "Este nivel no est\u00e1 disponible en modo demo"
+    },
+    {
+      "key": "leaderboard_level_format",
+      "value": "Nivel {0}"
+    },
+    {
+      "key": "leaderboard_level_name_format",
+      "value": "Nivel {0}\n{1}"
+    },
+    {
+      "key": "codex_unlock_format",
+      "value": "C\u00f3dice de {0} Desbloqueado"
+    },
+    {
+      "key": "codex_empty_state",
+      "value": "\u00a1A\u00fan no hay niveles desbloqueados. Juega niveles para desbloquear entradas en el C\u00f3dice!"
+    },
+    {
+      "key": "codex_hidden_name",
+      "value": "????"
+    },
+    {
+      "key": "codex_hidden_description",
+      "value": "Completa este nivel para revelar sus secretos..."
+    },
+    {
+      "key": "codex_unknown_location",
+      "value": "Ubicaci\u00f3n Desconocida"
+    },
+    {
+      "key": "codex_no_description",
+      "value": "Sin descripci\u00f3n disponible."
+    },
+    {
+      "key": "theme_sunset",
+      "value": "Tema Atardecer"
+    },
+    {
+      "key": "theme_night",
+      "value": "Tema Nocturno"
+    },
+    {
+      "key": "theme_sunset_unlock_format",
+      "value": "Completa 7 niveles para desbloquear.\n\nProgreso: {0}/7 niveles completados"
+    },
+    {
+      "key": "theme_night_unlock_format",
+      "value": "Completa 15 niveles para desbloquear.\n\nProgreso: {0}/15 niveles completados"
+    },
+    {
+      "key": "theme_confirm_title_format",
+      "value": "\u00bfSeleccionar Tema {0}?"
+    },
+    {
+      "key": "theme_confirm_message_format",
+      "value": "\u00bfEst\u00e1s seguro de que deseas cambiar el tema a {0}?"
+    },
+    {
+      "key": "achievement_hidden_title",
+      "value": "???"
+    },
+    {
+      "key": "achievement_hidden_description",
+      "value": "Logro Secreto - Desbl\u00f3quealo para revelar"
+    },
+    {
+      "key": "achievement_not_found",
+      "value": "Sistema de logros no encontrado."
+    },
+    {
+      "key": "achievement_initializing",
+      "value": "El sistema de logros se est\u00e1 inicializando..."
+    },
+    {
+      "key": "achievement_empty_category",
+      "value": "No hay logros en esta categor\u00eda."
+    },
+    {
+      "key": "blocks_remaining_format",
+      "value": "{0} bloques restantes"
+    },
+    {
+      "key": "sync_verifying",
+      "value": "Verificando integridad de la app..."
+    },
+    {
+      "key": "sync_authenticating",
+      "value": "Autenticando..."
+    },
+    {
+      "key": "sync_syncing",
+      "value": "Sincronizando con la nube..."
+    },
+    {
+      "key": "sync_complete",
+      "value": "\u00a1Sincronizaci\u00f3n completa!"
+    },
+    {
+      "key": "sync_complete_user_format",
+      "value": "\u00a1Sincronizaci\u00f3n completa!\nSesi\u00f3n iniciada como: {0}"
+    },
+    {
+      "key": "sync_failed",
+      "value": "Sincronizaci\u00f3n fallida. Jugando sin conexi\u00f3n."
+    },
+    {
+      "key": "settings_language",
+      "value": "Idioma"
+    },
+    {
+      "key": "menu_daily_challenge",
+      "value": "Ritual del Sol"
+    },
+    {
+      "key": "daily_title_format",
+      "value": "Ritual del Sol : {0}"
+    },
+    {
+      "key": "daily_challenge_title",
+      "value": "Reto Diario"
+    },
+    {
+      "key": "daily_challenge_subtitle",
+      "value": "Una partida. Un modificador. El mismo para todos hoy."
+    },
+    {
+      "key": "daily_blocks_remaining",
+      "value": "{0}/{1} bloques"
+    },
+    {
+      "key": "daily_result_modifier",
+      "value": "Modificador de Hoy: {0}"
+    },
+    {
+      "key": "daily_result_rank",
+      "value": "Posici\u00f3n de Hoy: #{0}"
+    },
+    {
+      "key": "daily_result_rank_loading",
+      "value": "Posici\u00f3n de Hoy: ..."
+    },
+    {
+      "key": "daily_result_rank_unavailable",
+      "value": "Posici\u00f3n de Hoy: --"
+    },
+    {
+      "key": "daily_modifier_speedrun",
+      "value": "Carrera R\u00e1pida"
+    },
+    {
+      "key": "daily_modifier_speedrun_desc",
+      "value": "El generador se balancea m\u00e1s r\u00e1pido. Calcula bien tus tiros."
+    },
+    {
+      "key": "daily_modifier_fragilestack",
+      "value": "Pila Fr\u00e1gil"
+    },
+    {
+      "key": "daily_modifier_fragilestack_desc",
+      "value": "Un mal aterrizaje y la partida termina. La precisi\u00f3n cuenta."
+    },
+    {
+      "key": "daily_modifier_combochain",
+      "value": "Cadena de Combos"
+    },
+    {
+      "key": "daily_modifier_combochain_desc",
+      "value": "Los combos crecen geom\u00e9tricamente hasta un l\u00edmite mucho m\u00e1s alto."
+    },
+    {
+      "key": "settings_saved",
+      "value": "\u00a1Configuraci\u00f3n Guardada!"
+    }
   ]
 }

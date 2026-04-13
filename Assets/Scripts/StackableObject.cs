@@ -244,6 +244,18 @@ public class StackableObject : MonoBehaviour
             gameManager.AddScoreWithCombo(baseScore, landingAccuracy);
         }
 
+        // Daily Challenge: Fragile Stack modifier ends the run on any sub-Good landing.
+        if (gameManager != null && gameManager.CurrentGameMode == GameMode.DailyChallenge && landingAccuracy < gameManager.FragileStackFailThreshold)
+        {
+            var dailyMgr = DependencyRegistry.Find<DailyChallengeManager>();
+            if (dailyMgr != null && dailyMgr.IsActive
+                && dailyMgr.CurrentConfig.modifier == DailyChallengeModifier.FragileStack)
+            {
+                Debug.Log($"[DailyChallenge] FragileStack: misaligned landing ({landingAccuracy:F2}) ends the run.");
+                gameManager.GameOver();
+            }
+        }
+
         // Unlock rotation after a short delay - allows block to settle before it can tilt/fall
         // This maintains the danger element while ensuring accurate scoring
         StartCoroutine(UnlockRotationAfterDelay());

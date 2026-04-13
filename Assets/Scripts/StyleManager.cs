@@ -794,11 +794,15 @@ public class StyleManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Check if the current game mode is InfiniteStacker
+    /// Check if the current game mode is InfiniteStacker.
+    /// DailyChallenge intentionally piggy-backs on this so it shares
+    /// InfiniteStacker's height-based time-of-day cycling and style application.
     /// </summary>
     private bool IsInfiniteStackerMode()
     {
-        return gameManager != null && gameManager.CurrentGameMode == GameMode.InfiniteStacker;
+        return gameManager != null
+            && (gameManager.CurrentGameMode == GameMode.InfiniteStacker
+                || gameManager.CurrentGameMode == GameMode.DailyChallenge);
     }
 
     /// <summary>
@@ -862,9 +866,9 @@ public class StyleManager : MonoBehaviour
     /// </summary>
     private void OnGameModeChanged(GameMode newMode)
     {
-        if (newMode == GameMode.InfiniteStacker)
+        if (newMode == GameMode.InfiniteStacker || newMode == GameMode.DailyChallenge)
         {
-            // Apply styles when switching to InfiniteStacker mode
+            // Apply styles when switching to InfiniteStacker / DailyChallenge mode
             ApplyStyle(currentTimeOfDay);
         }
         else if (newMode == GameMode.StackerLevels)

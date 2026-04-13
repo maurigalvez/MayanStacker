@@ -10,6 +10,12 @@ public class UIManager : MonoBehaviour
     [SerializeField] private TextMeshProUGUI highScoreText;
     [SerializeField] private GameObject gameOverPanel;
     [SerializeField] private TextMeshProUGUI finalScoreText;
+
+    [Header("Daily Challenge Result Card")]
+    [Tooltip("Shows the day's modifier name on the game-over panel for Daily Challenge runs.")]
+    [SerializeField] private TextMeshProUGUI dailyModifierNameText;
+    [Tooltip("Shows the player's rank on the daily leaderboard after their score is submitted.")]
+    [SerializeField] private TextMeshProUGUI dailyRankText;
     [SerializeField] private TextMeshProUGUI newHighScoreText;
     [SerializeField] private Button restartButton;
     [SerializeField] private Button gameOverMainMenuButton;
@@ -391,12 +397,12 @@ public class UIManager : MonoBehaviour
 
     private void UpdateScore(int score)
     {
-        SetTextAnimated(scoreText, LocalizationManager.Get("score_format", score));
+        SetTextAnimated(scoreText, score.ToString());
     }
 
     private void UpdateHighScore(int highScore)
     {
-        SetTextAnimated(highScoreText, LocalizationManager.Get("high_score_format", highScore));
+        SetTextAnimated(highScoreText, highScore.ToString());
     }
 
     /// <summary>
@@ -495,7 +501,7 @@ public class UIManager : MonoBehaviour
         // Update final score
         if (finalScoreText != null && gameManager != null)
         {
-            finalScoreText.text = LocalizationManager.Get("final_score_format", gameManager.CurrentScore);
+            finalScoreText.text = gameManager.CurrentScore.ToString();
         }
 
         // Check if it's a new high score (only show in Infinite Stacker mode)
@@ -508,6 +514,78 @@ public class UIManager : MonoBehaviour
         {
             HideNewHighScore();
         }
+
+        // Daily Challenge: populate the result-card extras (modifier name + leaderboard rank).
+        UpdateDailyChallengeResultCard();
+    }
+
+    /// <summary>
+    /// Populates the Daily Challenge result-card fields (modifier name + rank).
+    /// Hides them for any non-Daily mode.
+    /// </summary>
+    private void UpdateDailyChallengeResultCard()
+    {
+        bool isDaily = gameManager != null && gameManager.CurrentGameMode == GameMode.DailyChallenge;
+
+        if (dailyModifierNameText != null)
+        {
+            dailyModifierNameText.gameObject.SetActive(isDaily);
+        }
+        if (dailyRankText != null)
+        {
+            dailyRankText.gameObject.SetActive(isDaily);
+        }
+        if (!isDaily) return;
+
+        var dailyMgr = DependencyRegistry.Find<DailyChallengeManager>();
+        if (dailyMgr != null && dailyMgr.HasConfig && dailyModifierNameText != null)
+        {
+            string modifierName = LocalizationManager.Get(
+                DailyChallengeManager.GetModifierDisplayNameKey(dailyMgr.CurrentConfig.modifier));
+            dailyModifierNameText.text = LocalizationManager.Get("daily_result_modifier", modifierName);
+        }
+
+        if (dailyRankText != null)
+        {
+            dailyRankText.text = LocalizationManager.Get("daily_result_rank_loading");
+        }
+
+        // Submission is async — give PlayFab a beat to write the score, then read back our position.
+        StartCoroutine(FetchDailyRankWithDelay(0.75f));
+    }
+
+    private IEnumerator FetchDailyRankWithDelay(float delay)
+    {
+        yield return new WaitForSeconds(delay);
+
+        var playFabManager = DependencyRegistry.Find<PlayFabManager>();
+        if (playFabManager == null || !playFabManager.IsLoggedIn || dailyRankText == null)
+        {
+            if (dailyRankText != null)
+                dailyRankText.text = LocalizationManager.Get("daily_result_rank_unavailable");
+            yield break;
+        }
+
+        playFabManager.GetPlayerLeaderboardPosition("DailyChallenge_Leaderboard", 1,
+            entries =>
+            {
+                if (dailyRankText == null) return;
+                if (entries != null && entries.Count > 0)
+                {
+                    var me = entries.Find(e => e.isCurrentPlayer);
+                    int position = me != null ? me.position : entries[0].position;
+                    dailyRankText.text = LocalizationManager.Get("daily_result_rank", position);
+                }
+                else
+                {
+                    dailyRankText.text = LocalizationManager.Get("daily_result_rank_unavailable");
+                }
+            },
+            error =>
+            {
+                if (dailyRankText != null)
+                    dailyRankText.text = LocalizationManager.Get("daily_result_rank_unavailable");
+            });
     }
 
     private void OnGameRestart()
@@ -519,7 +597,7 @@ public class UIManager : MonoBehaviour
         // Reset stack height display to zero directly (don't query StackManager as it may not be cleared yet)
         if (stackHeightText != null)
         {
-            stackHeightText.text = LocalizationManager.Get("stack_height_format", 0);
+            stackHeightText.text = 0.ToString();
         }
 
         // Reset level progress if in level mode
@@ -648,6 +726,18 @@ public class UIManager : MonoBehaviour
         else if (gameManager.CurrentGameMode == GameMode.InfiniteStacker)
         {
             titleText = LocalizationManager.Get("mode_infinite_stacker");
+        }
+        else if (gameManager.CurrentGameMode == GameMode.DailyChallenge)
+        {
+            // Daily Challenge intro: "Ritual Of The Sun : <modifier>"
+            var dailyMgr = DependencyRegistry.Find<DailyChallengeManager>();
+            string modifierName = "";
+            if (dailyMgr != null && dailyMgr.HasConfig)
+            {
+                modifierName = LocalizationManager.Get(
+                    DailyChallengeManager.GetModifierDisplayNameKey(dailyMgr.CurrentConfig.modifier));
+            }
+            titleText = LocalizationManager.Get("daily_title_format", modifierName);
         }
 
         // Set the text
@@ -868,7 +958,7 @@ public class UIManager : MonoBehaviour
         if (stackHeightText != null && stackManager != null)
         {
             int height = stackManager.GetStackCount();
-            SetTextAnimated(stackHeightText, LocalizationManager.Get("stack_height_format", height));
+            SetTextAnimated(stackHeightText, height.ToString());
         }
     }
 
@@ -1555,7 +1645,7 @@ public class UIManager : MonoBehaviour
         if (levelProgressText == null || levelManager == null || levelManager.CurrentLevel == null) return;
 
         int required = levelManager.CurrentLevel.requiredStackHeight;
-        SetTextAnimated(levelProgressText, LocalizationManager.Get("level_height_format", currentHeight, required));
+        SetTextAnimated(levelProgressText, $"{currentHeight}/{required}");
 
         // Color code the text based on progress
         float progress = (float)currentHeight / required;

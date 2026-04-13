@@ -53,6 +53,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Assets\Scripts\GameController.cs" />
+    <Compile Include="Assets\Scripts\DailyChallenge\DailyChallengeFallbackSettings.cs" />
     <Compile Include="Assets\Scripts\AdManager.cs" />
     <Compile Include="Assets\Scripts\Utilities\ScrollView_PinchScale.cs" />
     <Compile Include="Assets\Scripts\PlayerProgressData.cs" />
@@ -84,6 +85,7 @@
     <Compile Include="Assets\Scripts\IntegritySettings.cs" />
     <Compile Include="Assets\Scripts\OfflineScoreQueue.cs" />
     <Compile Include="Assets\Scripts\LeaderboardManager.cs" />
+    <Compile Include="Assets\Scripts\DailyChallenge\DailyChallengeManager.cs" />
     <Compile Include="Assets\Scripts\Achievements\AchievementTracker.cs" />
     <Compile Include="Assets\Scripts\IntegrityManager.cs" />
     <Compile Include="Assets\Scripts\DependencyRegistry\ISaveSystem.cs" />
@@ -98,16 +100,19 @@
     <Compile Include="Assets\Scripts\Achievements\AchievementManager.cs" />
     <Compile Include="Assets\Scripts\EnvironmentAssetData.cs" />
     <Compile Include="Assets\Scripts\DependencyRegistry\DependencyRegistry.cs" />
+    <Compile Include="Assets\Scripts\DailyChallenge\DailyChallengeConfig.cs" />
     <Compile Include="Assets\GooglePlayPlugins\com.google.play.integrity\Samples\IntegrityTestApp\Scripts\RequestIntegrityTokenAction.cs" />
     <Compile Include="Assets\Scripts\ObjectSpawner.cs" />
     <Compile Include="Assets\Scripts\ThemeMapSprite.cs" />
     <Compile Include="Assets\Scripts\ThemeManager.cs" />
     <Compile Include="Assets\Scripts\Achievements\GooglePlayAchievementService.cs" />
+    <Compile Include="Assets\Scripts\Utilities\ButtonFallInAnimation.cs" />
     <Compile Include="Assets\Scripts\Utilities\RandomSpriteAssigner.cs" />
     <Compile Include="Assets\Scripts\LevelButtonUI.cs" />
     <Compile Include="Assets\Scripts\EnvironmentAsset.cs" />
     <Compile Include="Assets\Scripts\PlayerDataReset.cs" />
     <Compile Include="Assets\Scripts\PointsPopup.cs" />
+    <Compile Include="Assets\Scripts\DailyChallenge\DailyChallengeModifier.cs" />
     <Compile Include="Assets\Scripts\Achievements\AchievementNotificationUI.cs" />
     <Compile Include="Assets\Scripts\CodexEntryUI.cs" />
     <Compile Include="Assets\Scripts\Utilities\ScalePulseAnimation.cs" />

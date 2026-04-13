@@ -32,6 +32,10 @@ public class GameManager : MonoBehaviour
     [Tooltip("Number of consecutive perfect hits required to straighten the stack")]
     [SerializeField] private int perfectHitsRequired = 4;
 
+    [Header("Daily Challenge")]
+    [Tooltip("FragileStack modifier: landings below this accuracy (0-1) end the run. Matches the Good threshold by default.")]
+    [SerializeField] private float fragileStackFailThreshold = 0.4f;
+
     // Internal state
     private bool gameModeInitialized = false;
     private int currentLevelNumber = -1; // For StackerLevels mode
@@ -73,6 +77,7 @@ public class GameManager : MonoBehaviour
     public float CurrentMultiplier => GetComboMultiplier();
     public int ConsecutivePerfectHits => consecutivePerfectHits;
     public int PerfectHitsRequired => perfectHitsRequired;
+    public float FragileStackFailThreshold => fragileStackFailThreshold;
 
     private void Awake()
     {
@@ -163,6 +168,13 @@ public class GameManager : MonoBehaviour
             });
         }
 
+        // Daily Challenge: reset per-run block counter so restarts don't carry blocksPlaced over.
+        if (currentGameMode == GameMode.DailyChallenge)
+        {
+            var dailyMgr = DependencyRegistry.Find<DailyChallengeManager>();
+            if (dailyMgr != null) dailyMgr.ResetRunCounter();
+        }
+
         OnGameStart?.Invoke();
         OnScoreChanged?.Invoke(currentScore);
         OnComboChanged?.Invoke(currentCombo, GetComboMultiplier());
@@ -196,6 +208,17 @@ public class GameManager : MonoBehaviour
         {
             highScore = currentScore;
             // DON'T invoke OnHighScoreChanged here - only invoke when loading saved scores
+        }
+
+        // Daily Challenge: end the run when the block-count cap is reached.
+        if (currentGameMode == GameMode.DailyChallenge)
+        {
+            var dailyMgr = DependencyRegistry.Find<DailyChallengeManager>();
+            if (dailyMgr != null && dailyMgr.IsActive && dailyMgr.RegisterBlockPlacedAndCheckComplete())
+            {
+                Debug.Log($"[DailyChallenge] Run complete: {dailyMgr.BlocksPlaced}/{dailyMgr.BlockCountTarget} blocks");
+                GameOver();
+            }
         }
 
         return finalPoints;
@@ -369,6 +392,18 @@ public class GameManager : MonoBehaviour
     {
         if (currentCombo <= 1) return 1f;
 
+        // Daily Challenge: Combo Chain modifier replaces linear scaling with geometric, higher cap.
+        if (currentGameMode == GameMode.DailyChallenge)
+        {
+            var dailyMgr = DependencyRegistry.Find<DailyChallengeManager>();
+            if (dailyMgr != null && dailyMgr.IsActive
+                && dailyMgr.CurrentConfig.modifier == DailyChallengeModifier.ComboChain)
+            {
+                float chainMultiplier = Mathf.Pow(1.5f, currentCombo - 1);
+                return Mathf.Min(chainMultiplier, 10f);
+            }
+        }
+
         // Calculate multiplier: starts at 1x, increases by multiplierIncrement starting from 2nd landing
         // Example: with multiplierIncrement = 1.0:
         // Combo 1: 1x (first landing, no bonus yet), Combo 2: 2x, Combo 3: 3x, Combo 4: 4x, etc.
@@ -403,6 +438,12 @@ public class GameManager : MonoBehaviour
         if (currentGameMode == GameMode.InfiniteStacker && currentScore > 0)
         {
             SaveHighScoreIfNeeded();
+        }
+
+        // For DailyChallenge mode, always submit the run's score — PlayFab keeps the per-day max.
+        if (currentGameMode == GameMode.DailyChallenge && currentScore > 0)
+        {
+            SubmitDailyChallengeScore();
         }
 
         OnGameOver?.Invoke();
@@ -609,6 +650,27 @@ public class GameManager : MonoBehaviour
             }
 
             highScoreSaved = true;
+        }
+    }
+
+    /// <summary>
+    /// Submit the just-completed Daily Challenge run to PlayFab.
+    /// Uses statistic name "DailyChallenge" — the matching daily-reset leaderboard
+    /// "DailyChallenge_Leaderboard" is auto-populated server-side.
+    /// </summary>
+    private void SubmitDailyChallengeScore()
+    {
+        var playFabManager = DependencyRegistry.Find<PlayFabManager>();
+        if (playFabManager != null && playFabManager.IsLoggedIn)
+        {
+            playFabManager.SubmitScore("DailyChallenge", currentScore);
+            Debug.Log($"[DailyChallenge] Submitting run score: {currentScore}");
+        }
+        else
+        {
+            // Reuse the existing offline queue so the score syncs on reconnect.
+            OfflineScoreQueue.QueueScore("DailyChallenge", currentScore);
+            Debug.LogWarning("[DailyChallenge] PlayFab not ready, queued score for later sync");
         }
     }
 
