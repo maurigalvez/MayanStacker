@@ -245,6 +245,10 @@
       "value": "Combos scale geometrically up to a much higher cap."
     },
     {
+      "key": "daily_speedrun_result",
+      "value": "Time: {0}:{1:D2} | Time Bonus: +{2}"
+    },
+    {
       "key": "settings_saved",
       "value": "Settings Saved!"
     }

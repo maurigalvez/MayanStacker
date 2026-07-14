@@ -541,6 +541,10 @@ MonoBehaviour:
   cameraHeightOffset: 7
   minY: 11
   maxY: 1000
+  shakeMaxOffset: 0.55
+  shakeMaxAngle: 2.5
+  shakeDecay: 1.6
+  shakeFrequency: 26
   debugMode: 0
 --- !u!1 &570952936
 GameObject:
@@ -1211,7 +1215,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cea51f466b7698f42a142e297dedb7bb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  currentGameMode: 0
+  currentGameMode: 2
   waitForGameModeSelection: 0
   autoStartAfterModeSet: 1
   currentScore: 0
@@ -6463,7 +6467,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2e68828d3fe105443876e2b0e123c017, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DailyChallengeManager
+  editorForceModifier: 1
+  editorForcedModifier: 2
+  editorForcedBlockCount: 30
   speedRunSwingMultiplier: 1.6
+  speedRunTimeLimitSeconds: 120
+  speedRunMaxTimeBonus: 5000
 --- !u!4 &1718662489
 Transform:
   m_ObjectHideFlags: 0
@@ -6725,6 +6734,13 @@ MonoBehaviour:
   codexUnlockSound: {fileID: 0}
   kukulkanShiftSound: {fileID: 8300000, guid: b0d8b62429eee0849a3693195172bf4c, type: 3}
   scoreCountSound: {fileID: 0}
+  perfectLandingSound: {fileID: 8300000, guid: 28b6f02d30b02f6459a66fce95f1a255, type: 3}
+  goodLandingSound: {fileID: 8300000, guid: c54cea1cc708ca84dadaa680f21504cd, type: 3}
+  poorLandingSound: {fileID: 8300000, guid: d7231f3f1e9dd2a4fbeaaaa8811feba5, type: 3}
+  perfectComboLandingSound: {fileID: 8300000, guid: 2987adfbcd4549f46817ad77283f87ca, type: 3}
+  perfectComboSoundThreshold: 3
+  perfectStreakChargeSound: {fileID: 8300000, guid: 49ea7122390e86247870d78a193ab66b, type: 3}
+  landingSoundVolume: 1
   sfxVolume: 0.7
   allowSimultaneousSounds: 1
   enablePitchRandomization: 1
@@ -7228,6 +7244,14 @@ PrefabInstance:
     - target: {fileID: 8208812781904062549, guid: 60441e2117e89ce48a769a889c2ee4ca, type: 3}
       propertyPath: m_IsActive
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8522870308968731560, guid: 60441e2117e89ce48a769a889c2ee4ca, type: 3}
+      propertyPath: m_fontSizeMax
+      value: 125
+      objectReference: {fileID: 0}
+    - target: {fileID: 8522870308968731560, guid: 60441e2117e89ce48a769a889c2ee4ca, type: 3}
+      propertyPath: m_enableAutoSizing
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

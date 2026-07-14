@@ -145,14 +145,22 @@ public class ButtonFallInAnimation : MonoBehaviour
 
             remaining++;
             StartCoroutine(FallElement(logo, logoInitialPosition, () => remaining--));
+
+            // Start the scale impact so it peaks right when the logo lands
+            float impactLeadTime = fallDuration - impactDuration * 0.5f;
+            if (impactLeadTime > 0)
+            {
+                if (useUnscaledTime)
+                    yield return new WaitForSecondsRealtime(impactLeadTime);
+                else
+                    yield return new WaitForSeconds(impactLeadTime);
+            }
+
+            StartCoroutine(LogoImpact());
         }
 
         while (remaining > 0)
             yield return null;
-
-        // Phase 3: Logo land impact
-        if (logo != null)
-            yield return LogoImpact();
 
         // Phase 4: Button shake
         if (buttons != null && buttons.Length > 0)

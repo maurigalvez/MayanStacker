@@ -216,7 +216,21 @@ public class GameManager : MonoBehaviour
             var dailyMgr = DependencyRegistry.Find<DailyChallengeManager>();
             if (dailyMgr != null && dailyMgr.IsActive && dailyMgr.RegisterBlockPlacedAndCheckComplete())
             {
-                Debug.Log($"[DailyChallenge] Run complete: {dailyMgr.BlocksPlaced}/{dailyMgr.BlockCountTarget} blocks");
+                // SpeedRun: award time bonus before ending the run
+                int timeBonus = dailyMgr.CalculateSpeedRunTimeBonus();
+                if (timeBonus > 0)
+                {
+                    currentScore += timeBonus;
+                    Debug.Log($"[DailyChallenge] SpeedRun time bonus: +{timeBonus} (elapsed: {dailyMgr.ElapsedTime:F1}s)");
+                    OnScoreChanged?.Invoke(currentScore);
+
+                    if (currentScore > highScore)
+                    {
+                        highScore = currentScore;
+                    }
+                }
+
+                Debug.Log($"[DailyChallenge] Run complete: {dailyMgr.BlocksPlaced}/{dailyMgr.BlockCountTarget} blocks, final score: {currentScore}");
                 GameOver();
             }
         }

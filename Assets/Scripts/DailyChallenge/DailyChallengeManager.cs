@@ -22,21 +22,38 @@ public class DailyChallengeManager : MonoBehaviour
 
     private const string FALLBACK_RESOURCE_PATH = "DailyChallenge/DailyChallengeFallbackSettings";
 
+#if UNITY_EDITOR
+    [Header("Editor Test Override")]
+    [Tooltip("Editor-only: when enabled, forces the chosen modifier and skips PlayFab. Has no effect in builds.")]
+    [SerializeField] private bool editorForceModifier = false;
+    [SerializeField] private DailyChallengeModifier editorForcedModifier = DailyChallengeModifier.SpeedRun;
+    [Tooltip("Editor-only: block count to use when the override is active.")]
+    [SerializeField] private int editorForcedBlockCount = 30;
+#endif
+
     [Header("Speed Run modifier tuning")]
     [Tooltip("Multiplier applied to the spawner's swing speed when the SpeedRun modifier is active.")]
     [SerializeField] private float speedRunSwingMultiplier = 1.6f;
+    [Tooltip("Time limit in seconds for full bonus in SpeedRun mode. Finishing at or above this awards zero bonus.")]
+    [SerializeField] private float speedRunTimeLimitSeconds = 120f;
+    [Tooltip("Maximum bonus points awarded for finishing SpeedRun instantly (scales linearly with remaining time).")]
+    [SerializeField] private int speedRunMaxTimeBonus = 5000;
 
     private DailyChallengeFallbackSettings fallbackSettings;
     private DailyChallengeConfig? cachedConfig;
     private bool isActive;
     private int blocksPlaced;
     private float originalSwingSpeedBeforeApply = -1f;
+    private float runStartTime;
 
     public bool IsActive => isActive;
     public DailyChallengeConfig CurrentConfig => cachedConfig.GetValueOrDefault();
     public bool HasConfig => cachedConfig.HasValue;
     public int BlocksPlaced => blocksPlaced;
     public int BlockCountTarget => cachedConfig.HasValue ? cachedConfig.Value.blockCount : 0;
+    public float ElapsedTime => isActive ? Time.time - runStartTime : 0f;
+    public float SpeedRunTimeLimit => speedRunTimeLimitSeconds;
+    public bool IsSpeedRun => isActive && cachedConfig.HasValue && cachedConfig.Value.modifier == DailyChallengeModifier.SpeedRun;
 
     private void Awake()
     {
@@ -64,6 +81,24 @@ public class DailyChallengeManager : MonoBehaviour
             onReady?.Invoke(cachedConfig.Value);
             return;
         }
+
+#if UNITY_EDITOR
+        if (editorForceModifier)
+        {
+            int dayNumberUtc = ToDayNumberUtc(DateTime.UtcNow);
+            int blocks = editorForcedBlockCount > 0 ? editorForcedBlockCount : 30;
+            var forced = new DailyChallengeConfig
+            {
+                modifier = editorForcedModifier,
+                blockCount = blocks,
+                dayNumberUtc = dayNumberUtc
+            };
+            cachedConfig = forced;
+            Debug.Log($"[DailyChallenge] EDITOR OVERRIDE active: modifier={forced.modifier}, blockCount={forced.blockCount}");
+            onReady?.Invoke(forced);
+            return;
+        }
+#endif
 
         var playFabManager = DependencyRegistry.Find<PlayFabManager>();
         bool canQueryPlayFab = playFabManager != null && playFabManager.IsLoggedIn && !NetworkUtility.IsOffline();
@@ -122,6 +157,7 @@ public class DailyChallengeManager : MonoBehaviour
         cachedConfig = config;
         isActive = true;
         blocksPlaced = 0;
+        runStartTime = Time.time;
 
         if (config.modifier == DailyChallengeModifier.SpeedRun)
         {
@@ -146,6 +182,7 @@ public class DailyChallengeManager : MonoBehaviour
     public void ResetRunCounter()
     {
         blocksPlaced = 0;
+        runStartTime = Time.time;
     }
 
     /// <summary>
@@ -156,6 +193,22 @@ public class DailyChallengeManager : MonoBehaviour
         if (!isActive) return false;
         blocksPlaced++;
         return blocksPlaced >= BlockCountTarget;
+    }
+
+    /// <summary>
+    /// Calculates the time bonus for a completed SpeedRun.
+    /// Returns 0 for non-SpeedRun modifiers or if elapsed time exceeds the limit.
+    /// </summary>
+    public int CalculateSpeedRunTimeBonus()
+    {
+        if (!IsSpeedRun) return 0;
+
+        float elapsed = ElapsedTime;
+        float remaining = speedRunTimeLimitSeconds - elapsed;
+        if (remaining <= 0f) return 0;
+
+        float fraction = remaining / speedRunTimeLimitSeconds;
+        return Mathf.RoundToInt(fraction * speedRunMaxTimeBonus);
     }
 
     /// <summary>

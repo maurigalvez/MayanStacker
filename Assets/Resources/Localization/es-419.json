@@ -245,6 +245,10 @@
       "value": "Los combos crecen geom\u00e9tricamente hasta un l\u00edmite mucho m\u00e1s alto."
     },
     {
+      "key": "daily_speedrun_result",
+      "value": "Tiempo: {0}:{1:D2} | Bonus: +{2}"
+    },
+    {
       "key": "settings_saved",
       "value": "\u00a1Configuraci\u00f3n Guardada!"
     }
