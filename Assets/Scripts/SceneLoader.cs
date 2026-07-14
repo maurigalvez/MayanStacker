@@ -111,8 +111,24 @@ public static class SceneLoader
 
                 dailyMgr.FetchTodaysConfig(cfg =>
                 {
-                    dailyMgr.ApplyModifier(cfg);
-                    gameManager.StartGame();
+                    // Begin the run: apply the modifier (starts the SpeedRun timer) then start play.
+                    System.Action beginRun = () =>
+                    {
+                        dailyMgr.ApplyModifier(cfg);
+                        gameManager.StartGame();
+                    };
+
+                    // Gate the run behind the briefing screen so the player reads today's modifier.
+                    // If no UIManager/briefing is available, fail open and start immediately.
+                    var uiManager = DependencyRegistry.Find<UIManager>();
+                    if (uiManager != null)
+                    {
+                        uiManager.ShowDailyBriefing(cfg, beginRun);
+                    }
+                    else
+                    {
+                        beginRun();
+                    }
                 });
             }
             else

@@ -12,13 +12,30 @@ public class UIManager : MonoBehaviour
     [SerializeField] private TextMeshProUGUI finalScoreText;
 
     [Header("Daily Challenge Result Card")]
+    [Tooltip("Outcome headline on the game-over panel for Daily runs: 'Ritual Complete' vs 'Ritual Broken'. Optional; hidden for non-daily.")]
+    [SerializeField] private TextMeshProUGUI dailyOutcomeText;
+    [Tooltip("Color for a completed ritual headline (hit the block cap).")]
+    [SerializeField] private Color dailyCompleteColor = new Color(0.09f, 0.57f, 0.44f, 1f); // jade
+    [Tooltip("Color for a broken ritual headline (toppled early).")]
+    [SerializeField] private Color dailyBrokenColor = new Color(0.66f, 0.25f, 0.16f, 1f); // clay
     [Tooltip("Shows the day's modifier name on the game-over panel for Daily Challenge runs.")]
     [SerializeField] private TextMeshProUGUI dailyModifierNameText;
     [Tooltip("Shows the player's rank on the daily leaderboard after their score is submitted.")]
     [SerializeField] private TextMeshProUGUI dailyRankText;
+    [Tooltip("Optional: shows a countdown to the next daily reset on the game-over panel.")]
+    [SerializeField] private TextMeshProUGUI dailyResetCountdownText;
     [SerializeField] private TextMeshProUGUI newHighScoreText;
     [SerializeField] private Button restartButton;
     [SerializeField] private Button gameOverMainMenuButton;
+
+    [Header("Daily Challenge Briefing (pre-run)")]
+    [Tooltip("Full-screen briefing panel shown before a Daily run starts. Gates play until 'Begin the Ritual' is tapped.")]
+    [SerializeField] private GameObject dailyBriefingPanel;
+    [SerializeField] private TextMeshProUGUI dailyBriefingModifierNameText;
+    [SerializeField] private TextMeshProUGUI dailyBriefingDescriptionText;
+    [SerializeField] private TextMeshProUGUI dailyBriefingTargetText;
+    [SerializeField] private TextMeshProUGUI dailyBriefingSubtitleText;
+    [SerializeField] private Button dailyBriefingBeginButton;
 
     [Header("Level Mode UI")]
     [SerializeField] private GameObject levelCompletePanel;
@@ -174,6 +191,9 @@ public class UIManager : MonoBehaviour
     private bool isPaused = false;
     private bool isUpdatingComboTimer = false;
     private bool isUpdatingSpeedRunTimer = false;
+    private bool isUpdatingResetCountdown = false;
+    private System.Action dailyBriefingOnBegin; // Invoked when "Begin the Ritual" is tapped
+    private bool dailyBriefingRequested = false; // True while a briefing is pending/showing (guards InitializeUI ordering)
     private bool isTitleShowing = false; // Track if title is currently showing
     private bool isSubscribedToGameStart = false; // Track subscription to avoid duplicates
 
@@ -305,14 +325,19 @@ public class UIManager : MonoBehaviour
             codexUnlockDismissButton.onClick.AddListener(DismissCodexPopup);
         }
 
+        // Note: the daily briefing "Begin" button is wired idempotently in ShowDailyBriefing,
+        // because that can be called before Start() on the synchronous (offline) config path.
+
         // Initialize UI
         InitializeUI();
     }
 
     private void InitializeUI()
     {
-        // Show game UI, hide game over panel
-        if (gameUI != null)
+        // Show game UI, hide game over panel.
+        // Skip when a Daily briefing is pending (it was shown before Start ran on the
+        // synchronous config path) so we don't reveal the HUD behind the overlay.
+        if (gameUI != null && !dailyBriefingRequested)
             gameUI.SetActive(true);
 
         if (gameOverPanel != null)
@@ -326,6 +351,11 @@ public class UIManager : MonoBehaviour
 
         if (codexUnlockPopup != null)
             codexUnlockPopup.SetActive(false);
+
+        // Hide the Daily Challenge briefing panel initially (shown explicitly via ShowDailyBriefing).
+        // Don't hide it if a briefing is already pending (shown before Start on the sync config path).
+        if (dailyBriefingPanel != null && !dailyBriefingRequested)
+            dailyBriefingPanel.SetActive(false);
 
         // Hide game title initially
         if (gameTitleText != null)
@@ -489,6 +519,9 @@ public class UIManager : MonoBehaviour
         if (gameUI != null)
             gameUI.SetActive(true);
 
+        // Stop the game-over reset countdown if it was running
+        StopResetCountdown();
+
         // Daily Challenge: refresh the remaining-blocks display now that config is ready
         if (gameManager != null && gameManager.CurrentGameMode == GameMode.DailyChallenge)
         {
@@ -564,6 +597,10 @@ public class UIManager : MonoBehaviour
     {
         bool isDaily = gameManager != null && gameManager.CurrentGameMode == GameMode.DailyChallenge;
 
+        if (dailyOutcomeText != null)
+        {
+            dailyOutcomeText.gameObject.SetActive(isDaily);
+        }
         if (dailyModifierNameText != null)
         {
             dailyModifierNameText.gameObject.SetActive(isDaily);
@@ -572,27 +609,68 @@ public class UIManager : MonoBehaviour
         {
             dailyRankText.gameObject.SetActive(isDaily);
         }
-        if (!isDaily) return;
+        if (dailyResetCountdownText != null)
+        {
+            dailyResetCountdownText.gameObject.SetActive(isDaily);
+        }
+        if (!isDaily)
+        {
+            StopResetCountdown();
+            return;
+        }
 
         var dailyMgr = DependencyRegistry.Find<DailyChallengeManager>();
+        bool completed = dailyMgr != null && dailyMgr.RunCompleted;
+
+        // Outcome headline: "Ritual Complete" (hit the block cap) vs "Ritual Broken" (toppled early).
+        if (dailyOutcomeText != null)
+        {
+            dailyOutcomeText.text = LocalizationManager.Get(
+                completed ? "daily_result_complete" : "daily_result_broken");
+            dailyOutcomeText.color = completed ? dailyCompleteColor : dailyBrokenColor;
+        }
+
         if (dailyMgr != null && dailyMgr.HasConfig && dailyModifierNameText != null)
         {
             string modifierName = LocalizationManager.Get(
                 DailyChallengeManager.GetModifierDisplayNameKey(dailyMgr.CurrentConfig.modifier));
             string modifierLine = LocalizationManager.Get("daily_result_modifier", modifierName);
 
-            // SpeedRun: append elapsed time and time bonus to the result card
-            if (dailyMgr.IsSpeedRun)
+            if (completed)
             {
-                float elapsed = dailyMgr.ElapsedTime;
-                int minutes = (int)(elapsed / 60f);
-                int seconds = (int)(elapsed % 60f);
-                int timeBonus = dailyMgr.CalculateSpeedRunTimeBonus();
-                string timeLine = LocalizationManager.Get("daily_speedrun_result", minutes, seconds, timeBonus);
-                modifierLine += "\n" + timeLine;
+                // SpeedRun: append elapsed time and time bonus to the result card
+                if (dailyMgr.IsSpeedRun)
+                {
+                    float elapsed = dailyMgr.ElapsedTime;
+                    int minutes = (int)(elapsed / 60f);
+                    int seconds = (int)(elapsed % 60f);
+                    int timeBonus = dailyMgr.CalculateSpeedRunTimeBonus();
+                    string timeLine = LocalizationManager.Get("daily_speedrun_result", minutes, seconds, timeBonus);
+                    modifierLine += "\n" + timeLine;
+                }
+            }
+            else
+            {
+                // Failure: show how far they got, then a retry challenge.
+                modifierLine += "\n" + LocalizationManager.Get("daily_result_progress",
+                    dailyMgr.BlocksPlaced, dailyMgr.BlockCountTarget);
+                modifierLine += "\n" + LocalizationManager.Get("daily_retry_prompt");
             }
 
             dailyModifierNameText.text = modifierLine;
+        }
+
+        // Personal-best banner (now surfaced for Daily, not just Infinite mode).
+        int score = gameManager != null ? gameManager.CurrentScore : 0;
+        bool isNewBest = score > 0 && score > DailyChallengeManager.TodaysBestScore();
+        DailyChallengeManager.RecordRunResult(score);
+        if (isNewBest)
+        {
+            ShowDailyNewBest();
+        }
+        else
+        {
+            HideNewHighScore();
         }
 
         if (dailyRankText != null)
@@ -600,8 +678,109 @@ public class UIManager : MonoBehaviour
             dailyRankText.text = LocalizationManager.Get("daily_result_rank_loading");
         }
 
+        // Countdown to the next daily reset.
+        StartResetCountdown();
+
         // Submission is async — give PlayFab a beat to write the score, then read back our position.
         StartCoroutine(FetchDailyRankWithDelay(0.75f));
+    }
+
+    /// <summary>
+    /// Shows the pre-run Daily Challenge briefing and gates play until the player taps "Begin the Ritual".
+    /// Called by SceneLoader after today's config is resolved; <paramref name="onBegin"/> starts the run.
+    /// </summary>
+    public void ShowDailyBriefing(DailyChallengeConfig config, System.Action onBegin)
+    {
+        dailyBriefingOnBegin = onBegin;
+
+        // No panel wired — fail open so the daily still starts.
+        if (dailyBriefingPanel == null)
+        {
+            Debug.LogWarning("[UIManager] Daily briefing panel not assigned; starting run without briefing.");
+            onBegin?.Invoke();
+            return;
+        }
+
+        // Mark pending so InitializeUI (which may run later on the synchronous config path)
+        // doesn't clobber the overlay or reveal the HUD behind it.
+        dailyBriefingRequested = true;
+
+        // Wire the Begin button idempotently — this may run before Start().
+        if (dailyBriefingBeginButton != null)
+        {
+            dailyBriefingBeginButton.onClick.RemoveListener(OnDailyBriefingBegin);
+            dailyBriefingBeginButton.onClick.AddListener(OnDailyBriefingBegin);
+        }
+
+        // Hide the in-game HUD behind the briefing overlay.
+        if (gameUI != null) gameUI.SetActive(false);
+
+        string modifierName = LocalizationManager.Get(
+            DailyChallengeManager.GetModifierDisplayNameKey(config.modifier));
+
+        if (dailyBriefingModifierNameText != null)
+            dailyBriefingModifierNameText.text = modifierName;
+
+        if (dailyBriefingDescriptionText != null)
+            dailyBriefingDescriptionText.text = LocalizationManager.Get(
+                DailyChallengeManager.GetModifierDescriptionKey(config.modifier));
+
+        if (dailyBriefingTargetText != null)
+            dailyBriefingTargetText.text = LocalizationManager.Get("daily_briefing_target", config.blockCount);
+
+        if (dailyBriefingSubtitleText != null)
+            dailyBriefingSubtitleText.text = LocalizationManager.Get("daily_challenge_subtitle");
+
+        dailyBriefingPanel.SetActive(true);
+    }
+
+    private void OnDailyBriefingBegin()
+    {
+        dailyBriefingRequested = false;
+
+        if (dailyBriefingPanel != null)
+            dailyBriefingPanel.SetActive(false);
+
+        if (gameUI != null)
+            gameUI.SetActive(true);
+
+        var begin = dailyBriefingOnBegin;
+        dailyBriefingOnBegin = null;
+        begin?.Invoke();
+    }
+
+    /// <summary>Shows the personal-best banner using the Daily-specific "New Personal Best!" copy.</summary>
+    private void ShowDailyNewBest()
+    {
+        if (newHighScoreText != null)
+        {
+            newHighScoreText.gameObject.SetActive(true);
+            newHighScoreText.text = LocalizationManager.Get("daily_new_best");
+        }
+    }
+
+    private void StartResetCountdown()
+    {
+        StopResetCountdown();
+        if (dailyResetCountdownText == null) return;
+        isUpdatingResetCountdown = true;
+        StartCoroutine(UpdateResetCountdownRoutine());
+    }
+
+    private void StopResetCountdown()
+    {
+        isUpdatingResetCountdown = false;
+    }
+
+    private IEnumerator UpdateResetCountdownRoutine()
+    {
+        while (isUpdatingResetCountdown && dailyResetCountdownText != null)
+        {
+            System.TimeSpan remaining = DailyChallengeManager.TimeUntilNextResetUtc();
+            string clock = $"{(int)remaining.TotalHours:00}:{remaining.Minutes:00}:{remaining.Seconds:00}";
+            dailyResetCountdownText.text = LocalizationManager.Get("daily_reset_countdown", clock);
+            yield return new WaitForSeconds(1f);
+        }
     }
 
     private IEnumerator FetchDailyRankWithDelay(float delay)
@@ -646,6 +825,7 @@ public class UIManager : MonoBehaviour
 
         // Reset stack height display (don't query StackManager as it may not be cleared yet)
         StopSpeedRunTimer();
+        StopResetCountdown();
         if (stackHeightText != null)
         {
             // Daily Challenge: reset to full block count target (SpeedRun timer restarts in OnGameStart)

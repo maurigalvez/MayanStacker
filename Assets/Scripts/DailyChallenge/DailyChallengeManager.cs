@@ -22,6 +22,12 @@ public class DailyChallengeManager : MonoBehaviour
 
     private const string FALLBACK_RESOURCE_PATH = "DailyChallenge/DailyChallengeFallbackSettings";
 
+    // PlayerPrefs keys for local daily state (played-today badge + personal best).
+    // These use the device-UTC day number for keying; the modifier roll itself still
+    // uses PlayFab server time, so this local state is display-only and non-exploitable.
+    private const string PP_LAST_PLAYED_DAY = "Daily_LastPlayedDay";
+    private const string PP_BEST_PREFIX = "Daily_Best_";
+
 #if UNITY_EDITOR
     [Header("Editor Test Override")]
     [Tooltip("Editor-only: when enabled, forces the chosen modifier and skips PlayFab. Has no effect in builds.")]
@@ -43,6 +49,7 @@ public class DailyChallengeManager : MonoBehaviour
     private DailyChallengeConfig? cachedConfig;
     private bool isActive;
     private int blocksPlaced;
+    private bool runCompleted;
     private float originalSwingSpeedBeforeApply = -1f;
     private float runStartTime;
 
@@ -50,6 +57,8 @@ public class DailyChallengeManager : MonoBehaviour
     public DailyChallengeConfig CurrentConfig => cachedConfig.GetValueOrDefault();
     public bool HasConfig => cachedConfig.HasValue;
     public int BlocksPlaced => blocksPlaced;
+    /// <summary>True once the run reached its block-count cap (a completed ritual). False after an early topple/fragile break.</summary>
+    public bool RunCompleted => runCompleted;
     public int BlockCountTarget => cachedConfig.HasValue ? cachedConfig.Value.blockCount : 0;
     public float ElapsedTime => isActive ? Time.time - runStartTime : 0f;
     public float SpeedRunTimeLimit => speedRunTimeLimitSeconds;
@@ -157,6 +166,7 @@ public class DailyChallengeManager : MonoBehaviour
         cachedConfig = config;
         isActive = true;
         blocksPlaced = 0;
+        runCompleted = false;
         runStartTime = Time.time;
 
         if (config.modifier == DailyChallengeModifier.SpeedRun)
@@ -182,6 +192,7 @@ public class DailyChallengeManager : MonoBehaviour
     public void ResetRunCounter()
     {
         blocksPlaced = 0;
+        runCompleted = false;
         runStartTime = Time.time;
     }
 
@@ -192,7 +203,12 @@ public class DailyChallengeManager : MonoBehaviour
     {
         if (!isActive) return false;
         blocksPlaced++;
-        return blocksPlaced >= BlockCountTarget;
+        if (blocksPlaced >= BlockCountTarget)
+        {
+            runCompleted = true;
+            return true;
+        }
+        return false;
     }
 
     /// <summary>
@@ -340,5 +356,53 @@ public class DailyChallengeManager : MonoBehaviour
     {
         // Days since 1970-01-01 UTC. Stable across time zones.
         return (int)(utc.Date - new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc)).TotalDays;
+    }
+
+    // ─────────────────────────────────────────────────────────────────────
+    // Local daily state (static so the main menu can read it without a
+    // DailyChallengeManager instance, which only lives in the game scene).
+    // Display-only: keyed on device UTC, so a clock-changer sees a wrong
+    // countdown but can't reroll the (server-timed) modifier.
+    // ─────────────────────────────────────────────────────────────────────
+
+    /// <summary>Device-UTC day number (days since 1970-01-01), used for local played/best keys.</summary>
+    public static int CurrentDayNumberUtc()
+    {
+        return ToDayNumberUtc(DateTime.UtcNow);
+    }
+
+    /// <summary>Time remaining until the next UTC midnight (when the daily rolls over).</summary>
+    public static TimeSpan TimeUntilNextResetUtc()
+    {
+        DateTime now = DateTime.UtcNow;
+        DateTime nextMidnight = now.Date.AddDays(1);
+        return nextMidnight - now;
+    }
+
+    /// <summary>True if a Daily Challenge run has already been recorded for today.</summary>
+    public static bool HasPlayedToday()
+    {
+        return PlayerPrefs.GetInt(PP_LAST_PLAYED_DAY, -1) == CurrentDayNumberUtc();
+    }
+
+    /// <summary>The best score recorded locally for today's Daily Challenge (0 if none yet).</summary>
+    public static int TodaysBestScore()
+    {
+        return PlayerPrefs.GetInt(PP_BEST_PREFIX + CurrentDayNumberUtc(), 0);
+    }
+
+    /// <summary>
+    /// Record a finished run's score, marking "played today" and updating today's best.
+    /// Call once per game-over in Daily Challenge mode.
+    /// </summary>
+    public static void RecordRunResult(int score)
+    {
+        int day = CurrentDayNumberUtc();
+        PlayerPrefs.SetInt(PP_LAST_PLAYED_DAY, day);
+        if (score > PlayerPrefs.GetInt(PP_BEST_PREFIX + day, 0))
+        {
+            PlayerPrefs.SetInt(PP_BEST_PREFIX + day, score);
+        }
+        PlayerPrefs.Save();
     }
 }

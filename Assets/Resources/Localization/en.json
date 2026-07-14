@@ -249,6 +249,46 @@
       "value": "Time: {0}:{1:D2} | Time Bonus: +{2}"
     },
     {
+      "key": "daily_briefing_target",
+      "value": "Stack {0} blocks"
+    },
+    {
+      "key": "daily_briefing_begin",
+      "value": "Begin the Ritual"
+    },
+    {
+      "key": "daily_result_complete",
+      "value": "Ritual Complete"
+    },
+    {
+      "key": "daily_result_broken",
+      "value": "Ritual Broken"
+    },
+    {
+      "key": "daily_result_complete_flavor",
+      "value": "Kukulkan is honored."
+    },
+    {
+      "key": "daily_result_progress",
+      "value": "Reached {0} / {1} blocks"
+    },
+    {
+      "key": "daily_retry_prompt",
+      "value": "The ritual fell short — try again."
+    },
+    {
+      "key": "daily_new_best",
+      "value": "New Personal Best!"
+    },
+    {
+      "key": "daily_reset_countdown",
+      "value": "Next ritual in {0}"
+    },
+    {
+      "key": "daily_played_today",
+      "value": "Played today · resets in {0}"
+    },
+    {
       "key": "settings_saved",
       "value": "Settings Saved!"
     }

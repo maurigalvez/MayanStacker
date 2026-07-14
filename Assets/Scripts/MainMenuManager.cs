@@ -56,6 +56,8 @@ public class MainMenuManager : MonoBehaviour
 
     [Header("UI Elements")]
     [SerializeField] private TextMeshProUGUI versionText;
+    [Tooltip("Optional subtitle under the Daily Challenge button: shows the mode tagline, or 'Played today · resets in HH:MM:SS' once today's run is done.")]
+    [SerializeField] private TextMeshProUGUI dailyChallengeButtonSubtitle;
 
     [Header("Cloud Sync UI")]
     [SerializeField] private GameObject syncPanel;
@@ -85,6 +87,7 @@ public class MainMenuManager : MonoBehaviour
     private bool isFirstShow = true;
     private GameObject previousPanel = null; // Track previous panel for navigation
     private int currentSelectedLevelIndex = -1; // Track currently selected/focused level (0-based)
+    private bool isTickingDailySubtitle = false; // Guards the daily-subtitle countdown coroutine
 
     /// <summary>
     /// Get a level button by index (for use by ScrollView_PinchScale)
@@ -786,6 +789,54 @@ public class MainMenuManager : MonoBehaviour
         if (themeBackground != null)
         {
             themeBackground.RefreshTheme();
+        }
+
+        // Keep the Daily Challenge button subtitle (tagline / played-today countdown) live.
+        StartDailySubtitleTicker();
+    }
+
+    /// <summary>
+    /// Starts the ticking updater for the Daily Challenge button subtitle.
+    /// No-op when the subtitle label isn't assigned.
+    /// </summary>
+    private void StartDailySubtitleTicker()
+    {
+        if (dailyChallengeButtonSubtitle == null) return;
+        RefreshDailyButtonSubtitle();
+        if (!isTickingDailySubtitle)
+        {
+            isTickingDailySubtitle = true;
+            StartCoroutine(DailySubtitleTickRoutine());
+        }
+    }
+
+    private IEnumerator DailySubtitleTickRoutine()
+    {
+        // Only tick while the main menu panel is visible; the countdown just needs ~1s cadence.
+        while (dailyChallengeButtonSubtitle != null && mainMenuPanel != null && mainMenuPanel.activeInHierarchy)
+        {
+            RefreshDailyButtonSubtitle();
+            yield return new WaitForSeconds(1f);
+        }
+        isTickingDailySubtitle = false;
+    }
+
+    /// <summary>
+    /// Shows the mode tagline normally, or "Played today · resets in HH:MM:SS" once today's run is recorded.
+    /// </summary>
+    private void RefreshDailyButtonSubtitle()
+    {
+        if (dailyChallengeButtonSubtitle == null) return;
+
+        if (DailyChallengeManager.HasPlayedToday())
+        {
+            System.TimeSpan remaining = DailyChallengeManager.TimeUntilNextResetUtc();
+            string clock = $"{(int)remaining.TotalHours:00}:{remaining.Minutes:00}:{remaining.Seconds:00}";
+            dailyChallengeButtonSubtitle.text = LocalizationManager.Get("daily_played_today", clock);
+        }
+        else
+        {
+            dailyChallengeButtonSubtitle.text = LocalizationManager.Get("daily_challenge_subtitle");
         }
     }
 

@@ -6467,7 +6467,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2e68828d3fe105443876e2b0e123c017, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DailyChallengeManager
-  editorForceModifier: 1
+  editorForceModifier: 0
   editorForcedModifier: 2
   editorForcedBlockCount: 30
   speedRunSwingMultiplier: 1.6
@@ -7121,45 +7121,9 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 607086731091237290, guid: 60441e2117e89ce48a769a889c2ee4ca, type: 3}
-      propertyPath: m_AnchorMax.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 607086731091237290, guid: 60441e2117e89ce48a769a889c2ee4ca, type: 3}
-      propertyPath: m_AnchorMin.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 607086731091237290, guid: 60441e2117e89ce48a769a889c2ee4ca, type: 3}
-      propertyPath: m_AnchoredPosition.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1747891914646870234, guid: 60441e2117e89ce48a769a889c2ee4ca, type: 3}
-      propertyPath: m_AnchorMax.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1747891914646870234, guid: 60441e2117e89ce48a769a889c2ee4ca, type: 3}
-      propertyPath: m_AnchorMin.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 2051652316032471799, guid: 60441e2117e89ce48a769a889c2ee4ca, type: 3}
-      propertyPath: m_IsActive
-      value: 0
-      objectReference: {fileID: 0}
     - target: {fileID: 3072199511613321717, guid: 60441e2117e89ce48a769a889c2ee4ca, type: 3}
       propertyPath: m_Name
       value: Game Scene UI
-      objectReference: {fileID: 0}
-    - target: {fileID: 5523580983493758357, guid: 60441e2117e89ce48a769a889c2ee4ca, type: 3}
-      propertyPath: m_AnchorMax.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5523580983493758357, guid: 60441e2117e89ce48a769a889c2ee4ca, type: 3}
-      propertyPath: m_AnchorMin.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5523580983493758357, guid: 60441e2117e89ce48a769a889c2ee4ca, type: 3}
-      propertyPath: m_AnchoredPosition.y
-      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7244201993073100091, guid: 60441e2117e89ce48a769a889c2ee4ca, type: 3}
       propertyPath: m_Pivot.x
@@ -7240,18 +7204,6 @@ PrefabInstance:
     - target: {fileID: 7244201993073100091, guid: 60441e2117e89ce48a769a889c2ee4ca, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 8208812781904062549, guid: 60441e2117e89ce48a769a889c2ee4ca, type: 3}
-      propertyPath: m_IsActive
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 8522870308968731560, guid: 60441e2117e89ce48a769a889c2ee4ca, type: 3}
-      propertyPath: m_fontSizeMax
-      value: 125
-      objectReference: {fileID: 0}
-    - target: {fileID: 8522870308968731560, guid: 60441e2117e89ce48a769a889c2ee4ca, type: 3}
-      propertyPath: m_enableAutoSizing
-      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
