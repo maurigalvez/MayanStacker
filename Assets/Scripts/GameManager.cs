@@ -309,22 +309,14 @@ public class GameManager : MonoBehaviour
             }
         }
 
-        // Check if we should maintain or break the combo
-        // Combo only counts for Perfect hits (accuracy >= 0.9f)
-        bool shouldMaintainCombo = false;
-
+        // Combo rules:
+        //  - Perfect  -> grows the combo (and its score multiplier)
+        //  - Good     -> HOLDS the combo (no growth, but doesn't reset) - forgiving so
+        //                a single slightly-off landing doesn't wipe a hard-won streak
+        //  - Poor     -> breaks the combo
+        // Note: the score multiplier still only APPLIES on Perfect hits (see AddScoreWithCombo),
+        // so a held combo simply preserves the multiplier for the next Perfect.
         if (currentAccuracyLevel == AccuracyLevel.Perfect)
-        {
-            // Perfect landing - always maintain or start combo
-            shouldMaintainCombo = true;
-        }
-        else
-        {
-            // Good or Poor landing - always break combo
-            shouldMaintainCombo = false;
-        }
-
-        if (shouldMaintainCombo)
         {
             currentCombo++;
 
@@ -341,11 +333,20 @@ public class GameManager : MonoBehaviour
             // Update last accuracy level
             lastAccuracyLevel = currentAccuracyLevel;
 
-            Debug.Log($"Combo maintained! Level: {currentAccuracyLevel}, Combo: {currentCombo}, Multiplier: {GetComboMultiplier()}x");
+            Debug.Log($"Combo grew! Level: {currentAccuracyLevel}, Combo: {currentCombo}, Multiplier: {GetComboMultiplier()}x");
+        }
+        else if (currentAccuracyLevel == AccuracyLevel.Good && currentCombo > 0)
+        {
+            // Hold the current combo: keep the count, just refresh the decay timer.
+            lastComboUpdateTime = Time.time;
+            comboDecayActive = true;
+            lastAccuracyLevel = currentAccuracyLevel;
+
+            Debug.Log($"Combo held (Good landing). Combo: {currentCombo}, Multiplier: {GetComboMultiplier()}x");
         }
         else
         {
-            // Combo broken - reset
+            // Poor landing (or a Good with no active combo) - break/leave at zero.
             if (currentCombo > 0)
             {
                 Debug.Log($"Combo broken! Previous: {lastAccuracyLevel}, Current: {currentAccuracyLevel}");

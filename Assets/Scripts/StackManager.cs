@@ -588,9 +588,10 @@ public class StackManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Get the Y position of the top of the stack (uses cached value)
+    /// Get the Y position of the top of the stack (uses cached value).
+    /// Public so the landing guide can project where a dropped block would land.
     /// </summary>
-    private float GetStackTopY()
+    public float GetStackTopY()
     {
         if (stackCacheDirty)
         {

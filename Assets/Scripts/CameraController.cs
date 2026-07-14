@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -39,6 +40,7 @@ public class CameraController : MonoBehaviour
     private Vector3 appliedShakeOffset;
     private float trauma;              // 0..1, shake intensity that decays over time
     private float shakeSeed;           // per-instance offset so multiple cams don't sync
+    private Coroutine punchZoomRoutine;
 
     private void Awake()
     {
@@ -125,6 +127,47 @@ public class CameraController : MonoBehaviour
     {
         if (!GameFeelSettings.ScreenShakeEnabled) return;
         trauma = Mathf.Clamp01(trauma + Mathf.Max(0f, amount));
+    }
+
+    /// <summary>
+    /// Quick punch-zoom: snaps the camera in by zoomInFraction (e.g. 0.12 = 12% closer)
+    /// then eases back out over duration. Uses unscaled time so it plays through slow-mo.
+    /// Gated by the screen-shake / reduce-motion setting.
+    /// </summary>
+    public void PunchZoom(float zoomInFraction, float duration)
+    {
+        if (!GameFeelSettings.ScreenShakeEnabled || cam == null || !cam.orthographic) return;
+        if (punchZoomRoutine != null) StopCoroutine(punchZoomRoutine);
+        punchZoomRoutine = StartCoroutine(PunchZoomRoutine(zoomInFraction, duration));
+    }
+
+    private IEnumerator PunchZoomRoutine(float zoomInFraction, float duration)
+    {
+        float baseSize = orthographicSize;
+        float targetSize = baseSize * (1f - Mathf.Clamp01(zoomInFraction));
+        float inDuration = duration * 0.3f;      // snap in fast
+        float outDuration = Mathf.Max(0.01f, duration - inDuration); // ease back slower
+
+        float t = 0f;
+        while (t < inDuration)
+        {
+            t += Time.unscaledDeltaTime;
+            float k = Mathf.Clamp01(t / inDuration);
+            cam.orthographicSize = Mathf.Lerp(baseSize, targetSize, k * k * (3f - 2f * k));
+            yield return null;
+        }
+
+        t = 0f;
+        while (t < outDuration)
+        {
+            t += Time.unscaledDeltaTime;
+            float k = Mathf.Clamp01(t / outDuration);
+            cam.orthographicSize = Mathf.Lerp(targetSize, baseSize, k * k * (3f - 2f * k));
+            yield return null;
+        }
+
+        cam.orthographicSize = baseSize;
+        punchZoomRoutine = null;
     }
 
     private void SetupCamera()

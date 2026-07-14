@@ -24,6 +24,15 @@ public class StackableObject : MonoBehaviour
     [Header("Particle Effects")]
     [SerializeField] private ParticleSystem landingParticleEffect;
 
+    [Header("Landing Flash")]
+    [Tooltip("Brief color flash on landing (returns to the block's actual color), tinted by accuracy tier")]
+    [SerializeField] private bool enableLandingFlash = true;
+    [SerializeField] private Color perfectFlashColor = new Color(0.6f, 1f, 0.6f);
+    [SerializeField] private Color goodFlashColor = new Color(1f, 1f, 0.7f);
+    [SerializeField] private Color poorFlashColor = new Color(1f, 0.55f, 0.55f);
+    [SerializeField] private float flashInDuration = 0.05f;
+    [SerializeField] private float flashOutDuration = 0.28f;
+
     [Header("Squash & Stretch")]
     [SerializeField] private bool enableSquashStretch = true;
     [SerializeField] private float squashAmount = 0.4f; // How much to squish vertically (0.4 = 60% height)
@@ -320,21 +329,50 @@ public class StackableObject : MonoBehaviour
 
     private void UpdateVisualFeedback()
     {
-        if (spriteRenderer == null) return;
+        if (spriteRenderer == null || !enableLandingFlash) return;
 
-        // Color changing disabled - keep original color
-        // if (landingAccuracy >= 0.9f)
-        // {
-        //     spriteRenderer.color = perfectLandingColor;
-        // }
-        // else if (landingAccuracy <= 0.3f)
-        // {
-        //     spriteRenderer.color = poorLandingColor;
-        // }
-        // else
-        // {
-        //     spriteRenderer.color = normalColor;
-        // }
+        // Pick a tier flash tint, then flash briefly and return to the block's real color.
+        Color flash;
+        if (landingAccuracy >= 0.9f)
+            flash = perfectFlashColor;
+        else if (landingAccuracy >= 0.6f)
+            flash = goodFlashColor;
+        else
+            flash = poorFlashColor;
+
+        StartCoroutine(LandingFlash(flash));
+    }
+
+    /// <summary>
+    /// Flashes the sprite toward a tier tint on impact, then eases back to the color the
+    /// block actually had (theme/random tint), so it reads as a pop rather than a recolor.
+    /// </summary>
+    private IEnumerator LandingFlash(Color flashColor)
+    {
+        if (spriteRenderer == null) yield break;
+
+        // Capture the block's current color as the baseline to return to.
+        Color baseColor = spriteRenderer.color;
+
+        float t = 0f;
+        while (t < flashInDuration)
+        {
+            if (spriteRenderer == null) yield break;
+            t += Time.deltaTime;
+            spriteRenderer.color = Color.Lerp(baseColor, flashColor, Mathf.Clamp01(t / flashInDuration));
+            yield return null;
+        }
+        if (spriteRenderer != null) spriteRenderer.color = flashColor;
+
+        t = 0f;
+        while (t < flashOutDuration)
+        {
+            if (spriteRenderer == null) yield break;
+            t += Time.deltaTime;
+            spriteRenderer.color = Color.Lerp(flashColor, baseColor, Mathf.Clamp01(t / flashOutDuration));
+            yield return null;
+        }
+        if (spriteRenderer != null) spriteRenderer.color = baseColor;
     }
 
     private void TriggerLandingParticleEffect()

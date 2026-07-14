@@ -10,6 +10,7 @@ public static class GameFeelSettings
 {
     private const string SCREEN_SHAKE_KEY = "ScreenShakeEnabled";
     private const string HAPTICS_KEY = "HapticsEnabled";
+    private const string LANDING_GUIDE_KEY = "LandingGuideEnabled";
 
     // Both default ON - juice is opt-out, not opt-in.
     public static bool ScreenShakeEnabled
@@ -22,5 +23,12 @@ public static class GameFeelSettings
     {
         get => PlayerPrefs.GetInt(HAPTICS_KEY, 1) == 1;
         set { PlayerPrefs.SetInt(HAPTICS_KEY, value ? 1 : 0); PlayerPrefs.Save(); }
+    }
+
+    // Faint drop-guide under the swinging block. Default on (accessibility / readability).
+    public static bool LandingGuideEnabled
+    {
+        get => PlayerPrefs.GetInt(LANDING_GUIDE_KEY, 1) == 1;
+        set { PlayerPrefs.SetInt(LANDING_GUIDE_KEY, value ? 1 : 0); PlayerPrefs.Save(); }
     }
 }
