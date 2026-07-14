@@ -30,6 +30,23 @@ public class GameSoundManager : MonoBehaviour
     [Tooltip("Tick sound played repeatedly while the final score counts up on the level complete panel")]
     [SerializeField] private AudioClip scoreCountSound;
 
+    [Header("Landing Sounds (by accuracy tier)")]
+    [Tooltip("Layered on top of the block's physical impact, picked by landing accuracy. Assign sfx_land_perfect.")]
+    [SerializeField] private AudioClip perfectLandingSound;
+    [Tooltip("Assign sfx_land_good")]
+    [SerializeField] private AudioClip goodLandingSound;
+    [Tooltip("Assign sfx_land_bad")]
+    [SerializeField] private AudioClip poorLandingSound;
+    [Tooltip("Brighter Perfect variant used once the combo reaches the threshold below. Assign sfx_land_perfect_combo.")]
+    [SerializeField] private AudioClip perfectComboLandingSound;
+    [Tooltip("Combo count at/above which the brighter perfect-combo variant plays instead")]
+    [SerializeField] private int perfectComboSoundThreshold = 3;
+    [Tooltip("Rising cue played on each consecutive Perfect while the Kukulkan meter builds. Assign sfx_perfect_steak_charge.")]
+    [SerializeField] private AudioClip perfectStreakChargeSound;
+    [Tooltip("Volume scale (0-1) for the tier landing / streak sounds")]
+    [Range(0f, 1f)]
+    [SerializeField] private float landingSoundVolume = 1f;
+
     [Header("Settings")]
     [SerializeField] private float sfxVolume = 0.7f;
     [SerializeField] private bool allowSimultaneousSounds = true;
@@ -124,6 +141,7 @@ public class GameSoundManager : MonoBehaviour
             gameManager.OnGameOver += OnGameOver;
             gameManager.OnComboChanged += OnComboChanged;
             gameManager.OnPerfectHitStreak += OnPerfectHitStreak;
+            gameManager.OnConsecutivePerfectHitsChanged += OnConsecutivePerfectHitsChanged;
         }
 
         // Subscribe to level events if LevelManager exists
@@ -144,6 +162,7 @@ public class GameSoundManager : MonoBehaviour
         if (stackManager != null)
         {
             stackManager.OnStackStraightened += OnStackStraightened;
+            stackManager.OnObjectAddedToStack += OnObjectAddedToStack;
         }
 
         // Apply current volume settings
@@ -332,6 +351,65 @@ public class GameSoundManager : MonoBehaviour
     {
         // Sound is already played in OnPerfectHitStreak for immediate response
         // This event is kept for any future needs, but sound plays immediately on OnPerfectHitStreak
+    }
+
+    /// <summary>
+    /// Called when a block is added to the stack - plays a tier landing sting on top of the
+    /// block's own physical impact, so Perfect/Good/Poor landings sound distinct.
+    /// </summary>
+    private void OnObjectAddedToStack(StackableObject stackableObject)
+    {
+        if (stackableObject == null) return;
+        PlayLandingSound(stackableObject.LandingAccuracy);
+    }
+
+    /// <summary>
+    /// Plays the landing sting matching the accuracy tier. Perfect landings use the brighter
+    /// combo variant once the current combo reaches the threshold. Unassigned clips are skipped.
+    /// </summary>
+    /// <param name="accuracy">Landing accuracy (0-1)</param>
+    public void PlayLandingSound(float accuracy)
+    {
+        AudioClip clip;
+
+        if (accuracy >= 0.9f)
+        {
+            int combo = gameManager != null ? gameManager.CurrentCombo : 0;
+            clip = (perfectComboLandingSound != null && combo >= perfectComboSoundThreshold)
+                ? perfectComboLandingSound
+                : perfectLandingSound;
+        }
+        else if (accuracy >= 0.6f)
+        {
+            clip = goodLandingSound;
+        }
+        else
+        {
+            clip = poorLandingSound;
+        }
+
+        if (clip != null)
+        {
+            PlaySound(clip, landingSoundVolume);
+        }
+    }
+
+    /// <summary>
+    /// Plays a rising "charge" cue on each consecutive Perfect while the Kukulkan meter is
+    /// building (before the shift triggers). No-op on reset (0) or on the triggering hit.
+    /// </summary>
+    /// <param name="consecutivePerfectHits">Current consecutive perfect count</param>
+    private void OnConsecutivePerfectHitsChanged(int consecutivePerfectHits)
+    {
+        if (perfectStreakChargeSound == null || gameManager == null) return;
+
+        int required = gameManager.PerfectHitsRequired;
+        // Only while genuinely building toward the shift (1 .. required-1). The shift hit
+        // resets the counter to 0 and plays the Kukulkan sting instead.
+        if (consecutivePerfectHits > 0 && consecutivePerfectHits < required)
+        {
+            PlaySound(perfectStreakChargeSound, landingSoundVolume);
+        }
     }
 
 
@@ -979,6 +1057,7 @@ public class GameSoundManager : MonoBehaviour
             gameManager.OnGameOver -= OnGameOver;
             gameManager.OnComboChanged -= OnComboChanged;
             gameManager.OnPerfectHitStreak -= OnPerfectHitStreak;
+            gameManager.OnConsecutivePerfectHitsChanged -= OnConsecutivePerfectHitsChanged;
         }
 
         if (levelManager != null)
@@ -996,6 +1075,7 @@ public class GameSoundManager : MonoBehaviour
         if (stackManager != null)
         {
             stackManager.OnStackStraightened -= OnStackStraightened;
+            stackManager.OnObjectAddedToStack -= OnObjectAddedToStack;
         }
     }
 }

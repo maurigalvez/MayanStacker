@@ -112,6 +112,27 @@ public class UIManager : MonoBehaviour
     [SerializeField] private float accuracyAppearScale = 1.5f;
     [SerializeField] private float accuracyFinalScale = 1.2f;
 
+    [Header("Accuracy Text Juice (per tier)")]
+    [Tooltip("Perfect: overshoot peak scale, settle scale, punch-in duration, and rotation wobble (deg)")]
+    [SerializeField] private float perfectPeakScale = 2.4f;
+    [SerializeField] private float perfectSettleScale = 1.45f;
+    [SerializeField] private float perfectAppearDuration = 0.32f;
+    [SerializeField] private float perfectPunchRotation = 9f;
+    [Tooltip("Good: moderate pop")]
+    [SerializeField] private float goodPeakScale = 1.65f;
+    [SerializeField] private float goodSettleScale = 1.15f;
+    [SerializeField] private float goodAppearDuration = 0.24f;
+    [Tooltip("Poor: subdued, quick")]
+    [SerializeField] private float poorPeakScale = 1.08f;
+    [SerializeField] private float poorSettleScale = 0.95f;
+    [SerializeField] private float poorAppearDuration = 0.16f;
+
+    // Per-landing animation params, set by tier in ShowLandingAccuracyAndPoints.
+    private float curPeakScale = 1.5f;
+    private float curSettleScale = 1.2f;
+    private float curAppearDuration = 0.3f;
+    private float curPunchRotation = 0f;
+
     // PlayerPrefs key for tracking if player has seen instructions
     private const string INSTRUCTIONS_SEEN_KEY = "InfiniteMode_InstructionsSeen";
 
@@ -152,6 +173,7 @@ public class UIManager : MonoBehaviour
     private Coroutine perfectHitStreakCoroutine;
     private bool isPaused = false;
     private bool isUpdatingComboTimer = false;
+    private bool isUpdatingSpeedRunTimer = false;
     private bool isTitleShowing = false; // Track if title is currently showing
     private bool isSubscribedToGameStart = false; // Track subscription to avoid duplicates
 
@@ -467,6 +489,20 @@ public class UIManager : MonoBehaviour
         if (gameUI != null)
             gameUI.SetActive(true);
 
+        // Daily Challenge: refresh the remaining-blocks display now that config is ready
+        if (gameManager != null && gameManager.CurrentGameMode == GameMode.DailyChallenge)
+        {
+            var dailyMgr = DependencyRegistry.Find<DailyChallengeManager>();
+            if (dailyMgr != null && dailyMgr.IsSpeedRun)
+            {
+                StartSpeedRunTimer();
+            }
+            else
+            {
+                UpdateStackHeight();
+            }
+        }
+
         // Show game title before starting (instructions and input will wait for title to finish)
         ShowGameTitle();
 
@@ -490,6 +526,7 @@ public class UIManager : MonoBehaviour
     {
         // Stop combo timer update to prevent sound effects after game over
         isUpdatingComboTimer = false;
+        StopSpeedRunTimer();
 
         // Show game over panel, hide game UI
         if (gameUI != null)
@@ -542,7 +579,20 @@ public class UIManager : MonoBehaviour
         {
             string modifierName = LocalizationManager.Get(
                 DailyChallengeManager.GetModifierDisplayNameKey(dailyMgr.CurrentConfig.modifier));
-            dailyModifierNameText.text = LocalizationManager.Get("daily_result_modifier", modifierName);
+            string modifierLine = LocalizationManager.Get("daily_result_modifier", modifierName);
+
+            // SpeedRun: append elapsed time and time bonus to the result card
+            if (dailyMgr.IsSpeedRun)
+            {
+                float elapsed = dailyMgr.ElapsedTime;
+                int minutes = (int)(elapsed / 60f);
+                int seconds = (int)(elapsed % 60f);
+                int timeBonus = dailyMgr.CalculateSpeedRunTimeBonus();
+                string timeLine = LocalizationManager.Get("daily_speedrun_result", minutes, seconds, timeBonus);
+                modifierLine += "\n" + timeLine;
+            }
+
+            dailyModifierNameText.text = modifierLine;
         }
 
         if (dailyRankText != null)
@@ -594,10 +644,27 @@ public class UIManager : MonoBehaviour
         if (gameOverPanel != null)
             gameOverPanel.SetActive(false);
 
-        // Reset stack height display to zero directly (don't query StackManager as it may not be cleared yet)
+        // Reset stack height display (don't query StackManager as it may not be cleared yet)
+        StopSpeedRunTimer();
         if (stackHeightText != null)
         {
-            stackHeightText.text = 0.ToString();
+            // Daily Challenge: reset to full block count target (SpeedRun timer restarts in OnGameStart)
+            if (gameManager != null && gameManager.CurrentGameMode == GameMode.DailyChallenge)
+            {
+                var dailyMgr = DependencyRegistry.Find<DailyChallengeManager>();
+                if (dailyMgr != null && dailyMgr.IsSpeedRun)
+                {
+                    stackHeightText.text = "0:00.0";
+                }
+                else
+                {
+                    stackHeightText.text = (dailyMgr != null ? dailyMgr.BlockCountTarget : 0).ToString();
+                }
+            }
+            else
+            {
+                stackHeightText.text = 0.ToString();
+            }
         }
 
         // Reset level progress if in level mode
@@ -955,7 +1022,24 @@ public class UIManager : MonoBehaviour
 
     private void UpdateStackHeight()
     {
-        if (stackHeightText != null && stackManager != null)
+        if (stackHeightText == null) return;
+
+        // Daily Challenge: show contextual info instead of stack height
+        if (gameManager != null && gameManager.CurrentGameMode == GameMode.DailyChallenge)
+        {
+            var dailyMgr = DependencyRegistry.Find<DailyChallengeManager>();
+            if (dailyMgr != null && dailyMgr.HasConfig)
+            {
+                // SpeedRun: timer is updated continuously by the coroutine, skip here
+                if (dailyMgr.IsSpeedRun) return;
+
+                int remaining = Mathf.Max(0, dailyMgr.BlockCountTarget - dailyMgr.BlocksPlaced);
+                SetTextAnimated(stackHeightText, remaining.ToString());
+                return;
+            }
+        }
+
+        if (stackManager != null)
         {
             int height = stackManager.GetStackCount();
             SetTextAnimated(stackHeightText, height.ToString());
@@ -1001,22 +1085,36 @@ public class UIManager : MonoBehaviour
             currentCombo = gameManager.CurrentCombo;
         }
 
-        // Set the text based on accuracy with combo count
+        // Set the text based on accuracy with combo count.
+        // Each tier also gets its own animation profile so Perfect visibly punches
+        // harder than Good/Poor (not just a color swap).
         string baseText = "";
         if (accuracy >= 0.9f)
         {
             baseText = LocalizationManager.Get("accuracy_perfect");
             landingAccuracyText.color = perfectAccuracyColor;
+            curPeakScale = perfectPeakScale;
+            curSettleScale = perfectSettleScale;
+            curAppearDuration = perfectAppearDuration;
+            curPunchRotation = perfectPunchRotation;
         }
         else if (accuracy >= 0.6f)
         {
             baseText = LocalizationManager.Get("accuracy_good");
             landingAccuracyText.color = goodAccuracyColor;
+            curPeakScale = goodPeakScale;
+            curSettleScale = goodSettleScale;
+            curAppearDuration = goodAppearDuration;
+            curPunchRotation = 0f;
         }
         else
         {
             baseText = LocalizationManager.Get("accuracy_poor");
             landingAccuracyText.color = poorAccuracyColor;
+            curPeakScale = poorPeakScale;
+            curSettleScale = poorSettleScale;
+            curAppearDuration = poorAppearDuration;
+            curPunchRotation = 0f;
         }
 
         // Add combo count if active (Perfect landing only)
@@ -1059,43 +1157,68 @@ public class UIManager : MonoBehaviour
             canvasGroup = landingAccuracyText.gameObject.AddComponent<CanvasGroup>();
         }
 
-        // Appear animation: scale from large to slightly larger than normal
+        // Appear animation: elastic pop that overshoots the peak then settles.
+        // Amplitude/duration/rotation come from the per-tier profile set above, so a
+        // Perfect punches in big (with a rotation wobble) while a Poor barely blips.
         float elapsedTime = 0f;
-        Vector3 startScale = Vector3.one * accuracyAppearScale;
-        Vector3 targetScale = Vector3.one * accuracyFinalScale;
+        float appearDuration = Mathf.Max(0.05f, curAppearDuration);
+        Vector3 targetScale = Vector3.one * curSettleScale;
 
-        accuracyRect.localScale = startScale;
+        accuracyRect.localScale = Vector3.one * (curSettleScale * 0.5f);
+        accuracyRect.localRotation = Quaternion.identity;
         canvasGroup.alpha = 0f;
 
-        // Fade in and scale down to final size
-        while (elapsedTime < accuracyAnimationDuration)
+        while (elapsedTime < appearDuration)
         {
             if (landingAccuracyText == null || accuracyRect == null) yield break;
 
             elapsedTime += Time.deltaTime;
-            float progress = elapsedTime / accuracyAnimationDuration;
+            float progress = Mathf.Clamp01(elapsedTime / appearDuration);
 
-            accuracyRect.localScale = Vector3.Lerp(startScale, targetScale, progress);
-            canvasGroup.alpha = Mathf.Lerp(0f, 1f, progress);
+            // Rise quickly to the overshoot peak (~45% in) then ease back to settle.
+            float scale;
+            if (progress < 0.45f)
+            {
+                float k = progress / 0.45f;
+                scale = Mathf.Lerp(curSettleScale * 0.5f, curPeakScale, k * k * (3f - 2f * k));
+            }
+            else
+            {
+                float k = (progress - 0.45f) / 0.55f;
+                scale = Mathf.Lerp(curPeakScale, curSettleScale, k * k * (3f - 2f * k));
+            }
+            accuracyRect.localScale = Vector3.one * scale;
+
+            // Damped rotation wobble adds "impact" - Perfect only (curPunchRotation > 0).
+            if (curPunchRotation > 0f)
+            {
+                float damp = Mathf.Exp(-4f * progress);
+                float angle = Mathf.Sin(progress * Mathf.PI * 3f) * curPunchRotation * damp;
+                accuracyRect.localRotation = Quaternion.Euler(0f, 0f, angle);
+            }
+
+            // Snappy fade-in (done well before the scale settles).
+            canvasGroup.alpha = Mathf.Clamp01(progress * 2.5f);
 
             yield return null;
         }
 
         // Ensure final values
         accuracyRect.localScale = targetScale;
+        accuracyRect.localRotation = Quaternion.identity;
         canvasGroup.alpha = 1f;
 
-        // Hold for display duration (subtract animation time)
-        float holdDuration = landingAccuracyDisplayDuration - (accuracyAnimationDuration * 2);
+        // Hold for display duration (subtract appear + fade-out time)
+        float holdDuration = landingAccuracyDisplayDuration - appearDuration - accuracyAnimationDuration;
         if (holdDuration > 0)
         {
             yield return new WaitForSeconds(holdDuration);
         }
 
-        // Disappear animation: fade out and scale down
+        // Disappear animation: fade out and scale down (relative to this tier's settle scale)
         elapsedTime = 0f;
-        startScale = targetScale;
-        Vector3 endScale = Vector3.one * 0.8f;
+        Vector3 startScale = targetScale;
+        Vector3 endScale = Vector3.one * (curSettleScale * 0.8f);
 
         while (elapsedTime < accuracyAnimationDuration)
         {
@@ -1120,11 +1243,12 @@ public class UIManager : MonoBehaviour
         {
             landingAccuracyText.gameObject.SetActive(false);
 
-            // Reset scale and alpha for next appearance
+            // Reset scale, rotation and alpha for next appearance
             RectTransform accuracyRect = landingAccuracyText.GetComponent<RectTransform>();
             if (accuracyRect != null)
             {
                 accuracyRect.localScale = Vector3.one;
+                accuracyRect.localRotation = Quaternion.identity;
             }
 
             CanvasGroup canvasGroup = landingAccuracyText.GetComponent<CanvasGroup>();
@@ -1407,6 +1531,51 @@ public class UIManager : MonoBehaviour
     }
 
     /// <summary>
+    /// Starts the SpeedRun elapsed-time display coroutine.
+    /// Updates stackHeightText every frame with mm:ss.f format.
+    /// </summary>
+    private void StartSpeedRunTimer()
+    {
+        StopSpeedRunTimer();
+        isUpdatingSpeedRunTimer = true;
+        StartCoroutine(UpdateSpeedRunTimerRoutine());
+    }
+
+    private void StopSpeedRunTimer()
+    {
+        isUpdatingSpeedRunTimer = false;
+    }
+
+    private IEnumerator UpdateSpeedRunTimerRoutine()
+    {
+        while (isUpdatingSpeedRunTimer && stackHeightText != null)
+        {
+            if (gameManager == null || gameManager.IsGameOver)
+            {
+                isUpdatingSpeedRunTimer = false;
+                yield break;
+            }
+
+            var dailyMgr = DependencyRegistry.Find<DailyChallengeManager>();
+            if (dailyMgr == null || !dailyMgr.IsSpeedRun)
+            {
+                isUpdatingSpeedRunTimer = false;
+                yield break;
+            }
+
+            float elapsed = dailyMgr.ElapsedTime;
+            int minutes = (int)(elapsed / 60f);
+            int seconds = (int)(elapsed % 60f);
+            int tenths = (int)((elapsed * 10f) % 10f);
+            stackHeightText.text = $"{minutes}:{seconds:D2}.{tenths}";
+
+            yield return null;
+        }
+
+        isUpdatingSpeedRunTimer = false;
+    }
+
+    /// <summary>
     /// Triggers a scale pulse animation on the combo display
     /// </summary>
     private void TriggerComboPulse()
@@ -1599,10 +1768,10 @@ public class UIManager : MonoBehaviour
             levelProgressText.gameObject.SetActive(mode == GameMode.StackerLevels);
         }
 
-        // Show/hide stack height display based on mode (only shown in Infinite Mode)
+        // Show/hide stack height display based on mode (shown in Infinite Mode and Daily Challenge)
         if (stackHeightDisplay != null)
         {
-            stackHeightDisplay.SetActive(mode == GameMode.InfiniteStacker);
+            stackHeightDisplay.SetActive(mode == GameMode.InfiniteStacker || mode == GameMode.DailyChallenge);
         }
 
         // Show stack overview UI for all game modes
@@ -2260,8 +2429,9 @@ public class UIManager : MonoBehaviour
             StopCoroutine(gameTitleCoroutine);
         }
 
-        // Stop combo timer update
+        // Stop combo timer and speed-run timer updates
         isUpdatingComboTimer = false;
+        isUpdatingSpeedRunTimer = false;
 
         // Remove button listeners
         if (restartButton != null)

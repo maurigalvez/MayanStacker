@@ -13,10 +13,21 @@ public class PointsPopup : MonoBehaviour
     [SerializeField] private float fadeOutDuration = 0.3f;
     [SerializeField] private float moveUpDistance = 50f;
 
+    [Header("Scale Pop")]
+    [Tooltip("Scale the popup starts at before popping in")]
+    [SerializeField] private float popStartScale = 0.3f;
+    [Tooltip("Peak scale of the overshoot before settling")]
+    [SerializeField] private float popOvershootScale = 1.35f;
+    [Tooltip("How long the pop-in (with overshoot) takes, in seconds")]
+    [SerializeField] private float popDuration = 0.25f;
+    [Tooltip("Extra scale multiplier applied to high-value (Perfect) popups")]
+    [SerializeField] private float bigPointsScaleBonus = 1.25f;
+
     private Vector3 startPosition;
     private Vector3 endPosition;
     private float elapsedTime = 0f;
     private bool isAnimating = false;
+    private float settleScale = 1f;
 
     private void Awake()
     {
@@ -54,6 +65,9 @@ public class PointsPopup : MonoBehaviour
                 pointsText.color = Color.red;
         }
 
+        // High-value landings pop a little bigger for extra punch.
+        settleScale = points >= 100 ? bigPointsScaleBonus : 1f;
+
         // Convert world position to screen position
         Vector3 screenPosition = Camera.main.WorldToScreenPoint(worldPosition);
         RectTransform rectTransform = GetComponent<RectTransform>();
@@ -72,6 +86,39 @@ public class PointsPopup : MonoBehaviour
     {
         isAnimating = true;
         elapsedTime = 0f;
+
+        // Begin small so the pop-in reads as a punch.
+        RectTransform rectTransform = GetComponent<RectTransform>();
+        if (rectTransform != null)
+        {
+            rectTransform.localScale = Vector3.one * (popStartScale * settleScale);
+        }
+    }
+
+    /// <summary>
+    /// Scale curve: overshoot past the settle scale then ease back, for an elastic pop.
+    /// </summary>
+    private float EvaluatePopScale()
+    {
+        if (elapsedTime >= popDuration)
+        {
+            return settleScale;
+        }
+
+        float t = Mathf.Clamp01(elapsedTime / popDuration);
+        // Rise quickly to the overshoot peak (~40% in), then settle back down.
+        float shaped;
+        if (t < 0.4f)
+        {
+            float k = t / 0.4f;
+            shaped = Mathf.Lerp(popStartScale, popOvershootScale, k * k * (3f - 2f * k));
+        }
+        else
+        {
+            float k = (t - 0.4f) / 0.6f;
+            shaped = Mathf.Lerp(popOvershootScale, 1f, k * k * (3f - 2f * k));
+        }
+        return shaped * settleScale;
     }
 
     private void Update()
@@ -94,6 +141,9 @@ public class PointsPopup : MonoBehaviour
         {
             float moveProgress = Mathf.Clamp01(elapsedTime / (fadeInDuration + displayDuration + fadeOutDuration));
             rectTransform.position = Vector3.Lerp(startPosition, endPosition, moveProgress);
+
+            // Elastic scale pop on appearance, then hold at settle scale.
+            rectTransform.localScale = Vector3.one * EvaluatePopScale();
         }
 
         // Update alpha based on phase

@@ -14,6 +14,16 @@ public class CameraController : MonoBehaviour
     [SerializeField] private float minY = -5f;
     [SerializeField] private float maxY = 15f;
 
+    [Header("Screen Shake")]
+    [Tooltip("Maximum positional shake offset (world units) at full trauma")]
+    [SerializeField] private float shakeMaxOffset = 0.55f;
+    [Tooltip("Maximum rotational shake (degrees) at full trauma")]
+    [SerializeField] private float shakeMaxAngle = 2.5f;
+    [Tooltip("How quickly trauma decays back to zero (higher = snappier)")]
+    [SerializeField] private float shakeDecay = 1.6f;
+    [Tooltip("Noise frequency of the shake wobble")]
+    [SerializeField] private float shakeFrequency = 26f;
+
     [Header("Debug")]
     [SerializeField] private bool debugMode = false;
 
@@ -22,6 +32,13 @@ public class CameraController : MonoBehaviour
     private StackManager stackManager;
     private Ground ground;
     private Vector3 targetPosition;
+
+    // Shake state - CameraController is the single writer of transform.position,
+    // so shake is applied as an offset on top of a tracked base position.
+    private Vector3 basePosition;
+    private Vector3 appliedShakeOffset;
+    private float trauma;              // 0..1, shake intensity that decays over time
+    private float shakeSeed;           // per-instance offset so multiple cams don't sync
 
     private void Awake()
     {
@@ -56,6 +73,8 @@ public class CameraController : MonoBehaviour
 
         // Set initial target position
         targetPosition = transform.position;
+        basePosition = transform.position;
+        shakeSeed = Random.value * 100f;
     }
 
     private void Update()
@@ -64,6 +83,48 @@ public class CameraController : MonoBehaviour
         {
             UpdateCameraFollow();
         }
+    }
+
+    /// <summary>
+    /// Applies the shake offset on top of the base position. Runs in LateUpdate so it
+    /// always layers on after any follow logic in Update, keeping a single writer.
+    /// </summary>
+    private void LateUpdate()
+    {
+        if (trauma > 0f)
+        {
+            // Quadratic falloff feels punchier than linear.
+            float shake = trauma * trauma;
+            // Use unscaled time so the shake keeps animating during hit-stop (timeScale dip).
+            float t = Time.unscaledTime * shakeFrequency + shakeSeed;
+
+            float offX = (Mathf.PerlinNoise(t, 0f) * 2f - 1f) * shakeMaxOffset * shake;
+            float offY = (Mathf.PerlinNoise(0f, t) * 2f - 1f) * shakeMaxOffset * shake;
+            float angle = (Mathf.PerlinNoise(t, t) * 2f - 1f) * shakeMaxAngle * shake;
+
+            appliedShakeOffset = new Vector3(offX, offY, 0f);
+            transform.position = basePosition + appliedShakeOffset;
+            transform.rotation = Quaternion.Euler(0f, 0f, angle);
+
+            trauma = Mathf.Max(0f, trauma - shakeDecay * Time.unscaledDeltaTime);
+        }
+        else if (appliedShakeOffset != Vector3.zero)
+        {
+            // Settle back exactly to base once the shake finishes.
+            appliedShakeOffset = Vector3.zero;
+            transform.position = basePosition;
+            transform.rotation = Quaternion.identity;
+        }
+    }
+
+    /// <summary>
+    /// Adds trauma to the camera, producing a decaying shake. Gated by the
+    /// player's screen-shake setting. amount is 0..1 (values stack up to 1).
+    /// </summary>
+    public void Shake(float amount)
+    {
+        if (!GameFeelSettings.ScreenShakeEnabled) return;
+        trauma = Mathf.Clamp01(trauma + Mathf.Max(0f, amount));
     }
 
     private void SetupCamera()
@@ -121,10 +182,17 @@ public class CameraController : MonoBehaviour
             }
         }
 
-        // Smoothly move camera
-        Vector3 newPosition = Vector3.Lerp(transform.position, targetPosition, followSpeed * Time.deltaTime);
+        // Smoothly move camera. Write the base position (not the transform directly) so the
+        // shake offset applied in LateUpdate is layered on top rather than fought over.
+        Vector3 newPosition = Vector3.Lerp(basePosition, targetPosition, followSpeed * Time.deltaTime);
         newPosition.z = cameraOffset.z; // Keep Z offset
-        transform.position = newPosition;
+        basePosition = newPosition;
+
+        // If no shake is active, keep the transform in sync immediately.
+        if (trauma <= 0f && appliedShakeOffset == Vector3.zero)
+        {
+            transform.position = basePosition;
+        }
     }
 
     private float GetHighestStackableY()
@@ -167,7 +235,11 @@ public class CameraController : MonoBehaviour
     public void ResetCamera()
     {
         targetPosition = cameraOffset;
+        basePosition = cameraOffset;
+        appliedShakeOffset = Vector3.zero;
+        trauma = 0f;
         transform.position = targetPosition;
+        transform.rotation = Quaternion.identity;
     }
 
     private void OnDestroy()
