@@ -23,10 +23,15 @@ public class DailyChallengeManager : MonoBehaviour
     private const string FALLBACK_RESOURCE_PATH = "DailyChallenge/DailyChallengeFallbackSettings";
 
     // PlayerPrefs keys for local daily state (played-today badge + personal best).
-    // These use the device-UTC day number for keying; the modifier roll itself still
-    // uses PlayFab server time, so this local state is display-only and non-exploitable.
+    // Keyed by the day number from NowUtc(), which tracks server time once GetTime lands.
     private const string PP_LAST_PLAYED_DAY = "Daily_LastPlayedDay";
     private const string PP_BEST_PREFIX = "Daily_Best_";
+
+    // Server clock correction. Set from PlayFab GetTime; until then NowUtc() falls back to
+    // the device clock. Everything day- or countdown-related routes through NowUtc() so the
+    // displayed date, the "Time Left" countdown and the modifier roll can't disagree.
+    private static TimeSpan serverTimeOffset = TimeSpan.Zero;
+    private static bool hasServerTime = false;
 
 #if UNITY_EDITOR
     [Header("Editor Test Override")]
@@ -94,7 +99,7 @@ public class DailyChallengeManager : MonoBehaviour
 #if UNITY_EDITOR
         if (editorForceModifier)
         {
-            int dayNumberUtc = ToDayNumberUtc(DateTime.UtcNow);
+            int dayNumberUtc = ToDayNumberUtc(NowUtc());
             int blocks = editorForcedBlockCount > 0 ? editorForcedBlockCount : 30;
             var forced = new DailyChallengeConfig
             {
@@ -123,6 +128,7 @@ public class DailyChallengeManager : MonoBehaviour
         PlayFabClientAPI.GetTime(new GetTimeRequest(),
             timeResult =>
             {
+                AdoptServerTime(timeResult.Time);
                 int dayNumberUtc = ToDayNumberUtc(timeResult.Time);
 
                 // Step 2: pull title data keys.
@@ -321,7 +327,7 @@ public class DailyChallengeManager : MonoBehaviour
 
     private void DeliverFallback(Action<DailyChallengeConfig> onReady, int? overrideDayNumber = null)
     {
-        int dayNumberUtc = overrideDayNumber ?? ToDayNumberUtc(DateTime.UtcNow);
+        int dayNumberUtc = overrideDayNumber ?? ToDayNumberUtc(NowUtc());
         var config = ResolveConfigFromTitleData(null, dayNumberUtc);
         cachedConfig = config;
         onReady?.Invoke(config);
@@ -365,18 +371,107 @@ public class DailyChallengeManager : MonoBehaviour
     // countdown but can't reroll the (server-timed) modifier.
     // ─────────────────────────────────────────────────────────────────────
 
-    /// <summary>Device-UTC day number (days since 1970-01-01), used for local played/best keys.</summary>
+    /// <summary>
+    /// Records PlayFab's clock so NowUtc() can correct for a wrong device clock.
+    /// Called on every successful GetTime; the offset survives scene loads (static).
+    /// </summary>
+    private static void AdoptServerTime(DateTime serverUtc)
+    {
+        serverTimeOffset = serverUtc - DateTime.UtcNow;
+        hasServerTime = true;
+
+        if (Math.Abs(serverTimeOffset.TotalMinutes) >= 1.0)
+        {
+            Debug.LogWarning($"[DailyChallenge] Device clock is off by {serverTimeOffset.TotalMinutes:F1} min vs server; correcting date + countdown.");
+        }
+    }
+
+    /// <summary>
+    /// Current UTC time, corrected to PlayFab's clock once GetTime has landed this session.
+    /// Falls back to the device clock offline or before the first fetch.
+    /// </summary>
+    public static DateTime NowUtc()
+    {
+        return DateTime.UtcNow + serverTimeOffset;
+    }
+
+    /// <summary>
+    /// Pulls server time on its own, without resolving a full config. Lets surfaces that show the
+    /// date/countdown outside the Daily scene (e.g. the main menu, which has no DailyChallengeManager
+    /// instance) be server-accurate. Cheap and idempotent — no-ops once the offset is known.
+    /// </summary>
+    public static void SyncServerTime(Action onComplete = null)
+    {
+        if (hasServerTime)
+        {
+            onComplete?.Invoke();
+            return;
+        }
+
+        if (!PlayFabClientAPI.IsClientLoggedIn() || NetworkUtility.IsOffline())
+        {
+            onComplete?.Invoke();
+            return;
+        }
+
+        PlayFabClientAPI.GetTime(new GetTimeRequest(),
+            result =>
+            {
+                AdoptServerTime(result.Time);
+                onComplete?.Invoke();
+            },
+            error =>
+            {
+                // Non-fatal: the countdown keeps using the device clock.
+                Debug.LogWarning($"[DailyChallenge] SyncServerTime failed: {error.GenerateErrorReport()}. Countdown will use the device clock.");
+                onComplete?.Invoke();
+            });
+    }
+
+    /// <summary>True once a PlayFab GetTime has landed, so the countdown is server-accurate.</summary>
+    public static bool HasServerTime => hasServerTime;
+
+    /// <summary>UTC day number (days since 1970-01-01), used for local played/best keys.</summary>
     public static int CurrentDayNumberUtc()
     {
-        return ToDayNumberUtc(DateTime.UtcNow);
+        return ToDayNumberUtc(NowUtc());
     }
 
     /// <summary>Time remaining until the next UTC midnight (when the daily rolls over).</summary>
     public static TimeSpan TimeUntilNextResetUtc()
     {
-        DateTime now = DateTime.UtcNow;
+        DateTime now = NowUtc();
         DateTime nextMidnight = now.Date.AddDays(1);
         return nextMidnight - now;
+    }
+
+    /// <summary>
+    /// "HH:MM:SS" for a countdown, clamped to [00:00:00, 23:59:59].
+    /// The low clamp stops a stale coroutine rendering "-1:59:59" between rollover and the
+    /// next refresh; the high clamp covers landing exactly on midnight, where the true
+    /// remaining is a full 24h and would otherwise render as "24:00:00".
+    /// </summary>
+    public static string FormatCountdown(TimeSpan remaining)
+    {
+        if (remaining < TimeSpan.Zero) remaining = TimeSpan.Zero;
+
+        int hours = (int)remaining.TotalHours;
+        if (hours >= 24) return "23:59:59";
+
+        return $"{hours:00}:{remaining.Minutes:00}:{remaining.Seconds:00}";
+    }
+
+    /// <summary>
+    /// Today's challenge date, localized — e.g. "July 15, 2026" / "15 de julio de 2026".
+    /// This is the UTC date on purpose: it's the day the leaderboard and modifier are keyed to,
+    /// so players west of UTC will see it flip ahead of their local calendar in the evening.
+    /// Month names come from the locale JSON rather than CultureInfo, which is unreliable on IL2CPP.
+    /// </summary>
+    public static string TodaysDateLabelUtc()
+    {
+        DateTime today = NowUtc().Date;
+        string month = LocalizationManager.Get($"daily_month_{today.Month}");
+        return LocalizationManager.Get("daily_date", month, today.Day, today.Year);
     }
 
     /// <summary>True if a Daily Challenge run has already been recorded for today.</summary>

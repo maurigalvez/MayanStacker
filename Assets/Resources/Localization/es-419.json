@@ -289,6 +289,62 @@
       "value": "Jugado hoy · reinicia en {0}"
     },
     {
+      "key": "daily_time_left",
+      "value": "Tiempo restante: {0}"
+    },
+    {
+      "key": "daily_date",
+      "value": "{1} de {0} de {2}"
+    },
+    {
+      "key": "daily_month_1",
+      "value": "enero"
+    },
+    {
+      "key": "daily_month_2",
+      "value": "febrero"
+    },
+    {
+      "key": "daily_month_3",
+      "value": "marzo"
+    },
+    {
+      "key": "daily_month_4",
+      "value": "abril"
+    },
+    {
+      "key": "daily_month_5",
+      "value": "mayo"
+    },
+    {
+      "key": "daily_month_6",
+      "value": "junio"
+    },
+    {
+      "key": "daily_month_7",
+      "value": "julio"
+    },
+    {
+      "key": "daily_month_8",
+      "value": "agosto"
+    },
+    {
+      "key": "daily_month_9",
+      "value": "septiembre"
+    },
+    {
+      "key": "daily_month_10",
+      "value": "octubre"
+    },
+    {
+      "key": "daily_month_11",
+      "value": "noviembre"
+    },
+    {
+      "key": "daily_month_12",
+      "value": "diciembre"
+    },
+    {
       "key": "settings_saved",
       "value": "\u00a1Configuraci\u00f3n Guardada!"
     }

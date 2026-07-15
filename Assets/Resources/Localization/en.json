@@ -289,6 +289,62 @@
       "value": "Played today · resets in {0}"
     },
     {
+      "key": "daily_time_left",
+      "value": "Time Left: {0}"
+    },
+    {
+      "key": "daily_date",
+      "value": "{0} {1}, {2}"
+    },
+    {
+      "key": "daily_month_1",
+      "value": "January"
+    },
+    {
+      "key": "daily_month_2",
+      "value": "February"
+    },
+    {
+      "key": "daily_month_3",
+      "value": "March"
+    },
+    {
+      "key": "daily_month_4",
+      "value": "April"
+    },
+    {
+      "key": "daily_month_5",
+      "value": "May"
+    },
+    {
+      "key": "daily_month_6",
+      "value": "June"
+    },
+    {
+      "key": "daily_month_7",
+      "value": "July"
+    },
+    {
+      "key": "daily_month_8",
+      "value": "August"
+    },
+    {
+      "key": "daily_month_9",
+      "value": "September"
+    },
+    {
+      "key": "daily_month_10",
+      "value": "October"
+    },
+    {
+      "key": "daily_month_11",
+      "value": "November"
+    },
+    {
+      "key": "daily_month_12",
+      "value": "December"
+    },
+    {
       "key": "settings_saved",
       "value": "Settings Saved!"
     }

@@ -58,6 +58,10 @@ public class MainMenuManager : MonoBehaviour
     [SerializeField] private TextMeshProUGUI versionText;
     [Tooltip("Optional subtitle under the Daily Challenge button: shows the mode tagline, or 'Played today · resets in HH:MM:SS' once today's run is done.")]
     [SerializeField] private TextMeshProUGUI dailyChallengeButtonSubtitle;
+    [Tooltip("Optional: today's challenge date (UTC), e.g. 'July 15, 2026'.")]
+    [SerializeField] private TextMeshProUGUI dailyChallengeDateText;
+    [Tooltip("Optional: live 'Time Left: HH:MM:SS' countdown to the daily reset.")]
+    [SerializeField] private TextMeshProUGUI dailyChallengeTimeLeftText;
 
     [Header("Cloud Sync UI")]
     [SerializeField] private GameObject syncPanel;
@@ -801,7 +805,12 @@ public class MainMenuManager : MonoBehaviour
     /// </summary>
     private void StartDailySubtitleTicker()
     {
-        if (dailyChallengeButtonSubtitle == null) return;
+        if (!HasAnyDailyHeaderLabel()) return;
+
+        // Correct the clock against PlayFab so the date + countdown match the real reset,
+        // then repaint. No-ops when already synced, offline, or not logged in.
+        DailyChallengeManager.SyncServerTime(RefreshDailyButtonSubtitle);
+
         RefreshDailyButtonSubtitle();
         if (!isTickingDailySubtitle)
         {
@@ -810,13 +819,20 @@ public class MainMenuManager : MonoBehaviour
         }
     }
 
+    private bool HasAnyDailyHeaderLabel()
+    {
+        return dailyChallengeButtonSubtitle != null
+            || dailyChallengeDateText != null
+            || dailyChallengeTimeLeftText != null;
+    }
+
     private IEnumerator DailySubtitleTickRoutine()
     {
         // Only tick while the main menu panel is visible; the countdown just needs ~1s cadence.
-        while (dailyChallengeButtonSubtitle != null && mainMenuPanel != null && mainMenuPanel.activeInHierarchy)
+        while (HasAnyDailyHeaderLabel() && mainMenuPanel != null && mainMenuPanel.activeInHierarchy)
         {
             RefreshDailyButtonSubtitle();
-            yield return new WaitForSeconds(1f);
+            yield return new WaitForSecondsRealtime(1f);
         }
         isTickingDailySubtitle = false;
     }
@@ -826,17 +842,19 @@ public class MainMenuManager : MonoBehaviour
     /// </summary>
     private void RefreshDailyButtonSubtitle()
     {
-        if (dailyChallengeButtonSubtitle == null) return;
+        string clock = DailyChallengeManager.FormatCountdown(DailyChallengeManager.TimeUntilNextResetUtc());
 
-        if (DailyChallengeManager.HasPlayedToday())
+        if (dailyChallengeDateText != null)
+            dailyChallengeDateText.text = DailyChallengeManager.TodaysDateLabelUtc();
+
+        if (dailyChallengeTimeLeftText != null)
+            dailyChallengeTimeLeftText.text = LocalizationManager.Get("daily_time_left", clock);
+
+        if (dailyChallengeButtonSubtitle != null)
         {
-            System.TimeSpan remaining = DailyChallengeManager.TimeUntilNextResetUtc();
-            string clock = $"{(int)remaining.TotalHours:00}:{remaining.Minutes:00}:{remaining.Seconds:00}";
-            dailyChallengeButtonSubtitle.text = LocalizationManager.Get("daily_played_today", clock);
-        }
-        else
-        {
-            dailyChallengeButtonSubtitle.text = LocalizationManager.Get("daily_challenge_subtitle");
+            dailyChallengeButtonSubtitle.text = DailyChallengeManager.HasPlayedToday()
+                ? LocalizationManager.Get("daily_played_today", clock)
+                : LocalizationManager.Get("daily_challenge_subtitle");
         }
     }
 

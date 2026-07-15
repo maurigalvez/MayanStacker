@@ -31,6 +31,12 @@ public class UIManager : MonoBehaviour
     [Header("Daily Challenge Briefing (pre-run)")]
     [Tooltip("Full-screen briefing panel shown before a Daily run starts. Gates play until 'Begin the Ritual' is tapped.")]
     [SerializeField] private GameObject dailyBriefingPanel;
+    [Tooltip("Header title on the briefing, e.g. 'Daily Challenge'.")]
+    [SerializeField] private TextMeshProUGUI dailyBriefingTitleText;
+    [Tooltip("Today's challenge date (UTC), e.g. 'July 15, 2026'.")]
+    [SerializeField] private TextMeshProUGUI dailyBriefingDateText;
+    [Tooltip("Live 'Time Left: HH:MM:SS' countdown to the daily reset.")]
+    [SerializeField] private TextMeshProUGUI dailyBriefingTimeLeftText;
     [SerializeField] private TextMeshProUGUI dailyBriefingModifierNameText;
     [SerializeField] private TextMeshProUGUI dailyBriefingDescriptionText;
     [SerializeField] private TextMeshProUGUI dailyBriefingTargetText;
@@ -192,6 +198,7 @@ public class UIManager : MonoBehaviour
     private bool isUpdatingComboTimer = false;
     private bool isUpdatingSpeedRunTimer = false;
     private bool isUpdatingResetCountdown = false;
+    private bool isUpdatingBriefingCountdown = false; // Guards the briefing header countdown coroutine
     private System.Action dailyBriefingOnBegin; // Invoked when "Begin the Ritual" is tapped
     private bool dailyBriefingRequested = false; // True while a briefing is pending/showing (guards InitializeUI ordering)
     private bool isTitleShowing = false; // Track if title is currently showing
@@ -731,12 +738,47 @@ public class UIManager : MonoBehaviour
         if (dailyBriefingSubtitleText != null)
             dailyBriefingSubtitleText.text = LocalizationManager.Get("daily_challenge_subtitle");
 
+        if (dailyBriefingTitleText != null)
+            dailyBriefingTitleText.text = LocalizationManager.Get("daily_challenge_title");
+
+        if (dailyBriefingDateText != null)
+            dailyBriefingDateText.text = DailyChallengeManager.TodaysDateLabelUtc();
+
         dailyBriefingPanel.SetActive(true);
+
+        // Header countdown runs only while the briefing is up; OnDailyBriefingBegin stops it.
+        StartBriefingCountdown();
+    }
+
+    private void StartBriefingCountdown()
+    {
+        StopBriefingCountdown();
+        if (dailyBriefingTimeLeftText == null) return;
+        isUpdatingBriefingCountdown = true;
+        StartCoroutine(UpdateBriefingCountdownRoutine());
+    }
+
+    private void StopBriefingCountdown()
+    {
+        isUpdatingBriefingCountdown = false;
+    }
+
+    private IEnumerator UpdateBriefingCountdownRoutine()
+    {
+        while (isUpdatingBriefingCountdown && dailyBriefingTimeLeftText != null)
+        {
+            string clock = DailyChallengeManager.FormatCountdown(DailyChallengeManager.TimeUntilNextResetUtc());
+            dailyBriefingTimeLeftText.text = LocalizationManager.Get("daily_time_left", clock);
+
+            // Realtime: the briefing sits over a scene that may have timeScale at 0.
+            yield return new WaitForSecondsRealtime(1f);
+        }
     }
 
     private void OnDailyBriefingBegin()
     {
         dailyBriefingRequested = false;
+        StopBriefingCountdown();
 
         if (dailyBriefingPanel != null)
             dailyBriefingPanel.SetActive(false);
@@ -776,10 +818,9 @@ public class UIManager : MonoBehaviour
     {
         while (isUpdatingResetCountdown && dailyResetCountdownText != null)
         {
-            System.TimeSpan remaining = DailyChallengeManager.TimeUntilNextResetUtc();
-            string clock = $"{(int)remaining.TotalHours:00}:{remaining.Minutes:00}:{remaining.Seconds:00}";
+            string clock = DailyChallengeManager.FormatCountdown(DailyChallengeManager.TimeUntilNextResetUtc());
             dailyResetCountdownText.text = LocalizationManager.Get("daily_reset_countdown", clock);
-            yield return new WaitForSeconds(1f);
+            yield return new WaitForSecondsRealtime(1f);
         }
     }
 

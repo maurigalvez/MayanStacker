@@ -25,6 +25,8 @@ public static class DailyChallengeUISetup
     private static readonly Color Gold = new Color(0.79f, 0.64f, 0.29f, 1f);
     private static readonly Color Parchment = new Color(0.93f, 0.90f, 0.82f, 1f);
     private static readonly Color Backdrop = new Color(0.06f, 0.05f, 0.04f, 0.92f);
+    private static readonly Color Sky = new Color(0.53f, 0.81f, 0.92f, 1f); // date line
+    private static readonly Color Muted = new Color(0.72f, 0.68f, 0.58f, 1f);
 
     [MenuItem("TamalStacker/Daily Challenge/Set Up Game Scene UI")]
     public static void SetupGameSceneUI()
@@ -53,6 +55,10 @@ public static class DailyChallengeUISetup
         if (panel != null)
         {
             Transform p = panel.transform;
+            // Header: title / UTC date / live countdown (stacked above the modifier name).
+            EnsureText(so, "dailyBriefingTitleText", p, "HeaderTitle", "Daily Challenge", 64, Gold, PlaceCentered(400, 700, 90), ref created, ref skipped);
+            EnsureText(so, "dailyBriefingDateText", p, "HeaderDate", "July 15, 2026", 30, Sky, PlaceCentered(330, 640, 50), ref created, ref skipped);
+            EnsureText(so, "dailyBriefingTimeLeftText", p, "HeaderTimeLeft", "Time Left: 01:05:28", 28, Parchment, PlaceCentered(288, 640, 46), ref created, ref skipped);
             EnsureText(so, "dailyBriefingModifierNameText", p, "ModifierName", "Speed Run", 54, Gold, PlaceCentered(230, 640, 80), ref created, ref skipped);
             EnsureText(so, "dailyBriefingDescriptionText", p, "Description", "The spawner swings faster. Time your drops carefully.", 30, Parchment, PlaceCentered(110, 680, 140), ref created, ref skipped);
             EnsureText(so, "dailyBriefingTargetText", p, "Target", "Stack 30 blocks", 34, Parchment, PlaceCentered(-20, 640, 60), ref created, ref skipped);
@@ -106,8 +112,17 @@ public static class DailyChallengeUISetup
         }
 
         EnsureText(so, "dailyChallengeButtonSubtitle", parent, "DailySubtitle",
-            "One run. One modifier. Same for everyone today.", 20, new Color(0.72f, 0.68f, 0.58f, 1f),
+            "One run. One modifier. Same for everyone today.", 20, Muted,
             HangBelow(6, 420, 40), ref created, ref skipped);
+
+        // Date + countdown stack under the subtitle, matching the briefing header order.
+        EnsureText(so, "dailyChallengeDateText", parent, "DailyDate",
+            "July 15, 2026", 22, Sky,
+            HangBelow(48, 420, 36), ref created, ref skipped);
+
+        EnsureText(so, "dailyChallengeTimeLeftText", parent, "DailyTimeLeft",
+            "Time Left: 01:05:28", 22, Parchment,
+            HangBelow(84, 420, 36), ref created, ref skipped);
 
         so.ApplyModifiedProperties();
         EditorUtility.SetDirty(menu);
