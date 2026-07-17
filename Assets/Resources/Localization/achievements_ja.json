@@ -1,0 +1,24 @@
+{
+  "achievements": [
+    { "id": "first_steps", "title": "探検者の第一歩", "description": "最初の遺跡をクリアする" },
+    { "id": "path_of_jaguar", "title": "ジャガーの道", "description": "5 つの遺跡をクリアする" },
+    { "id": "maya_wanderer", "title": "マヤの放浪者", "description": "10 の遺跡をクリアする" },
+    { "id": "temple_traveler", "title": "神殿の旅人", "description": "15 の遺跡をクリアする" },
+    { "id": "keeper_of_ruins", "title": "遺跡の守り手", "description": "20 の遺跡をクリアする" },
+    { "id": "world_of_maya", "title": "マヤの世界", "description": "27 すべての遺跡をクリアする" },
+    { "id": "survivor", "title": "生存者", "description": "無限スタッカーで 25 ブロックに到達する" },
+    { "id": "peak_ascender", "title": "頂への挑戦者", "description": "無限スタッカーで 50 ブロックに到達する" },
+    { "id": "sky_piercer", "title": "天を貫く者", "description": "無限スタッカーで 100 ブロックに到達する" },
+    { "id": "page_keeper", "title": "ページの守り手", "description": "記録を 3 件解放する" },
+    { "id": "lore_seeker", "title": "伝承の探求者", "description": "記録を 10 件解放する" },
+    { "id": "codex_scholar", "title": "記録の学者", "description": "記録を 20 件解放する" },
+    { "id": "perfect_dropper", "title": "パーフェクトドロッパー", "description": "無限スタッカーでパーフェクトを 10 回連続で決める" },
+    { "id": "stone_stack_specialist", "title": "石積みの専門家", "description": "無限スタッカーでパーフェクトを 25 回連続で決める" },
+    { "id": "temple_guardian", "title": "神殿の守護者", "description": "レベルのランキングで上位 5 位以内に入る" },
+    { "id": "perfectionist_architect", "title": "完璧主義の建築家", "description": "パーフェクトな配置だけで遺跡をクリアする" },
+    { "id": "zero_room_for_error", "title": "失敗の許されぬ道", "description": "レベル 10 以上をパーフェクトな配置だけでクリアする" },
+    { "id": "feathered_serpent_blessing", "title": "羽毛ある蛇の祝福", "description": "パーフェクトな配置で 5 レベルをクリアする" },
+    { "id": "sunrise_builder", "title": "夜明けの建築家", "description": "早朝にプレイする" },
+    { "id": "midnight_builder", "title": "真夜中の建築家", "description": "深夜にプレイする" }
+  ]
+}

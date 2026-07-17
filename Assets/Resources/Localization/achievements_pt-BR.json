@@ -1,0 +1,24 @@
+{
+  "achievements": [
+    { "id": "first_steps", "title": "Primeiros Passos do Explorador", "description": "Conclua seu primeiro sítio" },
+    { "id": "path_of_jaguar", "title": "Caminho da Onça", "description": "Conclua 5 sítios" },
+    { "id": "maya_wanderer", "title": "Viajante Maia", "description": "Conclua 10 sítios" },
+    { "id": "temple_traveler", "title": "Viajante dos Templos", "description": "Conclua 15 sítios" },
+    { "id": "keeper_of_ruins", "title": "Guardião das Ruínas", "description": "Conclua 20 sítios" },
+    { "id": "world_of_maya", "title": "O Mundo Maia", "description": "Conclua todos os 27 sítios" },
+    { "id": "survivor", "title": "Sobrevivente", "description": "Alcance 25 blocos no Empilhador Infinito" },
+    { "id": "peak_ascender", "title": "Escalador de Picos", "description": "Alcance 50 blocos no Empilhador Infinito" },
+    { "id": "sky_piercer", "title": "Perfurador do Céu", "description": "Alcance 100 blocos no Empilhador Infinito" },
+    { "id": "page_keeper", "title": "Guardião das Páginas", "description": "Desbloqueie 3 entradas do códice" },
+    { "id": "lore_seeker", "title": "Buscador de Sabedoria", "description": "Desbloqueie 10 entradas do códice" },
+    { "id": "codex_scholar", "title": "Erudito do Códice", "description": "Desbloqueie 20 entradas do códice" },
+    { "id": "perfect_dropper", "title": "Empilhador Perfeito", "description": "Faça 10 colocações perfeitas seguidas no Empilhador Infinito" },
+    { "id": "stone_stack_specialist", "title": "Especialista em Pedra", "description": "Faça 25 perfeitas seguidas no Empilhador Infinito" },
+    { "id": "temple_guardian", "title": "Guardião do Templo", "description": "Fique entre os 5 primeiros em um placar de fase" },
+    { "id": "perfectionist_architect", "title": "Arquiteto Perfeccionista", "description": "Conclua um sítio apenas com colocações perfeitas" },
+    { "id": "zero_room_for_error", "title": "Sem Margem para Erro", "description": "Conclua uma fase 10+ apenas com colocações perfeitas" },
+    { "id": "feathered_serpent_blessing", "title": "Bênção da Serpente Emplumada", "description": "Conclua 5 fases com colocações perfeitas" },
+    { "id": "sunrise_builder", "title": "Construtor do Amanhecer", "description": "Jogue de manhã cedo" },
+    { "id": "midnight_builder", "title": "Construtor da Meia-Noite", "description": "Jogue tarde da noite" }
+  ]
+}

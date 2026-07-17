@@ -186,6 +186,7 @@ GameObject:
   - component: {fileID: 8192629032865803293}
   - component: {fileID: 3627357762666426867}
   - component: {fileID: 5019915298616896178}
+  - component: {fileID: 5435097119972938161}
   m_Layer: 5
   m_Name: Level Name
   m_TagString: Untagged
@@ -278,6 +279,7 @@ MonoBehaviour:
   m_VerticalAlignment: 512
   m_textAlignment: 65535
   m_characterSpacing: 0
+  m_characterHorizontalScale: 1
   m_wordSpacing: 0
   m_lineSpacing: 0
   m_lineSpacingMax: 0
@@ -311,3 +313,15 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!114 &5435097119972938161
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8968862527992974638}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 210d133f4611f854dbc113dd3c6209b5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LocaleFontSwitcher

@@ -1932,10 +1932,13 @@ public class UIManager : MonoBehaviour
     {
         if (levelManager == null || levelManager.CurrentLevel == null) return;
 
-        // Update level info
+        // Update level info (localized: "Level {n}\n{name}" with translated name overlay)
         if (levelNameText != null)
         {
-            levelNameText.text = $"Level {levelManager.CurrentLevel.levelNumber}\n{levelManager.CurrentLevel.levelName}";
+            levelNameText.text = LocalizationManager.Get(
+                "level_title_format",
+                levelManager.CurrentLevel.levelNumber,
+                LocalizationManager.GetLevelName(levelManager.CurrentLevel));
         }
 
         UpdateLevelProgress(stackManager?.GetStackCount() ?? 0);

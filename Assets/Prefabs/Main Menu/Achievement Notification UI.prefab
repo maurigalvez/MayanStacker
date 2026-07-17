@@ -158,6 +158,7 @@ GameObject:
   - component: {fileID: 318798463169216360}
   - component: {fileID: 2143351662100163797}
   - component: {fileID: 840917119002731417}
+  - component: {fileID: 6270918181914374394}
   m_Layer: 5
   m_Name: Achievement Description
   m_TagString: Untagged
@@ -250,6 +251,7 @@ MonoBehaviour:
   m_VerticalAlignment: 512
   m_textAlignment: 65535
   m_characterSpacing: 0
+  m_characterHorizontalScale: 1
   m_wordSpacing: 0
   m_lineSpacing: 0
   m_lineSpacingMax: 0
@@ -283,6 +285,18 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!114 &6270918181914374394
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2027549609784471391}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 210d133f4611f854dbc113dd3c6209b5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LocaleFontSwitcher
 --- !u!1 &3957863510678936558
 GameObject:
   m_ObjectHideFlags: 0
@@ -294,6 +308,7 @@ GameObject:
   - component: {fileID: 792202920133905766}
   - component: {fileID: 7549307774961781280}
   - component: {fileID: 6928256926811866681}
+  - component: {fileID: 2805055337372183038}
   m_Layer: 5
   m_Name: Achievement Title
   m_TagString: Untagged
@@ -386,6 +401,7 @@ MonoBehaviour:
   m_VerticalAlignment: 512
   m_textAlignment: 65535
   m_characterSpacing: 0
+  m_characterHorizontalScale: 1
   m_wordSpacing: 0
   m_lineSpacing: 0
   m_lineSpacingMax: 0
@@ -419,6 +435,18 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!114 &2805055337372183038
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3957863510678936558}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 210d133f4611f854dbc113dd3c6209b5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LocaleFontSwitcher
 --- !u!1 &5056951736240400769
 GameObject:
   m_ObjectHideFlags: 0

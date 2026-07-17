@@ -1,0 +1,352 @@
+{
+  "entries": [
+    {
+      "key": "new_high_score",
+      "value": "新紀錄！"
+    },
+    {
+      "key": "instructions",
+      "value": "輕觸螢幕任一處放下方塊！\n盡量完美地堆疊它們！"
+    },
+    {
+      "key": "accuracy_perfect",
+      "value": "完美！"
+    },
+    {
+      "key": "accuracy_good",
+      "value": "不錯"
+    },
+    {
+      "key": "accuracy_poor",
+      "value": "較差"
+    },
+    {
+      "key": "combo_format",
+      "value": "{0}\nx{1} 連擊"
+    },
+    {
+      "key": "mode_temple_stacker",
+      "value": "神廟堆疊"
+    },
+    {
+      "key": "mode_infinite_stacker",
+      "value": "無盡堆疊"
+    },
+    {
+      "key": "mode_infinite",
+      "value": "無盡模式"
+    },
+    {
+      "key": "mode_level",
+      "value": "關卡模式"
+    },
+    {
+      "key": "level_title_format",
+      "value": "第 {0} 關\n{1}"
+    },
+    {
+      "key": "level_complete_format",
+      "value": "第 {0} 關\n{1} 完成！"
+    },
+    {
+      "key": "level_failed_format",
+      "value": "關卡失敗！\n已達成：{0}/{1}"
+    },
+    {
+      "key": "level_score_format",
+      "value": "得分：{0}"
+    },
+    {
+      "key": "kukulkan_shift",
+      "value": "庫庫爾坎之移"
+    },
+    {
+      "key": "leaderboard_not_available",
+      "value": "排行榜系統無法使用"
+    },
+    {
+      "key": "leaderboard_no_scores",
+      "value": "還沒有分數，來當第一個吧！"
+    },
+    {
+      "key": "leaderboard_unlock_required",
+      "value": "完成本關以解鎖排行榜"
+    },
+    {
+      "key": "leaderboard_demo_unavailable",
+      "value": "此關卡在示範模式中無法使用"
+    },
+    {
+      "key": "leaderboard_level_format",
+      "value": "第 {0} 關"
+    },
+    {
+      "key": "leaderboard_level_name_format",
+      "value": "第 {0} 關\n{1}"
+    },
+    {
+      "key": "codex_unlock_format",
+      "value": "已解鎖 {0} 圖鑑"
+    },
+    {
+      "key": "codex_empty_state",
+      "value": "還沒有解鎖任何關卡。遊玩關卡以解鎖圖鑑條目！"
+    },
+    {
+      "key": "codex_hidden_name",
+      "value": "????"
+    },
+    {
+      "key": "codex_hidden_description",
+      "value": "完成本關以揭曉它的祕密……"
+    },
+    {
+      "key": "codex_unknown_location",
+      "value": "未知地點"
+    },
+    {
+      "key": "codex_no_description",
+      "value": "暫無描述。"
+    },
+    {
+      "key": "theme_sunset",
+      "value": "日落主題"
+    },
+    {
+      "key": "theme_night",
+      "value": "夜晚主題"
+    },
+    {
+      "key": "theme_sunset_unlock_format",
+      "value": "完成 7 關以解鎖。\n\n進度：已完成 {0}/7 關"
+    },
+    {
+      "key": "theme_night_unlock_format",
+      "value": "完成 15 關以解鎖。\n\n進度：已完成 {0}/15 關"
+    },
+    {
+      "key": "theme_confirm_title_format",
+      "value": "選擇{0}？"
+    },
+    {
+      "key": "theme_confirm_message_format",
+      "value": "確定要將主題更換為{0}嗎？"
+    },
+    {
+      "key": "achievement_hidden_title",
+      "value": "???"
+    },
+    {
+      "key": "achievement_hidden_description",
+      "value": "隱藏成就 — 解鎖後揭曉"
+    },
+    {
+      "key": "achievement_not_found",
+      "value": "找不到成就系統。"
+    },
+    {
+      "key": "achievement_initializing",
+      "value": "成就系統正在初始化……"
+    },
+    {
+      "key": "achievement_empty_category",
+      "value": "此分類下暫無成就。"
+    },
+    {
+      "key": "blocks_remaining_format",
+      "value": "剩餘 {0} 個方塊"
+    },
+    {
+      "key": "sync_verifying",
+      "value": "正在驗證應用程式完整性……"
+    },
+    {
+      "key": "sync_authenticating",
+      "value": "正在驗證身分……"
+    },
+    {
+      "key": "sync_syncing",
+      "value": "正在與雲端同步……"
+    },
+    {
+      "key": "sync_complete",
+      "value": "同步完成！"
+    },
+    {
+      "key": "sync_complete_user_format",
+      "value": "同步完成！\n登入帳號：{0}"
+    },
+    {
+      "key": "sync_failed",
+      "value": "同步失敗，正在離線遊玩。"
+    },
+    {
+      "key": "settings_language",
+      "value": "語言"
+    },
+    {
+      "key": "menu_daily_challenge",
+      "value": "太陽儀式"
+    },
+    {
+      "key": "daily_title_format",
+      "value": "太陽儀式 : {0}"
+    },
+    {
+      "key": "daily_challenge_title",
+      "value": "每日挑戰"
+    },
+    {
+      "key": "daily_challenge_subtitle",
+      "value": "一局遊戲，一個修正。今天對所有人都一樣。"
+    },
+    {
+      "key": "daily_blocks_remaining",
+      "value": "{0}/{1} 方塊"
+    },
+    {
+      "key": "daily_result_modifier",
+      "value": "今日修正：{0}"
+    },
+    {
+      "key": "daily_result_rank",
+      "value": "今日排名：第 {0} 名"
+    },
+    {
+      "key": "daily_result_rank_loading",
+      "value": "今日排名：……"
+    },
+    {
+      "key": "daily_result_rank_unavailable",
+      "value": "今日排名：--"
+    },
+    {
+      "key": "daily_modifier_speedrun",
+      "value": "極速競速"
+    },
+    {
+      "key": "daily_modifier_speedrun_desc",
+      "value": "生成器擺動更快。小心把握放置時機。"
+    },
+    {
+      "key": "daily_modifier_fragilestack",
+      "value": "脆弱堆疊"
+    },
+    {
+      "key": "daily_modifier_fragilestack_desc",
+      "value": "一次失誤落地，遊戲就此結束。精準至上。"
+    },
+    {
+      "key": "daily_modifier_combochain",
+      "value": "連擊鏈"
+    },
+    {
+      "key": "daily_modifier_combochain_desc",
+      "value": "連擊呈幾何級增長，上限大幅提升。"
+    },
+    {
+      "key": "daily_speedrun_result",
+      "value": "時間：{0}:{1:D2} | 時間獎勵：+{2}"
+    },
+    {
+      "key": "daily_briefing_target",
+      "value": "堆疊 {0} 個方塊"
+    },
+    {
+      "key": "daily_briefing_begin",
+      "value": "開始儀式"
+    },
+    {
+      "key": "daily_result_complete",
+      "value": "儀式完成"
+    },
+    {
+      "key": "daily_result_broken",
+      "value": "儀式中斷"
+    },
+    {
+      "key": "daily_result_complete_flavor",
+      "value": "庫庫爾坎深感榮耀。"
+    },
+    {
+      "key": "daily_result_progress",
+      "value": "已達成 {0} / {1} 個方塊"
+    },
+    {
+      "key": "daily_retry_prompt",
+      "value": "儀式未竟 —— 再試一次。"
+    },
+    {
+      "key": "daily_new_best",
+      "value": "個人新紀錄！"
+    },
+    {
+      "key": "daily_reset_countdown",
+      "value": "下次儀式將在 {0} 後開始"
+    },
+    {
+      "key": "daily_played_today",
+      "value": "今日已遊玩 · {0} 後重置"
+    },
+    {
+      "key": "daily_time_left",
+      "value": "剩餘時間：{0}"
+    },
+    {
+      "key": "daily_date",
+      "value": "{2}年{0}{1}日"
+    },
+    {
+      "key": "daily_month_1",
+      "value": "一月"
+    },
+    {
+      "key": "daily_month_2",
+      "value": "二月"
+    },
+    {
+      "key": "daily_month_3",
+      "value": "三月"
+    },
+    {
+      "key": "daily_month_4",
+      "value": "四月"
+    },
+    {
+      "key": "daily_month_5",
+      "value": "五月"
+    },
+    {
+      "key": "daily_month_6",
+      "value": "六月"
+    },
+    {
+      "key": "daily_month_7",
+      "value": "七月"
+    },
+    {
+      "key": "daily_month_8",
+      "value": "八月"
+    },
+    {
+      "key": "daily_month_9",
+      "value": "九月"
+    },
+    {
+      "key": "daily_month_10",
+      "value": "十月"
+    },
+    {
+      "key": "daily_month_11",
+      "value": "十一月"
+    },
+    {
+      "key": "daily_month_12",
+      "value": "十二月"
+    },
+    {
+      "key": "settings_saved",
+      "value": "設定已儲存！"
+    }
+  ]
+}

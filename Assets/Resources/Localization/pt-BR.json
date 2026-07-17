@@ -1,0 +1,352 @@
+{
+  "entries": [
+    {
+      "key": "new_high_score",
+      "value": "NOVO RECORDE!"
+    },
+    {
+      "key": "instructions",
+      "value": "Toque em qualquer lugar para soltar o bloco!\nTente empilhá-los perfeitamente!"
+    },
+    {
+      "key": "accuracy_perfect",
+      "value": "PERFEITO!"
+    },
+    {
+      "key": "accuracy_good",
+      "value": "BOM"
+    },
+    {
+      "key": "accuracy_poor",
+      "value": "RUIM"
+    },
+    {
+      "key": "combo_format",
+      "value": "{0}\nx{1} COMBO"
+    },
+    {
+      "key": "mode_temple_stacker",
+      "value": "Empilhador do Templo"
+    },
+    {
+      "key": "mode_infinite_stacker",
+      "value": "Empilhador Infinito"
+    },
+    {
+      "key": "mode_infinite",
+      "value": "Modo Infinito"
+    },
+    {
+      "key": "mode_level",
+      "value": "Modo Fase"
+    },
+    {
+      "key": "level_title_format",
+      "value": "Fase {0}\n{1}"
+    },
+    {
+      "key": "level_complete_format",
+      "value": "Fase {0}\n{1} Concluída!"
+    },
+    {
+      "key": "level_failed_format",
+      "value": "Fase Fracassada!\nAlcançou: {0}/{1}"
+    },
+    {
+      "key": "level_score_format",
+      "value": "Pontos: {0}"
+    },
+    {
+      "key": "kukulkan_shift",
+      "value": "Mudança de Kukulkan"
+    },
+    {
+      "key": "leaderboard_not_available",
+      "value": "Sistema de placar não disponível"
+    },
+    {
+      "key": "leaderboard_no_scores",
+      "value": "Ainda não há pontuações. Seja o primeiro!"
+    },
+    {
+      "key": "leaderboard_unlock_required",
+      "value": "Conclua esta fase para desbloquear o placar"
+    },
+    {
+      "key": "leaderboard_demo_unavailable",
+      "value": "Esta fase não está disponível no modo demo"
+    },
+    {
+      "key": "leaderboard_level_format",
+      "value": "Fase {0}"
+    },
+    {
+      "key": "leaderboard_level_name_format",
+      "value": "Fase {0}\n{1}"
+    },
+    {
+      "key": "codex_unlock_format",
+      "value": "Códice de {0} Desbloqueado"
+    },
+    {
+      "key": "codex_empty_state",
+      "value": "Nenhuma fase desbloqueada ainda. Jogue fases para desbloquear entradas no Códice!"
+    },
+    {
+      "key": "codex_hidden_name",
+      "value": "????"
+    },
+    {
+      "key": "codex_hidden_description",
+      "value": "Conclua esta fase para revelar seus segredos..."
+    },
+    {
+      "key": "codex_unknown_location",
+      "value": "Local Desconhecido"
+    },
+    {
+      "key": "codex_no_description",
+      "value": "Nenhuma descrição disponível."
+    },
+    {
+      "key": "theme_sunset",
+      "value": "Tema Pôr do Sol"
+    },
+    {
+      "key": "theme_night",
+      "value": "Tema Noturno"
+    },
+    {
+      "key": "theme_sunset_unlock_format",
+      "value": "Conclua 7 fases para desbloquear.\n\nProgresso: {0}/7 fases concluídas"
+    },
+    {
+      "key": "theme_night_unlock_format",
+      "value": "Conclua 15 fases para desbloquear.\n\nProgresso: {0}/15 fases concluídas"
+    },
+    {
+      "key": "theme_confirm_title_format",
+      "value": "Selecionar Tema {0}?"
+    },
+    {
+      "key": "theme_confirm_message_format",
+      "value": "Tem certeza de que deseja mudar o tema para {0}?"
+    },
+    {
+      "key": "achievement_hidden_title",
+      "value": "???"
+    },
+    {
+      "key": "achievement_hidden_description",
+      "value": "Conquista Secreta - Desbloqueie para revelar"
+    },
+    {
+      "key": "achievement_not_found",
+      "value": "Sistema de conquistas não encontrado."
+    },
+    {
+      "key": "achievement_initializing",
+      "value": "O sistema de conquistas está inicializando..."
+    },
+    {
+      "key": "achievement_empty_category",
+      "value": "Nenhuma conquista nesta categoria."
+    },
+    {
+      "key": "blocks_remaining_format",
+      "value": "{0} blocos restantes"
+    },
+    {
+      "key": "sync_verifying",
+      "value": "Verificando a integridade do app..."
+    },
+    {
+      "key": "sync_authenticating",
+      "value": "Autenticando..."
+    },
+    {
+      "key": "sync_syncing",
+      "value": "Sincronizando com a nuvem..."
+    },
+    {
+      "key": "sync_complete",
+      "value": "Sincronização concluída!"
+    },
+    {
+      "key": "sync_complete_user_format",
+      "value": "Sincronização concluída!\nConectado como: {0}"
+    },
+    {
+      "key": "sync_failed",
+      "value": "Falha na sincronização. Jogando offline."
+    },
+    {
+      "key": "settings_language",
+      "value": "Idioma"
+    },
+    {
+      "key": "menu_daily_challenge",
+      "value": "Ritual do Sol"
+    },
+    {
+      "key": "daily_title_format",
+      "value": "Ritual do Sol : {0}"
+    },
+    {
+      "key": "daily_challenge_title",
+      "value": "Desafio Diário"
+    },
+    {
+      "key": "daily_challenge_subtitle",
+      "value": "Uma partida. Um modificador. O mesmo para todos hoje."
+    },
+    {
+      "key": "daily_blocks_remaining",
+      "value": "{0}/{1} blocos"
+    },
+    {
+      "key": "daily_result_modifier",
+      "value": "Modificador de Hoje: {0}"
+    },
+    {
+      "key": "daily_result_rank",
+      "value": "Classificação de Hoje: #{0}"
+    },
+    {
+      "key": "daily_result_rank_loading",
+      "value": "Classificação de Hoje: ..."
+    },
+    {
+      "key": "daily_result_rank_unavailable",
+      "value": "Classificação de Hoje: --"
+    },
+    {
+      "key": "daily_modifier_speedrun",
+      "value": "Corrida Rápida"
+    },
+    {
+      "key": "daily_modifier_speedrun_desc",
+      "value": "O lançador balança mais rápido. Cronometre bem suas quedas."
+    },
+    {
+      "key": "daily_modifier_fragilestack",
+      "value": "Pilha Frágil"
+    },
+    {
+      "key": "daily_modifier_fragilestack_desc",
+      "value": "Uma aterrissagem desleixada e a partida acaba. A precisão importa."
+    },
+    {
+      "key": "daily_modifier_combochain",
+      "value": "Corrente de Combos"
+    },
+    {
+      "key": "daily_modifier_combochain_desc",
+      "value": "Os combos crescem geometricamente até um limite muito maior."
+    },
+    {
+      "key": "daily_speedrun_result",
+      "value": "Tempo: {0}:{1:D2} | Bônus de Tempo: +{2}"
+    },
+    {
+      "key": "daily_briefing_target",
+      "value": "Empilhe {0} blocos"
+    },
+    {
+      "key": "daily_briefing_begin",
+      "value": "Iniciar o Ritual"
+    },
+    {
+      "key": "daily_result_complete",
+      "value": "Ritual Concluído"
+    },
+    {
+      "key": "daily_result_broken",
+      "value": "Ritual Quebrado"
+    },
+    {
+      "key": "daily_result_complete_flavor",
+      "value": "Kukulkan está honrado."
+    },
+    {
+      "key": "daily_result_progress",
+      "value": "Alcançou {0} / {1} blocos"
+    },
+    {
+      "key": "daily_retry_prompt",
+      "value": "O ritual não foi suficiente — tente novamente."
+    },
+    {
+      "key": "daily_new_best",
+      "value": "Novo Recorde Pessoal!"
+    },
+    {
+      "key": "daily_reset_countdown",
+      "value": "Próximo ritual em {0}"
+    },
+    {
+      "key": "daily_played_today",
+      "value": "Jogado hoje · reinicia em {0}"
+    },
+    {
+      "key": "daily_time_left",
+      "value": "Tempo Restante: {0}"
+    },
+    {
+      "key": "daily_date",
+      "value": "{1} de {0} de {2}"
+    },
+    {
+      "key": "daily_month_1",
+      "value": "janeiro"
+    },
+    {
+      "key": "daily_month_2",
+      "value": "fevereiro"
+    },
+    {
+      "key": "daily_month_3",
+      "value": "março"
+    },
+    {
+      "key": "daily_month_4",
+      "value": "abril"
+    },
+    {
+      "key": "daily_month_5",
+      "value": "maio"
+    },
+    {
+      "key": "daily_month_6",
+      "value": "junho"
+    },
+    {
+      "key": "daily_month_7",
+      "value": "julho"
+    },
+    {
+      "key": "daily_month_8",
+      "value": "agosto"
+    },
+    {
+      "key": "daily_month_9",
+      "value": "setembro"
+    },
+    {
+      "key": "daily_month_10",
+      "value": "outubro"
+    },
+    {
+      "key": "daily_month_11",
+      "value": "novembro"
+    },
+    {
+      "key": "daily_month_12",
+      "value": "dezembro"
+    },
+    {
+      "key": "settings_saved",
+      "value": "Configurações Salvas!"
+    }
+  ]
+}

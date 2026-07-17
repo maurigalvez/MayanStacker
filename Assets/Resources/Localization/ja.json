@@ -1,0 +1,352 @@
+{
+  "entries": [
+    {
+      "key": "new_high_score",
+      "value": "ハイスコア更新！"
+    },
+    {
+      "key": "instructions",
+      "value": "画面をタップしてブロックを落とそう！\n完璧に積み上げよう！"
+    },
+    {
+      "key": "accuracy_perfect",
+      "value": "パーフェクト！"
+    },
+    {
+      "key": "accuracy_good",
+      "value": "グッド"
+    },
+    {
+      "key": "accuracy_poor",
+      "value": "イマイチ"
+    },
+    {
+      "key": "combo_format",
+      "value": "{0}\nx{1} コンボ"
+    },
+    {
+      "key": "mode_temple_stacker",
+      "value": "神殿スタッカー"
+    },
+    {
+      "key": "mode_infinite_stacker",
+      "value": "無限スタッカー"
+    },
+    {
+      "key": "mode_infinite",
+      "value": "無限モード"
+    },
+    {
+      "key": "mode_level",
+      "value": "レベルモード"
+    },
+    {
+      "key": "level_title_format",
+      "value": "レベル {0}\n{1}"
+    },
+    {
+      "key": "level_complete_format",
+      "value": "レベル {0}\n{1} クリア！"
+    },
+    {
+      "key": "level_failed_format",
+      "value": "レベル失敗！\n到達：{0}/{1}"
+    },
+    {
+      "key": "level_score_format",
+      "value": "スコア：{0}"
+    },
+    {
+      "key": "kukulkan_shift",
+      "value": "ククルカンの揺らぎ"
+    },
+    {
+      "key": "leaderboard_not_available",
+      "value": "ランキングシステムが利用できません"
+    },
+    {
+      "key": "leaderboard_no_scores",
+      "value": "まだスコアがありません。最初のプレイヤーになろう！"
+    },
+    {
+      "key": "leaderboard_unlock_required",
+      "value": "このレベルをクリアするとランキングが解放されます"
+    },
+    {
+      "key": "leaderboard_demo_unavailable",
+      "value": "このレベルはデモモードでは利用できません"
+    },
+    {
+      "key": "leaderboard_level_format",
+      "value": "レベル {0}"
+    },
+    {
+      "key": "leaderboard_level_name_format",
+      "value": "レベル {0}\n{1}"
+    },
+    {
+      "key": "codex_unlock_format",
+      "value": "{0} の記録を解放"
+    },
+    {
+      "key": "codex_empty_state",
+      "value": "まだ解放されたレベルがありません。レベルをプレイして記録を解放しよう！"
+    },
+    {
+      "key": "codex_hidden_name",
+      "value": "????"
+    },
+    {
+      "key": "codex_hidden_description",
+      "value": "このレベルをクリアして秘密を解き明かそう…"
+    },
+    {
+      "key": "codex_unknown_location",
+      "value": "不明な場所"
+    },
+    {
+      "key": "codex_no_description",
+      "value": "説明はありません。"
+    },
+    {
+      "key": "theme_sunset",
+      "value": "夕焼けテーマ"
+    },
+    {
+      "key": "theme_night",
+      "value": "夜テーマ"
+    },
+    {
+      "key": "theme_sunset_unlock_format",
+      "value": "7 レベルをクリアで解放。\n\n進捗：{0}/7 レベルクリア"
+    },
+    {
+      "key": "theme_night_unlock_format",
+      "value": "15 レベルをクリアで解放。\n\n進捗：{0}/15 レベルクリア"
+    },
+    {
+      "key": "theme_confirm_title_format",
+      "value": "{0}を選択しますか？"
+    },
+    {
+      "key": "theme_confirm_message_format",
+      "value": "テーマを{0}に変更してもよろしいですか？"
+    },
+    {
+      "key": "achievement_hidden_title",
+      "value": "???"
+    },
+    {
+      "key": "achievement_hidden_description",
+      "value": "隠し実績 — 解除すると表示されます"
+    },
+    {
+      "key": "achievement_not_found",
+      "value": "実績システムが見つかりません。"
+    },
+    {
+      "key": "achievement_initializing",
+      "value": "実績システムを初期化しています…"
+    },
+    {
+      "key": "achievement_empty_category",
+      "value": "このカテゴリーには実績がありません。"
+    },
+    {
+      "key": "blocks_remaining_format",
+      "value": "残り {0} ブロック"
+    },
+    {
+      "key": "sync_verifying",
+      "value": "アプリの整合性を確認中…"
+    },
+    {
+      "key": "sync_authenticating",
+      "value": "認証中…"
+    },
+    {
+      "key": "sync_syncing",
+      "value": "クラウドと同期中…"
+    },
+    {
+      "key": "sync_complete",
+      "value": "同期完了！"
+    },
+    {
+      "key": "sync_complete_user_format",
+      "value": "同期完了！\nログイン中：{0}"
+    },
+    {
+      "key": "sync_failed",
+      "value": "同期に失敗しました。オフラインでプレイします。"
+    },
+    {
+      "key": "settings_language",
+      "value": "言語"
+    },
+    {
+      "key": "menu_daily_challenge",
+      "value": "太陽の儀式"
+    },
+    {
+      "key": "daily_title_format",
+      "value": "太陽の儀式 : {0}"
+    },
+    {
+      "key": "daily_challenge_title",
+      "value": "デイリーチャレンジ"
+    },
+    {
+      "key": "daily_challenge_subtitle",
+      "value": "一回のプレイ。一つの修正。今日は全員が同じ条件。"
+    },
+    {
+      "key": "daily_blocks_remaining",
+      "value": "{0}/{1} ブロック"
+    },
+    {
+      "key": "daily_result_modifier",
+      "value": "本日の修正：{0}"
+    },
+    {
+      "key": "daily_result_rank",
+      "value": "本日の順位：{0}位"
+    },
+    {
+      "key": "daily_result_rank_loading",
+      "value": "本日の順位：…"
+    },
+    {
+      "key": "daily_result_rank_unavailable",
+      "value": "本日の順位：--"
+    },
+    {
+      "key": "daily_modifier_speedrun",
+      "value": "スピードラン"
+    },
+    {
+      "key": "daily_modifier_speedrun_desc",
+      "value": "スポナーの揺れが速くなる。落とすタイミングを見極めよう。"
+    },
+    {
+      "key": "daily_modifier_fragilestack",
+      "value": "壊れやすいスタック"
+    },
+    {
+      "key": "daily_modifier_fragilestack_desc",
+      "value": "一度でも雑に着地すればゲーム終了。精度がすべて。"
+    },
+    {
+      "key": "daily_modifier_combochain",
+      "value": "コンボチェイン"
+    },
+    {
+      "key": "daily_modifier_combochain_desc",
+      "value": "コンボが幾何級数的に増加し、上限も大幅アップ。"
+    },
+    {
+      "key": "daily_speedrun_result",
+      "value": "タイム：{0}:{1:D2} | タイムボーナス：+{2}"
+    },
+    {
+      "key": "daily_briefing_target",
+      "value": "{0} ブロック積み上げる"
+    },
+    {
+      "key": "daily_briefing_begin",
+      "value": "儀式を始める"
+    },
+    {
+      "key": "daily_result_complete",
+      "value": "儀式完了"
+    },
+    {
+      "key": "daily_result_broken",
+      "value": "儀式失敗"
+    },
+    {
+      "key": "daily_result_complete_flavor",
+      "value": "ククルカンは称えられた。"
+    },
+    {
+      "key": "daily_result_progress",
+      "value": "{0} / {1} ブロック到達"
+    },
+    {
+      "key": "daily_retry_prompt",
+      "value": "儀式は及ばなかった — もう一度挑もう。"
+    },
+    {
+      "key": "daily_new_best",
+      "value": "自己ベスト更新！"
+    },
+    {
+      "key": "daily_reset_countdown",
+      "value": "次の儀式まで {0}"
+    },
+    {
+      "key": "daily_played_today",
+      "value": "本日プレイ済み · {0} 後にリセット"
+    },
+    {
+      "key": "daily_time_left",
+      "value": "残り時間：{0}"
+    },
+    {
+      "key": "daily_date",
+      "value": "{2}年{0}{1}日"
+    },
+    {
+      "key": "daily_month_1",
+      "value": "1月"
+    },
+    {
+      "key": "daily_month_2",
+      "value": "2月"
+    },
+    {
+      "key": "daily_month_3",
+      "value": "3月"
+    },
+    {
+      "key": "daily_month_4",
+      "value": "4月"
+    },
+    {
+      "key": "daily_month_5",
+      "value": "5月"
+    },
+    {
+      "key": "daily_month_6",
+      "value": "6月"
+    },
+    {
+      "key": "daily_month_7",
+      "value": "7月"
+    },
+    {
+      "key": "daily_month_8",
+      "value": "8月"
+    },
+    {
+      "key": "daily_month_9",
+      "value": "9月"
+    },
+    {
+      "key": "daily_month_10",
+      "value": "10月"
+    },
+    {
+      "key": "daily_month_11",
+      "value": "11月"
+    },
+    {
+      "key": "daily_month_12",
+      "value": "12月"
+    },
+    {
+      "key": "settings_saved",
+      "value": "設定を保存しました！"
+    }
+  ]
+}

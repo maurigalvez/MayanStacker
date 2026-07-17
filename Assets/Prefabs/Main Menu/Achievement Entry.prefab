@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 3920626916348580433}
   - component: {fileID: 7149116594990539913}
   - component: {fileID: 3364736152250283625}
+  - component: {fileID: 7100828842824569926}
   m_Layer: 5
   m_Name: Achievement Desc label
   m_TagString: Untagged
@@ -103,6 +104,7 @@ MonoBehaviour:
   m_VerticalAlignment: 512
   m_textAlignment: 65535
   m_characterSpacing: 0
+  m_characterHorizontalScale: 1
   m_wordSpacing: 0
   m_lineSpacing: 0
   m_lineSpacingMax: 0
@@ -136,6 +138,18 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!114 &7100828842824569926
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 577530814944529079}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 210d133f4611f854dbc113dd3c6209b5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LocaleFontSwitcher
 --- !u!1 &850419185841066828
 GameObject:
   m_ObjectHideFlags: 0
@@ -147,6 +161,7 @@ GameObject:
   - component: {fileID: 5371836560694858086}
   - component: {fileID: 7376186552894383266}
   - component: {fileID: 8983992649227682853}
+  - component: {fileID: 2423379010082159854}
   m_Layer: 5
   m_Name: Achievement Title Label
   m_TagString: Untagged
@@ -239,6 +254,7 @@ MonoBehaviour:
   m_VerticalAlignment: 512
   m_textAlignment: 65535
   m_characterSpacing: 0
+  m_characterHorizontalScale: 1
   m_wordSpacing: 0
   m_lineSpacing: 0
   m_lineSpacingMax: 0
@@ -272,6 +288,18 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!114 &2423379010082159854
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 850419185841066828}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 210d133f4611f854dbc113dd3c6209b5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LocaleFontSwitcher
 --- !u!1 &924265633200541422
 GameObject:
   m_ObjectHideFlags: 0
@@ -321,6 +349,7 @@ GameObject:
   - component: {fileID: 1569357339363793502}
   - component: {fileID: 4210647892517041734}
   - component: {fileID: 3279080245604233560}
+  - component: {fileID: 4232797160385900267}
   m_Layer: 5
   m_Name: Achievement Desc label
   m_TagString: Untagged
@@ -413,6 +442,7 @@ MonoBehaviour:
   m_VerticalAlignment: 512
   m_textAlignment: 65535
   m_characterSpacing: 0
+  m_characterHorizontalScale: 1
   m_wordSpacing: 0
   m_lineSpacing: 0
   m_lineSpacingMax: 0
@@ -446,6 +476,18 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!114 &4232797160385900267
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1507443927963635471}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 210d133f4611f854dbc113dd3c6209b5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LocaleFontSwitcher
 --- !u!1 &3391520344808310561
 GameObject:
   m_ObjectHideFlags: 0
@@ -891,5 +933,3 @@ MonoBehaviour:
   secretCategoryIcon: {fileID: 8636605166520281671, guid: 2757901c29212a2498896a0e0f7e6a3d, type: 3}
   lockedIconColor: {r: 0.1792453, g: 0.1792453, b: 0.1792453, a: 1}
   unlockedIconColor: {r: 1, g: 1, b: 1, a: 1}
-  hiddenTitle: ???
-  hiddenDescription: Secret Achievement - Unlock to reveal

@@ -1,0 +1,24 @@
+{
+  "achievements": [
+    { "id": "first_steps", "title": "探索者的第一步", "description": "完成你的第一个遗址" },
+    { "id": "path_of_jaguar", "title": "美洲豹之路", "description": "完成 5 个遗址" },
+    { "id": "maya_wanderer", "title": "玛雅漫游者", "description": "完成 10 个遗址" },
+    { "id": "temple_traveler", "title": "神庙旅人", "description": "完成 15 个遗址" },
+    { "id": "keeper_of_ruins", "title": "遗迹守护者", "description": "完成 20 个遗址" },
+    { "id": "world_of_maya", "title": "玛雅世界", "description": "完成全部 27 个遗址" },
+    { "id": "survivor", "title": "幸存者", "description": "在无尽堆叠中达到 25 个方块" },
+    { "id": "peak_ascender", "title": "登峰者", "description": "在无尽堆叠中达到 50 个方块" },
+    { "id": "sky_piercer", "title": "破空者", "description": "在无尽堆叠中达到 100 个方块" },
+    { "id": "page_keeper", "title": "书页守护者", "description": "解锁 3 个图鉴条目" },
+    { "id": "lore_seeker", "title": "传说探寻者", "description": "解锁 10 个图鉴条目" },
+    { "id": "codex_scholar", "title": "图鉴学者", "description": "解锁 20 个图鉴条目" },
+    { "id": "perfect_dropper", "title": "完美投放者", "description": "在无尽堆叠中连续 10 次完美放置" },
+    { "id": "stone_stack_specialist", "title": "叠石专家", "description": "在无尽堆叠中连续 25 次完美放置" },
+    { "id": "temple_guardian", "title": "神庙守护者", "description": "在某个关卡排行榜中进入前 5 名" },
+    { "id": "perfectionist_architect", "title": "完美主义建筑师", "description": "仅用完美放置完成一个遗址" },
+    { "id": "zero_room_for_error", "title": "零失误空间", "description": "仅用完美放置完成第 10 关或更高" },
+    { "id": "feathered_serpent_blessing", "title": "羽蛇神的祝福", "description": "用完美放置完成 5 个关卡" },
+    { "id": "sunrise_builder", "title": "日出建造者", "description": "在清晨游玩" },
+    { "id": "midnight_builder", "title": "午夜建造者", "description": "在深夜游玩" }
+  ]
+}

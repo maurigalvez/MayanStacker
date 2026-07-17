@@ -47,15 +47,33 @@ public class LocalizationManager : MonoBehaviour
 
         LoadLocale("en");
         LoadLocale("es-419");
+        LoadLocale("zh-Hans");
+        LoadLocale("zh-Hant");
+        LoadLocale("pt-BR");
+        LoadLocale("ja");
         LoadOverlays();
     }
 
     private string DetectDeviceLocale()
     {
         var lang = Application.systemLanguage;
-        if (lang == SystemLanguage.Spanish)
-            return "es-419";
-        return DEFAULT_LOCALE;
+        switch (lang)
+        {
+            case SystemLanguage.Spanish:
+                return "es-419";
+            case SystemLanguage.ChineseSimplified:
+                return "zh-Hans";
+            case SystemLanguage.ChineseTraditional:
+                return "zh-Hant";
+            case SystemLanguage.Chinese:
+                return "zh-Hans";
+            case SystemLanguage.Portuguese:
+                return "pt-BR";
+            case SystemLanguage.Japanese:
+                return "ja";
+            default:
+                return DEFAULT_LOCALE;
+        }
     }
 
     private void LoadLocale(string localeCode)
