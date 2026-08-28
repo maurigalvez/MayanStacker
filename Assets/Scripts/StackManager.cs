@@ -308,8 +308,12 @@ public class StackManager : MonoBehaviour
 
         // Note: Removed tower height limit to allow unlimited building height
 
-        // Check for excessive tilt only if we have enough objects
-        if (stackObjects.Count >= 3 && CheckExcessiveTilt())
+        // Check for excessive tilt only if we have enough objects.
+        // A brand-new player gets extra rope here: tilt is the failure mode that reads as
+        // arbitrary before you understand that accuracy compounds, so during the FTUE the
+        // tower has to be taller before a lean can end the run.
+        int tiltMinBlocks = FtueState.IsInFtue ? 3 + FtueState.ForgivenBlockCount : 3;
+        if (stackObjects.Count >= tiltMinBlocks && CheckExcessiveTilt())
         {
             Debug.Log("Game Over: Tower has excessive tilt!");
             TriggerStackFall();
@@ -441,7 +445,7 @@ public class StackManager : MonoBehaviour
         var gameManager = DependencyRegistry.Find<GameManager>();
         if (gameManager != null)
         {
-            gameManager.GameOver();
+            gameManager.GameOver("topple");
         }
 
         // Notify listeners

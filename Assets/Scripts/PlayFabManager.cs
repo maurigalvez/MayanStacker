@@ -2100,6 +2100,18 @@ public class PlayFabManager : MonoBehaviour
     }
 
     /// <summary>
+    /// Public entry point for gameplay/funnel analytics. Routed through the same
+    /// WritePlayerEvent path as the account diagnostics above.
+    ///
+    /// Callers should use GameAnalytics rather than calling this directly — it queues
+    /// events fired before login, which this method drops.
+    /// </summary>
+    public void LogAnalyticsEvent(string eventName, System.Collections.Generic.Dictionary<string, object> eventData = null)
+    {
+        LogPlayFabEvent(eventName, eventData);
+    }
+
+    /// <summary>
     /// Logs an account fallback event when Google login fails and Device ID is used
     /// </summary>
     private void LogAccountFallbackEvent(string reason, string googlePlayerId = null)

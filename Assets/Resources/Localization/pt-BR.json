@@ -50,7 +50,7 @@
     },
     {
       "key": "level_failed_format",
-      "value": "Fase Fracassada!\nAlcançou: {0}/{1}"
+      "value": "Você Falhou!\nAlcançou: {0}/{1}"
     },
     {
       "key": "level_score_format",
@@ -347,6 +347,94 @@
     {
       "key": "settings_saved",
       "value": "Configurações Salvas!"
+    },
+    {
+      "key": "ftue_beat_tap",
+      "value": "Toque em qualquer lugar para soltar a pedra"
+    },
+    {
+      "key": "ftue_beat_perfect",
+      "value": "Perfeito. Pedras centralizadas valem mais."
+    },
+    {
+      "key": "ftue_beat_good",
+      "value": "Bom. O suficiente para manter sua sequência."
+    },
+    {
+      "key": "ftue_beat_poor",
+      "value": "Descuidado. Só uma pedra torta quebra a sequência."
+    },
+    {
+      "key": "ftue_beat_kukulkan",
+      "value": "{0} pedras perfeitas seguidas invocam Kukulkan para endireitar o templo."
+    },
+    {
+      "key": "ftue_skip",
+      "value": "Pular"
+    },
+    {
+      "key": "ftue_grace_retry",
+      "value": "As pedras se moveram — de novo."
+    },
+    {
+      "key": "next_goal_near_best",
+      "value": "A {0} pontos do seu recorde."
+    },
+    {
+      "key": "next_goal_achievement",
+      "value": "Mais {0} para {1}."
+    },
+    {
+      "key": "next_goal_sites_remaining",
+      "value": "Restam {0} sítios a conquistar."
+    },
+    {
+      "key": "codex_sites_remaining",
+      "value": "Restam {0} sítios."
+    },
+    {
+      "key": "daily_streak_count",
+      "value": "Sequência de {0} dias"
+    },
+    {
+      "key": "daily_streak_at_risk",
+      "value": "Sequência de {0} dias — de pé até a meia-noite"
+    },
+    {
+      "key": "daily_streak_defend",
+      "value": "Sequência de {0} dias · termina em {1}"
+    },
+    {
+      "key": "notif_channel_name",
+      "value": "Lembretes do ritual"
+    },
+    {
+      "key": "notif_channel_description",
+      "value": "Ritual diário e lembretes de retorno"
+    },
+    {
+      "key": "notif_daily_title",
+      "value": "O Ritual do Sol espera por você"
+    },
+    {
+      "key": "notif_daily_body",
+      "value": "O ritual de hoje está pronto. Uma partida, um modificador."
+    },
+    {
+      "key": "notif_daily_body_streak",
+      "value": "Sua sequência de {0} dias termina à meia-noite."
+    },
+    {
+      "key": "notif_lapse_title",
+      "value": "O templo ficou em silêncio"
+    },
+    {
+      "key": "notif_lapse_body",
+      "value": "Suas pedras estão onde você as deixou."
+    },
+    {
+      "key": "notif_lapse_body_site",
+      "value": "{0} ainda está inacabado."
     }
   ]
 }

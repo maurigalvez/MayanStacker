@@ -32,7 +32,9 @@ public class GameSettings : ScriptableObject
     public string gameVersion = "1.0.0";
 
     [Header("Gameplay Settings")]
-    public bool enableTutorial = true;
+    // Note: the old enableTutorial flag lived here but was never read. Onboarding is now
+    // driven by FtueState/FtueTutorial, which track real player progress rather than a
+    // build-time toggle.
     public bool showFPS = false;
     public bool enableParticleEffects = true;
     public bool enableScreenShake = true;

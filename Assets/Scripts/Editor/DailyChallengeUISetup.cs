@@ -20,13 +20,13 @@ using TMPro;
 public static class DailyChallengeUISetup
 {
     // Palette (Mayan temple: jade = honored, clay = broken). Restyle freely afterward.
-    private static readonly Color Jade = new Color(0.09f, 0.42f, 0.34f, 1f);
-    private static readonly Color Clay = new Color(0.66f, 0.25f, 0.16f, 1f);
-    private static readonly Color Gold = new Color(0.79f, 0.64f, 0.29f, 1f);
-    private static readonly Color Parchment = new Color(0.93f, 0.90f, 0.82f, 1f);
-    private static readonly Color Backdrop = new Color(0.06f, 0.05f, 0.04f, 0.92f);
-    private static readonly Color Sky = new Color(0.53f, 0.81f, 0.92f, 1f); // date line
-    private static readonly Color Muted = new Color(0.72f, 0.68f, 0.58f, 1f);
+    internal static readonly Color Jade = new Color(0.09f, 0.42f, 0.34f, 1f);
+    internal static readonly Color Clay = new Color(0.66f, 0.25f, 0.16f, 1f);
+    internal static readonly Color Gold = new Color(0.79f, 0.64f, 0.29f, 1f);
+    internal static readonly Color Parchment = new Color(0.93f, 0.90f, 0.82f, 1f);
+    internal static readonly Color Backdrop = new Color(0.06f, 0.05f, 0.04f, 0.92f);
+    internal static readonly Color Sky = new Color(0.53f, 0.81f, 0.92f, 1f); // date line
+    internal static readonly Color Muted = new Color(0.72f, 0.68f, 0.58f, 1f);
 
     [MenuItem("TamalStacker/Daily Challenge/Set Up Game Scene UI")]
     public static void SetupGameSceneUI()
@@ -135,7 +135,7 @@ public static class DailyChallengeUISetup
     // Resolution helpers
     // ─────────────────────────────────────────────────────────────────────
 
-    private static Transform ResolveCanvas(SerializedObject so)
+    internal static Transform ResolveCanvas(SerializedObject so)
     {
         foreach (string field in new[] { "gameOverPanel", "gameUI" })
         {
@@ -151,7 +151,7 @@ public static class DailyChallengeUISetup
     }
 
     /// <summary>Reuse an already-wired panel; otherwise find-by-name or create a full-screen overlay under the canvas.</summary>
-    private static GameObject ResolvePanel(SerializedObject so, string field, Transform canvas, string name, ref int created, ref int skipped)
+    internal static GameObject ResolvePanel(SerializedObject so, string field, Transform canvas, string name, ref int created, ref int skipped)
     {
         var prop = so.FindProperty(field);
         if (prop == null) return null;
@@ -174,7 +174,7 @@ public static class DailyChallengeUISetup
         return go;
     }
 
-    private static void EnsureText(SerializedObject so, string field, Transform parent, string name,
+    internal static void EnsureText(SerializedObject so, string field, Transform parent, string name,
         string sample, int fontSize, Color color, System.Action<RectTransform> place, ref int created, ref int skipped)
     {
         var prop = so.FindProperty(field);
@@ -186,7 +186,7 @@ public static class DailyChallengeUISetup
         created++;
     }
 
-    private static void EnsureButton(SerializedObject so, string field, Transform parent, string name,
+    internal static void EnsureButton(SerializedObject so, string field, Transform parent, string name,
         string label, System.Action<RectTransform> place, ref int created, ref int skipped)
     {
         var prop = so.FindProperty(field);
@@ -208,7 +208,7 @@ public static class DailyChallengeUISetup
         created++;
     }
 
-    private static TextMeshProUGUI CreateText(Transform parent, string name, string sample, int fontSize, Color color, System.Action<RectTransform> place)
+    internal static TextMeshProUGUI CreateText(Transform parent, string name, string sample, int fontSize, Color color, System.Action<RectTransform> place)
     {
         GameObject go = FindOrCreate(parent, name, out _);
         var t = go.GetComponent<TextMeshProUGUI>() ?? Undo.AddComponent<TextMeshProUGUI>(go);
@@ -222,7 +222,7 @@ public static class DailyChallengeUISetup
         return t;
     }
 
-    private static GameObject FindOrCreate(Transform parent, string name, out bool created)
+    internal static GameObject FindOrCreate(Transform parent, string name, out bool created)
     {
         var existing = parent.Find(name);
         if (existing != null) { created = false; return existing.gameObject; }
@@ -235,14 +235,14 @@ public static class DailyChallengeUISetup
 
     // ── RectTransform placement ──
 
-    private static void Stretch(RectTransform rt)
+    internal static void Stretch(RectTransform rt)
     {
         rt.anchorMin = Vector2.zero; rt.anchorMax = Vector2.one;
         rt.offsetMin = Vector2.zero; rt.offsetMax = Vector2.zero;
         rt.localScale = Vector3.one;
     }
 
-    private static System.Action<RectTransform> PlaceCentered(float y, float w, float h) => rt =>
+    internal static System.Action<RectTransform> PlaceCentered(float y, float w, float h) => rt =>
     {
         rt.anchorMin = rt.anchorMax = rt.pivot = new Vector2(0.5f, 0.5f);
         rt.sizeDelta = new Vector2(w, h);
@@ -250,7 +250,7 @@ public static class DailyChallengeUISetup
         rt.localScale = Vector3.one;
     };
 
-    private static System.Action<RectTransform> PlaceTop(float yFromTop, float w, float h) => rt =>
+    internal static System.Action<RectTransform> PlaceTop(float yFromTop, float w, float h) => rt =>
     {
         rt.anchorMin = rt.anchorMax = new Vector2(0.5f, 1f);
         rt.pivot = new Vector2(0.5f, 1f);
@@ -259,7 +259,7 @@ public static class DailyChallengeUISetup
         rt.localScale = Vector3.one;
     };
 
-    private static System.Action<RectTransform> PlaceBottom(float yFromBottom, float w, float h) => rt =>
+    internal static System.Action<RectTransform> PlaceBottom(float yFromBottom, float w, float h) => rt =>
     {
         rt.anchorMin = rt.anchorMax = new Vector2(0.5f, 0f);
         rt.pivot = new Vector2(0.5f, 0f);
@@ -268,7 +268,7 @@ public static class DailyChallengeUISetup
         rt.localScale = Vector3.one;
     };
 
-    private static System.Action<RectTransform> HangBelow(float gap, float w, float h) => rt =>
+    internal static System.Action<RectTransform> HangBelow(float gap, float w, float h) => rt =>
     {
         rt.anchorMin = rt.anchorMax = new Vector2(0.5f, 0f);
         rt.pivot = new Vector2(0.5f, 1f);
@@ -277,7 +277,7 @@ public static class DailyChallengeUISetup
         rt.localScale = Vector3.one;
     };
 
-    private static void Report(string what, int created, int skipped)
+    internal static void Report(string what, int created, int skipped)
     {
         string msg = created == 0
             ? $"{what}: everything was already wired — no changes made ({skipped} field(s) left untouched)."

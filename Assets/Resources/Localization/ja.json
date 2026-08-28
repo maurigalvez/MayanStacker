@@ -198,7 +198,7 @@
     },
     {
       "key": "daily_challenge_subtitle",
-      "value": "一回のプレイ。一つの修正。今日は全員が同じ条件。"
+      "value": "一回のプレイ。一つの特殊ルール。今日は全員が同じ条件。"
     },
     {
       "key": "daily_blocks_remaining",
@@ -206,7 +206,7 @@
     },
     {
       "key": "daily_result_modifier",
-      "value": "本日の修正：{0}"
+      "value": "本日の特殊ルール：{0}"
     },
     {
       "key": "daily_result_rank",
@@ -347,6 +347,94 @@
     {
       "key": "settings_saved",
       "value": "設定を保存しました！"
+    },
+    {
+      "key": "ftue_beat_tap",
+      "value": "画面をタップして石を落とす"
+    },
+    {
+      "key": "ftue_beat_perfect",
+      "value": "パーフェクト。中央に置くほど高得点。"
+    },
+    {
+      "key": "ftue_beat_good",
+      "value": "グッド。連鎖を保つには十分。"
+    },
+    {
+      "key": "ftue_beat_poor",
+      "value": "雑だ。ずれた石だけが連鎖を断つ。"
+    },
+    {
+      "key": "ftue_beat_kukulkan",
+      "value": "パーフェクトを{0}回続けると、ククルカンが神殿をまっすぐに整える。"
+    },
+    {
+      "key": "ftue_skip",
+      "value": "スキップ"
+    },
+    {
+      "key": "ftue_grace_retry",
+      "value": "石がずれた——もう一度。"
+    },
+    {
+      "key": "next_goal_near_best",
+      "value": "自己ベストまであと{0}点。"
+    },
+    {
+      "key": "next_goal_achievement",
+      "value": "{1}まであと{0}。"
+    },
+    {
+      "key": "next_goal_sites_remaining",
+      "value": "未踏の遺跡があと{0}か所。"
+    },
+    {
+      "key": "codex_sites_remaining",
+      "value": "残り{0}か所の遺跡。"
+    },
+    {
+      "key": "daily_streak_count",
+      "value": "{0}日連続"
+    },
+    {
+      "key": "daily_streak_at_risk",
+      "value": "{0}日連続——深夜まで有効"
+    },
+    {
+      "key": "daily_streak_defend",
+      "value": "{0}日連続 · 残り{1}"
+    },
+    {
+      "key": "notif_channel_name",
+      "value": "儀式のリマインダー"
+    },
+    {
+      "key": "notif_channel_description",
+      "value": "デイリー儀式と復帰のお知らせ"
+    },
+    {
+      "key": "notif_daily_title",
+      "value": "太陽の儀式が待っている"
+    },
+    {
+      "key": "notif_daily_body",
+      "value": "本日の儀式が整った。一回の挑戦、一つの修正。"
+    },
+    {
+      "key": "notif_daily_body_streak",
+      "value": "{0}日連続の記録が深夜に途切れます。"
+    },
+    {
+      "key": "notif_lapse_title",
+      "value": "神殿が静まりかえっている"
+    },
+    {
+      "key": "notif_lapse_body",
+      "value": "石はあなたが置いたままだ。"
+    },
+    {
+      "key": "notif_lapse_body_site",
+      "value": "{0}はまだ未完成だ。"
     }
   ]
 }

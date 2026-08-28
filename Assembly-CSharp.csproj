@@ -43,7 +43,7 @@
     <UnityVersion>6000.3.10f1</UnityVersion>
   </PropertyGroup>
   <ItemGroup>
-    <Analyzer Include="C:\Users\mauri\.vscode\extensions\visualstudiotoolsforunity.vstuc-1.2.2\Analyzers\Microsoft.Unity.Analyzers.dll" />
+    <Analyzer Include="C:\Users\mauri\.vscode\extensions\visualstudiotoolsforunity.vstuc-1.3.1\Analyzers\Microsoft.Unity.Analyzers.dll" />
     <Analyzer Include="C:\Program Files\Unity\Hub\Editor\6000.3.10f1\Editor\Data\Tools\BuildPipeline\Unity.SourceGenerators\Unity.SourceGenerators.dll" />
     <Analyzer Include="C:\Program Files\Unity\Hub\Editor\6000.3.10f1\Editor\Data\Tools\BuildPipeline\Unity.SourceGenerators\Unity.Properties.SourceGenerator.dll" />
     <Analyzer Include="C:\Program Files\Unity\Hub\Editor\6000.3.10f1\Editor\Data\Tools\BuildPipeline\Unity.SourceGenerators\Unity.UIToolkit.SourceGenerator.dll" />
@@ -54,6 +54,7 @@
   <ItemGroup>
     <Compile Include="Assets\Scripts\GameController.cs" />
     <Compile Include="Assets\Scripts\DailyChallenge\DailyChallengeFallbackSettings.cs" />
+    <Compile Include="Assets\Scripts\FTUE\FtueState.cs" />
     <Compile Include="Assets\Scripts\AdManager.cs" />
     <Compile Include="Assets\Scripts\OfflineScoreQueue.cs" />
     <Compile Include="Assets\Scripts\LeaderboardManager.cs" />
@@ -63,6 +64,8 @@
     <Compile Include="Assets\Scripts\IntegrityManager.cs" />
     <Compile Include="Assets\Scripts\DependencyRegistry\ISaveSystem.cs" />
     <Compile Include="Assets\Scripts\Achievements\AchievementPanelUI.cs" />
+    <Compile Include="Assets\Scripts\DailyChallenge\DailyStreak.cs" />
+    <Compile Include="Assets\Scripts\Analytics\AnalyticsSession.cs" />
     <Compile Include="Assets\Scripts\StackableObject.cs" />
     <Compile Include="Assets\Scripts\PlayerProgressData.cs" />
     <Compile Include="Assets\Scripts\LeaderboardEntryUI.cs" />
@@ -90,6 +93,7 @@
     <Compile Include="Assets\Scripts\DailyChallenge\DailyChallengeConfig.cs" />
     <Compile Include="Assets\Scripts\GameFeel\GameFeelManager.cs" />
     <Compile Include="Assets\GooglePlayPlugins\com.google.play.integrity\Samples\IntegrityTestApp\Scripts\RequestIntegrityTokenAction.cs" />
+    <Compile Include="Assets\Scripts\FTUE\LanguageSelectScreen.cs" />
     <Compile Include="Assets\Scripts\ReviewManagerHelper.cs" />
     <Compile Include="Assets\Scripts\ObjectSpawner.cs" />
     <Compile Include="Assets\Scripts\LeaderboardEntry.cs" />
@@ -115,8 +119,10 @@
     <Compile Include="Assets\GooglePlayPlugins\com.google.play.review\Samples\ReviewDemo\Scripts\ReviewDemo.cs" />
     <Compile Include="Assets\Scripts\Achievements\AchievementProgressData.cs" />
     <Compile Include="Assets\Scripts\Localization\LocalizationManager.cs" />
+    <Compile Include="Assets\Scripts\FTUE\FtueTutorial.cs" />
     <Compile Include="Assets\Scripts\Localization\LocaleFontSet.cs" />
     <Compile Include="Assets\Scripts\EnvironmentSpawnerManager.cs" />
+    <Compile Include="Assets\Scripts\Notifications\NotificationScheduler.cs" />
     <Compile Include="Assets\Scripts\LevelData.cs" />
     <Compile Include="Assets\ThemeMapSprite.cs" />
     <Compile Include="Assets\Scripts\Achievements\AchievementEntryUI.cs" />
@@ -130,6 +136,7 @@
     <Compile Include="Assets\Scripts\DependencyRegistry\ILevelManager.cs" />
     <Compile Include="Assets\Scripts\PlayFabManager.cs" />
     <Compile Include="Assets\Scripts\SceneLoader.cs" />
+    <Compile Include="Assets\Scripts\Analytics\GameAnalytics.cs" />
     <Compile Include="Assets\Scripts\ThemeUITint.cs" />
     <Compile Include="Assets\Scripts\LeaderboardPanel.cs" />
     <Compile Include="Assets\Scripts\IntegritySettings.cs" />
@@ -1604,12 +1611,20 @@
       <HintPath>Library\ScriptAssemblies\Unity.2D.SpriteShape.Runtime.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="Unity.Notifications">
+      <HintPath>Library\ScriptAssemblies\Unity.Notifications.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="Unity.AppUI.Redux.Editor">
       <HintPath>Library\ScriptAssemblies\Unity.AppUI.Redux.Editor.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Unity.2D.Common.Runtime">
       <HintPath>Library\ScriptAssemblies\Unity.2D.Common.Runtime.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.Notifications.Android">
+      <HintPath>Library\ScriptAssemblies\Unity.Notifications.Android.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Unity.Collections">
@@ -1656,6 +1671,10 @@
       <HintPath>Library\ScriptAssemblies\Unity.Multiplayer.Center.Editor.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="Unity.Notifications.Unified">
+      <HintPath>Library\ScriptAssemblies\Unity.Notifications.Unified.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="Unity.InferenceEngine.Tokenization">
       <HintPath>Library\ScriptAssemblies\Unity.InferenceEngine.Tokenization.dll</HintPath>
       <Private>False</Private>
@@ -1686,6 +1705,10 @@
     </Reference>
     <Reference Include="Unity.InferenceEngine.iOSBLAS">
       <HintPath>Library\ScriptAssemblies\Unity.InferenceEngine.iOSBLAS.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.Notifications.iOS">
+      <HintPath>Library\ScriptAssemblies\Unity.Notifications.iOS.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Unity.Settings.Editor">

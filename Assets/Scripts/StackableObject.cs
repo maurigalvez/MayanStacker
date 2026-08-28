@@ -233,7 +233,7 @@ public class StackableObject : MonoBehaviour
                 Debug.Log("Game Over: Object landed on ground instead of the stack!");
                 if (gameManager != null)
                 {
-                    gameManager.GameOver();
+                    gameManager.GameOver("missed_stack");
                     return; // Don't process landing further
                 }
             }
@@ -261,7 +261,7 @@ public class StackableObject : MonoBehaviour
                 && dailyMgr.CurrentConfig.modifier == DailyChallengeModifier.FragileStack)
             {
                 Debug.Log($"[DailyChallenge] FragileStack: misaligned landing ({landingAccuracy:F2}) ends the run.");
-                gameManager.GameOver();
+                gameManager.GameOver("fragile");
             }
         }
 
@@ -506,7 +506,7 @@ public class StackableObject : MonoBehaviour
         if (!isFirstObject && stackCount > 0)
         {
             Debug.Log("Game Over: Object fell off the stack and touched the ground!");
-            gameManager.GameOver();
+            gameManager.GameOver("fell_off");
         }
     }
 

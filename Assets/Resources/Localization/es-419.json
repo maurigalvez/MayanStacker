@@ -347,6 +347,94 @@
     {
       "key": "settings_saved",
       "value": "\u00a1Configuraci\u00f3n Guardada!"
+    },
+    {
+      "key": "ftue_beat_tap",
+      "value": "Toca donde sea para soltar la piedra"
+    },
+    {
+      "key": "ftue_beat_perfect",
+      "value": "Perfecto. Las piedras centradas valen más."
+    },
+    {
+      "key": "ftue_beat_good",
+      "value": "Bien. Suficiente para mantener tu racha."
+    },
+    {
+      "key": "ftue_beat_poor",
+      "value": "Descuidado. Solo una piedra torcida rompe la racha."
+    },
+    {
+      "key": "ftue_beat_kukulkan",
+      "value": "{0} piedras perfectas seguidas invocan a Kukulkán para enderezar el templo."
+    },
+    {
+      "key": "ftue_skip",
+      "value": "Saltar"
+    },
+    {
+      "key": "ftue_grace_retry",
+      "value": "Las piedras se movieron: otra vez."
+    },
+    {
+      "key": "next_goal_near_best",
+      "value": "A {0} puntos de tu récord."
+    },
+    {
+      "key": "next_goal_achievement",
+      "value": "{0} más para {1}."
+    },
+    {
+      "key": "next_goal_sites_remaining",
+      "value": "Quedan {0} sitios por reclamar."
+    },
+    {
+      "key": "codex_sites_remaining",
+      "value": "Quedan {0} sitios."
+    },
+    {
+      "key": "daily_streak_count",
+      "value": "Racha de {0} días"
+    },
+    {
+      "key": "daily_streak_at_risk",
+      "value": "Racha de {0} días: en pie hasta la medianoche"
+    },
+    {
+      "key": "daily_streak_defend",
+      "value": "Racha de {0} días · termina en {1}"
+    },
+    {
+      "key": "notif_channel_name",
+      "value": "Recordatorios del ritual"
+    },
+    {
+      "key": "notif_channel_description",
+      "value": "Ritual diario y recordatorios de regreso"
+    },
+    {
+      "key": "notif_daily_title",
+      "value": "El Ritual del Sol te espera"
+    },
+    {
+      "key": "notif_daily_body",
+      "value": "El ritual de hoy está listo. Una partida, un modificador."
+    },
+    {
+      "key": "notif_daily_body_streak",
+      "value": "Tu racha de {0} días termina a medianoche."
+    },
+    {
+      "key": "notif_lapse_title",
+      "value": "El templo quedó en silencio"
+    },
+    {
+      "key": "notif_lapse_body",
+      "value": "Tus piedras siguen donde las dejaste."
+    },
+    {
+      "key": "notif_lapse_body_site",
+      "value": "{0} sigue sin terminar."
     }
   ]
 }

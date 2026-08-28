@@ -58,7 +58,7 @@
     },
     {
       "key": "kukulkan_shift",
-      "value": "库库尔坎之移"
+      "value": "库库尔坎之变"
     },
     {
       "key": "leaderboard_not_available",
@@ -198,7 +198,7 @@
     },
     {
       "key": "daily_challenge_subtitle",
-      "value": "一局游戏，一个修正。今天对所有人都一样。"
+      "value": "一局游戏，一个变数。今天对所有人都一样。"
     },
     {
       "key": "daily_blocks_remaining",
@@ -206,7 +206,7 @@
     },
     {
       "key": "daily_result_modifier",
-      "value": "今日修正：{0}"
+      "value": "今日变数：{0}"
     },
     {
       "key": "daily_result_rank",
@@ -298,55 +298,143 @@
     },
     {
       "key": "daily_month_1",
-      "value": "一月"
+      "value": "1月"
     },
     {
       "key": "daily_month_2",
-      "value": "二月"
+      "value": "2月"
     },
     {
       "key": "daily_month_3",
-      "value": "三月"
+      "value": "3月"
     },
     {
       "key": "daily_month_4",
-      "value": "四月"
+      "value": "4月"
     },
     {
       "key": "daily_month_5",
-      "value": "五月"
+      "value": "5月"
     },
     {
       "key": "daily_month_6",
-      "value": "六月"
+      "value": "6月"
     },
     {
       "key": "daily_month_7",
-      "value": "七月"
+      "value": "7月"
     },
     {
       "key": "daily_month_8",
-      "value": "八月"
+      "value": "8月"
     },
     {
       "key": "daily_month_9",
-      "value": "九月"
+      "value": "9月"
     },
     {
       "key": "daily_month_10",
-      "value": "十月"
+      "value": "10月"
     },
     {
       "key": "daily_month_11",
-      "value": "十一月"
+      "value": "11月"
     },
     {
       "key": "daily_month_12",
-      "value": "十二月"
+      "value": "12月"
     },
     {
       "key": "settings_saved",
       "value": "设置已保存！"
+    },
+    {
+      "key": "ftue_beat_tap",
+      "value": "点击任意位置放下石块"
+    },
+    {
+      "key": "ftue_beat_perfect",
+      "value": "完美。石块越居中，得分越高。"
+    },
+    {
+      "key": "ftue_beat_good",
+      "value": "不错。足以保持连击。"
+    },
+    {
+      "key": "ftue_beat_poor",
+      "value": "太随意了。只有歪斜的石块会中断连击。"
+    },
+    {
+      "key": "ftue_beat_kukulkan",
+      "value": "连续{0}次完美落石，将唤醒库库尔坎扶正神庙。"
+    },
+    {
+      "key": "ftue_skip",
+      "value": "跳过"
+    },
+    {
+      "key": "ftue_grace_retry",
+      "value": "石块移位了——再来一次。"
+    },
+    {
+      "key": "next_goal_near_best",
+      "value": "距离你的最好成绩还差{0}分。"
+    },
+    {
+      "key": "next_goal_achievement",
+      "value": "再{0}次即可达成{1}。"
+    },
+    {
+      "key": "next_goal_sites_remaining",
+      "value": "还有{0}处遗迹等待征服。"
+    },
+    {
+      "key": "codex_sites_remaining",
+      "value": "还剩{0}处遗迹。"
+    },
+    {
+      "key": "daily_streak_count",
+      "value": "连续{0}天"
+    },
+    {
+      "key": "daily_streak_at_risk",
+      "value": "连续{0}天——午夜前仍然有效"
+    },
+    {
+      "key": "daily_streak_defend",
+      "value": "连续{0}天 · {1}后结束"
+    },
+    {
+      "key": "notif_channel_name",
+      "value": "仪式提醒"
+    },
+    {
+      "key": "notif_channel_description",
+      "value": "每日仪式与回归提醒"
+    },
+    {
+      "key": "notif_daily_title",
+      "value": "太阳仪式正在等待"
+    },
+    {
+      "key": "notif_daily_body",
+      "value": "今日仪式已就绪。一次挑战，一个修正。"
+    },
+    {
+      "key": "notif_daily_body_streak",
+      "value": "你连续{0}天的记录将在午夜结束。"
+    },
+    {
+      "key": "notif_lapse_title",
+      "value": "神庙归于沉寂"
+    },
+    {
+      "key": "notif_lapse_body",
+      "value": "你的石块还在原处。"
+    },
+    {
+      "key": "notif_lapse_body_site",
+      "value": "{0}尚未完成。"
     }
   ]
 }

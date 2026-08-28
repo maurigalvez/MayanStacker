@@ -280,6 +280,18 @@ public class AdManager : MonoBehaviour
     /// </summary>
     private void ShowInterstitialAd()
     {
+        // FTUE grace period. A new player has no reason to tolerate a full-screen ad
+        // before the game has shown them anything worth staying for, so interstitials
+        // wait until they've finished a temple, played a few runs, and come back.
+        if (!FtueState.AdsAllowed)
+        {
+            string reason = FtueState.AdSuppressionReason;
+            Debug.Log($"[AdManager] 🛡️ Ad suppressed by FTUE grace period (reason: {reason}, " +
+                      $"runs: {FtueState.LifetimeRuns}, session: {FtueState.SessionNumber})");
+            GameAnalytics.AdSuppressed(reason, FtueState.LifetimeRuns);
+            return;
+        }
+
         if (!isAdLoaded || interstitialAd == null)
         {
             Debug.LogWarning("[AdManager] ⚠️ Cannot show ad - Ad not loaded yet!");
@@ -294,6 +306,7 @@ public class AdManager : MonoBehaviour
         }
 
         Debug.Log("[AdManager] 🎬 Showing interstitial ad now!");
+        GameAnalytics.AdShown("interstitial_game_over", FtueState.LifetimeRuns);
         interstitialAd.Show();
     }
 

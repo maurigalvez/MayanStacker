@@ -320,8 +320,10 @@ public class SettingsManager : MonoBehaviour
 
     // Language Settings
 
-    private static readonly string[] LocaleCodes = { "en", "es-419", "zh-Hans", "zh-Hant", "pt-BR", "ja" };
-    private static readonly string[] LanguageNames = { "English", "Espa\u00f1ol (Latinoam\u00e9rica)", "\u7b80\u4f53\u4e2d\u6587", "\u7e41\u9ad4\u4e2d\u6587", "Portugu\u00eas (Brasil)", "\u65e5\u672c\u8a9e" };
+    // Public so the first-launch language picker (LanguageSelectScreen) offers exactly the
+    // same list in the same order - one source of truth for what the game ships.
+    public static readonly string[] LocaleCodes = { "en", "es-419", "zh-Hans", "zh-Hant", "pt-BR", "ja" };
+    public static readonly string[] LanguageNames = { "English", "Espa\u00f1ol (Latinoam\u00e9rica)", "\u7b80\u4f53\u4e2d\u6587", "\u7e41\u9ad4\u4e2d\u6587", "Portugu\u00eas (Brasil)", "\u65e5\u672c\u8a9e" };
 
     private void InitializeLanguageDropdown()
     {

@@ -64,6 +64,7 @@ public class GameManager : MonoBehaviour
     public System.Action<int, float> OnComboChanged; // combo count, multiplier
     public System.Action OnPerfectHitStreak; // Triggered when required perfect hits are achieved
     public System.Action<int> OnConsecutivePerfectHitsChanged; // Triggered when consecutive perfect hits count changes (current count)
+    public System.Action OnFtueGraceRetry; // Triggered when the FTUE forgives a first topple instead of ending the run
 
     // Properties
     public GameMode CurrentGameMode => currentGameMode;
@@ -175,6 +176,9 @@ public class GameManager : MonoBehaviour
             if (dailyMgr != null) dailyMgr.ResetRunCounter();
         }
 
+        FtueState.RegisterRunStarted();
+        GameAnalytics.RunStart(currentGameMode, currentLevelNumber, FtueState.LifetimeRuns);
+
         OnGameStart?.Invoke();
         OnScoreChanged?.Invoke(currentScore);
         OnComboChanged?.Invoke(currentCombo, GetComboMultiplier());
@@ -231,7 +235,7 @@ public class GameManager : MonoBehaviour
                 }
 
                 Debug.Log($"[DailyChallenge] Run complete: {dailyMgr.BlocksPlaced}/{dailyMgr.BlockCountTarget} blocks, final score: {currentScore}");
-                GameOver();
+                GameOver("daily_target");
             }
         }
 
@@ -439,9 +443,17 @@ public class GameManager : MonoBehaviour
         OnComboChanged?.Invoke(currentCombo, GetComboMultiplier());
     }
 
-    public void GameOver()
+    /// <summary>
+    /// Ends the run. <paramref name="cause"/> is a short analytics slug describing what
+    /// ended it — "topple", "fell_off", "fragile", "daily_target".
+    /// </summary>
+    public void GameOver(string cause = "topple")
     {
         if (isGameOver) return;
+
+        // A brand-new player's first collapse is forgiven once, so nobody's first
+        // impression of the game is an unexplained loss.
+        if (TryConsumeFtueGraceRetry(cause)) return;
 
         isGameActive = false;
         isGameOver = true;
@@ -461,7 +473,35 @@ public class GameManager : MonoBehaviour
             SubmitDailyChallengeScore();
         }
 
+        var stackManager = DependencyRegistry.Find<StackManager>();
+        int blocks = stackManager != null ? stackManager.GetStackCount() : 0;
+        GameAnalytics.RunEnd(currentGameMode, currentLevelNumber, blocks, currentScore, cause);
+
         OnGameOver?.Invoke();
+    }
+
+    /// <summary>
+    /// During the FTUE, the first topple restarts the run instead of ending it. Scoped
+    /// tightly: level mode only, once ever, and never for a Daily target completion.
+    /// </summary>
+    private bool TryConsumeFtueGraceRetry(string cause)
+    {
+        if (currentGameMode != GameMode.StackerLevels) return false;
+        if (cause == "daily_target") return false;
+        if (!FtueState.GraceRetryAvailable) return false;
+
+        FtueState.ConsumeGraceRetry();
+        GameAnalytics.Track("ftue_grace_retry", new System.Collections.Generic.Dictionary<string, object>
+        {
+            { "cause", cause },
+            { "score", currentScore }
+        });
+
+        Debug.Log("[FTUE] First collapse forgiven - restarting instead of ending the run.");
+
+        OnFtueGraceRetry?.Invoke();
+        RestartGame();
+        return true;
     }
 
     public void RestartGame()

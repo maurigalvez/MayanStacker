@@ -347,6 +347,94 @@
     {
       "key": "settings_saved",
       "value": "Settings Saved!"
+    },
+    {
+      "key": "ftue_beat_tap",
+      "value": "Tap anywhere to drop the stone"
+    },
+    {
+      "key": "ftue_beat_perfect",
+      "value": "Perfect. Centred stones are worth the most."
+    },
+    {
+      "key": "ftue_beat_good",
+      "value": "Good. Close enough to hold your streak."
+    },
+    {
+      "key": "ftue_beat_poor",
+      "value": "Careless. Only a sloppy stone breaks the streak."
+    },
+    {
+      "key": "ftue_beat_kukulkan",
+      "value": "{0} perfect stones in a row summon Kukulkan to straighten the temple."
+    },
+    {
+      "key": "ftue_skip",
+      "value": "Skip"
+    },
+    {
+      "key": "ftue_grace_retry",
+      "value": "The stones shifted — again."
+    },
+    {
+      "key": "next_goal_near_best",
+      "value": "{0} points from your best."
+    },
+    {
+      "key": "next_goal_achievement",
+      "value": "{0} more for {1}."
+    },
+    {
+      "key": "next_goal_sites_remaining",
+      "value": "{0} sites still unclaimed."
+    },
+    {
+      "key": "codex_sites_remaining",
+      "value": "{0} sites remain."
+    },
+    {
+      "key": "daily_streak_count",
+      "value": "{0}-day streak"
+    },
+    {
+      "key": "daily_streak_at_risk",
+      "value": "{0}-day streak — standing until midnight"
+    },
+    {
+      "key": "daily_streak_defend",
+      "value": "{0}-day streak · ends in {1}"
+    },
+    {
+      "key": "notif_channel_name",
+      "value": "Ritual Reminders"
+    },
+    {
+      "key": "notif_channel_description",
+      "value": "Daily ritual and returning reminders"
+    },
+    {
+      "key": "notif_daily_title",
+      "value": "The Ritual of The Sun awaits"
+    },
+    {
+      "key": "notif_daily_body",
+      "value": "Today's ritual is ready. One run, one modifier."
+    },
+    {
+      "key": "notif_daily_body_streak",
+      "value": "Your {0}-day streak ends at midnight."
+    },
+    {
+      "key": "notif_lapse_title",
+      "value": "The temple has gone quiet"
+    },
+    {
+      "key": "notif_lapse_body",
+      "value": "Your stones are where you left them."
+    },
+    {
+      "key": "notif_lapse_body_site",
+      "value": "{0} is still unfinished."
     }
   ]
 }

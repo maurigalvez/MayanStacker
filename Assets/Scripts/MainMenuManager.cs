@@ -175,6 +175,48 @@ public class MainMenuManager : MonoBehaviour
 
         // Perform app startup integrity check
         PerformStartupIntegrityCheck();
+
+        // A brand-new player shouldn't have to choose between three modes they can't yet
+        // tell apart. Skip the menu entirely and put them in the first temple; the menu
+        // earns its complexity on the second launch.
+        TryRouteFirstLaunchIntoFirstTemple();
+    }
+
+    /// <summary>
+    /// On the very first launch, load straight into the first temple. Deliberately narrow:
+    /// only fires when nothing at all has happened yet, so a returning player who reinstalls
+    /// mid-progress or whose cloud save arrives later is never yanked out of the menu.
+    /// </summary>
+    private void TryRouteFirstLaunchIntoFirstTemple()
+    {
+        if (!FtueState.IsFirstLaunch) return;
+        if (!FtueState.NeedsTutorial) return;
+        if (FtueState.HasCompletedFirstTemple) return;
+
+        // No levels configured (or a broken build) — leave the player in the menu.
+        if (levelManager == null || levelManager.TotalLevels == 0) return;
+
+        // Language comes first. Everything after this point - the tutorial beats, the
+        // level name, the codex - assumes the player can read it, and device detection
+        // only maps the six locales we ship. Anyone else was defaulted to English.
+        if (!FtueState.HasChosenLanguage)
+        {
+            LanguageSelectScreen.Show(RouteIntoFirstTemple, isFirstLaunch: true);
+            return;
+        }
+
+        RouteIntoFirstTemple();
+    }
+
+    private void RouteIntoFirstTemple()
+    {
+        FtueState.MarkLanguageChosen();
+
+        Debug.Log("[FTUE] First launch - routing straight into the first temple.");
+        GameAnalytics.Track("ftue_first_launch_routed");
+
+        currentSelectedLevelIndex = 0;
+        SceneLoader.LoadGameScene(gameSceneName, GameMode.StackerLevels, 0);
     }
 
     /// <summary>
@@ -190,24 +232,15 @@ public class MainMenuManager : MonoBehaviour
             {
                 Debug.Log("[MainMenuManager] Performing app startup integrity check...");
 
-                // Optionally show sync panel during check
-                if (syncPanel != null && syncStatusText != null)
-                {
-                    syncPanel.SetActive(true);
-                    syncStatusText.text = LocalizationManager.Get("sync_verifying");
-                }
+                // The check runs silently. A fraud-prevention message is the worst possible
+                // first thing for a new player to read, and it tells an existing player
+                // nothing they can act on — so the panel is reserved for hard failures.
 
                 integrityManager.PerformStartupCheck((result) =>
                 {
                     if (result.Success)
                     {
                         Debug.Log("[MainMenuManager] App startup integrity check passed.");
-
-                        // Hide sync panel after short delay
-                        if (syncPanel != null)
-                        {
-                            StartCoroutine(HideSyncPanelAfterDelay(syncCompleteDisplayDuration));
-                        }
                     }
                     else
                     {
@@ -225,18 +258,6 @@ public class MainMenuManager : MonoBehaviour
             {
                 Debug.Log("[MainMenuManager] Startup integrity check already performed this session.");
             }
-        }
-    }
-
-    /// <summary>
-    /// Coroutine to hide sync panel after a delay
-    /// </summary>
-    private IEnumerator HideSyncPanelAfterDelay(float delay)
-    {
-        yield return new WaitForSeconds(delay);
-        if (syncPanel != null)
-        {
-            syncPanel.SetActive(false);
         }
     }
 
@@ -852,10 +873,29 @@ public class MainMenuManager : MonoBehaviour
 
         if (dailyChallengeButtonSubtitle != null)
         {
-            dailyChallengeButtonSubtitle.text = DailyChallengeManager.HasPlayedToday()
-                ? LocalizationManager.Get("daily_played_today", clock)
-                : LocalizationManager.Get("daily_challenge_subtitle");
+            dailyChallengeButtonSubtitle.text = BuildDailySubtitle(clock);
         }
+    }
+
+    /// <summary>
+    /// The Daily is a returning-player hook, so it stays quiet until the player has actually
+    /// returned — a first-session player gets the plain tagline and nothing to weigh up.
+    /// After that, a live streak outranks the countdown, because the streak is the thing
+    /// they stand to lose.
+    /// </summary>
+    private string BuildDailySubtitle(string clock)
+    {
+        if (DailyChallengeManager.HasPlayedToday())
+        {
+            return LocalizationManager.Get("daily_played_today", clock);
+        }
+
+        if (FtueState.ShouldPromoteReturningPlayerFeatures && DailyStreak.IsAtRisk)
+        {
+            return LocalizationManager.Get("daily_streak_defend", DailyStreak.Current, clock);
+        }
+
+        return LocalizationManager.Get("daily_challenge_subtitle");
     }
 
     private void ShowSettingsPanel()

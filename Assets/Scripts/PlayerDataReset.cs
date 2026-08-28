@@ -109,6 +109,13 @@ public class PlayerDataReset : MonoBehaviour
         PlayerPrefs.DeleteKey("InfiniteMode_InstructionsSeen");
         PlayerPrefs.DeleteKey("ReviewPromptShown");
 
+        // Onboarding, streak and reminder state — without this a reset player keeps their
+        // ad grace burned and never sees the tutorial again, which makes FTUE untestable.
+        FtueState.ResetAll();
+        DailyStreak.ResetAll();
+        NotificationScheduler.CancelAll();
+        GameAnalytics.ClearPending();
+
         PlayerPrefs.Save();
         Debug.Log("[PlayerDataReset] All player data has been deleted!");
 

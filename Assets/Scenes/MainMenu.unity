@@ -1171,7 +1171,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4690574841634264256, guid: 74a40cd5abedcda4b90ec0e20018ae0e, type: 3}
       propertyPath: gameVersion
-      value: 1.3.3
+      value: 1.3.5
       objectReference: {fileID: 0}
     - target: {fileID: 4784263120560895437, guid: 74a40cd5abedcda4b90ec0e20018ae0e, type: 3}
       propertyPath: m_AnchorMax.y

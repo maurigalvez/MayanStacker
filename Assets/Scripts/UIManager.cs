@@ -24,9 +24,15 @@ public class UIManager : MonoBehaviour
     [SerializeField] private TextMeshProUGUI dailyRankText;
     [Tooltip("Optional: shows a countdown to the next daily reset on the game-over panel.")]
     [SerializeField] private TextMeshProUGUI dailyResetCountdownText;
+    [Tooltip("Optional: shows the player's current Daily streak on the game-over panel.")]
+    [SerializeField] private TextMeshProUGUI dailyStreakText;
     [SerializeField] private TextMeshProUGUI newHighScoreText;
     [SerializeField] private Button restartButton;
     [SerializeField] private Button gameOverMainMenuButton;
+
+    [Header("Next Goal")]
+    [Tooltip("Optional: one line on the game-over panel naming the nearest thing worth coming back for. Hidden when nothing is close.")]
+    [SerializeField] private TextMeshProUGUI nextGoalText;
 
     [Header("Daily Challenge Briefing (pre-run)")]
     [Tooltip("Full-screen briefing panel shown before a Daily run starts. Gates play until 'Begin the Ritual' is tapped.")]
@@ -257,6 +263,7 @@ public class UIManager : MonoBehaviour
             gameManager.OnGameModeChanged += OnGameModeChanged;
             gameManager.OnComboChanged += UpdateComboDisplay;
             gameManager.OnConsecutivePerfectHitsChanged += UpdateKukulkanWrathMeter;
+            gameManager.OnFtueGraceRetry += OnFtueGraceRetry;
         }
 
         // Subscribe to stack events
@@ -594,6 +601,118 @@ public class UIManager : MonoBehaviour
 
         // Daily Challenge: populate the result-card extras (modifier name + leaderboard rank).
         UpdateDailyChallengeResultCard();
+
+        // Give the loss somewhere to go: name the nearest thing worth another run.
+        UpdateNextGoal();
+    }
+
+    /// <summary>
+    /// Shows the Daily streak on the result card. A broken ritual still shows the streak
+    /// the player is defending — that's precisely when knowing about it matters.
+    /// </summary>
+    private void UpdateDailyStreakDisplay(int streak, bool completed)
+    {
+        if (dailyStreakText == null) return;
+
+        if (streak <= 0)
+        {
+            dailyStreakText.gameObject.SetActive(false);
+            return;
+        }
+
+        dailyStreakText.gameObject.SetActive(true);
+        dailyStreakText.text = LocalizationManager.Get(
+            completed ? "daily_streak_count" : "daily_streak_at_risk", streak);
+        dailyStreakText.color = completed ? dailyCompleteColor : dailyBrokenColor;
+    }
+
+    /// <summary>
+    /// Writes a single line naming the closest reachable goal, so a game over ends on a
+    /// reason to retry rather than a dead end. Prefers a near-miss on the player's own best
+    /// (the most personal target available), then the nearest incomplete achievement, then
+    /// the sites left on the map. Hidden entirely when nothing is close enough to be honest.
+    /// </summary>
+    private void UpdateNextGoal()
+    {
+        if (nextGoalText == null) return;
+
+        string goal = BuildNextGoalLine();
+
+        nextGoalText.gameObject.SetActive(!string.IsNullOrEmpty(goal));
+        if (!string.IsNullOrEmpty(goal)) nextGoalText.text = goal;
+    }
+
+    private string BuildNextGoalLine()
+    {
+        if (gameManager == null) return null;
+
+        // 1. A near miss on their own best score is the most motivating target there is.
+        if (gameManager.CurrentGameMode == GameMode.InfiniteStacker)
+        {
+            int best = gameManager.HighScore;
+            int score = gameManager.CurrentScore;
+            int gap = best - score;
+            if (gap > 0 && best > 0 && gap <= Mathf.Max(50, best / 5))
+            {
+                return LocalizationManager.Get("next_goal_near_best", gap);
+            }
+        }
+
+        // 2. The nearest incomplete achievement.
+        string achievementGoal = BuildNearestAchievementGoal();
+        if (!string.IsNullOrEmpty(achievementGoal)) return achievementGoal;
+
+        // 3. Fall back to the map itself.
+        if (levelManager != null)
+        {
+            int remaining = levelManager.GetRemainingLevelCount();
+            if (remaining > 0 && remaining < levelManager.TotalLevels)
+            {
+                return LocalizationManager.Get("next_goal_sites_remaining", remaining);
+            }
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// Finds the incomplete incremental achievement the player is closest to finishing,
+    /// measured by how few steps remain rather than by percentage — "3 more" reads as
+    /// reachable in a way "82% complete" does not.
+    /// </summary>
+    private string BuildNearestAchievementGoal()
+    {
+        var achievementManager = DependencyRegistry.Find<TamalStacker.Achievements.AchievementManager>();
+        if (achievementManager == null || !achievementManager.IsInitialized) return null;
+
+        var all = achievementManager.GetAllAchievements();
+        if (all == null || all.Count == 0) return null;
+
+        TamalStacker.Achievements.AchievementDefinition closest = null;
+        int smallestGap = int.MaxValue;
+
+        foreach (var achievement in all)
+        {
+            if (achievement == null || achievement.hidden) continue;
+            if (achievement.targetValue <= 0) continue;
+            if (achievementManager.IsUnlocked(achievement.id)) continue;
+
+            int gap = achievement.targetValue - achievementManager.GetProgress(achievement.id);
+
+            // Untouched achievements aren't "close" — only surface something in progress.
+            if (gap <= 0 || gap >= achievement.targetValue) continue;
+
+            if (gap < smallestGap)
+            {
+                smallestGap = gap;
+                closest = achievement;
+            }
+        }
+
+        if (closest == null) return null;
+
+        string title = LocalizationManager.GetAchievementTitle(closest.id, closest.title);
+        return LocalizationManager.Get("next_goal_achievement", smallestGap, title);
     }
 
     /// <summary>
@@ -619,6 +738,10 @@ public class UIManager : MonoBehaviour
         if (dailyResetCountdownText != null)
         {
             dailyResetCountdownText.gameObject.SetActive(isDaily);
+        }
+        if (dailyStreakText != null)
+        {
+            dailyStreakText.gameObject.SetActive(isDaily);
         }
         if (!isDaily)
         {
@@ -671,6 +794,19 @@ public class UIManager : MonoBehaviour
         int score = gameManager != null ? gameManager.CurrentScore : 0;
         bool isNewBest = score > 0 && score > DailyChallengeManager.TodaysBestScore();
         DailyChallengeManager.RecordRunResult(score);
+
+        // The streak only advances on a finished ritual, not on any attempt — otherwise
+        // it measures showing up rather than doing the thing.
+        int streak = DailyStreak.Current;
+        if (completed)
+        {
+            streak = DailyStreak.RecordCompletedRun();
+            NotificationScheduler.RescheduleAll();
+        }
+        UpdateDailyStreakDisplay(streak, completed);
+
+        GameAnalytics.DailyRunComplete(completed, score, streak);
+
         if (isNewBest)
         {
             ShowDailyNewBest();
@@ -918,11 +1054,25 @@ public class UIManager : MonoBehaviour
     }
 
     /// <summary>
+    /// The FTUE forgave a first collapse. Say so in the temple's voice so the restart reads
+    /// as the game being generous rather than as a glitch.
+    /// </summary>
+    private void OnFtueGraceRetry()
+    {
+        ShowTutorialMessage(LocalizationManager.Get("ftue_grace_retry"));
+    }
+
+    /// <summary>
     /// Determines if instructions should be shown based on game mode and player experience
     /// </summary>
     private bool ShouldShowInstructions()
     {
         if (gameManager == null) return false;
+
+        // The FTUE tutorial owns the instruction label when it's running — it gates on the
+        // player's actions rather than a timer, so the old one-shot overlay must stay out
+        // of its way.
+        if (FtueState.NeedsTutorial) return false;
 
         // In Level Mode: Only show for level 1
         if (gameManager.CurrentGameMode == GameMode.StackerLevels)
@@ -958,6 +1108,36 @@ public class UIManager : MonoBehaviour
         if (instructionsText != null)
         {
             instructionsText.gameObject.SetActive(false);
+        }
+    }
+
+    /// <summary>
+    /// Drives the instruction label for the FTUE tutorial. Kept public so FtueTutorial can
+    /// own the copy and the timing without duplicating the label or its styling.
+    /// </summary>
+    public void ShowTutorialMessage(string message)
+    {
+        if (instructionsText == null) return;
+
+        instructionsText.gameObject.SetActive(true);
+        SetTextAnimated(instructionsText, message);
+    }
+
+    /// <summary>Hides the instruction label on the tutorial's behalf.</summary>
+    public void HideTutorialMessage()
+    {
+        HideInstructions();
+    }
+
+    /// <summary>The canvas the tutorial parents its Skip control to.</summary>
+    public Transform UIRoot
+    {
+        get
+        {
+            if (instructionsText != null) return instructionsText.transform.parent;
+            if (gameUI != null) return gameUI.transform;
+            var canvas = GetComponentInChildren<Canvas>();
+            return canvas != null ? canvas.transform : transform;
         }
     }
 
@@ -2070,6 +2250,10 @@ public class UIManager : MonoBehaviour
         {
             ShowCodexUnlockPopup(LocalizationManager.GetLevelName(levelManager.CurrentLevel));
 
+            // Ask for notification permission here and nowhere else: the player has just
+            // finished a temple, which is the only moment they have a reason to say yes.
+            NotificationScheduler.RequestPermissionIfEarned();
+
             // Mark codex as unlocked after showing popup
             levelManager.MarkCodexUnlockedForLevel(levelManager.CurrentLevel.levelNumber);
         }
@@ -2380,8 +2564,20 @@ public class UIManager : MonoBehaviour
     {
         if (codexUnlockPopup == null || codexUnlockText == null) return;
 
-        // Set the text
-        codexUnlockText.text = LocalizationManager.Get("codex_unlock_format", levelName);
+        // Set the text. The unlock only lands as a reward if the player can see how much
+        // map is still out there, so the count of remaining sites rides along with it.
+        string message = LocalizationManager.Get("codex_unlock_format", levelName);
+
+        if (levelManager != null)
+        {
+            int remaining = levelManager.GetRemainingLevelCount();
+            if (remaining > 0)
+            {
+                message += "\n" + LocalizationManager.Get("codex_sites_remaining", remaining);
+            }
+        }
+
+        codexUnlockText.text = message;
 
         // Play codex unlock sound
         if (gameSoundManager != null)
@@ -2569,11 +2765,23 @@ public class UIManager : MonoBehaviour
     /// <summary>
     /// Opens settings from pause menu (placeholder)
     /// </summary>
+    /// <summary>
+    /// Pause-menu Settings. This button was wired to a stub that only logged "not yet
+    /// implemented", which became a real problem once first launch started routing players
+    /// straight into a run: if they picked the wrong language on the way in, this was the
+    /// only control that looked like it could fix it, and it did nothing.
+    ///
+    /// It now opens the language picker. That is not a full settings panel — audio and the
+    /// rest still live in the main menu — but it makes the one setting a player can be
+    /// stuck without reachable from inside a run.
+    /// </summary>
     private void OpenSettings()
     {
-        Debug.Log("Opening Settings... (Not yet implemented)");
-        // TODO: Implement settings panel
-        // For now, you can add a settings panel later
+        if (LanguageSelectScreen.IsShowing) return;
+
+        // No continuation needed: LocalizedText components re-read themselves from
+        // LocalizationManager.OnLanguageChanged, so the pause menu relabels itself.
+        LanguageSelectScreen.Show(null, isFirstLaunch: false);
     }
 
     /// <summary>
@@ -2621,6 +2829,7 @@ public class UIManager : MonoBehaviour
             gameManager.OnGameModeChanged -= OnGameModeChanged;
             gameManager.OnComboChanged -= UpdateComboDisplay;
             gameManager.OnConsecutivePerfectHitsChanged -= UpdateKukulkanWrathMeter;
+            gameManager.OnFtueGraceRetry -= OnFtueGraceRetry;
         }
 
         if (stackManager != null)

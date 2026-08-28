@@ -215,6 +215,15 @@ public class LevelManager : MonoBehaviour, ILevelManager
         // Save progress
         SaveLevelProgress(levelNumber, earnedStars, finalScore);
 
+        // The first temple completed is the FTUE's exit condition — it gates the ad grace
+        // period and the returning-player surfaces.
+        if (earnedStars > 0)
+        {
+            FtueState.MarkFirstTempleCompleted();
+        }
+
+        GameAnalytics.LevelComplete(levelNumber, earnedStars, finalScore, isFirstCompletion);
+
         // Notify listeners with first completion flag
         OnLevelCompleted?.Invoke(earnedStars, finalScore, isFirstCompletion && codexNotShown && earnedStars > 0);
 
@@ -358,6 +367,26 @@ public class LevelManager : MonoBehaviour, ILevelManager
     /// <summary>
     /// Get the high score for a specific level
     /// </summary>
+    /// <summary>
+    /// How many distinct sites the player has completed (earned at least one star on).
+    /// Used to frame progress against the full map — "26 sites remain".
+    /// </summary>
+    public int GetCompletedLevelCount()
+    {
+        int completed = 0;
+        foreach (var kvp in levelStars)
+        {
+            if (kvp.Value > 0) completed++;
+        }
+        return completed;
+    }
+
+    /// <summary>Sites the player has yet to complete.</summary>
+    public int GetRemainingLevelCount()
+    {
+        return Mathf.Max(0, TotalLevels - GetCompletedLevelCount());
+    }
+
     public int GetLevelHighScore(int levelNumber)
     {
         return levelHighScores.ContainsKey(levelNumber) ? levelHighScores[levelNumber] : 0;
