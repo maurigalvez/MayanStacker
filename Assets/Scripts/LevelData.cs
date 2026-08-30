@@ -26,6 +26,17 @@ public class LevelData : ScriptableObject
     [Min(1)]
     public int requiredStackHeight = 10;
 
+    [Tooltip("Extra condition on top of the height requirement. Reach Height is the original behaviour.")]
+    public LevelObjective objective = LevelObjective.ReachHeight;
+
+    [Tooltip("Perfect Chain: how many consecutive perfect landings are needed.")]
+    [Min(2)]
+    public int requiredPerfectChain = 4;
+
+    [Tooltip("Swift Ascent: seconds allowed to reach the required height.")]
+    [Min(5f)]
+    public float timeLimitSeconds = 60f;
+
     [Header("Star Rating Thresholds")]
     [Tooltip("Score required for 1 star (minimum to pass)")]
     public int oneStarScore = 100;
@@ -47,6 +58,36 @@ public class LevelData : ScriptableObject
     [Header("Audio")]
     [Tooltip("Music track to play for this level (optional - uses default if not set)")]
     public AudioClip gameMusic;
+
+    /// <summary>
+    /// True when this level asks for anything beyond reaching the height, i.e. when the
+    /// objective is worth announcing to the player.
+    /// </summary>
+    public bool HasExtraObjective => objective != LevelObjective.ReachHeight;
+
+    /// <summary>
+    /// One localized line describing what this temple wants, ready to show to the player.
+    /// Returns the plain height requirement for an ordinary level.
+    /// </summary>
+    public string GetObjectiveDescription()
+    {
+        switch (objective)
+        {
+            case LevelObjective.FlawlessAscent:
+                return LocalizationManager.Get("objective_flawless_desc", requiredStackHeight);
+
+            case LevelObjective.PerfectChain:
+                return LocalizationManager.Get("objective_perfect_chain_desc", requiredPerfectChain);
+
+            case LevelObjective.SwiftAscent:
+                return LocalizationManager.Get("objective_swift_desc",
+                    requiredStackHeight, Mathf.RoundToInt(timeLimitSeconds));
+
+            case LevelObjective.ReachHeight:
+            default:
+                return LocalizationManager.Get("objective_reach_height_desc", requiredStackHeight);
+        }
+    }
 
     /// <summary>
     /// Calculate the number of stars earned based on score

@@ -64,6 +64,10 @@ public class StackableObject : MonoBehaviour
     private Vector3 originalPosition;
     private float landingAccuracy = 0f;
 
+    // What kind of block this is. Assigned by ObjectSpawner immediately after it
+    // instantiates the block; anything created another way stays an ordinary block.
+    private BlockVariant variant = BlockVariant.Standard;
+
     // Events
     public System.Action<StackableObject, float> OnObjectLanded;
 
@@ -253,16 +257,31 @@ public class StackableObject : MonoBehaviour
             gameManager.AddScoreWithCombo(baseScore, landingAccuracy);
         }
 
-        // Daily Challenge: Fragile Stack modifier ends the run on any sub-Good landing.
-        if (gameManager != null && gameManager.CurrentGameMode == GameMode.DailyChallenge && landingAccuracy < gameManager.FragileStackFailThreshold)
+        // An offering stone landed cleanly summons Kukulkan on the spot. Checked before the
+        // failure cases below purely for readability - a perfect landing can't also be poor.
+        if (gameManager != null && Variant.grantsKukulkanShiftOnPerfect
+            && landingAccuracy >= PerfectCutoff)
         {
-            var dailyMgr = DependencyRegistry.Find<DailyChallengeManager>();
-            if (dailyMgr != null && dailyMgr.IsActive
-                && dailyMgr.CurrentConfig.modifier == DailyChallengeModifier.FragileStack)
-            {
-                Debug.Log($"[DailyChallenge] FragileStack: misaligned landing ({landingAccuracy:F2}) ends the run.");
-                gameManager.GameOver("fragile");
-            }
+            Debug.Log("[BlockVariant] Offering accepted - Kukulkan stirs.");
+            gameManager.TriggerKukulkanShift();
+        }
+
+        // Some run modifiers (Fragile Stack, Double or Nothing) end the run outright on a
+        // badly misaligned landing. This used to be a Daily-only check; it now asks the
+        // run's rules, so the same behaviour is reusable by any mode.
+        if (gameManager != null && landingAccuracy < gameManager.FragileStackFailThreshold
+            && RunModifierService.EndsRunOnPoorLanding)
+        {
+            Debug.Log($"[RunModifier] {RunModifierService.Active}: misaligned landing ({landingAccuracy:F2}) ends the run.");
+            gameManager.GameOver("fragile");
+        }
+        // A cracked block shatters on a poor landing regardless of modifier — that risk is
+        // the whole reason the player was offered the block.
+        else if (gameManager != null && Variant.shattersOnPoorLanding
+                 && landingAccuracy < gameManager.FragileStackFailThreshold)
+        {
+            Debug.Log($"[BlockVariant] Cracked stone shattered on a {landingAccuracy:F2} landing.");
+            gameManager.GameOver("shattered");
         }
 
         // Unlock rotation after a short delay - allows block to settle before it can tilt/fall
@@ -317,14 +336,52 @@ public class StackableObject : MonoBehaviour
         landingAccuracy = Mathf.Clamp01(1f - (centerDistance / maxDistance));
     }
 
+    /// <summary>
+    /// Base points for this landing, before the combo and any run-wide multipliers.
+    ///
+    /// Tier cutoffs come from GameManager so a run modifier that narrows the Perfect
+    /// window changes what a block is worth as well as what the combo meter does. The
+    /// variant's own multiplier is applied last — that's what makes a jade sliver worth
+    /// taking a risk on.
+    /// </summary>
     private int CalculateScore()
     {
-        if (landingAccuracy >= 0.9f)
-            return perfectScore;
-        else if (landingAccuracy >= 0.6f)
-            return goodScore;
+        int baseScore;
+        if (landingAccuracy >= PerfectCutoff)
+            baseScore = perfectScore;
+        else if (landingAccuracy >= GoodCutoff)
+            baseScore = goodScore;
         else
-            return poorScore;
+            baseScore = poorScore;
+
+        return Mathf.RoundToInt(baseScore * Variant.scoreMultiplier);
+    }
+
+    /// <summary>
+    /// Accuracy needed for a Perfect landing this run. Falls back to the baseline when no
+    /// GameManager is around (e.g. a block instantiated by a test scene).
+    /// </summary>
+    private float PerfectCutoff
+    {
+        get
+        {
+            var gameManager = DependencyRegistry.Find<GameManager>();
+            return gameManager != null
+                ? gameManager.PerfectThreshold
+                : RunModifierDefinition.BaselinePerfectThreshold;
+        }
+    }
+
+    /// <summary>Accuracy needed for a Good landing this run.</summary>
+    private float GoodCutoff
+    {
+        get
+        {
+            var gameManager = DependencyRegistry.Find<GameManager>();
+            return gameManager != null
+                ? gameManager.GoodThreshold
+                : RunModifierDefinition.BaselineGoodThreshold;
+        }
     }
 
     private void UpdateVisualFeedback()
@@ -333,9 +390,9 @@ public class StackableObject : MonoBehaviour
 
         // Pick a tier flash tint, then flash briefly and return to the block's real color.
         Color flash;
-        if (landingAccuracy >= 0.9f)
+        if (landingAccuracy >= PerfectCutoff)
             flash = perfectFlashColor;
-        else if (landingAccuracy >= 0.6f)
+        else if (landingAccuracy >= GoodCutoff)
             flash = goodFlashColor;
         else
             flash = poorFlashColor;
@@ -562,4 +619,39 @@ public class StackableObject : MonoBehaviour
     public float LandingAccuracy => landingAccuracy;
     public Collider2D Collider => col;
     public SpriteRenderer SpriteRenderer => spriteRenderer;
+
+    /// <summary>What kind of block this is. Never null — an unassigned block reads as standard.</summary>
+    public BlockVariant Variant => variant ?? BlockVariant.Standard;
+
+    /// <summary>
+    /// Stamps this block as a particular variant and applies its physical deviations.
+    ///
+    /// Called by the spawner after instantiation, so it deliberately re-applies mass and
+    /// friction on top of whatever Awake already set from the prefab, rather than trying
+    /// to pre-empt it. Width is handled by the spawner because it also owns the collider
+    /// and sprite scaling maths.
+    /// </summary>
+    public void ApplyVariant(BlockVariant newVariant)
+    {
+        variant = newVariant ?? BlockVariant.Standard;
+        if (!variant.IsSpecial) return;
+
+        if (rb != null)
+        {
+            rb.mass = mass * variant.massMultiplier;
+        }
+
+        // The physics material is created per-block in Awake, so editing it here can't
+        // leak onto other blocks sharing a shared asset.
+        if (col != null && col.sharedMaterial != null
+            && !Mathf.Approximately(variant.frictionMultiplier, 1f))
+        {
+            var material = new PhysicsMaterial2D("StackableMaterial")
+            {
+                bounciness = bounciness,
+                friction = friction * variant.frictionMultiplier
+            };
+            col.sharedMaterial = material;
+        }
+    }
 }

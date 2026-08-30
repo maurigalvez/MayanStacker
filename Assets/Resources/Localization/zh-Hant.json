@@ -435,6 +435,170 @@
     {
       "key": "notif_lapse_body_site",
       "value": "{0}尚未完成。"
+    },
+    {
+      "key": "daily_modifier_perfectionist",
+      "value": "完美主義"
+    },
+    {
+      "key": "daily_modifier_perfectionist_desc",
+      "value": "只有完美落點才能延續連擊。良好已經不夠了。"
+    },
+    {
+      "key": "daily_modifier_narrowwindow",
+      "value": "窄窗"
+    },
+    {
+      "key": "daily_modifier_narrowwindow_desc",
+      "value": "完美判定範圍收窄，精準的價值大幅提升。"
+    },
+    {
+      "key": "daily_modifier_doubleornothing",
+      "value": "加倍或全無"
+    },
+    {
+      "key": "daily_modifier_doubleornothing_desc",
+      "value": "所有得分翻倍。一次糟糕的落點即終止儀式。"
+    },
+    {
+      "key": "block_jade_sliver",
+      "value": "翡翠薄石"
+    },
+    {
+      "key": "block_heavy_stone",
+      "value": "沉重巨石"
+    },
+    {
+      "key": "block_cracked_stone",
+      "value": "裂紋石"
+    },
+    {
+      "key": "block_offering_stone",
+      "value": "祭品石"
+    },
+    {
+      "key": "block_jade_sliver_desc",
+      "value": "窄小，但得分三倍。手穩就試試。"
+    },
+    {
+      "key": "block_heavy_stone_desc",
+      "value": "又寬又重，得分減半。能穩住搖晃的塔。"
+    },
+    {
+      "key": "block_cracked_stone_desc",
+      "value": "雙倍得分，但落點馬虎就會碎裂，攀登到此為止。"
+    },
+    {
+      "key": "block_offering_stone_desc",
+      "value": "完美落下，庫庫爾坎立刻甦醒。"
+    },
+    {
+      "key": "band_foundation",
+      "value": "地基"
+    },
+    {
+      "key": "band_canopy",
+      "value": "樹冠"
+    },
+    {
+      "key": "band_dusk",
+      "value": "神廟黃昏"
+    },
+    {
+      "key": "band_night",
+      "value": "繁星之夜"
+    },
+    {
+      "key": "band_serpent",
+      "value": "羽蛇的高度"
+    },
+    {
+      "key": "boon_title",
+      "value": "庫庫爾坦的饋贈"
+    },
+    {
+      "key": "boon_subtitle",
+      "value": "選擇一項祝福。"
+    },
+    {
+      "key": "boon_serpents_favor",
+      "value": "羽蛇之佑"
+    },
+    {
+      "key": "boon_serpents_favor_desc",
+      "value": "接下來 5 塊石頭得分翻倍。"
+    },
+    {
+      "key": "boon_wide_foundation",
+      "value": "寬闊地基"
+    },
+    {
+      "key": "boon_wide_foundation_desc",
+      "value": "接下來 3 塊石頭會更寬。"
+    },
+    {
+      "key": "boon_stone_mercy",
+      "value": "磐石之慈"
+    },
+    {
+      "key": "boon_stone_mercy_desc",
+      "value": "庫庫爾坦立刻扶正你的神廟。"
+    },
+    {
+      "key": "boon_jade_eye",
+      "value": "翡翠之眼"
+    },
+    {
+      "key": "boon_jade_eye_desc",
+      "value": "接下來 2 次連擊中斷將被赦免。"
+    },
+    {
+      "key": "boon_telegraph_soon",
+      "value": "庫庫爾坦將至 — 還有{0}塊"
+    },
+    {
+      "key": "boon_telegraph_next",
+      "value": "庫庫爾坦將至 — 下一塊石頭"
+    },
+    {
+      "key": "boon_intro_title",
+      "value": "庫庫爾坦的賥福"
+    },
+    {
+      "key": "boon_intro_body",
+      "value": "每疊起數塊石頭，庫庫爾坦便會暫停你的攀登，獻上三種賥福。擇其一：更寬的石塊、雙倍分數，或一座被扶正的神廟。"
+    },
+    {
+      "key": "boon_intro_note",
+      "value": "選擇時攀登會暫停，每次賥福前都會有預兆。"
+    },
+    {
+      "key": "boon_intro_continue",
+      "value": "我準備好了"
+    },
+    {
+      "key": "objective_reach_height_desc",
+      "value": "堆疊 {0} 塊石頭。"
+    },
+    {
+      "key": "objective_flawless_desc",
+      "value": "堆疊 {0} 塊石頭，且不出現糟糕落點。"
+    },
+    {
+      "key": "objective_perfect_chain_desc",
+      "value": "連續完成 {0} 次完美落點。"
+    },
+    {
+      "key": "objective_swift_desc",
+      "value": "在 {1} 秒內堆疊 {0} 塊石頭。"
+    },
+    {
+      "key": "objective_failed_flawless",
+      "value": "石頭歪了，攀升就此中斷。"
+    },
+    {
+      "key": "objective_failed_swift",
+      "value": "太陽沒有等你。"
     }
   ]
 }

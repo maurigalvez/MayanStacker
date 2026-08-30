@@ -55,7 +55,6 @@ public class DailyChallengeManager : MonoBehaviour
     private bool isActive;
     private int blocksPlaced;
     private bool runCompleted;
-    private float originalSwingSpeedBeforeApply = -1f;
     private float runStartTime;
 
     public bool IsActive => isActive;
@@ -164,8 +163,12 @@ public class DailyChallengeManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Apply the modifier's external side-effects (currently: SpawnerHolder swing speed for SpeedRun).
-    /// Combo Chain and Fragile Stack are gated inline by their owning systems via IsActive checks.
+    /// Applies today's modifier for the run.
+    ///
+    /// The rules themselves now live in <see cref="RunModifierService"/>, which every
+    /// gameplay system reads — the Daily is simply one of the things that can set them.
+    /// The swing multiplier tuned on this prefab is passed through so the Daily keeps
+    /// exactly the feel it had before.
     /// </summary>
     public void ApplyModifier(DailyChallengeConfig config)
     {
@@ -175,20 +178,9 @@ public class DailyChallengeManager : MonoBehaviour
         runCompleted = false;
         runStartTime = Time.time;
 
-        if (config.modifier == DailyChallengeModifier.SpeedRun)
-        {
-            var spawnerHolder = DependencyRegistry.Find<SpawnerHolder>();
-            if (spawnerHolder != null)
-            {
-                originalSwingSpeedBeforeApply = spawnerHolder.SwingSpeed;
-                spawnerHolder.SetSwingSpeed(originalSwingSpeedBeforeApply * speedRunSwingMultiplier);
-                Debug.Log($"[DailyChallenge] SpeedRun applied: swing speed {originalSwingSpeedBeforeApply} → {spawnerHolder.SwingSpeed}");
-            }
-            else
-            {
-                Debug.LogWarning("[DailyChallenge] SpeedRun: SpawnerHolder not found.");
-            }
-        }
+        RunModifierService.Apply(
+            RunModifierDefinition.FromDaily(config.modifier),
+            swingSpeedMultiplierOverride: speedRunSwingMultiplier);
     }
 
     /// <summary>
@@ -241,19 +233,11 @@ public class DailyChallengeManager : MonoBehaviour
     {
         if (!isActive) return;
 
-        if (cachedConfig.HasValue && cachedConfig.Value.modifier == DailyChallengeModifier.SpeedRun
-            && originalSwingSpeedBeforeApply > 0f)
-        {
-            var spawnerHolder = DependencyRegistry.Find<SpawnerHolder>();
-            if (spawnerHolder != null)
-            {
-                spawnerHolder.SetSwingSpeed(originalSwingSpeedBeforeApply);
-            }
-        }
+        // Clearing the modifier also undoes anything it pushed out, e.g. swing speed.
+        RunModifierService.Clear();
 
         isActive = false;
         blocksPlaced = 0;
-        originalSwingSpeedBeforeApply = -1f;
     }
 
     /// <summary>

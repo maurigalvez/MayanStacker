@@ -212,7 +212,10 @@ public static class DailyChallengeUISetup
     {
         GameObject go = FindOrCreate(parent, name, out _);
         var t = go.GetComponent<TextMeshProUGUI>() ?? Undo.AddComponent<TextMeshProUGUI>(go);
-        if (TMP_Settings.defaultFontAsset != null) t.font = TMP_Settings.defaultFontAsset;
+        // The game's own font. TMP's default is LiberationSans, which is how the labels this
+        // tool creates ended up looking like a different game than the panel around them.
+        if (RunOverlayUI.DisplayFont != null) t.font = RunOverlayUI.DisplayFont;
+        else if (TMP_Settings.defaultFontAsset != null) t.font = TMP_Settings.defaultFontAsset;
         t.text = sample;
         t.fontSize = fontSize;
         t.color = color;

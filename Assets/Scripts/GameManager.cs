@@ -80,6 +80,29 @@ public class GameManager : MonoBehaviour
     public int PerfectHitsRequired => perfectHitsRequired;
     public float FragileStackFailThreshold => fragileStackFailThreshold;
 
+    /// <summary>
+    /// Accuracy (0-1) at or above which a landing counts as Perfect this run.
+    /// Blocks read this so scoring tiers and the combo meter can never disagree.
+    /// </summary>
+    public float PerfectThreshold => RunModifierService.PerfectThreshold;
+
+    /// <summary>Accuracy (0-1) at or above which a landing counts as Good this run.</summary>
+    public float GoodThreshold => GetGoodThreshold();
+
+    /// <summary>
+    /// The Good cutoff. A modifier only overrides it when it actually moves the value;
+    /// otherwise the serialized <see cref="comboMinAccuracy"/> stays authoritative so the
+    /// number tuned on the prefab keeps winning for ordinary runs.
+    /// </summary>
+    private float GetGoodThreshold()
+    {
+        float modifierThreshold = RunModifierService.GoodThreshold;
+        bool isBaseline = Mathf.Approximately(
+            modifierThreshold, RunModifierDefinition.BaselineGoodThreshold);
+
+        return isBaseline ? comboMinAccuracy : modifierThreshold;
+    }
+
     private void Awake()
     {
         // Register with dependency registry
@@ -156,6 +179,22 @@ public class GameManager : MonoBehaviour
         OnConsecutivePerfectHitsChanged?.Invoke(consecutivePerfectHits); // Notify of reset
         highScoreSaved = false; // Reset save flag for new game session
 
+        // Boons are strictly run-scoped; clear them here as well as in BoonSystem so a
+        // stale boon can't survive into a new run if that system isn't present.
+        ActiveBoons.ResetRun();
+
+        // Same for run modifiers. The Daily is the only thing that applies one today, and
+        // it does so immediately before calling StartGame - so every other mode starting a
+        // run means any modifier still set is a leftover. DailyChallengeManager.EndSession
+        // exists to clean up but is currently never called by anything, and the service's
+        // state is static, so without this a Speed Run daily would follow the player into
+        // their next Infinite run.
+        if (currentGameMode != GameMode.DailyChallenge && RunModifierService.HasModifier)
+        {
+            Debug.Log($"[RunModifier] Clearing leftover '{RunModifierService.Active}' for a {currentGameMode} run.");
+            RunModifierService.Clear();
+        }
+
         // Perform Standard Integrity check at game session start
         var integrityManager = DependencyRegistry.Find<IntegrityManager>();
         if (integrityManager != null && integrityManager.IsIntegrityChecksEnabled)
@@ -198,10 +237,21 @@ public class GameManager : MonoBehaviour
         // Update combo based on accuracy
         UpdateCombo(accuracy);
 
-        // Calculate points - multiplier only applies for perfect hits
-        bool isPerfectHit = accuracy >= 0.9f;
+        // Calculate points - the combo multiplier only applies for perfect hits.
+        // The Perfect window itself can be tightened by a run modifier, so it's read from
+        // RunModifierService rather than hard-coded (baseline is the original 0.9).
+        bool isPerfectHit = accuracy >= RunModifierService.PerfectThreshold;
         float multiplier = isPerfectHit ? GetComboMultiplier() : 1f;
+
+        // Run-wide multipliers stack on top of the combo: the modifier's flat bonus, and
+        // whatever boon the player chose mid-run. Both are 1.0 when nothing is active.
+        multiplier *= RunModifierService.ScoreMultiplier * ActiveBoons.ScoreMultiplier;
+
         int finalPoints = Mathf.RoundToInt(basePoints * multiplier);
+
+        // Boons expire per scored block rather than on a timer, so putting the phone down
+        // mid-run never costs the player one.
+        ActiveBoons.RegisterBlockScored();
 
         currentScore += finalPoints;
         OnScoreChanged?.Invoke(currentScore);
@@ -267,13 +317,16 @@ public class GameManager : MonoBehaviour
     /// </summary>
     private void UpdateCombo(float accuracy)
     {
-        // Determine current accuracy level
+        // Determine current accuracy level.
+        // Thresholds come from the run's modifier so a tightened Perfect window is felt by
+        // the combo meter too, not just by scoring. With no modifier these are the
+        // original 0.9 / comboMinAccuracy values.
         AccuracyLevel currentAccuracyLevel;
-        if (accuracy >= 0.9f)
+        if (accuracy >= RunModifierService.PerfectThreshold)
         {
             currentAccuracyLevel = AccuracyLevel.Perfect;
         }
-        else if (accuracy >= comboMinAccuracy) // 0.6f by default
+        else if (accuracy >= GetGoodThreshold())
         {
             currentAccuracyLevel = AccuracyLevel.Good;
         }
@@ -339,7 +392,8 @@ public class GameManager : MonoBehaviour
 
             Debug.Log($"Combo grew! Level: {currentAccuracyLevel}, Combo: {currentCombo}, Multiplier: {GetComboMultiplier()}x");
         }
-        else if (currentAccuracyLevel == AccuracyLevel.Good && currentCombo > 0)
+        else if (currentAccuracyLevel == AccuracyLevel.Good && currentCombo > 0
+                 && RunModifierService.GoodHoldsCombo)
         {
             // Hold the current combo: keep the count, just refresh the decay timer.
             lastComboUpdateTime = Time.time;
@@ -350,6 +404,18 @@ public class GameManager : MonoBehaviour
         }
         else
         {
+            // A Jade Eye boon absorbs the break instead: the combo is held exactly as a
+            // Good landing would hold it, and one shield is spent.
+            if (currentCombo > 0 && ActiveBoons.TryConsumeComboShield())
+            {
+                lastComboUpdateTime = Time.time;
+                comboDecayActive = true;
+                lastAccuracyLevel = AccuracyLevel.Good;
+
+                OnComboChanged?.Invoke(currentCombo, GetComboMultiplier());
+                return;
+            }
+
             // Poor landing (or a Good with no active combo) - break/leave at zero.
             if (currentCombo > 0)
             {
@@ -411,16 +477,12 @@ public class GameManager : MonoBehaviour
     {
         if (currentCombo <= 1) return 1f;
 
-        // Daily Challenge: Combo Chain modifier replaces linear scaling with geometric, higher cap.
-        if (currentGameMode == GameMode.DailyChallenge)
+        // A modifier may replace linear scaling entirely (Combo Chain compounds instead).
+        // Returns -1 when this run uses the baseline progression computed below.
+        float modifierMultiplier = RunModifierService.GetComboMultiplierOverride(currentCombo);
+        if (modifierMultiplier >= 0f)
         {
-            var dailyMgr = DependencyRegistry.Find<DailyChallengeManager>();
-            if (dailyMgr != null && dailyMgr.IsActive
-                && dailyMgr.CurrentConfig.modifier == DailyChallengeModifier.ComboChain)
-            {
-                float chainMultiplier = Mathf.Pow(1.5f, currentCombo - 1);
-                return Mathf.Min(chainMultiplier, 10f);
-            }
+            return modifierMultiplier;
         }
 
         // Calculate multiplier: starts at 1x, increases by multiplierIncrement starting from 2nd landing
@@ -430,6 +492,23 @@ public class GameManager : MonoBehaviour
 
         // Cap at max multiplier
         return Mathf.Min(multiplier, maxComboMultiplier);
+    }
+
+    /// <summary>
+    /// Fires the Kukulkan shift immediately, without the player having earned the perfect
+    /// streak. Used by the offering block and by the Stone Mercy boon.
+    ///
+    /// Goes through the same event as the earned version, so the straighten, the slow-mo,
+    /// the gold flash and the audio sting all behave identically — the shift should never
+    /// look like a different thing depending on how it was triggered.
+    /// </summary>
+    public void TriggerKukulkanShift()
+    {
+        if (!isGameActive || isGameOver) return;
+
+        consecutivePerfectHits = 0;
+        OnConsecutivePerfectHitsChanged?.Invoke(consecutivePerfectHits);
+        OnPerfectHitStreak?.Invoke();
     }
 
     /// <summary>

@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using TMPro;
 using UnityEngine;
@@ -12,21 +13,38 @@ using UnityEngine.UI;
 ///   Beat 2 — names the accuracy tier they just earned and what it's worth.
 ///   Beat 3 — at their first 2-combo, teases the Kukulkan shift.
 ///
+/// Each line holds for as long as its own copy takes to read rather than for a flat couple
+/// of seconds, and a beat that arrives while the previous line is still being read waits its
+/// turn instead of cutting it off — a fast combo used to blow past two lines before either
+/// could be finished.
+///
 /// Self-bootstraps into any gameplay scene while FtueState says the tutorial is unresolved,
-/// so it needs zero scene wiring. It borrows UIManager's existing instruction label rather
-/// than building its own, and creates only the Skip control at runtime.
+/// so it needs zero scene wiring. Presentation comes from a prefab at
+/// Resources/UI/FtueTutorial (see <see cref="FtueTutorialView"/>), so the first screen a new
+/// player reads can be styled — font included — alongside the rest of the UI. Without that
+/// prefab it falls back to borrowing UIManager's instruction label and building the Skip
+/// control in code, so the tutorial still works with zero scene wiring.
 ///
 /// Skip appears from beat 2 onward — never during beat 1, because the single tap that
 /// teaches the core verb is the one thing nobody should be able to skip past.
 /// </summary>
 public class FtueTutorial : MonoBehaviour
 {
+    /// <summary>Authored prefab that replaces the code-built presentation when present.</summary>
+    public const string PrefabResourcePath = "UI/FtueTutorial";
+
     // How many landings to wait for a 2-combo before finishing anyway, so a player who
     // keeps landing Poor doesn't get stuck in a tutorial that never ends.
     private const int MaxLandingsAwaitingCombo = 5;
 
-    private const float BeatHoldSeconds = 2.2f;
-    private const float CompletionHoldSeconds = 2.0f;
+    // Beat lines hold for as long as their own copy needs to be read (see ReadingTime) —
+    // these are the floor for that, not the whole hold. A flat 2s was short enough to miss
+    // a line entirely on the run where it matters most.
+    private const float BeatMinimumSeconds = 3.6f;
+
+    // Nothing replaces a line that has been up for less than this, so a quick combo can't
+    // wipe the previous beat off the screen before it has been read.
+    private const float MinimumDwellSeconds = 2.5f;
 
     private static FtueTutorial instance;
 
@@ -40,6 +58,16 @@ public class FtueTutorial : MonoBehaviour
     private bool resolved;
     private bool droppedThisTutorial;
     private GameObject skipButton;
+    private FtueTutorialView view;
+
+    // Both pacing values are overridable on the prefab, so the timing can be felt out in the
+    // editor rather than recompiled.
+    private float BeatMinimum => view != null ? view.BeatMinimumSeconds : BeatMinimumSeconds;
+    private float MinimumDwell => view != null ? view.MinimumDwellSeconds : MinimumDwellSeconds;
+
+    private Coroutine sayRoutine;
+    private float messageShownAt;
+    private bool messageVisible;
 
     #region Bootstrap
 
@@ -60,7 +88,7 @@ public class FtueTutorial : MonoBehaviour
 
         // Gameplay scenes only. FindFirstObjectByType rather than DependencyRegistry.Find
         // avoids a spurious "not found" warning in the menu.
-        if (Object.FindFirstObjectByType<GameManager>() == null) return;
+        if (UnityEngine.Object.FindFirstObjectByType<GameManager>() == null) return;
 
         var go = new GameObject("FtueTutorial");
         instance = go.AddComponent<FtueTutorial>();
@@ -93,6 +121,8 @@ public class FtueTutorial : MonoBehaviour
             return;
         }
 
+        BuildView();
+
         if (stackManager != null) stackManager.OnObjectAddedToStack += OnBlockLanded;
         if (objectSpawner != null) objectSpawner.OnObjectDropped += OnBlockDropped;
 
@@ -121,7 +151,8 @@ public class FtueTutorial : MonoBehaviour
         FtueState.Tutorial = FtueState.TutorialState.InProgress;
         GameAnalytics.TutorialStep(1);
 
-        ShowMessage(LocalizationManager.Get("ftue_beat_tap"));
+        // No timer on this one: it stays up until the player actually taps.
+        SayUntilAction(LocalizationManager.Get("ftue_beat_tap"));
     }
 
     private void OnBlockDropped(GameObject droppedObject)
@@ -166,8 +197,7 @@ public class FtueTutorial : MonoBehaviour
                    : accuracy >= 0.6f ? "ftue_beat_good"
                    : "ftue_beat_poor";
 
-        ShowMessage(LocalizationManager.Get(key));
-        StartCoroutine(HideAfter(BeatHoldSeconds));
+        Say(LocalizationManager.Get(key));
     }
 
     private void OnComboChanged(int combo, float multiplier)
@@ -178,20 +208,8 @@ public class FtueTutorial : MonoBehaviour
         GameAnalytics.TutorialStep(3);
 
         int required = gameManager != null ? gameManager.PerfectHitsRequired : 4;
-        ShowMessage(LocalizationManager.Get("ftue_beat_kukulkan", required));
-        StartCoroutine(CompleteAfter(CompletionHoldSeconds));
-    }
-
-    private IEnumerator CompleteAfter(float seconds)
-    {
-        yield return new WaitForSeconds(seconds);
-        CompleteTutorial();
-    }
-
-    private IEnumerator HideAfter(float seconds)
-    {
-        yield return new WaitForSeconds(seconds);
-        if (!resolved) HideMessage();
+        // The tutorial ends when this last line has been read, not on a fixed timer.
+        Say(LocalizationManager.Get("ftue_beat_kukulkan", required), CompleteTutorial);
     }
 
     private void CompleteTutorial()
@@ -237,6 +255,13 @@ public class FtueTutorial : MonoBehaviour
     /// </summary>
     private void CreateSkipButton()
     {
+        // The authored prefab brings its own Skip control; just reveal it.
+        if (view != null && view.HasSkipButton)
+        {
+            view.SetSkipVisible(true);
+            return;
+        }
+
         if (skipButton != null || uiManager == null) return;
 
         Transform root = uiManager.UIRoot;
@@ -282,6 +307,8 @@ public class FtueTutorial : MonoBehaviour
 
     private void DestroySkipButton()
     {
+        if (view != null) view.SetSkipVisible(false);
+
         if (skipButton == null) return;
         Destroy(skipButton);
         skipButton = null;
@@ -291,13 +318,107 @@ public class FtueTutorial : MonoBehaviour
 
     #region Plumbing
 
-    private void ShowMessage(string message)
+    /// <summary>
+    /// Instantiates the authored prefab, if there is one. Anything it leaves unassigned
+    /// falls through to the code path, so a half-authored prefab is still usable.
+    /// </summary>
+    private void BuildView()
     {
+        var prefab = Resources.Load<GameObject>(PrefabResourcePath);
+        if (prefab == null) return;
+
+        // The prefab carries its own Canvas, so it renders correctly parented to this
+        // otherwise-empty host object, which owns its lifetime.
+        var viewObject = Instantiate(prefab, transform, false);
+        view = viewObject.GetComponent<FtueTutorialView>();
+        if (view == null)
+        {
+            Debug.LogWarning($"[FTUE] Resources/{PrefabResourcePath} has no FtueTutorialView " +
+                             "component - using the code-built presentation instead.");
+            Destroy(viewObject);
+            return;
+        }
+
+        view.SetSkipHandler(OnSkipPressed);
+    }
+
+    /// <summary>
+    /// Shows a line and leaves it there. Used for beat one, which is dismissed by the
+    /// player's tap rather than by a timer.
+    /// </summary>
+    private void SayUntilAction(string message)
+    {
+        CancelPendingMessage();
+        DisplayMessage(message);
+    }
+
+    /// <summary>
+    /// Shows a line for as long as it takes to read, then hides it and runs
+    /// <paramref name="onRead"/>. If the previous beat is still being read, this one waits
+    /// its turn rather than cutting it off mid-sentence.
+    /// </summary>
+    private void Say(string message, Action onRead = null)
+    {
+        CancelPendingMessage();
+        sayRoutine = StartCoroutine(SayRoutine(message, onRead));
+    }
+
+    private IEnumerator SayRoutine(string message, Action onRead)
+    {
+        float shownFor = Time.unscaledTime - messageShownAt;
+        if (messageVisible && shownFor < MinimumDwell)
+        {
+            yield return new WaitForSecondsRealtime(MinimumDwell - shownFor);
+        }
+
+        DisplayMessage(message);
+
+        // Realtime, so a hit-stop or a pause can't eat the read.
+        yield return new WaitForSecondsRealtime(ReadingTime.For(message, BeatMinimum));
+
+        // Cleared first: HideMessage cancels the pending line, and this coroutine is it.
+        sayRoutine = null;
+        if (resolved) yield break;
+
+        HideMessage();
+        onRead?.Invoke();
+    }
+
+    private void CancelPendingMessage()
+    {
+        if (sayRoutine == null) return;
+        StopCoroutine(sayRoutine);
+        sayRoutine = null;
+    }
+
+    private void DisplayMessage(string message)
+    {
+        messageVisible = true;
+        messageShownAt = Time.unscaledTime;
+
+        if (view != null && view.HasMessageLabel)
+        {
+            // The prefab is speaking now — silence UIManager's own instruction line so the
+            // first run doesn't show two overlapping messages.
+            if (uiManager != null) uiManager.HideTutorialMessage();
+            view.ShowMessage(message);
+            return;
+        }
+
         if (uiManager != null) uiManager.ShowTutorialMessage(message);
     }
 
     private void HideMessage()
     {
+        CancelPendingMessage();
+        messageVisible = false;
+
+        if (view != null && view.HasMessageLabel)
+        {
+            view.HideMessage();
+            return;
+        }
+
         if (uiManager != null) uiManager.HideTutorialMessage();
     }
 

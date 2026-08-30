@@ -77,6 +77,12 @@ public static class LocaleFontSetup
         set.simplifiedChinese  = EnsureAssetFor(best, Region.Simplified);
         set.traditionalChinese = EnsureAssetFor(best, Region.Traditional);
         set.japanese           = EnsureAssetFor(best, Region.Japanese);
+
+        // UI built in code has no prefab to carry a design-time font, so it needs to be told
+        // which Latin font the game uses. Found once and then left alone, so a deliberate
+        // choice is never overwritten by a re-run.
+        if (set.latinDisplay == null) set.latinDisplay = FindLatinDisplayFont();
+
         EditorUtility.SetDirty(set);
 
         AssetDatabase.SaveAssets();
@@ -86,7 +92,8 @@ public static class LocaleFontSetup
             "LocaleFontSet updated:\n\n" +
             "  Simplified (zh-Hans):  " + Name(set.simplifiedChinese) + "\n" +
             "  Traditional (zh-Hant): " + Name(set.traditionalChinese) + "\n" +
-            "  Japanese (ja):         " + Name(set.japanese) + "\n\n";
+            "  Japanese (ja):         " + Name(set.japanese) + "\n" +
+            "  Latin display:         " + Name(set.latinDisplay) + "\n\n";
 
         var missing = new List<string>();
         if (set.simplifiedChinese == null)  missing.Add("Simplified (SC/CN)");
@@ -98,6 +105,30 @@ public static class LocaleFontSetup
 
         report += "Next: TamalStacker ▸ Localization ▸ Attach Font Switchers ▸ …";
         EditorUtility.DisplayDialog("Per-Language Fonts", report, "OK");
+    }
+
+    /// <summary>
+    /// Picks the game's stylized Latin font out of Assets/Art/Fonts — the SDF asset if there
+    /// is one, since that is what the UI is authored against. Skips the CJK folder, whose
+    /// assets are per-locale replacements rather than the base font.
+    /// </summary>
+    private static TMP_FontAsset FindLatinDisplayFont()
+    {
+        TMP_FontAsset fallback = null;
+
+        foreach (string guid in AssetDatabase.FindAssets("t:TMP_FontAsset", new[] { "Assets/Art/Fonts" }))
+        {
+            string path = AssetDatabase.GUIDToAssetPath(guid);
+            if (path.Contains("/CJK/")) continue;
+
+            var font = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>(path);
+            if (font == null) continue;
+
+            if (path.IndexOf("SDF", System.StringComparison.OrdinalIgnoreCase) >= 0) return font;
+            if (fallback == null) fallback = font;
+        }
+
+        return fallback;
     }
 
     private static TMP_FontAsset EnsureAssetFor(Dictionary<Region, (Font font, int rank)> best, Region region)

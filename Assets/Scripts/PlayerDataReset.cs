@@ -113,6 +113,11 @@ public class PlayerDataReset : MonoBehaviour
         // ad grace burned and never sees the tutorial again, which makes FTUE untestable.
         FtueState.ResetAll();
         DailyStreak.ResetAll();
+
+        // Forget which special blocks have introduced themselves, so the teaching banners
+        // can be tested again rather than only ever firing on a fresh install.
+        BlockCodex.ResetAll();
+
         NotificationScheduler.CancelAll();
         GameAnalytics.ClearPending();
 

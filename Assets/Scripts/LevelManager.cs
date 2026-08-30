@@ -28,6 +28,14 @@ public class LevelManager : MonoBehaviour, ILevelManager
     // Level state
     private bool isLevelComplete = false;
     private int earnedStars = 0;
+
+    // Objective tracking. Reset at the start of every attempt; only meaningful for levels
+    // whose objective is something other than ReachHeight.
+    private bool poorLandingThisAttempt = false;
+    private int currentPerfectChain = 0;
+    private int bestPerfectChain = 0;
+    private float attemptStartTime = -1f;
+    private bool objectiveFailed = false;
     private Dictionary<int, int> levelStars = new Dictionary<int, int>(); // levelNumber -> stars earned
     private Dictionary<int, int> levelHighScores = new Dictionary<int, int>(); // levelNumber -> high score
 
@@ -64,6 +72,7 @@ public class LevelManager : MonoBehaviour, ILevelManager
         {
             gameManager.OnGameOver += OnGameOver;
             gameManager.OnGameRestart += OnGameRestart;
+            gameManager.OnGameStart += OnGameStart;
         }
 
         // Subscribe to stack events
@@ -179,15 +188,160 @@ public class LevelManager : MonoBehaviour, ILevelManager
         var stackManager = DependencyRegistry.Find<StackManager>();
         if (stackManager == null) return;
 
+        TrackObjectiveProgress(stackableObject);
+
         int currentHeight = stackManager.GetStackCount();
 
         // Notify UI of height progress
         OnStackHeightUpdated?.Invoke(currentHeight);
 
-        // Check if we've reached the required height
-        if (CurrentLevel != null && currentHeight >= CurrentLevel.requiredStackHeight)
+        // Height is necessary for every objective, but for some it isn't sufficient.
+        // A Perfect Chain level the player reaches the top of without landing the chain
+        // simply keeps going, which is what lets them still earn it.
+        if (CurrentLevel != null && currentHeight >= CurrentLevel.requiredStackHeight
+            && IsObjectiveSatisfied())
         {
             CompleteLevelSuccessfully();
+        }
+    }
+
+    /// <summary>
+    /// Starts a fresh attempt's objective tracking. Hooked to game start rather than level
+    /// load so a retry re-arms the timer and clears the flawless flag.
+    /// </summary>
+    private void OnGameStart()
+    {
+        ResetObjectiveTracking();
+        AnnounceObjective();
+    }
+
+    private void ResetObjectiveTracking()
+    {
+        poorLandingThisAttempt = false;
+        currentPerfectChain = 0;
+        bestPerfectChain = 0;
+        objectiveFailed = false;
+        attemptStartTime = Time.time;
+    }
+
+    /// <summary>
+    /// Tells the player what this temple is asking for, via the shared run banner rather
+    /// than any authored HUD element. Ordinary reach-the-height levels stay silent — the
+    /// existing height readout already says everything.
+    /// </summary>
+    private void AnnounceObjective()
+    {
+        LevelData level = CurrentLevel;
+        if (level == null || !level.HasExtraObjective) return;
+
+        RunBanner.Show(level.GetObjectiveDescription(), RunOverlayUI.Gold, holdSeconds: 2.4f);
+    }
+
+    /// <summary>
+    /// Folds this landing into the objective's running state, and fails the attempt
+    /// immediately for objectives that can be broken outright.
+    /// </summary>
+    private void TrackObjectiveProgress(StackableObject stackableObject)
+    {
+        LevelData level = CurrentLevel;
+        if (level == null || stackableObject == null) return;
+
+        var gameManager = DependencyRegistry.Find<GameManager>();
+        float perfectCutoff = gameManager != null
+            ? gameManager.PerfectThreshold
+            : RunModifierDefinition.BaselinePerfectThreshold;
+        float goodCutoff = gameManager != null
+            ? gameManager.GoodThreshold
+            : RunModifierDefinition.BaselineGoodThreshold;
+
+        float accuracy = stackableObject.LandingAccuracy;
+
+        if (accuracy >= perfectCutoff)
+        {
+            currentPerfectChain++;
+            if (currentPerfectChain > bestPerfectChain) bestPerfectChain = currentPerfectChain;
+        }
+        else
+        {
+            currentPerfectChain = 0;
+        }
+
+        if (accuracy < goodCutoff)
+        {
+            poorLandingThisAttempt = true;
+
+            // A flawless run is over the moment it stops being flawless. Ending it here is
+            // kinder than letting the player climb another ten blocks for nothing.
+            if (level.objective == LevelObjective.FlawlessAscent && !objectiveFailed)
+            {
+                objectiveFailed = true;
+                RunBanner.Show(LocalizationManager.Get("objective_failed_flawless"), RunOverlayUI.Clay);
+                if (gameManager != null) gameManager.GameOver("objective_flawless");
+            }
+        }
+    }
+
+    /// <summary>
+    /// Whether the level's extra condition is currently met. Height is checked separately
+    /// by the caller.
+    /// </summary>
+    private bool IsObjectiveSatisfied()
+    {
+        LevelData level = CurrentLevel;
+        if (level == null) return true;
+
+        switch (level.objective)
+        {
+            case LevelObjective.FlawlessAscent:
+                return !poorLandingThisAttempt;
+
+            case LevelObjective.PerfectChain:
+                return bestPerfectChain >= level.requiredPerfectChain;
+
+            case LevelObjective.SwiftAscent:
+                return AttemptElapsedTime <= level.timeLimitSeconds;
+
+            case LevelObjective.ReachHeight:
+            default:
+                return true;
+        }
+    }
+
+    /// <summary>Seconds since the current attempt began, or 0 before one starts.</summary>
+    private float AttemptElapsedTime => attemptStartTime < 0f ? 0f : Time.time - attemptStartTime;
+
+    /// <summary>
+    /// Seconds left on a Swift Ascent level, or -1 when the current level isn't timed.
+    /// Exposed so a HUD can show a countdown if one is ever added.
+    /// </summary>
+    public float ObjectiveTimeRemaining
+    {
+        get
+        {
+            LevelData level = CurrentLevel;
+            if (level == null || level.objective != LevelObjective.SwiftAscent) return -1f;
+
+            return Mathf.Max(0f, level.timeLimitSeconds - AttemptElapsedTime);
+        }
+    }
+
+    private void Update()
+    {
+        // Only a timed objective needs a per-frame check; everything else is event-driven.
+        if (isLevelComplete || objectiveFailed) return;
+        if (attemptStartTime < 0f) return;
+
+        LevelData level = CurrentLevel;
+        if (level == null || level.objective != LevelObjective.SwiftAscent) return;
+
+        var gameManager = DependencyRegistry.Find<GameManager>();
+        if (gameManager == null || !gameManager.IsGameActive || gameManager.IsGameOver) return;
+
+        if (AttemptElapsedTime > level.timeLimitSeconds)
+        {
+            objectiveFailed = true;
+            RunBanner.Show(LocalizationManager.Get("objective_failed_swift"), RunOverlayUI.Clay);
+            gameManager.GameOver("objective_time_up");
         }
     }
 
@@ -243,7 +397,8 @@ public class LevelManager : MonoBehaviour, ILevelManager
 
         int currentHeight = stackManager.GetStackCount();
 
-        if (CurrentLevel != null && currentHeight >= CurrentLevel.requiredStackHeight)
+        if (CurrentLevel != null && currentHeight >= CurrentLevel.requiredStackHeight
+            && IsObjectiveSatisfied())
         {
             // Completed height requirement before falling
             CompleteLevelSuccessfully();
@@ -537,6 +692,7 @@ public class LevelManager : MonoBehaviour, ILevelManager
         {
             gameManager.OnGameOver -= OnGameOver;
             gameManager.OnGameRestart -= OnGameRestart;
+            gameManager.OnGameStart -= OnGameStart;
         }
 
         var stackManager = DependencyRegistry.Find<StackManager>();

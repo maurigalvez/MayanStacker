@@ -435,6 +435,170 @@
     {
       "key": "notif_lapse_body_site",
       "value": "{0} ainda está inacabado."
+    },
+    {
+      "key": "daily_modifier_perfectionist",
+      "value": "Perfeccionista"
+    },
+    {
+      "key": "daily_modifier_perfectionist_desc",
+      "value": "Só pousos perfeitos sustentam a corrente. Bom já não basta."
+    },
+    {
+      "key": "daily_modifier_narrowwindow",
+      "value": "Janela Estreita"
+    },
+    {
+      "key": "daily_modifier_narrowwindow_desc",
+      "value": "A janela perfeita se estreita. A precisão vale muito mais."
+    },
+    {
+      "key": "daily_modifier_doubleornothing",
+      "value": "Dobro ou Nada"
+    },
+    {
+      "key": "daily_modifier_doubleornothing_desc",
+      "value": "Tudo pontua em dobro. Um pouso ruim encerra o ritual."
+    },
+    {
+      "key": "block_jade_sliver",
+      "value": "Lasca de Jade"
+    },
+    {
+      "key": "block_heavy_stone",
+      "value": "Pedra Pesada"
+    },
+    {
+      "key": "block_cracked_stone",
+      "value": "Pedra Rachada"
+    },
+    {
+      "key": "block_offering_stone",
+      "value": "Pedra de Oferenda"
+    },
+    {
+      "key": "block_jade_sliver_desc",
+      "value": "Estreita, mas vale o triplo. Encaixe-a se o pulso estiver firme."
+    },
+    {
+      "key": "block_heavy_stone_desc",
+      "value": "Larga e pesada, vale metade. Estabiliza uma pilha bamba."
+    },
+    {
+      "key": "block_cracked_stone_desc",
+      "value": "Pontos em dobro, mas um pouso desleixado a estilhaça e encerra a subida."
+    },
+    {
+      "key": "block_offering_stone_desc",
+      "value": "Encaixe-a com perfeição e Kukulkan desperta na hora."
+    },
+    {
+      "key": "band_foundation",
+      "value": "A Fundação"
+    },
+    {
+      "key": "band_canopy",
+      "value": "A Copa das Árvores"
+    },
+    {
+      "key": "band_dusk",
+      "value": "Crepúsculo sobre o Templo"
+    },
+    {
+      "key": "band_night",
+      "value": "Noite de Estrelas"
+    },
+    {
+      "key": "band_serpent",
+      "value": "O Alcance da Serpente"
+    },
+    {
+      "key": "boon_title",
+      "value": "Kukulkan Oferece"
+    },
+    {
+      "key": "boon_subtitle",
+      "value": "Escolha uma bênção."
+    },
+    {
+      "key": "boon_serpents_favor",
+      "value": "Favor da Serpente"
+    },
+    {
+      "key": "boon_serpents_favor_desc",
+      "value": "Pontos em dobro nas próximas 5 pedras."
+    },
+    {
+      "key": "boon_wide_foundation",
+      "value": "Base Larga"
+    },
+    {
+      "key": "boon_wide_foundation_desc",
+      "value": "As próximas 3 pedras são talhadas mais largas."
+    },
+    {
+      "key": "boon_stone_mercy",
+      "value": "Misericórdia de Pedra"
+    },
+    {
+      "key": "boon_stone_mercy_desc",
+      "value": "Kukulkan endireita seu templo agora."
+    },
+    {
+      "key": "boon_jade_eye",
+      "value": "Olho de Jade"
+    },
+    {
+      "key": "boon_jade_eye_desc",
+      "value": "Suas próximas 2 correntes quebradas são perdoadas."
+    },
+    {
+      "key": "boon_telegraph_soon",
+      "value": "Kukulkan se agita — {0} pedras"
+    },
+    {
+      "key": "boon_telegraph_next",
+      "value": "Kukulkan se agita — próxima pedra"
+    },
+    {
+      "key": "boon_intro_title",
+      "value": "As bênçãos de Kukulkan"
+    },
+    {
+      "key": "boon_intro_body",
+      "value": "A cada poucas pedras, Kukulkan interrompe sua subida e oferece três bênçãos. Escolha uma: uma pedra mais larga, pontos em dobro, um templo endireitado."
+    },
+    {
+      "key": "boon_intro_note",
+      "value": "A subida espera enquanto você escolhe, e um aviso aparece antes de cada oferta."
+    },
+    {
+      "key": "boon_intro_continue",
+      "value": "Estou pronto"
+    },
+    {
+      "key": "objective_reach_height_desc",
+      "value": "Empilhe {0} pedras."
+    },
+    {
+      "key": "objective_flawless_desc",
+      "value": "Empilhe {0} pedras sem um pouso ruim."
+    },
+    {
+      "key": "objective_perfect_chain_desc",
+      "value": "Consiga {0} quedas perfeitas seguidas."
+    },
+    {
+      "key": "objective_swift_desc",
+      "value": "Empilhe {0} pedras em {1} segundos."
+    },
+    {
+      "key": "objective_failed_flawless",
+      "value": "A pedra ficou torta. A subida se quebrou."
+    },
+    {
+      "key": "objective_failed_swift",
+      "value": "O sol seguiu sem você."
     }
   ]
 }

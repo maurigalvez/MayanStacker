@@ -435,6 +435,170 @@
     {
       "key": "notif_lapse_body_site",
       "value": "{0} is still unfinished."
+    },
+    {
+      "key": "daily_modifier_perfectionist",
+      "value": "Perfectionist"
+    },
+    {
+      "key": "daily_modifier_perfectionist_desc",
+      "value": "Only perfect landings hold the chain. Good is no longer good enough."
+    },
+    {
+      "key": "daily_modifier_narrowwindow",
+      "value": "Narrow Window"
+    },
+    {
+      "key": "daily_modifier_narrowwindow_desc",
+      "value": "The perfect window tightens. Precision is worth far more."
+    },
+    {
+      "key": "daily_modifier_doubleornothing",
+      "value": "Double or Nothing"
+    },
+    {
+      "key": "daily_modifier_doubleornothing_desc",
+      "value": "Everything scores double. One bad landing ends the ritual."
+    },
+    {
+      "key": "block_jade_sliver",
+      "value": "Jade Sliver"
+    },
+    {
+      "key": "block_heavy_stone",
+      "value": "Heavy Stone"
+    },
+    {
+      "key": "block_cracked_stone",
+      "value": "Cracked Stone"
+    },
+    {
+      "key": "block_offering_stone",
+      "value": "Offering Stone"
+    },
+    {
+      "key": "block_jade_sliver_desc",
+      "value": "Narrow, but scores triple. Land it if your hand is steady."
+    },
+    {
+      "key": "block_heavy_stone_desc",
+      "value": "Wide and heavy, worth half. It settles a wobbling stack."
+    },
+    {
+      "key": "block_cracked_stone_desc",
+      "value": "Double points, but a sloppy landing shatters it and ends the climb."
+    },
+    {
+      "key": "block_offering_stone_desc",
+      "value": "Land it perfectly and Kukulkan stirs at once."
+    },
+    {
+      "key": "band_foundation",
+      "value": "The Foundation"
+    },
+    {
+      "key": "band_canopy",
+      "value": "The Canopy"
+    },
+    {
+      "key": "band_dusk",
+      "value": "Dusk Over the Temple"
+    },
+    {
+      "key": "band_night",
+      "value": "Night of Stars"
+    },
+    {
+      "key": "band_serpent",
+      "value": "The Serpent's Reach"
+    },
+    {
+      "key": "boon_title",
+      "value": "Kukulkan Offers"
+    },
+    {
+      "key": "boon_subtitle",
+      "value": "Choose one blessing."
+    },
+    {
+      "key": "boon_serpents_favor",
+      "value": "Serpent's Favor"
+    },
+    {
+      "key": "boon_serpents_favor_desc",
+      "value": "Double points for the next 5 stones."
+    },
+    {
+      "key": "boon_wide_foundation",
+      "value": "Wide Foundation"
+    },
+    {
+      "key": "boon_wide_foundation_desc",
+      "value": "The next 3 stones are cut wider."
+    },
+    {
+      "key": "boon_stone_mercy",
+      "value": "Stone Mercy"
+    },
+    {
+      "key": "boon_stone_mercy_desc",
+      "value": "Kukulkan straightens your temple now."
+    },
+    {
+      "key": "boon_jade_eye",
+      "value": "Jade Eye"
+    },
+    {
+      "key": "boon_jade_eye_desc",
+      "value": "Your next 2 broken chains are forgiven."
+    },
+    {
+      "key": "boon_telegraph_soon",
+      "value": "Kukulkan stirs — {0} stones"
+    },
+    {
+      "key": "boon_telegraph_next",
+      "value": "Kukulkan stirs — next stone"
+    },
+    {
+      "key": "boon_intro_title",
+      "value": "The Blessings of Kukulkan"
+    },
+    {
+      "key": "boon_intro_body",
+      "value": "Every few stones, Kukulkan halts your climb and offers three blessings. Take one — a wider stone, doubled points, a temple set straight."
+    },
+    {
+      "key": "boon_intro_note",
+      "value": "The climb waits while you choose, and a warning appears before every offering."
+    },
+    {
+      "key": "boon_intro_continue",
+      "value": "I am ready"
+    },
+    {
+      "key": "objective_reach_height_desc",
+      "value": "Stack {0} stones."
+    },
+    {
+      "key": "objective_flawless_desc",
+      "value": "Stack {0} stones with no poor landing."
+    },
+    {
+      "key": "objective_perfect_chain_desc",
+      "value": "Land {0} perfect drops in a row."
+    },
+    {
+      "key": "objective_swift_desc",
+      "value": "Stack {0} stones in {1} seconds."
+    },
+    {
+      "key": "objective_failed_flawless",
+      "value": "The stone sat crooked. The ascent is broken."
+    },
+    {
+      "key": "objective_failed_swift",
+      "value": "The sun moved on without you."
     }
   ]
 }

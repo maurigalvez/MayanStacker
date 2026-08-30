@@ -558,7 +558,11 @@ public class UIManager : MonoBehaviour
 
     private IEnumerator InstructionRoutine()
     {
-        yield return new WaitForSeconds(3f);
+        // A flat 3s was too quick for two lines someone is reading for the first time while
+        // a block swings overhead, so the hold follows the length of the copy instead.
+        string copy = instructionsText != null ? instructionsText.text : null;
+        yield return new WaitForSeconds(ReadingTime.For(copy));
+
         HideInstructions();
 
         // Mark that player has seen instructions in Infinite Mode

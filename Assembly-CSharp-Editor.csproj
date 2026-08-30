@@ -52,9 +52,14 @@
     <Analyzer Include="D:\Repositories\TamalStacker\Library\PackageCache\com.unity.dt.app-ui@8ac7e730dd5d\Runtime\MVVM\SourceGenerators\netstandard2.0\MVVMSourceGenerators.dll" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Assets\Scripts\Editor\LanguageSelectPrefabSetup.cs" />
     <Compile Include="Assets\Scripts\Editor\CJKFontFallbackSetup.cs" />
     <Compile Include="Assets\Scripts\Editor\DailyChallengeUISetup.cs" />
+    <Compile Include="Assets\Scripts\Editor\RunBannerPrefabSetup.cs" />
+    <Compile Include="Assets\Scripts\Editor\BoonUISetup.cs" />
+    <Compile Include="Assets\Scripts\Editor\FtueTutorialPrefabSetup.cs" />
     <Compile Include="Assets\Scripts\Editor\LocaleFontSetup.cs" />
+    <Compile Include="Assets\Scripts\Editor\RunContentSetup.cs" />
     <Compile Include="Assets\Scripts\Editor\FtueUISetup.cs" />
   </ItemGroup>
   <ItemGroup>

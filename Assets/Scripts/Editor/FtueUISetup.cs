@@ -75,7 +75,8 @@ public static class FtueUISetup
     public static void ResetFirstRunState()
     {
         if (!EditorUtility.DisplayDialog("Reset First-Run State",
-            "Clear tutorial progress, session/run counters, the ad grace period and the Daily streak?\n\n" +
+            "Clear tutorial progress, session/run counters, the ad grace period, the Daily streak\n" +
+            "and the record of which special blocks have introduced themselves?\n\n" +
             "Level progress and settings are not touched.", "Reset", "Cancel"))
         {
             return;
@@ -83,6 +84,10 @@ public static class FtueUISetup
 
         FtueState.ResetAll();
         DailyStreak.ResetAll();
+
+        // Forget which special blocks have introduced themselves, so the teaching banners
+        // can be tested again rather than only ever firing on a fresh install.
+        BlockCodex.ResetAll();
 
         Debug.Log("[FtueUISetup] First-run state cleared. Next play session will run the FTUE from the top.");
     }

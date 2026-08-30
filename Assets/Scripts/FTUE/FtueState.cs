@@ -17,6 +17,7 @@ public static class FtueState
     private const string PP_FIRST_TEMPLE_DONE = "Ftue_FirstTempleDone";
     private const string PP_GRACE_RETRY_USED = "Ftue_GraceRetryUsed";
     private const string PP_LANGUAGE_CHOSEN = "Ftue_LanguageChosen";
+    private const string PP_BOON_INTRO_SEEN = "Ftue_BoonIntroSeen";
 
     /// <summary>Legacy key from the old 3-second instruction overlay, cleared on migration.</summary>
     private const string PP_LEGACY_INSTRUCTIONS_SEEN = "HasSeenInstructions";
@@ -143,6 +144,26 @@ public static class FtueState
 
     #endregion
 
+    #region Boons
+
+    /// <summary>
+    /// True once the player has been told what Kukulkan's blessings are.
+    ///
+    /// Separate from the tutorial because boons are suppressed for the whole FTUE: by the
+    /// time the first offer can happen the tutorial is long finished, so this is a second,
+    /// later first-time moment rather than a beat of the first one.
+    /// </summary>
+    public static bool HasSeenBoonIntro => PlayerPrefs.GetInt(PP_BOON_INTRO_SEEN, 0) == 1;
+
+    public static void MarkBoonIntroSeen()
+    {
+        if (HasSeenBoonIntro) return;
+        PlayerPrefs.SetInt(PP_BOON_INTRO_SEEN, 1);
+        PlayerPrefs.Save();
+    }
+
+    #endregion
+
     #region Tutorial
 
     public static TutorialState Tutorial
@@ -221,6 +242,7 @@ public static class FtueState
         PlayerPrefs.DeleteKey(PP_FIRST_TEMPLE_DONE);
         PlayerPrefs.DeleteKey(PP_GRACE_RETRY_USED);
         PlayerPrefs.DeleteKey(PP_LANGUAGE_CHOSEN);
+        PlayerPrefs.DeleteKey(PP_BOON_INTRO_SEEN);
         PlayerPrefs.DeleteKey(PP_LEGACY_INSTRUCTIONS_SEEN);
         PlayerPrefs.Save();
 

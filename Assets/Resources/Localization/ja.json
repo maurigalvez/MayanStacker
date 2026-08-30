@@ -435,6 +435,170 @@
     {
       "key": "notif_lapse_body_site",
       "value": "{0}はまだ未完成だ。"
+    },
+    {
+      "key": "daily_modifier_perfectionist",
+      "value": "完璧主義"
+    },
+    {
+      "key": "daily_modifier_perfectionist_desc",
+      "value": "パーフェクトだけが連鎖を保つ。グッドではもう足りない。"
+    },
+    {
+      "key": "daily_modifier_narrowwindow",
+      "value": "狭き窓"
+    },
+    {
+      "key": "daily_modifier_narrowwindow_desc",
+      "value": "パーフェクトの判定が狭まる。精度の価値は大きく上がる。"
+    },
+    {
+      "key": "daily_modifier_doubleornothing",
+      "value": "倍か無か"
+    },
+    {
+      "key": "daily_modifier_doubleornothing_desc",
+      "value": "得点はすべて二倍。ただし一度の失敗で儀式は終わる。"
+    },
+    {
+      "key": "block_jade_sliver",
+      "value": "翡翠の薄石"
+    },
+    {
+      "key": "block_heavy_stone",
+      "value": "重き石"
+    },
+    {
+      "key": "block_cracked_stone",
+      "value": "ひび割れた石"
+    },
+    {
+      "key": "block_offering_stone",
+      "value": "供物の石"
+    },
+    {
+      "key": "block_jade_sliver_desc",
+      "value": "細いが得点は3倍。腕に自信があるなら狙え。"
+    },
+    {
+      "key": "block_heavy_stone_desc",
+      "value": "幅広く重いが得点は半分。揺れる塔を落ち着かせる。"
+    },
+    {
+      "key": "block_cracked_stone_desc",
+      "value": "得点は2倍。だが雑に置けば砕け、登攀はそこで終わる。"
+    },
+    {
+      "key": "block_offering_stone_desc",
+      "value": "完璧に置けばククルカンがすぐに目覚める。"
+    },
+    {
+      "key": "band_foundation",
+      "value": "礎"
+    },
+    {
+      "key": "band_canopy",
+      "value": "樹冠"
+    },
+    {
+      "key": "band_dusk",
+      "value": "神殿の黄昏"
+    },
+    {
+      "key": "band_night",
+      "value": "星の夜"
+    },
+    {
+      "key": "band_serpent",
+      "value": "羽蛇の高み"
+    },
+    {
+      "key": "boon_title",
+      "value": "ククルカンの恵み"
+    },
+    {
+      "key": "boon_subtitle",
+      "value": "祝福をひとつ選べ。"
+    },
+    {
+      "key": "boon_serpents_favor",
+      "value": "羽蛇の加護"
+    },
+    {
+      "key": "boon_serpents_favor_desc",
+      "value": "次の5個の石は得点が二倍。"
+    },
+    {
+      "key": "boon_wide_foundation",
+      "value": "広き礎"
+    },
+    {
+      "key": "boon_wide_foundation_desc",
+      "value": "次の3個の石が広く削り出される。"
+    },
+    {
+      "key": "boon_stone_mercy",
+      "value": "石の慈悲"
+    },
+    {
+      "key": "boon_stone_mercy_desc",
+      "value": "ククルカンが今すぐ神殿を正す。"
+    },
+    {
+      "key": "boon_jade_eye",
+      "value": "翡翠の眼"
+    },
+    {
+      "key": "boon_jade_eye_desc",
+      "value": "次の2回の連鎖切れを見逃す。"
+    },
+    {
+      "key": "boon_telegraph_soon",
+      "value": "ククルカンが動く — 残り{0}個"
+    },
+    {
+      "key": "boon_telegraph_next",
+      "value": "ククルカンが動く — 次の石で"
+    },
+    {
+      "key": "boon_intro_title",
+      "value": "ククルカンの祝福"
+    },
+    {
+      "key": "boon_intro_body",
+      "value": "数個の石ごとに、ククルカンが登りを止め、三つの祝福を差し出す。一つを選べ——幅の広い石、二倍の点数、まっすぐに直された神殿。"
+    },
+    {
+      "key": "boon_intro_note",
+      "value": "選ぶ間、時は止まる。祝福の前には必ず予兆が現れる。"
+    },
+    {
+      "key": "boon_intro_continue",
+      "value": "準備はできた"
+    },
+    {
+      "key": "objective_reach_height_desc",
+      "value": "石を{0}個積む。"
+    },
+    {
+      "key": "objective_flawless_desc",
+      "value": "悪い着地なしで石を{0}個積む。"
+    },
+    {
+      "key": "objective_perfect_chain_desc",
+      "value": "パーフェクトを{0}回連続で決める。"
+    },
+    {
+      "key": "objective_swift_desc",
+      "value": "{1}秒以内に石を{0}個積む。"
+    },
+    {
+      "key": "objective_failed_flawless",
+      "value": "石が傾いた。登攀は途切れた。"
+    },
+    {
+      "key": "objective_failed_swift",
+      "value": "太陽は待ってくれなかった。"
     }
   ]
 }

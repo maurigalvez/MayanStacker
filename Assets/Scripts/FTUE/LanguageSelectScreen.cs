@@ -16,11 +16,17 @@ using UnityEngine.UI;
 /// — a picker that renders 简体中文 as boxes is worse than no picker at all. Options whose
 /// font can't render their own name fall back to a Latin label rather than showing tofu.
 ///
-/// Builds its entire UI in code on a dedicated overlay canvas, so it needs no scene wiring
-/// and works identically from the menu and from inside a run.
+/// Presentation comes from a prefab at Resources/UI/LanguageSelectScreen (see
+/// <see cref="LanguageSelectView"/>), so this screen can be styled alongside the rest of the
+/// UI. When that prefab is absent it falls back to building the whole UI in code on a
+/// dedicated overlay canvas, so it still needs no scene wiring and works identically from
+/// the menu and from inside a run.
 /// </summary>
 public class LanguageSelectScreen : MonoBehaviour
 {
+    /// <summary>Authored prefab that replaces the code-built layout when present.</summary>
+    public const string PrefabResourcePath = "UI/LanguageSelectScreen";
+
     // Latin fallbacks, used only when a locale's font is missing or can't render its own name.
     private static readonly string[] LatinFallbackNames =
     {
@@ -66,6 +72,12 @@ public class LanguageSelectScreen : MonoBehaviour
     {
         fontSet = Resources.Load<LocaleFontSet>("LocaleFontSet");
 
+        if (BuildFromPrefab(isFirstLaunch))
+        {
+            TrackShown(isFirstLaunch);
+            return;
+        }
+
         // Own canvas, drawn above everything else in the scene. Screen-space overlay with
         // the project's 1080x1920 reference so it scales like the rest of the UI.
         var canvas = gameObject.AddComponent<Canvas>();
@@ -93,7 +105,7 @@ public class LanguageSelectScreen : MonoBehaviour
 
         var subtitle = CreateLabel("Subtitle", transform, "Idioma / 语言 / 言語", 34, Parchment);
         Place(subtitle.rectTransform, new Vector2(0.5f, 1f), new Vector2(0f, -310f), new Vector2(900f, 60f));
-        ApplyBestFontFor(subtitle, "zh-Hans"); // the subtitle mixes scripts; CJK font renders all of it
+        ApplyBestFontFor(subtitle, "zh-Hans", fontSet); // the subtitle mixes scripts; CJK font renders all of it
 
         BuildOptions();
 
@@ -104,6 +116,39 @@ public class LanguageSelectScreen : MonoBehaviour
             Place(hint.rectTransform, new Vector2(0.5f, 0f), new Vector2(0f, 110f), new Vector2(900f, 50f));
         }
 
+        TrackShown(isFirstLaunch);
+    }
+
+    /// <summary>
+    /// Instantiates the authored prefab, if there is one, and lets it fill itself in.
+    /// Returns false when no usable prefab exists, so Build falls back to the code layout.
+    /// </summary>
+    private bool BuildFromPrefab(bool isFirstLaunch)
+    {
+        var prefab = Resources.Load<GameObject>(PrefabResourcePath);
+        if (prefab == null) return false;
+
+        // The prefab carries its own Canvas, so it renders correctly parented to this
+        // otherwise-empty host object that owns the lifetime.
+        var view = Instantiate(prefab, transform, false).GetComponent<LanguageSelectView>();
+        if (view == null)
+        {
+            Debug.LogWarning($"[LanguageSelect] Resources/{PrefabResourcePath} has no LanguageSelectView " +
+                             "component - using the code-built layout instead.");
+            return false;
+        }
+
+        view.Populate(fontSet, CurrentLocale(), isFirstLaunch, Choose);
+        return true;
+    }
+
+    private static string CurrentLocale()
+    {
+        return LocalizationManager.Instance != null ? LocalizationManager.Instance.CurrentLocale : "en";
+    }
+
+    private static void TrackShown(bool isFirstLaunch)
+    {
         GameAnalytics.Track("language_picker_shown", new System.Collections.Generic.Dictionary<string, object>
         {
             { "first_launch", isFirstLaunch },
@@ -111,12 +156,18 @@ public class LanguageSelectScreen : MonoBehaviour
         });
     }
 
+    /// <summary>Latin name for the locale at <paramref name="index"/>, for when its own script can't be drawn.</summary>
+    public static string LatinFallbackName(int index, string fallback)
+    {
+        return index >= 0 && index < LatinFallbackNames.Length ? LatinFallbackNames[index] : fallback;
+    }
+
     private void BuildOptions()
     {
         string[] codes = SettingsManager.LocaleCodes;
         string[] names = SettingsManager.LanguageNames;
 
-        string current = LocalizationManager.Instance != null ? LocalizationManager.Instance.CurrentLocale : "en";
+        string current = CurrentLocale();
 
         const float buttonHeight = 130f;
         const float gap = 22f;
@@ -142,7 +193,7 @@ public class LanguageSelectScreen : MonoBehaviour
             label.alignment = TextAlignmentOptions.Center;
 
             // Render each language in its own script, or degrade to Latin rather than tofu.
-            if (!ApplyBestFontFor(label, code))
+            if (!ApplyBestFontFor(label, code, fontSet))
             {
                 label.text = fallbackName;
             }
@@ -187,7 +238,7 @@ public class LanguageSelectScreen : MonoBehaviour
     /// LocaleFontSet for CJK, or the label's existing Latin font otherwise. Returns false
     /// when nothing available can render the string, so the caller can fall back.
     /// </summary>
-    private bool ApplyBestFontFor(TextMeshProUGUI label, string localeCode)
+    public static bool ApplyBestFontFor(TextMeshProUGUI label, string localeCode, LocaleFontSet fontSet)
     {
         TMP_FontAsset font = fontSet != null ? fontSet.GetFontForLocale(localeCode) : null;
 

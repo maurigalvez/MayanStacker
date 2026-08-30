@@ -1,0 +1,54 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a1ac5fad1e42a2141814e3ff4005923b, type: 3}
+  m_Name: AltitudeBandSet
+  m_EditorClassIdentifier: Assembly-CSharp::AltitudeBandSet
+  enableBands: 1
+  applyToInfinite: 1
+  applyToDaily: 0
+  applyToLevels: 0
+  bands:
+  - nameKey: band_foundation
+    startsAtBlock: 0
+    applyTimeOfDay: 1
+    timeOfDay: 0
+    specialBlockChanceMultiplier: 1
+    announce: 0
+    announceColor: {r: 0.79, g: 0.64, b: 0.29, a: 1}
+  - nameKey: band_canopy
+    startsAtBlock: 12
+    applyTimeOfDay: 0
+    timeOfDay: 0
+    specialBlockChanceMultiplier: 1.35
+    announce: 1
+    announceColor: {r: 0.09, g: 0.42, b: 0.34, a: 1}
+  - nameKey: band_dusk
+    startsAtBlock: 24
+    applyTimeOfDay: 1
+    timeOfDay: 1
+    specialBlockChanceMultiplier: 1.7
+    announce: 1
+    announceColor: {r: 0.79, g: 0.64, b: 0.29, a: 1}
+  - nameKey: band_night
+    startsAtBlock: 40
+    applyTimeOfDay: 1
+    timeOfDay: 2
+    specialBlockChanceMultiplier: 2.1
+    announce: 1
+    announceColor: {r: 0.93, g: 0.9, b: 0.82, a: 1}
+  - nameKey: band_serpent
+    startsAtBlock: 60
+    applyTimeOfDay: 1
+    timeOfDay: 2
+    specialBlockChanceMultiplier: 2.6
+    announce: 1
+    announceColor: {r: 0.66, g: 0.25, b: 0.16, a: 1}

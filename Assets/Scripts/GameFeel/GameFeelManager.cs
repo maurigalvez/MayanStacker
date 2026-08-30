@@ -153,13 +153,20 @@ public class GameFeelManager : MonoBehaviour
 
         float accuracy = stackableObject.LandingAccuracy;
 
-        if (accuracy >= PerfectThreshold)
+        // Tiers come from GameManager so the juice can never disagree with the score and
+        // the combo meter - a run modifier that narrows the Perfect window narrows the
+        // shake and haptics with it. The serialized fields above are the fallback for a
+        // scene with no GameManager.
+        float perfectTier = gameManager != null ? gameManager.PerfectThreshold : PerfectThreshold;
+        float goodTier = gameManager != null ? gameManager.GoodThreshold : GoodThreshold;
+
+        if (accuracy >= perfectTier)
         {
             ShakeCamera(PerfectShake);
             DoHitStop(PerfectHitStopDuration);
             HapticFeedback.Trigger(HapticFeedback.HapticType.Medium);
         }
-        else if (accuracy >= GoodThreshold)
+        else if (accuracy >= goodTier)
         {
             ShakeCamera(GoodShake);
             HapticFeedback.Trigger(HapticFeedback.HapticType.Light);

@@ -27,6 +27,12 @@ public class LocaleFontSet : ScriptableObject
     [Tooltip("Font for Japanese (ja). e.g. Source Han Sans JP / Noto Sans JP")]
     public TMP_FontAsset japanese;
 
+    [Tooltip("The game's stylized Latin font. UI that is built in code has no prefab to " +
+             "carry a design-time font, so without this it silently renders in TMP's " +
+             "LiberationSans default and looks like a different game. Populated by " +
+             "TamalStacker ▸ Localization ▸ Setup Per-Language Fonts.")]
+    public TMP_FontAsset latinDisplay;
+
     /// <summary>
     /// Returns the font for a locale, or null if the locale should keep its
     /// original Latin design font.

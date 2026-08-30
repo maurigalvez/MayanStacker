@@ -1,0 +1,76 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d071253c787e9df409fb3fc7dc343fad, type: 3}
+  m_Name: BlockVarietyTable
+  m_EditorClassIdentifier: Assembly-CSharp::BlockVarietyTable
+  enableVariants: 1
+  minStackHeightForSpecials: 4
+  minGapBetweenSpecials: 2
+  suppressDuringFtue: 1
+  standardWeight: 10
+  variants:
+  - weight: 2
+    variant:
+      id: 1
+      widthMultiplier: 0.62
+      massMultiplier: 0.8
+      frictionMultiplier: 1
+      scoreMultiplier: 3
+      shattersOnPoorLanding: 0
+      grantsKukulkanShiftOnPerfect: 0
+      overrideTint: 1
+      tint: {r: 1, g: 1, b: 1, a: 1}
+      nameKey: block_jade_sliver
+      descriptionKey: block_jade_sliver_desc
+      sprite: {fileID: -9177260777883663399, guid: b4d7ba6bd3a17f346b4423df69125504, type: 3}
+  - weight: 2
+    variant:
+      id: 2
+      widthMultiplier: 1.32
+      massMultiplier: 2.4
+      frictionMultiplier: 1.6
+      scoreMultiplier: 0.5
+      shattersOnPoorLanding: 0
+      grantsKukulkanShiftOnPerfect: 0
+      overrideTint: 1
+      tint: {r: 1, g: 1, b: 1, a: 1}
+      nameKey: block_heavy_stone
+      descriptionKey: block_heavy_stone_desc
+      sprite: {fileID: 2403750664301166445, guid: 1a7cb8e30b024dc488b5d96fa56d4549, type: 3}
+  - weight: 1.2
+    variant:
+      id: 3
+      widthMultiplier: 1
+      massMultiplier: 1
+      frictionMultiplier: 1
+      scoreMultiplier: 2
+      shattersOnPoorLanding: 1
+      grantsKukulkanShiftOnPerfect: 0
+      overrideTint: 1
+      tint: {r: 1, g: 0.753158, b: 0.6933962, a: 1}
+      nameKey: block_cracked_stone
+      descriptionKey: block_cracked_stone_desc
+      sprite: {fileID: 7613704389619288162, guid: 8604c7eefbcd5c249b72616cc7559fa5, type: 3}
+  - weight: 1
+    variant:
+      id: 4
+      widthMultiplier: 1
+      massMultiplier: 1
+      frictionMultiplier: 1
+      scoreMultiplier: 1.5
+      shattersOnPoorLanding: 0
+      grantsKukulkanShiftOnPerfect: 1
+      overrideTint: 1
+      tint: {r: 1, g: 0.93050313, b: 0.759434, a: 1}
+      nameKey: block_offering_stone
+      descriptionKey: block_offering_stone_desc
+      sprite: {fileID: -693496610206729331, guid: df075a99b6b53524a8704bbc0863715c, type: 3}

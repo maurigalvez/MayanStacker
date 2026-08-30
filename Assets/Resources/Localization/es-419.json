@@ -435,6 +435,170 @@
     {
       "key": "notif_lapse_body_site",
       "value": "{0} sigue sin terminar."
+    },
+    {
+      "key": "daily_modifier_perfectionist",
+      "value": "Perfeccionista"
+    },
+    {
+      "key": "daily_modifier_perfectionist_desc",
+      "value": "Solo los aterrizajes perfectos mantienen la cadena. Bueno ya no basta."
+    },
+    {
+      "key": "daily_modifier_narrowwindow",
+      "value": "Ventana Estrecha"
+    },
+    {
+      "key": "daily_modifier_narrowwindow_desc",
+      "value": "La ventana perfecta se estrecha. La precisión vale mucho más."
+    },
+    {
+      "key": "daily_modifier_doubleornothing",
+      "value": "Doble o Nada"
+    },
+    {
+      "key": "daily_modifier_doubleornothing_desc",
+      "value": "Todo puntúa el doble. Un mal aterrizaje termina el ritual."
+    },
+    {
+      "key": "block_jade_sliver",
+      "value": "Astilla de Jade"
+    },
+    {
+      "key": "block_heavy_stone",
+      "value": "Piedra Pesada"
+    },
+    {
+      "key": "block_cracked_stone",
+      "value": "Piedra Agrietada"
+    },
+    {
+      "key": "block_offering_stone",
+      "value": "Piedra de Ofrenda"
+    },
+    {
+      "key": "block_jade_sliver_desc",
+      "value": "Angosta, pero vale el triple. Colócala si tienes buen pulso."
+    },
+    {
+      "key": "block_heavy_stone_desc",
+      "value": "Ancha y pesada, vale la mitad. Estabiliza una torre que se tambalea."
+    },
+    {
+      "key": "block_cracked_stone_desc",
+      "value": "Puntos dobles, pero un aterrizaje torpe la rompe y termina el ascenso."
+    },
+    {
+      "key": "block_offering_stone_desc",
+      "value": "Colócala perfecta y Kukulkán despierta al instante."
+    },
+    {
+      "key": "band_foundation",
+      "value": "Los Cimientos"
+    },
+    {
+      "key": "band_canopy",
+      "value": "El Dosel"
+    },
+    {
+      "key": "band_dusk",
+      "value": "Ocaso sobre el Templo"
+    },
+    {
+      "key": "band_night",
+      "value": "Noche de Estrellas"
+    },
+    {
+      "key": "band_serpent",
+      "value": "El Alcance de la Serpiente"
+    },
+    {
+      "key": "boon_title",
+      "value": "Kukulkán Ofrece"
+    },
+    {
+      "key": "boon_subtitle",
+      "value": "Elige una bendición."
+    },
+    {
+      "key": "boon_serpents_favor",
+      "value": "Favor de la Serpiente"
+    },
+    {
+      "key": "boon_serpents_favor_desc",
+      "value": "Puntos dobles por las próximas 5 piedras."
+    },
+    {
+      "key": "boon_wide_foundation",
+      "value": "Base Amplia"
+    },
+    {
+      "key": "boon_wide_foundation_desc",
+      "value": "Las próximas 3 piedras se tallan más anchas."
+    },
+    {
+      "key": "boon_stone_mercy",
+      "value": "Piedad de Piedra"
+    },
+    {
+      "key": "boon_stone_mercy_desc",
+      "value": "Kukulkán endereza tu templo ahora."
+    },
+    {
+      "key": "boon_jade_eye",
+      "value": "Ojo de Jade"
+    },
+    {
+      "key": "boon_jade_eye_desc",
+      "value": "Se perdonan tus próximas 2 cadenas rotas."
+    },
+    {
+      "key": "boon_telegraph_soon",
+      "value": "Kukulkán se agita — {0} piedras"
+    },
+    {
+      "key": "boon_telegraph_next",
+      "value": "Kukulkán se agita — próxima piedra"
+    },
+    {
+      "key": "boon_intro_title",
+      "value": "Las bendiciones de Kukulkán"
+    },
+    {
+      "key": "boon_intro_body",
+      "value": "Cada cierto número de piedras, Kukulkán detiene tu ascenso y ofrece tres bendiciones. Toma una: una piedra más ancha, puntos dobles, un templo enderezado."
+    },
+    {
+      "key": "boon_intro_note",
+      "value": "El ascenso espera mientras eliges, y verás un aviso antes de cada ofrenda."
+    },
+    {
+      "key": "boon_intro_continue",
+      "value": "Estoy listo"
+    },
+    {
+      "key": "objective_reach_height_desc",
+      "value": "Apila {0} piedras."
+    },
+    {
+      "key": "objective_flawless_desc",
+      "value": "Apila {0} piedras sin un mal aterrizaje."
+    },
+    {
+      "key": "objective_perfect_chain_desc",
+      "value": "Logra {0} caídas perfectas seguidas."
+    },
+    {
+      "key": "objective_swift_desc",
+      "value": "Apila {0} piedras en {1} segundos."
+    },
+    {
+      "key": "objective_failed_flawless",
+      "value": "La piedra quedó torcida. El ascenso se rompió."
+    },
+    {
+      "key": "objective_failed_swift",
+      "value": "El sol siguió su camino sin ti."
     }
   ]
 }

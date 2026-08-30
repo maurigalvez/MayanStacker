@@ -435,6 +435,170 @@
     {
       "key": "notif_lapse_body_site",
       "value": "{0}尚未完成。"
+    },
+    {
+      "key": "daily_modifier_perfectionist",
+      "value": "完美主义"
+    },
+    {
+      "key": "daily_modifier_perfectionist_desc",
+      "value": "只有完美落点才能延续连击。良好已经不够了。"
+    },
+    {
+      "key": "daily_modifier_narrowwindow",
+      "value": "窄窗"
+    },
+    {
+      "key": "daily_modifier_narrowwindow_desc",
+      "value": "完美判定范围收窄，精准的价值大幅提升。"
+    },
+    {
+      "key": "daily_modifier_doubleornothing",
+      "value": "加倍或全无"
+    },
+    {
+      "key": "daily_modifier_doubleornothing_desc",
+      "value": "所有得分翻倍。一次糟糕的落点即终止仪式。"
+    },
+    {
+      "key": "block_jade_sliver",
+      "value": "翡翠薄石"
+    },
+    {
+      "key": "block_heavy_stone",
+      "value": "沉重巨石"
+    },
+    {
+      "key": "block_cracked_stone",
+      "value": "裂纹石"
+    },
+    {
+      "key": "block_offering_stone",
+      "value": "祭品石"
+    },
+    {
+      "key": "block_jade_sliver_desc",
+      "value": "窄小，但得分三倍。手稳就试试。"
+    },
+    {
+      "key": "block_heavy_stone_desc",
+      "value": "又宽又重，得分减半。能稳住摇晃的塔。"
+    },
+    {
+      "key": "block_cracked_stone_desc",
+      "value": "双倍得分，但落点马虎就会碎裂，攀登到此为止。"
+    },
+    {
+      "key": "block_offering_stone_desc",
+      "value": "完美落下，库库尔坎立刻苏醒。"
+    },
+    {
+      "key": "band_foundation",
+      "value": "地基"
+    },
+    {
+      "key": "band_canopy",
+      "value": "树冠"
+    },
+    {
+      "key": "band_dusk",
+      "value": "神庙黄昏"
+    },
+    {
+      "key": "band_night",
+      "value": "繁星之夜"
+    },
+    {
+      "key": "band_serpent",
+      "value": "羽蛇的高度"
+    },
+    {
+      "key": "boon_title",
+      "value": "库库尔坦的馈赠"
+    },
+    {
+      "key": "boon_subtitle",
+      "value": "选择一项祝福。"
+    },
+    {
+      "key": "boon_serpents_favor",
+      "value": "羽蛇之佑"
+    },
+    {
+      "key": "boon_serpents_favor_desc",
+      "value": "接下来 5 块石头得分翻倍。"
+    },
+    {
+      "key": "boon_wide_foundation",
+      "value": "宽阔地基"
+    },
+    {
+      "key": "boon_wide_foundation_desc",
+      "value": "接下来 3 块石头会更宽。"
+    },
+    {
+      "key": "boon_stone_mercy",
+      "value": "磐石之慈"
+    },
+    {
+      "key": "boon_stone_mercy_desc",
+      "value": "库库尔坦立刻扶正你的神庙。"
+    },
+    {
+      "key": "boon_jade_eye",
+      "value": "翡翠之眼"
+    },
+    {
+      "key": "boon_jade_eye_desc",
+      "value": "接下来 2 次连击中断将被赦免。"
+    },
+    {
+      "key": "boon_telegraph_soon",
+      "value": "库库尔坦将至 — 还有{0}块"
+    },
+    {
+      "key": "boon_telegraph_next",
+      "value": "库库尔坦将至 — 下一块石头"
+    },
+    {
+      "key": "boon_intro_title",
+      "value": "库库尔坦的赐福"
+    },
+    {
+      "key": "boon_intro_body",
+      "value": "每堆起数块石头，库库尔坦便会暂停你的攻登，献上三种赐福。择其一：更宽的石块、双倍分数，或一座被扶正的神庙。"
+    },
+    {
+      "key": "boon_intro_note",
+      "value": "选择时攻登会暂停，每次赐福前都会有预兆。"
+    },
+    {
+      "key": "boon_intro_continue",
+      "value": "我准备好了"
+    },
+    {
+      "key": "objective_reach_height_desc",
+      "value": "堆叠 {0} 块石头。"
+    },
+    {
+      "key": "objective_flawless_desc",
+      "value": "堆叠 {0} 块石头，且不出现糟糕落点。"
+    },
+    {
+      "key": "objective_perfect_chain_desc",
+      "value": "连续完成 {0} 次完美落点。"
+    },
+    {
+      "key": "objective_swift_desc",
+      "value": "在 {1} 秒内堆叠 {0} 块石头。"
+    },
+    {
+      "key": "objective_failed_flawless",
+      "value": "石头歪了，攀升就此中断。"
+    },
+    {
+      "key": "objective_failed_swift",
+      "value": "太阳没有等你。"
     }
   ]
 }

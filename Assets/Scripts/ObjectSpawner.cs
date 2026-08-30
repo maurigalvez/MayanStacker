@@ -11,6 +11,10 @@ public class ObjectSpawner : MonoBehaviour
     [SerializeField] private Vector2 objectSize = new Vector2(1f, 0.3f);
     [SerializeField] private Color[] objectColors = { Color.red, Color.blue, Color.green, Color.yellow, Color.magenta };
 
+    [Header("Block Variety")]
+    [Tooltip("Optional weighted table of special blocks. Left empty, the spawner loads 'BlockVarietyTable' from Resources; with neither, only standard blocks spawn.")]
+    [SerializeField] private BlockVarietyTable varietyTable;
+
     [Header("Level Mode Settings")]
     [Tooltip("Y scale multiplier for the last block's collider (to match different texture height)")]
     [SerializeField] private float lastBlockColliderYScale = 1f;
@@ -45,6 +49,13 @@ public class ObjectSpawner : MonoBehaviour
         gameManager = DependencyRegistry.Find<GameManager>();
         stackManager = DependencyRegistry.Find<StackManager>();
         styleManager = DependencyRegistry.Find<StyleManager>();
+
+        // Fall back to the Resources asset so block variety can be enabled project-wide
+        // without editing the spawner prefab. Null here simply means standard blocks only.
+        if (varietyTable == null)
+        {
+            varietyTable = Resources.Load<BlockVarietyTable>(BlockVarietyTable.ResourcePath);
+        }
 
         // Subscribe to game events
         if (gameManager != null)
@@ -191,6 +202,21 @@ public class ObjectSpawner : MonoBehaviour
             stackableObject = obj.AddComponent<StackableObject>();
         }
 
+        // Decide what kind of block this is before anything is sized or tinted.
+        BlockVariant variant = RollVariant();
+        stackableObject.ApplyVariant(variant);
+
+        // Everything below sizes the block from blockSize instead of the spawner's
+        // objectSize, so a variant can be narrower or wider without changing any of the
+        // sprite-scaling, collider-fitting or last-block aspect-ratio maths. With no
+        // variant the two are identical and behaviour is unchanged.
+        // A Wide Foundation boon widens the block on top of whatever the variant did.
+        // Read the multiplier before ticking it down, so a 3-block boon widens 3 blocks.
+        float widthMultiplier = variant.widthMultiplier * ActiveBoons.WidthMultiplier;
+        ActiveBoons.RegisterBlockSpawned();
+
+        Vector2 blockSize = new Vector2(objectSize.x * widthMultiplier, objectSize.y);
+
         // Set up sprite renderer using StackableObject reference
         SpriteRenderer spriteRenderer = stackableObject.SpriteRenderer;
         if (spriteRenderer != null)
@@ -315,10 +341,24 @@ public class ObjectSpawner : MonoBehaviour
                 }
             }
 
+            // A variant carrying its own texture wins over the theme sprite. Block variety
+            // is a gameplay difference, so it has to be legible as a difference - colour
+            // alone is the fallback for a variant no artist has drawn yet.
+            if (variant.sprite != null)
+            {
+                spriteRenderer.sprite = variant.sprite;
+            }
+
             // Ensure sprite renderer is enabled
             spriteRenderer.enabled = true;
 
-            spriteRenderer.color = randomColor;
+            // A special block overrides the random colour so it reads as different at a
+            // glance - the player has to be able to see what they're being offered. A
+            // bespoke texture is authored in its final colours, so the random per-block
+            // tint is dropped rather than smeared over the art.
+            spriteRenderer.color = variant.overrideTint ? variant.tint
+                : variant.sprite != null ? Color.white
+                : randomColor;
 
             // Get the sprite's actual size in world units AFTER setting the final sprite
             // This ensures we're calculating scale based on the sprite that will actually be displayed
@@ -343,7 +383,7 @@ public class ObjectSpawner : MonoBehaviour
                 {
                     // Scale to match width while maintaining aspect ratio
                     // This ensures the sprite isn't squished and maintains its natural proportions
-                    float scaleX = objectSize.x / spriteSize.x;
+                    float scaleX = blockSize.x / spriteSize.x;
                     float scaleY = scaleX; // Use same scale for both axes to maintain aspect ratio
                     spriteScale = new Vector3(scaleX, scaleY, 1f);
 
@@ -357,25 +397,25 @@ public class ObjectSpawner : MonoBehaviour
                 {
                     // Last block sprite not available, use regular scaling
                     spriteScale = new Vector3(
-                        objectSize.x / spriteSize.x,
-                        objectSize.y / spriteSize.y,
+                        blockSize.x / spriteSize.x,
+                        blockSize.y / spriteSize.y,
                         1f
                     );
-                    actualVisualSize = objectSize;
+                    actualVisualSize = blockSize;
                 }
             }
             else
             {
-                // For all other sprites, scale to match objectSize exactly (original behavior)
+                // For all other sprites, scale to match blockSize exactly (original behavior)
                 // Formula: scale = desiredSize / spriteSize
                 spriteScale = new Vector3(
-                    objectSize.x / spriteSize.x,
-                    objectSize.y / spriteSize.y,
+                    blockSize.x / spriteSize.x,
+                    blockSize.y / spriteSize.y,
                     1f
                 );
 
-                // Visual size matches objectSize for regular blocks
-                actualVisualSize = objectSize;
+                // Visual size matches blockSize for regular blocks
+                actualVisualSize = blockSize;
             }
 
             // Set sprite renderer local scale for visual scaling
@@ -416,17 +456,17 @@ public class ObjectSpawner : MonoBehaviour
                     else
                     {
                         // Last block sprite not available, use regular collider size
-                        colliderSize = objectSize;
-                        colliderSize.y = objectSize.y * 0.95f;
+                        colliderSize = blockSize;
+                        colliderSize.y = blockSize.y * 0.95f;
                     }
                 }
                 else
                 {
-                    // For all other cases, use objectSize (original behavior)
-                    colliderSize = objectSize;
+                    // For all other cases, use blockSize (original behavior)
+                    colliderSize = blockSize;
 
                     // Reduce Y size by 5% to eliminate gaps between blocks
-                    colliderSize.y = objectSize.y * 0.95f;
+                    colliderSize.y = blockSize.y * 0.95f;
                 }
 
                 collider.size = colliderSize;
@@ -439,18 +479,42 @@ public class ObjectSpawner : MonoBehaviour
             if (collider != null)
             {
                 bool isLastBlock = IsLastBlockInLevel();
-                Vector2 colliderSize = objectSize;
+                Vector2 colliderSize = blockSize;
 
                 // Reduce Y size by 5% to eliminate gaps between blocks
-                colliderSize.y = objectSize.y * 0.95f;
+                colliderSize.y = blockSize.y * 0.95f;
 
                 if (isLastBlock && lastBlockColliderYScale != 1f)
                 {
-                    colliderSize.y = objectSize.y * lastBlockColliderYScale * 0.95f;
+                    colliderSize.y = blockSize.y * lastBlockColliderYScale * 0.95f;
                 }
                 collider.size = colliderSize;
             }
         }
+    }
+
+    /// <summary>
+    /// Picks the variant for the block about to be created.
+    ///
+    /// The final block of a level is always ordinary: it uses its own sprite, its own
+    /// collider scaling and completes the objective, so making it narrow or fragile would
+    /// be a rug-pull rather than a choice.
+    /// </summary>
+    private BlockVariant RollVariant()
+    {
+        if (varietyTable == null) return BlockVariant.Standard;
+
+        if (stackManager == null)
+        {
+            stackManager = DependencyRegistry.Find<StackManager>();
+        }
+
+        int stackHeight = stackManager != null ? stackManager.GetStackCount() : 0;
+
+        return varietyTable.Roll(
+            stackHeight,
+            allowSpecial: !IsLastBlockInLevel(),
+            specialChanceMultiplier: AltitudeBandManager.SpecialBlockChanceMultiplier);
     }
 
     /// <summary>
@@ -493,6 +557,11 @@ public class ObjectSpawner : MonoBehaviour
     private void OnGameStart()
     {
         canSpawn = true;
+
+        // Special-block spacing is per-run, so the first special of a new run isn't gated
+        // by whatever the previous run happened to end on.
+        if (varietyTable != null) varietyTable.ResetRunState();
+
         // Spawn immediately when game starts, even if title is still showing
         // This allows players to start dropping blocks before the title disappears
         if (currentObject == null)
