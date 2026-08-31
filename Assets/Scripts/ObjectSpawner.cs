@@ -510,11 +510,64 @@ public class ObjectSpawner : MonoBehaviour
         }
 
         int stackHeight = stackManager != null ? stackManager.GetStackCount() : 0;
+        bool allowSpecial = !IsLastBlockInLevel();
+
+        // A level may pin specific positions. Those win over the roll, and over the
+        // table's guard rails: an authored slot is a stated intention, not an accident of
+        // weights, so the "no specials before height N" and spacing rules don't apply to
+        // it. The last-block rule still does, for the reason above.
+        if (allowSpecial && TryGetPinnedVariant(stackHeight, out BlockVariant pinned))
+        {
+            return pinned;
+        }
 
         return varietyTable.Roll(
             stackHeight,
-            allowSpecial: !IsLastBlockInLevel(),
+            allowSpecial: allowSpecial,
             specialChanceMultiplier: AltitudeBandManager.SpecialBlockChanceMultiplier);
+    }
+
+    /// <summary>
+    /// Looks up the block a level has authored for this position, if any.
+    ///
+    /// Only level mode has an authored sequence — Infinite has no fixed length to author
+    /// against, and the Daily's shape comes from its modifier rather than from a per-level
+    /// asset. Both fall through to the roll.
+    /// </summary>
+    private bool TryGetPinnedVariant(int blockIndex, out BlockVariant variant)
+    {
+        variant = BlockVariant.Standard;
+
+        if (gameManager == null || gameManager.CurrentGameMode != GameMode.StackerLevels)
+        {
+            return false;
+        }
+
+        // The master switch still governs everything: turning variety off has to mean
+        // standard blocks only, authored or not.
+        if (!varietyTable.enableVariants)
+        {
+            return false;
+        }
+
+        if (levelManager == null)
+        {
+            levelManager = DependencyRegistry.Find<LevelManager>();
+        }
+
+        LevelData level = levelManager != null ? levelManager.CurrentLevel : null;
+        if (level == null || level.blockSequence == null || level.blockSequence.IsEmpty)
+        {
+            return false;
+        }
+
+        if (!level.blockSequence.TryGetPinned(blockIndex, out BlockVariantId id))
+        {
+            return false;
+        }
+
+        variant = varietyTable.Find(id);
+        return true;
     }
 
     /// <summary>

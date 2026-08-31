@@ -117,7 +117,10 @@ public class BlockVarietyTable : ScriptableObject
             return Standard();
         }
 
-        float roll = Random.value * total;
+        // RunRandom rather than UnityEngine.Random: in Levels and the Daily that stream is
+        // seeded, so the same level — and the same day's challenge — deals the same blocks
+        // every time. Infinite leaves it unseeded and behaves exactly as it always did.
+        float roll = RunRandom.Value * total;
         if (roll < standardWeight)
         {
             return Standard();
@@ -139,6 +142,38 @@ public class BlockVarietyTable : ScriptableObject
         }
 
         return Standard();
+    }
+
+    /// <summary>
+    /// The tuned variant behind an id, for the blocks a level pins rather than rolls.
+    ///
+    /// Resolving through the table instead of through <see cref="BlockVariant.Preset"/>
+    /// means an authored block is the same block a roll would have produced, including
+    /// whatever has since been tuned on this asset. The preset is only the fallback for an
+    /// id the table has no entry for.
+    ///
+    /// Counts as a special for spacing purposes, so a rolled slot immediately after an
+    /// authored one still respects <see cref="minGapBetweenSpecials"/>.
+    /// </summary>
+    public BlockVariant Find(BlockVariantId id)
+    {
+        if (id == BlockVariantId.Standard) return Standard();
+
+        if (variants != null)
+        {
+            for (int i = 0; i < variants.Count; i++)
+            {
+                WeightedVariant entry = variants[i];
+                if (entry == null || entry.variant == null) continue;
+                if (entry.variant.id != id) continue;
+
+                blocksSinceSpecial = 0;
+                return entry.variant;
+            }
+        }
+
+        blocksSinceSpecial = 0;
+        return BlockVariant.Preset(id);
     }
 
     /// <summary>

@@ -71,6 +71,7 @@
     <Compile Include="Assets\Scripts\PlayerProgressData.cs" />
     <Compile Include="Assets\Scripts\LeaderboardEntryUI.cs" />
     <Compile Include="Assets\Scripts\GameSettings.cs" />
+    <Compile Include="Assets\Scripts\Run\RunRandom.cs" />
     <Compile Include="Assets\Scripts\Localization\LocalizedText.cs" />
     <Compile Include="Assets\Scripts\ObjectSpawnerAnimator.cs" />
     <Compile Include="Assets\Scripts\ThemeMainMenuBackground.cs" />
@@ -124,6 +125,7 @@
     <Compile Include="Assets\Scripts\MainMenuManager.cs" />
     <Compile Include="Assets\Scripts\UI\RunBannerView.cs" />
     <Compile Include="Assets\Scripts\PointsPopup.cs" />
+    <Compile Include="Assets\Scripts\Blocks\LevelBlockSequence.cs" />
     <Compile Include="Assets\Scripts\DailyChallenge\DailyChallengeModifier.cs" />
     <Compile Include="Assets\Scripts\Boons\BoonIntroView.cs" />
     <Compile Include="Assets\Scripts\Achievements\AchievementNotificationUI.cs" />

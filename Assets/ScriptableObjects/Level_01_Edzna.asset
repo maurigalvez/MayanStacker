@@ -29,4 +29,22 @@ MonoBehaviour:
   threeStarScore: 800
   swingSpeedMultiplier: 1
   swingAmplitudeMultiplier: 1
+  blockSequence:
+    slots:
+    - rolled: 0
+      variant: 0
+    - rolled: 0
+      variant: 0
+    - rolled: 0
+      variant: 0
+    - rolled: 0
+      variant: 0
+    - rolled: 0
+      variant: 0
+    - rolled: 0
+      variant: 0
+    - rolled: 0
+      variant: 0
+    - rolled: 0
+      variant: 0
   gameMusic: {fileID: 8300000, guid: f2ce965d9c6cbe549a4d5f319321c81e, type: 3}

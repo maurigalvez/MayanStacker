@@ -215,12 +215,39 @@ public class GameManager : MonoBehaviour
             if (dailyMgr != null) dailyMgr.ResetRunCounter();
         }
 
+        // Open the run's random stream before anything can draw from it. Levels seed from
+        // the level number and the Daily from its UTC day, so a retry replays the same run
+        // and every player shares the same daily; Infinite stays unseeded on purpose.
+        RunRandom.BeginRun(currentGameMode, currentLevelNumber, ResolveDailyDayNumber());
+
         FtueState.RegisterRunStarted();
         GameAnalytics.RunStart(currentGameMode, currentLevelNumber, FtueState.LifetimeRuns);
 
         OnGameStart?.Invoke();
         OnScoreChanged?.Invoke(currentScore);
         OnComboChanged?.Invoke(currentCombo, GetComboMultiplier());
+    }
+
+    /// <summary>
+    /// The UTC day the Daily's random stream should be seeded from, or -1 outside the
+    /// Daily.
+    ///
+    /// The fetched config's day is preferred over the device's: it comes from the same
+    /// clock that chose the modifier, so the seed can't disagree with the challenge the
+    /// player was shown. Falling back to the local day keeps an offline run playable — it
+    /// just isn't guaranteed to match everyone else's.
+    /// </summary>
+    private int ResolveDailyDayNumber()
+    {
+        if (currentGameMode != GameMode.DailyChallenge) return -1;
+
+        var dailyMgr = DependencyRegistry.Find<DailyChallengeManager>();
+        if (dailyMgr != null && dailyMgr.HasConfig && dailyMgr.CurrentConfig.dayNumberUtc > 0)
+        {
+            return dailyMgr.CurrentConfig.dayNumberUtc;
+        }
+
+        return DailyChallengeManager.CurrentDayNumberUtc();
     }
 
     /// <summary>
@@ -555,6 +582,10 @@ public class GameManager : MonoBehaviour
         var stackManager = DependencyRegistry.Find<StackManager>();
         int blocks = stackManager != null ? stackManager.GetStackCount() : 0;
         GameAnalytics.RunEnd(currentGameMode, currentLevelNumber, blocks, currentScore, cause);
+
+        // Close the seeded stream so nothing drawn between runs — a menu flourish, an idle
+        // animation — eats draws that belong to the next attempt's sequence.
+        RunRandom.EndRun();
 
         OnGameOver?.Invoke();
     }

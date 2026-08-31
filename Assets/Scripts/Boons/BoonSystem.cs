@@ -291,7 +291,14 @@ public class BoonSystem : MonoBehaviour
         }
     }
 
-    /// <summary>Picks distinct boons at random, up to <paramref name="count"/>.</summary>
+    /// <summary>
+    /// Picks distinct boons at random, up to <paramref name="count"/>.
+    ///
+    /// Drawn from <see cref="RunRandom"/> so a level or a Daily offers the same blessings
+    /// at the same heights to every attempt and every player — the offer is part of what
+    /// makes a run learnable, and re-rolling it would put the interesting choice back
+    /// under luck.
+    /// </summary>
     private List<BoonId> PickOffers(int count)
     {
         var pool = new List<BoonId>(BoonDefinition.All);
@@ -300,7 +307,7 @@ public class BoonSystem : MonoBehaviour
         count = Mathf.Min(count, pool.Count);
         for (int i = 0; i < count; i++)
         {
-            int index = Random.Range(0, pool.Count);
+            int index = RunRandom.Range(0, pool.Count);
             offers.Add(pool[index]);
             pool.RemoveAt(index);
         }

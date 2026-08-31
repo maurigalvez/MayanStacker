@@ -55,6 +55,10 @@ public class LevelData : ScriptableObject
     [Range(0.5f, 2.0f)]
     public float swingAmplitudeMultiplier = 1.0f;
 
+    [Header("Block Sequence")]
+    [Tooltip("Optional hand-authored block order, from the bottom of the stack up. Leave empty to let the level's seed decide every block - it will still be the same order on every attempt.")]
+    public LevelBlockSequence blockSequence = new LevelBlockSequence();
+
     [Header("Audio")]
     [Tooltip("Music track to play for this level (optional - uses default if not set)")]
     public AudioClip gameMusic;
