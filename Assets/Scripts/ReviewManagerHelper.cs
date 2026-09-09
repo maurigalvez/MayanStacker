@@ -6,14 +6,30 @@ using Google.Play.Review;
 #endif
 
 /// <summary>
-/// Manages Google Play In-App Review prompts
-/// Shows review request when player loses in Infinite Stacker or completes at least 2 levels
+/// Google Play In-App Review, on two routes.
+///
+/// Automatic, once ever, and only off the back of a genuinely good moment: a new personal
+/// best in Infinite Stacker, or a three-star temple clear once the player has finished at
+/// least <see cref="minCompletedLevelsForReview"/> of them. It deliberately does NOT fire on
+/// a plain collapse — asking someone what they think of the game in the second after it beat
+/// them is how a 5-star player leaves 2 stars.
+///
+/// Manual, any time, from the "Rate this game" button in Settings
+/// (<see cref="RequestReviewFromPlayer"/>). That route ignores the once-ever latch, because
+/// a player who taps a rate button has asked for something and must get it.
+///
+/// Google's in-app flow is quota-limited and returns silently when it declines to show
+/// anything — sideloaded builds, an account that already reviewed, too many recent prompts.
+/// The manual route therefore falls back to opening the store listing, so the button is
+/// never a no-op.
 /// </summary>
 public class ReviewManagerHelper : MonoBehaviour
 {
     [Header("Review Settings")]
     [SerializeField] private bool enableReviewPrompt = true;
     [SerializeField] private int minCompletedLevelsForReview = 2;
+    [Tooltip("Stars required on a temple clear before the automatic prompt may fire. 3 = only a perfect clear counts as a good moment.")]
+    [SerializeField] private int minStarsForReview = 3;
 
     // References
     private GameManager gameManager;
@@ -147,13 +163,23 @@ public class ReviewManagerHelper : MonoBehaviour
             return;
         }
 
-        // Only show review for Infinite Stacker mode
+        // Only show review for Infinite Stacker mode, and only when the run that just ended
+        // was a personal best. Every other game-over is a loss, and a loss is the worst
+        // possible moment to ask someone to rate the game.
         if (gameManager != null && gameManager.CurrentGameMode == GameMode.InfiniteStacker)
         {
+            if (!IsNewPersonalBest())
+            {
 #if DEBUG
-            Debug.Log("[ReviewManager] OnGameOver - Infinite Stacker detected, calling CheckAndShowReview");
+                Debug.Log($"[ReviewManager] OnGameOver - Infinite Stacker, but not a personal best ({gameManager.CurrentScore} vs {gameManager.HighScore}); staying quiet");
 #endif
-            CheckAndShowReview();
+                return;
+            }
+
+#if DEBUG
+            Debug.Log("[ReviewManager] OnGameOver - Infinite Stacker personal best, calling CheckAndShowReview");
+#endif
+            CheckAndShowReview("infinite_personal_best");
         }
         else
         {
@@ -184,6 +210,15 @@ public class ReviewManagerHelper : MonoBehaviour
         // Only show review for Stacker Levels mode
         if (gameManager != null && gameManager.CurrentGameMode == GameMode.StackerLevels)
         {
+            // A scraped-through one-star clear is not a good moment. Wait for a perfect one.
+            if (stars < minStarsForReview)
+            {
+#if DEBUG
+                Debug.Log($"[ReviewManager] OnLevelCompleted - {stars} star(s), need {minStarsForReview}; staying quiet");
+#endif
+                return;
+            }
+
             // Check if at least 2 levels are completed
             int completedLevelCount = GetCompletedLevelCount();
 #if DEBUG
@@ -194,7 +229,7 @@ public class ReviewManagerHelper : MonoBehaviour
 #if DEBUG
                 Debug.Log("[ReviewManager] OnLevelCompleted - Enough levels completed, calling CheckAndShowReview");
 #endif
-                CheckAndShowReview();
+                CheckAndShowReview("temple_three_star");
             }
             else
             {
@@ -215,10 +250,10 @@ public class ReviewManagerHelper : MonoBehaviour
     /// <summary>
     /// Main method to check conditions and show review if appropriate
     /// </summary>
-    public void CheckAndShowReview()
+    public void CheckAndShowReview(string source = "auto")
     {
 #if DEBUG
-        Debug.Log("[ReviewManager] CheckAndShowReview called");
+        Debug.Log($"[ReviewManager] CheckAndShowReview called (source: {source})");
 #endif
 
         if (!ShouldShowReview())
@@ -236,8 +271,47 @@ public class ReviewManagerHelper : MonoBehaviour
         // Mark as shown immediately to prevent multiple prompts
         MarkReviewShown();
 
-        // Request and show review
-        StartCoroutine(RequestAndShowReview());
+        // Request and show review. The automatic route never falls back to the store page:
+        // if Play declines to show the sheet, the player asked for nothing and gets nothing.
+        StartCoroutine(RequestAndShowReview(source, allowStoreFallback: false));
+    }
+
+    /// <summary>
+    /// The "Rate this game" button in Settings. Unlike the automatic prompt this ignores
+    /// every gate — the once-ever latch, the mode, the score — because the player pressed a
+    /// button and something has to happen. If Play's in-app sheet won't appear, the store
+    /// listing opens instead.
+    /// </summary>
+    public void RequestReviewFromPlayer()
+    {
+        // A deliberate rating also retires the automatic prompt: having asked once, the game
+        // shouldn't ambush them again mid-run.
+        if (!isReviewShown) MarkReviewShown();
+
+        StartCoroutine(RequestAndShowReview("settings_button", allowStoreFallback: true));
+    }
+
+    /// <summary>
+    /// True when the run that just ended set a personal best. Matches the condition UIManager
+    /// uses for its "NEW HIGH SCORE!" banner, so the prompt only ever follows a moment the
+    /// player has actually been congratulated for.
+    /// </summary>
+    private bool IsNewPersonalBest()
+    {
+        if (gameManager == null) return false;
+        return gameManager.CurrentScore > 0 && gameManager.CurrentScore >= gameManager.HighScore;
+    }
+
+    /// <summary>
+    /// Opens the Play Store listing for this build. The https form is used rather than
+    /// market://, because Play intercepts it on any device that has the store and it still
+    /// resolves in a browser on any device that doesn't.
+    /// </summary>
+    private static void OpenStoreListing()
+    {
+        string url = $"https://play.google.com/store/apps/details?id={Application.identifier}";
+        Debug.Log($"[ReviewManager] Falling back to the store listing: {url}");
+        Application.OpenURL(url);
     }
 
     /// <summary>
@@ -373,7 +447,7 @@ public class ReviewManagerHelper : MonoBehaviour
     /// <summary>
     /// Request and show the review flow asynchronously
     /// </summary>
-    private IEnumerator RequestAndShowReview()
+    private IEnumerator RequestAndShowReview(string source, bool allowStoreFallback)
     {
 #if UNITY_ANDROID
 #if DEBUG
@@ -408,6 +482,8 @@ public class ReviewManagerHelper : MonoBehaviour
             if (!initialized || playReviewManager == null)
             {
                 Debug.LogWarning("Google Play Review Manager could not be initialized after retries. Review prompt will not be shown.");
+                GameAnalytics.ReviewPrompt(source, false);
+                if (allowStoreFallback) OpenStoreListing();
                 yield break;
             }
         }
@@ -421,6 +497,8 @@ public class ReviewManagerHelper : MonoBehaviour
         if (requestFlowOperation.Error != ReviewErrorCode.NoError)
         {
             Debug.LogWarning($"Error requesting review flow: {requestFlowOperation.Error}");
+            GameAnalytics.ReviewPrompt(source, false);
+            if (allowStoreFallback) OpenStoreListing();
             yield break;
         }
 
@@ -428,6 +506,8 @@ public class ReviewManagerHelper : MonoBehaviour
         if (playReviewInfo == null)
         {
             Debug.LogWarning("Review flow request returned null");
+            GameAnalytics.ReviewPrompt(source, false);
+            if (allowStoreFallback) OpenStoreListing();
             yield break;
         }
 
@@ -443,12 +523,20 @@ public class ReviewManagerHelper : MonoBehaviour
         if (launchFlowOperation.Error != ReviewErrorCode.NoError)
         {
             Debug.LogWarning($"Error launching review flow: {launchFlowOperation.Error}");
+            GameAnalytics.ReviewPrompt(source, false);
+            if (allowStoreFallback) OpenStoreListing();
             yield break;
         }
 
+        // Note: Play returns success whether or not it actually drew the sheet, and never
+        // tells us whether a review was left. "launched" here means "Play accepted the
+        // request", which is the most this API will ever say.
+        GameAnalytics.ReviewPrompt(source, true);
         Debug.Log("Google Play Review flow completed successfully");
 #else
         Debug.Log("Google Play Review is only available on Android platform");
+        GameAnalytics.ReviewPrompt(source, false);
+        if (allowStoreFallback) OpenStoreListing();
         yield break;
 #endif
     }

@@ -433,6 +433,18 @@
       "value": "Tus piedras siguen donde las dejaste."
     },
     {
+      "key": "settings_notifications",
+      "value": "Recordatorios diarios"
+    },
+    {
+      "key": "settings_notifications_blocked",
+      "value": "Los recordatorios están desactivados en la configuración de tu dispositivo."
+    },
+    {
+      "key": "settings_rate_game",
+      "value": "Califica el juego"
+    },
+    {
       "key": "notif_lapse_body_site",
       "value": "{0} sigue sin terminar."
     },

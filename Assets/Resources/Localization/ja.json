@@ -433,6 +433,18 @@
       "value": "石はあなたが置いたままだ。"
     },
     {
+      "key": "settings_notifications",
+      "value": "デイリーリマインダー"
+    },
+    {
+      "key": "settings_notifications_blocked",
+      "value": "端末の設定で通知がオフになっています。"
+    },
+    {
+      "key": "settings_rate_game",
+      "value": "このゲームを評価"
+    },
+    {
       "key": "notif_lapse_body_site",
       "value": "{0}はまだ未完成だ。"
     },

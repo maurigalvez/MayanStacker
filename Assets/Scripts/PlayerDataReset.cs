@@ -118,7 +118,9 @@ public class PlayerDataReset : MonoBehaviour
         // can be tested again rather than only ever firing on a fresh install.
         BlockCodex.ResetAll();
 
-        NotificationScheduler.CancelAll();
+        // Cancels the reminders AND forgets that permission was ever asked for, so the
+        // first-launch dialog can be tested from the editor rather than only by uninstalling.
+        NotificationScheduler.ResetAll();
         GameAnalytics.ClearPending();
 
         PlayerPrefs.Save();

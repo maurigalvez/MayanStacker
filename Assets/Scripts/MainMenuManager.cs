@@ -212,6 +212,12 @@ public class MainMenuManager : MonoBehaviour
     {
         FtueState.MarkLanguageChosen();
 
+        // The notification ask goes here and nowhere earlier: the player has made exactly one
+        // choice, the game is now in their language, and the tutorial hasn't started — so the
+        // system dialog isn't interrupting anything. Fire-and-forget; the scene load below
+        // doesn't wait on the player's answer, and the dialog sits over the loading screen.
+        NotificationScheduler.RequestPermissionOnboarding();
+
         Debug.Log("[FTUE] First launch - routing straight into the first temple.");
         GameAnalytics.Track("ftue_first_launch_routed");
 

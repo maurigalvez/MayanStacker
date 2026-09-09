@@ -26,6 +26,16 @@ public class SettingsManager : MonoBehaviour
     [Header("Language Settings")]
     [SerializeField] private TMP_Dropdown languageDropdown;
 
+    [Header("Notifications")]
+    [Tooltip("Opt-in for daily ritual reminders. Turning it on triggers the Android permission dialog, or the system settings deep link once Android stops showing that dialog.")]
+    [SerializeField] private Toggle notificationsToggle;
+    [Tooltip("Optional line under the toggle explaining why reminders are off when the OS is blocking them.")]
+    [SerializeField] private TextMeshProUGUI notificationsStatusText;
+
+    [Header("Feedback")]
+    [Tooltip("Opens the Google Play in-app review sheet, falling back to the store listing.")]
+    [SerializeField] private Button rateGameButton;
+
     [Header("General Settings UI")]
     [SerializeField] private Button resetDefaultsButton;
     [SerializeField] private Button applyButton;
@@ -106,6 +116,10 @@ public class SettingsManager : MonoBehaviour
 
         // Language dropdown
         InitializeLanguageDropdown();
+
+        // Notifications reflect the OS, not just our own flag, so they are re-read every
+        // time the panel opens rather than cached.
+        RefreshNotificationsUI();
     }
 
     private void SetupUIListeners()
@@ -134,12 +148,123 @@ public class SettingsManager : MonoBehaviour
         if (languageDropdown != null)
             languageDropdown.onValueChanged.AddListener(OnLanguageChanged);
 
+        // Notifications
+        if (notificationsToggle != null)
+            notificationsToggle.onValueChanged.AddListener(OnNotificationsToggled);
+
+        // Feedback
+        if (rateGameButton != null)
+            rateGameButton.onClick.AddListener(OnRateGamePressed);
+
         // General Buttons
         if (resetDefaultsButton != null)
             resetDefaultsButton.onClick.AddListener(ResetToDefaults);
 
         if (applyButton != null)
             applyButton.onClick.AddListener(ApplyAndSaveSettings);
+    }
+
+    #region Notifications
+
+    /// <summary>
+    /// True between the player switching reminders on and us learning the OS's answer. Only
+    /// set on that path, so returning to the app never resurrects a toggle the player turned
+    /// off on purpose.
+    /// </summary>
+    private bool awaitingNotificationOptIn;
+
+    /// <summary>
+    /// Paints the toggle from the real state, which is two things and-ed together: the
+    /// player's own preference and whether Android will actually let us post. Either one
+    /// being off means no reminders, so the toggle shows off — a switch that reads "on"
+    /// while nothing arrives is worse than no switch.
+    /// </summary>
+    private void RefreshNotificationsUI()
+    {
+        if (notificationsToggle != null)
+        {
+            bool on = NotificationScheduler.Enabled && NotificationScheduler.SystemPermissionGranted;
+            // Without-notify, or repainting the panel would look like a player toggling it
+            // and fire another permission request.
+            notificationsToggle.SetIsOnWithoutNotify(on);
+        }
+
+        if (notificationsStatusText != null)
+        {
+            bool blocked = NotificationScheduler.PermissionPermanentlyDenied;
+            notificationsStatusText.gameObject.SetActive(blocked);
+            if (blocked)
+            {
+                notificationsStatusText.text = LocalizationManager.Get("settings_notifications_blocked");
+            }
+        }
+    }
+
+    private void OnNotificationsToggled(bool wantsOn)
+    {
+        if (mainMenuSoundManager != null)
+            mainMenuSoundManager.PlayButtonClick();
+
+        if (!wantsOn)
+        {
+            awaitingNotificationOptIn = false;
+            NotificationScheduler.Enabled = false;
+            RefreshNotificationsUI();
+            return;
+        }
+
+        // Turning it on may open the system dialog, or send the player out to the OS
+        // settings screen. Either way the answer arrives later, so the UI is repainted from
+        // the result rather than assumed.
+        awaitingNotificationOptIn = true;
+
+        NotificationScheduler.RequestPermissionFromSettings(granted =>
+        {
+            NotificationScheduler.Enabled = granted;
+            if (granted) awaitingNotificationOptIn = false;
+            RefreshNotificationsUI();
+        });
+    }
+
+    /// <summary>
+    /// The deep-link path leaves the app, so the toggle can only learn what the player did
+    /// over in system settings when they come back.
+    /// </summary>
+    private void OnApplicationFocus(bool hasFocus)
+    {
+        if (!hasFocus) return;
+        if (notificationsToggle == null) return;
+
+        // Only when they were part-way through opting in. Anyone else keeps whatever they
+        // chose, including a deliberate "off" with the OS permission still granted.
+        if (awaitingNotificationOptIn && NotificationScheduler.SystemPermissionGranted)
+        {
+            awaitingNotificationOptIn = false;
+            NotificationScheduler.Enabled = true;
+        }
+
+        RefreshNotificationsUI();
+    }
+
+    #endregion
+
+    /// <summary>
+    /// "Rate this game". Always does something: Play's in-app sheet where it's available,
+    /// the store listing where it isn't.
+    /// </summary>
+    private void OnRateGamePressed()
+    {
+        if (mainMenuSoundManager != null)
+            mainMenuSoundManager.PlayButtonClick();
+
+        var reviewHelper = DependencyRegistry.Find<ReviewManagerHelper>();
+        if (reviewHelper == null)
+        {
+            Debug.LogWarning("[SettingsManager] No ReviewManagerHelper in the scene — the rate button can't do anything.");
+            return;
+        }
+
+        reviewHelper.RequestReviewFromPlayer();
     }
 
     // Audio Callbacks

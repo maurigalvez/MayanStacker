@@ -59,6 +59,7 @@
     <Compile Include="Assets\Scripts\Editor\BoonUISetup.cs" />
     <Compile Include="Assets\Scripts\Editor\FtueTutorialPrefabSetup.cs" />
     <Compile Include="Assets\Scripts\Editor\LocaleFontSetup.cs" />
+    <Compile Include="Assets\Scripts\Editor\NotificationsAndReviewSetup.cs" />
     <Compile Include="Assets\Scripts\Editor\RunContentSetup.cs" />
     <Compile Include="Assets\Scripts\Editor\FtueUISetup.cs" />
   </ItemGroup>

@@ -433,6 +433,18 @@
       "value": "Your stones are where you left them."
     },
     {
+      "key": "settings_notifications",
+      "value": "Daily Reminders"
+    },
+    {
+      "key": "settings_notifications_blocked",
+      "value": "Reminders are switched off in your device settings."
+    },
+    {
+      "key": "settings_rate_game",
+      "value": "Rate this game"
+    },
+    {
       "key": "notif_lapse_body_site",
       "value": "{0} is still unfinished."
     },

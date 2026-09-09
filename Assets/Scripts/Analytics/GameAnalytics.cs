@@ -213,10 +213,27 @@ public static class GameAnalytics
             "streak", streak));
     }
 
-    /// <summary>Local notification permission outcome.</summary>
-    public static void NotificationPermission(bool granted)
+    /// <summary>
+    /// Local notification permission outcome. The source separates the first-launch ask from
+    /// a player opting back in via Settings — the two convert very differently and blending
+    /// them would hide which one is doing the work.
+    /// </summary>
+    public static void NotificationPermission(bool granted, string source = "unknown")
     {
-        Track("notification_permission", Data("granted", granted));
+        Track("notification_permission", Data(
+            "granted", granted,
+            "source", source));
+    }
+
+    /// <summary>
+    /// A review prompt was attempted. <paramref name="launched"/> is false when Google Play
+    /// declined to show anything (quota, sideloaded build) and we fell back to the store page.
+    /// </summary>
+    public static void ReviewPrompt(string source, bool launched)
+    {
+        Track("review_prompt", Data(
+            "source", source,
+            "launched", launched));
     }
 
     /// <summary>Session ended (app paused or quit).</summary>

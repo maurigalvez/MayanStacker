@@ -433,6 +433,18 @@
       "value": "Suas pedras estão onde você as deixou."
     },
     {
+      "key": "settings_notifications",
+      "value": "Lembretes diários"
+    },
+    {
+      "key": "settings_notifications_blocked",
+      "value": "Os lembretes estão desativados nas configurações do seu aparelho."
+    },
+    {
+      "key": "settings_rate_game",
+      "value": "Avalie o jogo"
+    },
+    {
       "key": "notif_lapse_body_site",
       "value": "{0} ainda está inacabado."
     },

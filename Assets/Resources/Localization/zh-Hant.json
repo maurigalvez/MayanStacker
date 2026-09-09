@@ -433,6 +433,18 @@
       "value": "你的石塊還在原處。"
     },
     {
+      "key": "settings_notifications",
+      "value": "每日提醒"
+    },
+    {
+      "key": "settings_notifications_blocked",
+      "value": "提醒已在裝置設定中關閉。"
+    },
+    {
+      "key": "settings_rate_game",
+      "value": "為遊戲評分"
+    },
+    {
       "key": "notif_lapse_body_site",
       "value": "{0}尚未完成。"
     },
