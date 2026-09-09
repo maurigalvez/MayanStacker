@@ -611,6 +611,38 @@
     {
       "key": "objective_failed_swift",
       "value": "O sol seguiu sem você."
+    },
+    {
+      "key": "update_available_title",
+      "value": "Uma nova oferenda aguarda"
+    },
+    {
+      "key": "update_available_body",
+      "value": "Uma nova talha do templo está pronta. Pegue agora: você pode continuar empilhando enquanto ela chega."
+    },
+    {
+      "key": "update_button_update",
+      "value": "Atualizar"
+    },
+    {
+      "key": "update_button_later",
+      "value": "Agora não"
+    },
+    {
+      "key": "update_downloading",
+      "value": "Trazendo as novas pedras… {0}%"
+    },
+    {
+      "key": "update_ready_title",
+      "value": "As novas pedras chegaram"
+    },
+    {
+      "key": "update_ready_body",
+      "value": "Reinicie o jogo para assentá-las."
+    },
+    {
+      "key": "update_button_restart",
+      "value": "Reiniciar agora"
     }
   ]
 }

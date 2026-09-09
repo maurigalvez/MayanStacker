@@ -611,6 +611,38 @@
     {
       "key": "objective_failed_swift",
       "value": "El sol siguió su camino sin ti."
+    },
+    {
+      "key": "update_available_title",
+      "value": "Una nueva ofrenda te espera"
+    },
+    {
+      "key": "update_available_body",
+      "value": "Ya está lista una nueva talla del templo. Tómala ahora: puedes seguir apilando mientras llega."
+    },
+    {
+      "key": "update_button_update",
+      "value": "Actualizar"
+    },
+    {
+      "key": "update_button_later",
+      "value": "Ahora no"
+    },
+    {
+      "key": "update_downloading",
+      "value": "Trayendo las piedras nuevas… {0}%"
+    },
+    {
+      "key": "update_ready_title",
+      "value": "Las piedras nuevas ya llegaron"
+    },
+    {
+      "key": "update_ready_body",
+      "value": "Reinicia el juego para colocarlas en su lugar."
+    },
+    {
+      "key": "update_button_restart",
+      "value": "Reiniciar ahora"
     }
   ]
 }

@@ -611,6 +611,38 @@
     {
       "key": "objective_failed_swift",
       "value": "太阳没有等你。"
+    },
+    {
+      "key": "update_available_title",
+      "value": "新的祭品已备好"
+    },
+    {
+      "key": "update_available_body",
+      "value": "神庙的新版本已雕刻完成。现在就取用吧——下载时你仍可继续堆叠。"
+    },
+    {
+      "key": "update_button_update",
+      "value": "更新"
+    },
+    {
+      "key": "update_button_later",
+      "value": "暂不"
+    },
+    {
+      "key": "update_downloading",
+      "value": "正在搬运新石块…… {0}%"
+    },
+    {
+      "key": "update_ready_title",
+      "value": "新石块已送达"
+    },
+    {
+      "key": "update_ready_body",
+      "value": "重启游戏即可将它们安放到位。"
+    },
+    {
+      "key": "update_button_restart",
+      "value": "立即重启"
     }
   ]
 }

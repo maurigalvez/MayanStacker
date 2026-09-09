@@ -611,6 +611,38 @@
     {
       "key": "objective_failed_swift",
       "value": "The sun moved on without you."
+    },
+    {
+      "key": "update_available_title",
+      "value": "A New Offering Awaits"
+    },
+    {
+      "key": "update_available_body",
+      "value": "A newer carving of the temple is ready. Take it now — you can keep stacking while it arrives."
+    },
+    {
+      "key": "update_button_update",
+      "value": "Update"
+    },
+    {
+      "key": "update_button_later",
+      "value": "Not now"
+    },
+    {
+      "key": "update_downloading",
+      "value": "Carrying the new stones… {0}%"
+    },
+    {
+      "key": "update_ready_title",
+      "value": "The New Stones Have Arrived"
+    },
+    {
+      "key": "update_ready_body",
+      "value": "Restart the game to set them in place."
+    },
+    {
+      "key": "update_button_restart",
+      "value": "Restart now"
     }
   ]
 }

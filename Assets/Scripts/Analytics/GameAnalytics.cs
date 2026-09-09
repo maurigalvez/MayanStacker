@@ -236,6 +236,25 @@ public static class GameAnalytics
             "launched", launched));
     }
 
+    /// <summary>
+    /// A step in the Google Play in-app update flow. <paramref name="stage"/> is one of
+    /// prompt_shown / accepted / declined / downloaded / restart_prompt / restart_accepted /
+    /// restart_declined / already_downloaded, or one of the failure stages (not_allowed,
+    /// start_failed, download_failed, install_failed) which also carry a
+    /// <paramref name="detail"/> naming the Play error code.
+    ///
+    /// The pair worth watching is prompt_shown against restart_accepted: everything in
+    /// between is a player who was told about an update and did not end up on it.
+    /// </summary>
+    public static void AppUpdate(string stage, int versionCode, string detail = null)
+    {
+        Track("app_update", Data(
+            "stage", stage,
+            "available_version_code", versionCode,
+            "installed_version", Application.version,
+            "detail", detail ?? string.Empty));
+    }
+
     /// <summary>Session ended (app paused or quit).</summary>
     public static void SessionEnd(float durationSeconds, int runsThisSession)
     {

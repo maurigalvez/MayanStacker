@@ -611,6 +611,38 @@
     {
       "key": "objective_failed_swift",
       "value": "太陽は待ってくれなかった。"
+    },
+    {
+      "key": "update_available_title",
+      "value": "新たな供物が届いています"
+    },
+    {
+      "key": "update_available_body",
+      "value": "神殿の新しい版が彫り上がりました。今すぐ受け取りましょう。ダウンロード中も積み続けられます。"
+    },
+    {
+      "key": "update_button_update",
+      "value": "アップデート"
+    },
+    {
+      "key": "update_button_later",
+      "value": "あとで"
+    },
+    {
+      "key": "update_downloading",
+      "value": "新しい石を運んでいます… {0}%"
+    },
+    {
+      "key": "update_ready_title",
+      "value": "新しい石が届きました"
+    },
+    {
+      "key": "update_ready_body",
+      "value": "ゲームを再起動して石を据えましょう。"
+    },
+    {
+      "key": "update_button_restart",
+      "value": "今すぐ再起動"
     }
   ]
 }
