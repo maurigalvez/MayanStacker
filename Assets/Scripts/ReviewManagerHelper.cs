@@ -39,6 +39,14 @@ public class ReviewManagerHelper : MonoBehaviour
     private bool isReviewShown = false;
     private const string REVIEW_PROMPT_SHOWN_KEY = "ReviewPromptShown";
 
+    /// <summary>
+    /// True while a request/launch pair is in flight. Play's sheet takes a moment to appear
+    /// over the game, which is long enough for a second tap on the Settings button to land
+    /// and start a second flow — two requests, two analytics events, and a sheet that can
+    /// reappear after the player dismisses the first one.
+    /// </summary>
+    private bool isReviewFlowRunning = false;
+
 #if UNITY_ANDROID
     private ReviewManager playReviewManager;
     private bool isReviewManagerInitialized = false;
@@ -445,9 +453,24 @@ public class ReviewManagerHelper : MonoBehaviour
 #endif
 
     /// <summary>
-    /// Request and show the review flow asynchronously
+    /// Request and show the review flow asynchronously. Re-entrant calls are dropped: the
+    /// inner routine has many exit points, so the latch is held here rather than threaded
+    /// through each of them.
     /// </summary>
     private IEnumerator RequestAndShowReview(string source, bool allowStoreFallback)
+    {
+        if (isReviewFlowRunning)
+        {
+            Debug.Log("[ReviewManager] Review flow already running; ignoring duplicate request.");
+            yield break;
+        }
+
+        isReviewFlowRunning = true;
+        yield return StartCoroutine(RunReviewFlow(source, allowStoreFallback));
+        isReviewFlowRunning = false;
+    }
+
+    private IEnumerator RunReviewFlow(string source, bool allowStoreFallback)
     {
 #if UNITY_ANDROID
 #if DEBUG

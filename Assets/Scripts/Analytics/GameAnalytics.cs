@@ -101,13 +101,28 @@ public static class GameAnalytics
         pending.Clear();
     }
 
+    /// <summary>
+    /// Body keys PlayFab owns on every event. Sending one back is not a partial failure —
+    /// WritePlayerEvent rejects the whole call with "Field X is a reserved PlayFab field and
+    /// may not be overridden", so the event is lost outright. A collision is prefixed rather
+    /// than dropped, so the value still lands and the name stays readable in the dashboard.
+    /// </summary>
+    private static readonly HashSet<string> ReservedKeys = new HashSet<string>(
+        System.StringComparer.OrdinalIgnoreCase)
+    {
+        "source", "timestamp", "id", "entity", "entitytype", "eventname", "eventnamespace",
+        "namespace", "originalid", "originaltimestamp", "payload", "playfabenvironment",
+    };
+
     private static Dictionary<string, object> Data(params object[] keyValuePairs)
     {
         var dict = new Dictionary<string, object>();
         for (int i = 0; i + 1 < keyValuePairs.Length; i += 2)
         {
             string key = keyValuePairs[i] as string;
-            if (!string.IsNullOrEmpty(key)) dict[key] = keyValuePairs[i + 1];
+            if (string.IsNullOrEmpty(key)) continue;
+            if (ReservedKeys.Contains(key)) key = "evt_" + key;
+            dict[key] = keyValuePairs[i + 1];
         }
         return dict;
     }
@@ -222,7 +237,7 @@ public static class GameAnalytics
     {
         Track("notification_permission", Data(
             "granted", granted,
-            "source", source));
+            "trigger", source));
     }
 
     /// <summary>
@@ -232,7 +247,7 @@ public static class GameAnalytics
     public static void ReviewPrompt(string source, bool launched)
     {
         Track("review_prompt", Data(
-            "source", source,
+            "trigger", source,
             "launched", launched));
     }
 
