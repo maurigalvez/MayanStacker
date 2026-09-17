@@ -7,6 +7,16 @@ public class ObjectSpawner : MonoBehaviour
     [SerializeField] private GameObject stackableObjectPrefab;
     [SerializeField] private float spawnDelay = 1f;
 
+    [Tooltip("Realtime seconds a freshly spawned block ignores drops while it fades in. Stops the next block being tapped away the instant the last one lands, so each drop has to be read.")]
+    [SerializeField] private float dropArmDelay = 0.3f;
+
+    [Tooltip("Alpha a fresh block starts at before fading in over the arm delay.")]
+    [Range(0f, 1f)]
+    [SerializeField] private float unarmedAlpha = 0.35f;
+
+    [Tooltip("Realtime seconds before arming in which a tap is remembered and fires the moment the block arms. Earlier taps are still swallowed, so mashing gains nothing.")]
+    [SerializeField] private float dropBufferWindow = 0.12f;
+
     [Header("Object Settings")]
     [SerializeField] private Vector2 objectSize = new Vector2(1f, 0.3f);
     [SerializeField] private Color[] objectColors = { Color.red, Color.blue, Color.green, Color.yellow, Color.magenta };
@@ -23,6 +33,8 @@ public class ObjectSpawner : MonoBehaviour
     private GameObject currentObject;
     private bool canSpawn = true;
     private bool waitingForLanding = false;
+    private float armedAtUnscaledTime = 0f;
+    private bool dropQueued = false;
 
     // Events
     public System.Action<GameObject> OnObjectSpawned;
@@ -81,6 +93,21 @@ public class ObjectSpawner : MonoBehaviour
     }
 
 
+    private void Update()
+    {
+        if (!dropQueued || !IsCurrentObjectArmed) return;
+
+        dropQueued = false;
+
+        // Re-check the same gates InputManager applies, since the world may have changed
+        // during the buffer (pause, boon picker, game over).
+        if (Time.timeScale == 0f) return;
+        if (uiManager != null && uiManager.IsPaused) return;
+        if (gameManager != null && (!gameManager.IsGameActive || gameManager.IsGameOver)) return;
+
+        DropCurrentObject();
+    }
+
     private void OnObjectLanded(StackableObject landedObject, float landingAccuracy)
     {
         // Unsubscribe from this object's event
@@ -105,6 +132,17 @@ public class ObjectSpawner : MonoBehaviour
     public void DropCurrentObject()
     {
         if (currentObject == null || waitingForLanding) return;
+
+        // A block that hasn't finished arriving can't be dropped. Unscaled, so the hit-stop
+        // that lands on the same frame as the spawn doesn't stretch the wait.
+        if (!IsCurrentObjectArmed)
+        {
+            // A tap just short of arming is kept and fired from Update, so a player timing
+            // the swing right after a landing doesn't lose it. Earlier taps are dropped.
+            if (armedAtUnscaledTime - Time.unscaledTime <= dropBufferWindow) dropQueued = true;
+            return;
+        }
+        dropQueued = false;
 
         // Don't allow dropping if game is over
         var gameManager = DependencyRegistry.Find<GameManager>();
@@ -150,7 +188,37 @@ public class ObjectSpawner : MonoBehaviour
         newObject.transform.position = transform.position;
 
         currentObject = newObject;
+        armedAtUnscaledTime = Time.unscaledTime + dropArmDelay;
+        dropQueued = false;
+        if (dropArmDelay > 0f)
+        {
+            StartCoroutine(FadeInWhileArming(newObject));
+        }
+
         OnObjectSpawned?.Invoke(newObject);
+    }
+
+    /// <summary>
+    /// Fades the new block in over the arm delay, so the moment it becomes droppable is
+    /// visible rather than a silent rule.
+    /// </summary>
+    private IEnumerator FadeInWhileArming(GameObject block)
+    {
+        StackableObject stackable = block != null ? block.GetComponent<StackableObject>() : null;
+        SpriteRenderer sr = stackable != null ? stackable.SpriteRenderer : null;
+        if (sr == null) yield break;
+
+        Color target = sr.color;
+        float start = Time.unscaledTime;
+
+        while (sr != null && Time.unscaledTime < armedAtUnscaledTime)
+        {
+            float k = Mathf.Clamp01((Time.unscaledTime - start) / dropArmDelay);
+            sr.color = new Color(target.r, target.g, target.b, Mathf.Lerp(unarmedAlpha * target.a, target.a, k));
+            yield return null;
+        }
+
+        if (sr != null) sr.color = target;
     }
 
     private GameObject CreateStackableObject()
@@ -683,6 +751,7 @@ public class ObjectSpawner : MonoBehaviour
         CancelInvoke(nameof(SpawnNewObject));
 
         canSpawn = false;
+        dropQueued = false;
     }
 
     private void OnLevelCompleted(int stars, int score, bool isFirstCompletion)
@@ -713,6 +782,7 @@ public class ObjectSpawner : MonoBehaviour
 
         canSpawn = false;
         waitingForLanding = false;
+        dropQueued = false;
     }
 
     private void OnGameRestart()
@@ -731,6 +801,7 @@ public class ObjectSpawner : MonoBehaviour
         currentObject = null;
         canSpawn = true;
         waitingForLanding = false;
+        dropQueued = false;
 
         // Don't spawn here - let OnGameStart handle spawning
         // This prevents double spawning since OnGameRestart is typically followed by OnGameStart
@@ -768,5 +839,6 @@ public class ObjectSpawner : MonoBehaviour
     public GameObject CurrentObject => currentObject;
     public bool CanSpawn => canSpawn;
     public bool WaitingForLanding => waitingForLanding;
+    public bool IsCurrentObjectArmed => Time.unscaledTime >= armedAtUnscaledTime;
     public Vector2 ObjectSize => objectSize;
 }

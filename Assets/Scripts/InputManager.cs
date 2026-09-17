@@ -12,7 +12,6 @@ public class InputManager : MonoBehaviour
 
     // Input Actions
     private InputAction dropAction;
-    private InputAction tapAction;
     private InputAction tapPositionAction;
 
     // References
@@ -23,7 +22,10 @@ public class InputManager : MonoBehaviour
 
     // State
     private bool isInputBlocked = false;
-    private bool isPointerOverUIElement = false; // Track UI hover state continuously
+
+    // Reused for the per-press UI raycast so a drop doesn't allocate.
+    private PointerEventData uiPointerData;
+    private readonly List<RaycastResult> uiRaycastResults = new List<RaycastResult>();
 
     // Events
     public System.Action<Vector2> OnScreenTapped;
@@ -48,18 +50,13 @@ public class InputManager : MonoBehaviour
 
         // Get actions from the input action asset
         dropAction = inputActions.FindAction("Drop");
-        tapAction = inputActions.FindAction("Tap");
         tapPositionAction = inputActions.FindAction("TapPosition");
 
-        // Subscribe to action events
+        // Only Drop drives the drop. Tap shares its mouse button, so listening to both
+        // made one press call DropCurrentObject twice.
         if (dropAction != null)
         {
             dropAction.performed += OnDropPerformed;
-        }
-
-        if (tapAction != null)
-        {
-            tapAction.performed += OnTapPerformed;
         }
     }
 
@@ -86,13 +83,6 @@ public class InputManager : MonoBehaviour
         }
     }
 
-    private void Update()
-    {
-        // Continuously check if pointer is over UI
-        // This tracks the state BEFORE any input action fires
-        isPointerOverUIElement = IsCurrentlyOverUI();
-    }
-
     private void OnEnable()
     {
         // Enable input actions
@@ -107,15 +97,6 @@ public class InputManager : MonoBehaviour
 
     private void OnDropPerformed(InputAction.CallbackContext context)
     {
-        // FIRST: Check if pointer was over UI (tracked continuously in Update)
-        if (isPointerOverUIElement)
-        {
-#if UNITY_EDITOR
-            Debug.Log("Input blocked: Pointer is over UI element (tracked state)");
-#endif
-            return;
-        }
-
         if (gameManager == null || !gameManager.IsGameActive || gameManager.IsGameOver)
             return;
 
@@ -134,71 +115,39 @@ public class InputManager : MonoBehaviour
         // Get the current screen position - use TapPosition action or current pointer position
         Vector2 screenPosition = GetScreenPositionForInput();
 
-        ProcessInput(screenPosition);
-    }
-
-    private void OnTapPerformed(InputAction.CallbackContext context)
-    {
-        // FIRST: Check if pointer was over UI (tracked continuously in Update)
-        if (isPointerOverUIElement)
+        // Checked at the press itself, at its own position. The drop now fires on touch-down,
+        // before any Update has seen this touch, so a per-frame UI flag would still describe
+        // the previous frame and let a tap on the pause button drop the block.
+        if (IsOverUIAt(screenPosition))
         {
 #if UNITY_EDITOR
-            Debug.Log("Input blocked: Pointer is over UI element (tracked state)");
+            Debug.Log("Input blocked: Pointer is over UI element");
 #endif
             return;
         }
-
-        if (gameManager == null || !gameManager.IsGameActive || gameManager.IsGameOver)
-            return;
-
-        // Block input if level is completed
-        if (levelManager != null && levelManager.IsLevelComplete)
-            return;
-
-        // Block input if game is paused
-        if (uiManager != null && uiManager.IsPaused)
-            return;
-
-        // Block input if we just resumed from pause
-        if (isInputBlocked)
-            return;
-
-        // Get the current screen position - use TapPosition action or current pointer position
-        Vector2 screenPosition = GetScreenPositionForInput();
 
         ProcessInput(screenPosition);
     }
 
     /// <summary>
-    /// Continuously checks if pointer/touch is currently over a UI element
-    /// Called every frame in Update to track UI hover state
+    /// True when any raycast-target UI element sits under the given screen position.
     /// </summary>
-    private bool IsCurrentlyOverUI()
+    private bool IsOverUIAt(Vector2 screenPosition)
     {
         if (EventSystem.current == null)
             return false;
 
-        // For touch input (mobile) - check if touch is active and over UI
-        if (Touchscreen.current != null && Touchscreen.current.primaryTouch.press.isPressed)
-        {
-            int touchId = Touchscreen.current.primaryTouch.touchId.ReadValue();
-            bool isOverUI = EventSystem.current.IsPointerOverGameObject(touchId);
-#if UNITY_EDITOR
-            if (isOverUI)
-            {
-                Debug.Log($"Touch {touchId} is over UI");
-            }
-#endif
-            return isOverUI;
-        }
+        // No usable position: fall back to the EventSystem's own tracking of the pointer.
+        if (!IsValidPosition(screenPosition) || screenPosition == Vector2.zero)
+            return EventSystem.current.IsPointerOverGameObject();
 
-        // For mouse input (desktop/editor)
-        bool isMouseOverUI = EventSystem.current.IsPointerOverGameObject();
-#if UNITY_EDITOR
-        if (isMouseOverUI)
-            Debug.Log("Mouse is over UI");
-#endif
-        return isMouseOverUI;
+        uiPointerData ??= new PointerEventData(EventSystem.current);
+        uiPointerData.Reset();
+        uiPointerData.position = screenPosition;
+
+        uiRaycastResults.Clear();
+        EventSystem.current.RaycastAll(uiPointerData, uiRaycastResults);
+        return uiRaycastResults.Count > 0;
     }
 
     /// <summary>
@@ -378,11 +327,6 @@ public class InputManager : MonoBehaviour
         if (dropAction != null)
         {
             dropAction.performed -= OnDropPerformed;
-        }
-
-        if (tapAction != null)
-        {
-            tapAction.performed -= OnTapPerformed;
         }
 
         // Unregister from dependency registry
