@@ -398,7 +398,7 @@ public class CodexManager : MonoBehaviour
         // Hide the shared detail panel
         if (sharedDetailPanel != null)
         {
-            sharedDetailPanel.SetActive(false);
+            UIPopup.Hide(sharedDetailPanel);
         }
     }
 
@@ -455,8 +455,8 @@ public class CodexManager : MonoBehaviour
             return;
         }
 
-        // Show the shared detail panel
-        sharedDetailPanel.SetActive(true);
+        // Show the shared detail panel (pops in only if it wasn't already open)
+        UIPopup.Show(sharedDetailPanel);
 
         // Get level completion status
         int levelNumber = selectedEntry.GetLevelNumber();

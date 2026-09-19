@@ -1086,4 +1086,21 @@ public class SpawnerHolder : MonoBehaviour
     public float RecoilDirectionStrength => recoilDirectionStrength;
     public float SpawnerAngularVelocity => spawnerAngularVelocity;
     public float HeightAnimationSpeed => heightAnimationSpeed;
+
+    /// <summary>
+    /// Where the stone is in its swing right now: -1 at the far left, 0 at the centre, 1 at
+    /// the far right. The Serpent's Edge risk window is defined on this, so it scales with
+    /// level and altitude swing multipliers for free.
+    /// </summary>
+    public float SwingPhase => Mathf.Sin(swingTime);
+
+    /// <summary>Horizontal world offset from <see cref="SpawnerBasePosition"/> at a given <see cref="SwingPhase"/>.</summary>
+    public float GetSwingOffsetX(float phase)
+    {
+        if (useCircularMotion) return phase * swingAmplitude;
+        return Mathf.Sin(phase * swingAngle * Mathf.Deg2Rad) * swingAmplitude;
+    }
+
+    /// <summary>The centre the stone swings around, before the swing offset.</summary>
+    public Vector3 SpawnerBasePosition => holderCenterPosition + spawnerOffset;
 }

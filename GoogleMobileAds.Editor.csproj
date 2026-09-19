@@ -51,15 +51,15 @@
   <ItemGroup>
     <Compile Include="Assets\GoogleMobileAds\Editor\GradleProcessor.cs" />
     <Compile Include="Assets\GoogleMobileAds\Editor\GoogleMobileAdsSettings.cs" />
-    <Compile Include="Assets\GoogleMobileAds\Editor\PListProcessor.cs" />
     <Compile Include="Assets\GoogleMobileAds\Editor\ManifestProcessor.cs" />
     <Compile Include="Assets\GoogleMobileAds\Editor\AndroidBuildPreProcessor.cs" />
+    <Compile Include="Assets\GoogleMobileAds\Editor\EditorPathUtils.cs" />
+    <Compile Include="Assets\GoogleMobileAds\Editor\PListProcessor.cs" />
     <Compile Include="Assets\GoogleMobileAds\Editor\EditorLocalization.cs" />
     <Compile Include="Assets\GoogleMobileAds\Editor\GoogleMobileAdsSettingsEditor.cs" />
     <Compile Include="Assets\GoogleMobileAds\Editor\EditorLocalizationData.cs" />
     <Compile Include="Assets\GoogleMobileAds\Editor\BuildPreProcessor.cs" />
     <Compile Include="Assets\GoogleMobileAds\Editor\Utils.cs" />
-    <Compile Include="Assets\GoogleMobileAds\Editor\EditorPathUtils.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\GoogleMobileAds\Editor\GoogleMobileAdsSKAdNetworkItems.xml" />
@@ -753,7 +753,7 @@
       <Private>False</Private>
     </Reference>
     <Reference Include="AiEditorToolsSdk">
-      <HintPath>Library\PackageCache\com.unity.ai.toolkit@48a271771d1a\Modules\Sdk\Editor\AiEditorToolsSdk.dll</HintPath>
+      <HintPath>Library\PackageCache\com.unity.ai.toolkit@339b745a421a\Modules\Sdk\Editor\AiEditorToolsSdk.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Unity.VisualScripting.TextureAssets">

@@ -50,10 +50,6 @@ public class GameFeelManager : MonoBehaviour
     [SerializeField] private int HeatComboForMax = 6;      // combo at which heat is fully ramped
     [SerializeField] private float HeatLerpSpeed = 1.2f;   // how fast the tint eases toward its target
 
-    [Header("Landing Guide")]
-    [SerializeField] private Color GuideColor = new Color(1f, 0.9f, 0.55f, 0.28f);
-    [SerializeField] private float GuideWidth = 0.06f;
-
     [Header("Accuracy Thresholds")]
     [Tooltip("Keep these matched to GameManager/StackableObject scoring or the feel tiers will disagree with the score/message tiers.")]
     [Range(0f, 1f)]
@@ -82,8 +78,13 @@ public class GameFeelManager : MonoBehaviour
     private float heatAlpha;          // current tint alpha
     private float targetHeatAlpha;    // combo-driven target
 
-    // Landing guide line (world-space).
-    private LineRenderer guideLine;
+    // Aim glyphs (world-space): centre marks on the top stone and on the hanging stone. They
+    // replaced a drop-guide line that projected the landing point and made Perfects trivial.
+    private AimGlyphSettings glyphSettings;
+    private ThemeManager themeManager; // null when GameScene is played directly: day tint
+    private SpriteRenderer blockGlyph;
+    private SpriteRenderer stoneGlyph;
+    private static Sprite defaultGlyphSprite;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     private static void Bootstrap()
@@ -144,7 +145,7 @@ public class GameFeelManager : MonoBehaviour
     private void Update()
     {
         UpdateComboHeat();
-        UpdateLandingGuide();
+        UpdateAimGlyphs();
     }
 
     private void OnObjectAddedToStack(StackableObject stackableObject)
@@ -345,64 +346,148 @@ public class GameFeelManager : MonoBehaviour
         heatImage.color = new Color(HeatColor.r, HeatColor.g, HeatColor.b, heatAlpha);
     }
 
-    // ---- Landing guide ----
+    // ---- Aim glyphs ----
 
-    private void UpdateLandingGuide()
+    private void UpdateAimGlyphs()
     {
-        if (!GameFeelSettings.LandingGuideEnabled)
+        // Need an active game and a current stone that hasn't been dropped yet.
+        GameObject current = objectSpawner != null ? objectSpawner.CurrentObject : null;
+        StackableObject stone = current != null ? current.GetComponent<StackableObject>() : null;
+
+        bool live = gameManager != null && gameManager.IsGameActive && !gameManager.IsGameOver
+                    && stackManager != null && stone != null && !stone.IsDropped;
+        if (!live)
         {
-            if (guideLine != null && guideLine.enabled) guideLine.enabled = false;
+            if (blockGlyph != null && blockGlyph.enabled) blockGlyph.enabled = false;
+            if (stoneGlyph != null && stoneGlyph.enabled) stoneGlyph.enabled = false;
             return;
         }
 
-        // Need an active game, a spawner, and a current block that hasn't been dropped yet.
-        if (gameManager == null || !gameManager.IsGameActive || gameManager.IsGameOver
-            || objectSpawner == null || stackManager == null)
-        {
-            if (guideLine != null && guideLine.enabled) guideLine.enabled = false;
-            return;
-        }
+        EnsureGlyphs();
 
-        GameObject current = objectSpawner.CurrentObject;
-        StackableObject block = current != null ? current.GetComponent<StackableObject>() : null;
-        if (block == null || block.IsDropped)
-        {
-            if (guideLine != null && guideLine.enabled) guideLine.enabled = false;
-            return;
-        }
+        // Follow the stone's arm-delay fade so its glyph never shows before the stone does.
+        float alpha = stone.SpriteRenderer != null ? stone.SpriteRenderer.color.a : 1f;
 
-        EnsureGuideLine();
-        if (guideLine == null) return;
-
-        // Draw from just below the block down to the projected landing surface at the block's X.
-        float x = current.transform.position.x;
-        float topY = current.transform.position.y;
-        float landY = stackManager.GetStackTopY();
-        if (landY > topY) landY = topY; // guard against odd states
-
-        guideLine.enabled = true;
-        guideLine.SetPosition(0, new Vector3(x, topY, 0f));
-        guideLine.SetPosition(1, new Vector3(x, landY, 0f));
+        PlaceGlyph(blockGlyph, stackManager.GetTopObject(), true, glyphSettings.blockInset, alpha);
+        PlaceGlyph(stoneGlyph, glyphSettings.showOnStone ? stone : null, false, glyphSettings.stoneInset, alpha);
     }
 
-    private void EnsureGuideLine()
+    /// <summary>
+    /// Pins a glyph to the horizontal centre of <paramref name="target"/>, just inside its upper
+    /// (<paramref name="onUpperSurface"/>) or lower surface, rotated with it.
+    /// </summary>
+    private void PlaceGlyph(SpriteRenderer glyph, StackableObject target, bool onUpperSurface, float inset, float alpha)
     {
-        if (guideLine != null) return;
+        SpriteRenderer targetRenderer = target != null ? target.SpriteRenderer : null;
+        if (target == null || (targetRenderer != null && !targetRenderer.enabled))
+        {
+            if (glyph.enabled) glyph.enabled = false;
+            return;
+        }
 
-        var go = new GameObject("LandingGuide");
+        Transform t = target.transform;
+        Vector3 surface;
+        if (target.Collider is BoxCollider2D box)
+        {
+            float half = box.size.y * 0.5f;
+            surface = t.TransformPoint(box.offset + new Vector2(0f, onUpperSurface ? half : -half));
+        }
+        else if (target.Collider != null)
+        {
+            Bounds b = target.Collider.bounds;
+            surface = new Vector3(b.center.x, onUpperSurface ? b.max.y : b.min.y, t.position.z);
+        }
+        else
+        {
+            surface = t.position;
+        }
+
+        Vector3 inward = (onUpperSurface ? -t.up : t.up) * inset;
+        glyph.transform.SetPositionAndRotation(surface + inward, t.rotation);
+
+        if (targetRenderer != null)
+        {
+            glyph.sortingLayerID = targetRenderer.sortingLayerID;
+            glyph.sortingOrder = targetRenderer.sortingOrder + glyphSettings.sortingOrderOffset;
+        }
+
+        GameTheme theme = themeManager != null ? themeManager.SelectedTheme : GameTheme.Day;
+        Color color = glyphSettings.glyphColor * glyphSettings.TintFor(theme);
+        color.a *= alpha;
+        glyph.color = color;
+
+        if (!glyph.enabled) glyph.enabled = true;
+    }
+
+    private void EnsureGlyphs()
+    {
+        if (blockGlyph != null) return;
+
+        glyphSettings = Resources.Load<AimGlyphSettings>(AimGlyphSettings.ResourcePath);
+        if (glyphSettings == null) glyphSettings = ScriptableObject.CreateInstance<AimGlyphSettings>();
+
+        // ThemeManager persists from the menu. Read per frame rather than subscribing - the
+        // theme can't change mid-run, and this can never leave a stale handler behind.
+        themeManager = DependencyRegistry.Find<ThemeManager>();
+
+        Sprite blockSprite = glyphSettings.blockGlyph != null ? glyphSettings.blockGlyph : DefaultGlyphSprite();
+        bool stoneUsesBlockSprite = glyphSettings.stoneGlyph == null;
+
+        blockGlyph = CreateGlyph("AimGlyph_Block", blockSprite, false);
+        // Without its own art the stone wears the block glyph upside down, so the pair reads
+        // as two halves meeting.
+        stoneGlyph = CreateGlyph("AimGlyph_Stone",
+            stoneUsesBlockSprite ? blockSprite : glyphSettings.stoneGlyph, stoneUsesBlockSprite);
+    }
+
+    private SpriteRenderer CreateGlyph(string objectName, Sprite sprite, bool flipY)
+    {
+        var go = new GameObject(objectName);
         go.transform.SetParent(transform, false);
-        guideLine = go.AddComponent<LineRenderer>();
-        guideLine.useWorldSpace = true;
-        guideLine.positionCount = 2;
-        guideLine.numCapVertices = 2;
-        guideLine.textureMode = LineTextureMode.Stretch;
-        guideLine.startWidth = GuideWidth;
-        guideLine.endWidth = GuideWidth;
-        guideLine.material = new Material(Shader.Find("Sprites/Default"));
-        guideLine.startColor = GuideColor;
-        guideLine.endColor = new Color(GuideColor.r, GuideColor.g, GuideColor.b, GuideColor.a * 0.35f);
-        guideLine.sortingOrder = -1; // behind the blocks
-        guideLine.enabled = false;
+
+        float spriteWidth = sprite.bounds.size.x;
+        float scale = spriteWidth > 0f ? glyphSettings.glyphWorldSize / spriteWidth : 1f;
+        go.transform.localScale = new Vector3(scale, scale, 1f);
+
+        var glyph = go.AddComponent<SpriteRenderer>();
+        glyph.sprite = sprite;
+        glyph.flipY = flipY;
+        glyph.enabled = false;
+        return glyph;
+    }
+
+    /// <summary>A soft diamond ring with a centre dot - a placeholder until real glyph art is assigned.</summary>
+    private static Sprite DefaultGlyphSprite()
+    {
+        if (defaultGlyphSprite != null) return defaultGlyphSprite;
+
+        const int size = 64;
+        const float center = (size - 1) * 0.5f;
+        var texture = new Texture2D(size, size, TextureFormat.RGBA32, false)
+        {
+            filterMode = FilterMode.Bilinear,
+            wrapMode = TextureWrapMode.Clamp,
+            name = "AimGlyphPlaceholder"
+        };
+
+        var pixels = new Color32[size * size];
+        for (int y = 0; y < size; y++)
+        {
+            for (int x = 0; x < size; x++)
+            {
+                float d = Mathf.Abs(x - center) + Mathf.Abs(y - center);
+                float ring = Mathf.Clamp01(1f - Mathf.Max(0f, Mathf.Abs(d - 22f) - 3f));
+                float dot = Mathf.Clamp01(5f - d);
+                byte a = (byte)(Mathf.Max(ring, dot) * 255f);
+                pixels[y * size + x] = new Color32(255, 255, 255, a);
+            }
+        }
+
+        texture.SetPixels32(pixels);
+        texture.Apply(false, true);
+
+        defaultGlyphSprite = Sprite.Create(texture, new Rect(0, 0, size, size), new Vector2(0.5f, 0.5f), size);
+        return defaultGlyphSprite;
     }
 
     private void OnGameOver()

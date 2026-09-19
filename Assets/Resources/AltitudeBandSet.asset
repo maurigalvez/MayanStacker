@@ -24,7 +24,7 @@ MonoBehaviour:
     specialBlockChanceMultiplier: 1
     announce: 0
     announceColor: {r: 0.79, g: 0.64, b: 0.29, a: 1}
-  - nameKey: band_canopy
+  - nameKey: band_stairway
     startsAtBlock: 12
     applyTimeOfDay: 0
     timeOfDay: 0

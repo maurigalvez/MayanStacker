@@ -51,20 +51,20 @@
   <ItemGroup>
     <Compile Include="Assets\GooglePlayPlugins\com.google.play.appupdate\Runtime\Scripts\AppUpdateOptions.cs" />
     <Compile Include="Assets\GooglePlayPlugins\com.google.play.appupdate\Runtime\Scripts\Internal\AppUpdatePlayCoreTranslator.cs" />
-    <Compile Include="Assets\GooglePlayPlugins\com.google.play.appupdate\Runtime\Scripts\Internal\AppUpdateStateListener.cs" />
-    <Compile Include="Assets\GooglePlayPlugins\com.google.play.appupdate\Runtime\Scripts\AppUpdateType.cs" />
-    <Compile Include="Assets\GooglePlayPlugins\com.google.play.appupdate\Runtime\Scripts\Internal\AppUpdateHandler.cs" />
     <Compile Include="Assets\GooglePlayPlugins\com.google.play.appupdate\Runtime\Scripts\Internal\AppUpdateRequestImpl.cs" />
     <Compile Include="Assets\GooglePlayPlugins\com.google.play.appupdate\Runtime\Scripts\Internal\AppUpdateState.cs" />
     <Compile Include="Assets\GooglePlayPlugins\com.google.play.appupdate\Runtime\Scripts\AppUpdateErrorCode.cs" />
+    <Compile Include="Assets\GooglePlayPlugins\com.google.play.appupdate\Runtime\Scripts\Internal\AppUpdateManagerPlayCore.cs" />
+    <Compile Include="Assets\GooglePlayPlugins\com.google.play.appupdate\Runtime\Scripts\Internal\AppUpdateManagerInternal.cs" />
+    <Compile Include="Assets\GooglePlayPlugins\com.google.play.appupdate\Runtime\Scripts\AppUpdateInfo.cs" />
+    <Compile Include="Assets\GooglePlayPlugins\com.google.play.appupdate\Runtime\Scripts\Internal\AppUpdateStateListener.cs" />
+    <Compile Include="Assets\GooglePlayPlugins\com.google.play.appupdate\Runtime\Scripts\AppUpdateType.cs" />
+    <Compile Include="Assets\GooglePlayPlugins\com.google.play.appupdate\Runtime\Scripts\Internal\AppUpdateHandler.cs" />
     <Compile Include="Assets\GooglePlayPlugins\com.google.play.appupdate\Runtime\Scripts\AppUpdateRequest.cs" />
     <Compile Include="Assets\GooglePlayPlugins\com.google.play.appupdate\Runtime\Scripts\AppUpdateManager.cs" />
-    <Compile Include="Assets\GooglePlayPlugins\com.google.play.appupdate\Runtime\Scripts\Internal\AppUpdateManagerPlayCore.cs" />
     <Compile Include="Assets\GooglePlayPlugins\com.google.play.appupdate\Runtime\Scripts\UpdateAvailability.cs" />
-    <Compile Include="Assets\GooglePlayPlugins\com.google.play.appupdate\Runtime\Scripts\Internal\AppUpdateManagerInternal.cs" />
     <Compile Include="Assets\GooglePlayPlugins\com.google.play.appupdate\Runtime\Scripts\Internal\AppUpdateAsyncOperation.cs" />
     <Compile Include="Assets\GooglePlayPlugins\com.google.play.appupdate\Runtime\Scripts\AppUpdateStatus.cs" />
-    <Compile Include="Assets\GooglePlayPlugins\com.google.play.appupdate\Runtime\Scripts\AppUpdateInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\GooglePlayPlugins\com.google.play.appupdate\Runtime\Google.Play.AppUpdate.asmdef" />
@@ -731,7 +731,7 @@
       <Private>False</Private>
     </Reference>
     <Reference Include="AiEditorToolsSdk">
-      <HintPath>Library\PackageCache\com.unity.ai.toolkit@48a271771d1a\Modules\Sdk\Editor\AiEditorToolsSdk.dll</HintPath>
+      <HintPath>Library\PackageCache\com.unity.ai.toolkit@339b745a421a\Modules\Sdk\Editor\AiEditorToolsSdk.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Unity.VisualScripting.TextureAssets">

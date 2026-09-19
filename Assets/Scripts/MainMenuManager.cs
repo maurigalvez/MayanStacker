@@ -70,7 +70,6 @@ public class MainMenuManager : MonoBehaviour
 
     [Header("Settings")]
     [SerializeField] private string gameSceneName = "GameScene";
-    [SerializeField] private string gameVersion = "1.0.0";
 
     [Header("Theme Selection")]
     [SerializeField] private ThemeSelectionUI themeSelectionUI;
@@ -273,10 +272,11 @@ public class MainMenuManager : MonoBehaviour
         if (syncPanel != null)
             syncPanel.SetActive(false);
 
-        // Set version text
+        // Set version text from Player Settings > Version (the build's bundleVersion),
+        // so it never drifts from what's actually shipped.
         if (versionText != null)
         {
-            string versionDisplay = $"v{gameVersion}";
+            string versionDisplay = $"v{Application.version}";
             // Add DEMO tag if in demo mode
             if (levelManager != null && levelManager.IsDemoVersion)
             {
@@ -1376,7 +1376,7 @@ public class MainMenuManager : MonoBehaviour
     {
         if (syncPanel != null)
         {
-            syncPanel.SetActive(true);
+            UIPopup.Show(syncPanel);
         }
 
         if (syncStatusText != null)
@@ -1394,7 +1394,7 @@ public class MainMenuManager : MonoBehaviour
     {
         if (syncPanel != null)
         {
-            syncPanel.SetActive(false);
+            UIPopup.Hide(syncPanel);
         }
     }
 

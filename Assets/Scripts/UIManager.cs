@@ -34,6 +34,10 @@ public class UIManager : MonoBehaviour
     [Tooltip("Optional: one line on the game-over panel naming the nearest thing worth coming back for. Hidden when nothing is close.")]
     [SerializeField] private TextMeshProUGUI nextGoalText;
 
+    [Header("Try Again Card")]
+    [Tooltip("Optional: the paced result card (headline, best line, stats, goal). Without it the panel shows the plain score as before. Set up via TamalStacker ▸ UI ▸ Set Up Try Again Card.")]
+    [SerializeField] private RunResultCard runResultCard;
+
     [Header("Daily Challenge Briefing (pre-run)")]
     [Tooltip("Full-screen briefing panel shown before a Daily run starts. Gates play until 'Begin the Ritual' is tapped.")]
     [SerializeField] private GameObject dailyBriefingPanel;
@@ -106,6 +110,11 @@ public class UIManager : MonoBehaviour
     [Header("Combo UI")]
     [SerializeField] private GameObject comboDisplay;
     [SerializeField] private TextMeshProUGUI multiplierText;
+    [Tooltip("Small word under the multiplier (\"COMBO\") so the badge says what the xN is. " +
+             "Built under the multiplier text at runtime when left empty.")]
+    [SerializeField] private TextMeshProUGUI comboCaptionText;
+    [Tooltip("Caption size as a fraction of the multiplier text's font size.")]
+    [SerializeField] private float comboCaptionSizeRatio = 0.34f;
     [SerializeField] private Image comboTimerBar; // Circular radial fill timer
 
     [Header("Kukulkan's Shift UI")]
@@ -399,8 +408,10 @@ public class UIManager : MonoBehaviour
         InitializeComboDisplay();
         InitializeComboTimer();
 
-        // Hide instructions initially - they'll show when OnGameStart is called
-        HideInstructions();
+        // Hide instructions initially - they'll show when OnGameStart is called.
+        // Immediate: this is scene setup, not something the player should see fade away.
+        if (instructionsText != null)
+            instructionsText.gameObject.SetActive(false);
 
         // Initialize level UI if in level mode
         if (gameManager != null && gameManager.CurrentGameMode == GameMode.StackerLevels)
@@ -579,15 +590,34 @@ public class UIManager : MonoBehaviour
         isUpdatingComboTimer = false;
         StopSpeedRunTimer();
 
-        // Show game over panel, hide game UI
-        if (gameUI != null)
+        // Read before UpdateDailyChallengeResultCard records this run as today's best.
+        bool isDaily = gameManager != null && gameManager.CurrentGameMode == GameMode.DailyChallenge;
+        int dailyBestBefore = isDaily ? DailyChallengeManager.TodaysBestScore() : 0;
+
+        // Level failures get their card from OnLevelFailed - here it isn't known yet whether the
+        // topple failed the site or finished it.
+        bool cardShowsHere = runResultCard != null && gameManager != null &&
+                             gameManager.CurrentGameMode != GameMode.StackerLevels;
+
+        // Show game over panel, hide game UI. The card hides the HUD itself once it appears,
+        // so the collapse stays readable for its opening beat.
+        if (gameUI != null && !cardShowsHere)
             gameUI.SetActive(false);
 
         if (gameOverPanel != null)
-            gameOverPanel.SetActive(true);
+        {
+            // The result card pops the panel itself after its opening beat; UIPopup.Show here
+            // would fade the same CanvasGroup in straight away and the beat would be lost.
+            if (runResultCard != null)
+                gameOverPanel.SetActive(true);
+            else
+                UIPopup.Show(gameOverPanel);
+        }
 
-        // Update final score
-        if (finalScoreText != null && gameManager != null)
+        // Update final score. The card owns the score and goal lines when present: in Levels
+        // this handler runs a second time via OnLevelFailed, in either order, and must not
+        // overwrite a count-up or hide the card's goal.
+        if (finalScoreText != null && gameManager != null && runResultCard == null)
         {
             finalScoreText.text = gameManager.CurrentScore.ToString();
         }
@@ -607,7 +637,54 @@ public class UIManager : MonoBehaviour
         UpdateDailyChallengeResultCard();
 
         // Give the loss somewhere to go: name the nearest thing worth another run.
-        UpdateNextGoal();
+        if (runResultCard == null)
+            UpdateNextGoal();
+
+        if (cardShowsHere)
+            ShowRunResultCard(dailyBestBefore);
+    }
+
+    /// <summary>
+    /// Fills and reveals the Try Again card. Its headline and best line replace the separate
+    /// high-score and daily-outcome labels, which would otherwise say the same thing twice.
+    /// </summary>
+    private void ShowRunResultCard(int dailyBestBefore)
+    {
+        if (runResultCard == null || gameManager == null) return;
+
+        GameMode mode = gameManager.CurrentGameMode;
+        var dailyMgr = mode == GameMode.DailyChallenge ? DependencyRegistry.Find<DailyChallengeManager>() : null;
+
+        var input = new RunResult.Input
+        {
+            mode = mode,
+            score = gameManager.CurrentScore,
+            blocks = stackManager != null ? stackManager.GetStackCount() : 0,
+            perfectLandings = gameManager.PerfectLandings,
+            maxCombo = gameManager.MaxCombo,
+            perfectHitsRequired = gameManager.PerfectHitsRequired,
+            bestBefore = gameManager.HighScoreAtRunStart,
+            levelRequired = levelManager != null && levelManager.CurrentLevel != null
+                ? levelManager.CurrentLevel.requiredStackHeight : 0,
+            dailyCompleted = dailyMgr != null && dailyMgr.RunCompleted,
+            dailyTarget = dailyMgr != null ? dailyMgr.BlockCountTarget : 0,
+            dailyBestBefore = dailyBestBefore,
+            // The best line already carries the gap to the best, so the goal names something else.
+            progressGoal = BuildNextGoalLine(includeNearBest: false),
+            edgeUnlocked = FtueState.HasSeenEdgeIntro,
+            edgeLanded = RiskWindow.Instance != null ? RiskWindow.Instance.RunEdgeLanded : 0,
+            edgeBonusPoints = RiskWindow.Instance != null ? RiskWindow.Instance.RunEdgeBonusPoints : 0,
+            edgeCombosBroken = RiskWindow.Instance != null ? RiskWindow.Instance.RunEdgeCombosBroken : 0,
+            seed = FtueState.LifetimeRuns
+        };
+
+        if (newHighScoreText != null) newHighScoreText.gameObject.SetActive(false);
+        if (dailyOutcomeText != null) dailyOutcomeText.gameObject.SetActive(false);
+
+        runResultCard.Show(RunResult.Build(input), gameSoundManager, () =>
+        {
+            if (gameUI != null) gameUI.SetActive(false);
+        });
     }
 
     /// <summary>
@@ -646,12 +723,12 @@ public class UIManager : MonoBehaviour
         if (!string.IsNullOrEmpty(goal)) nextGoalText.text = goal;
     }
 
-    private string BuildNextGoalLine()
+    private string BuildNextGoalLine(bool includeNearBest = true)
     {
         if (gameManager == null) return null;
 
         // 1. A near miss on their own best score is the most motivating target there is.
-        if (gameManager.CurrentGameMode == GameMode.InfiniteStacker)
+        if (includeNearBest && gameManager.CurrentGameMode == GameMode.InfiniteStacker)
         {
             int best = gameManager.HighScore;
             int score = gameManager.CurrentScore;
@@ -884,7 +961,7 @@ public class UIManager : MonoBehaviour
         if (dailyBriefingDateText != null)
             dailyBriefingDateText.text = DailyChallengeManager.TodaysDateLabelUtc();
 
-        dailyBriefingPanel.SetActive(true);
+        UIPopup.Show(dailyBriefingPanel);
 
         // Header countdown runs only while the briefing is up; OnDailyBriefingBegin stops it.
         StartBriefingCountdown();
@@ -920,15 +997,16 @@ public class UIManager : MonoBehaviour
         dailyBriefingRequested = false;
         StopBriefingCountdown();
 
-        if (dailyBriefingPanel != null)
-            dailyBriefingPanel.SetActive(false);
+        // The briefing scales away before the HUD returns and the run begins.
+        UIPopup.Hide(dailyBriefingPanel, () =>
+        {
+            if (gameUI != null)
+                gameUI.SetActive(true);
 
-        if (gameUI != null)
-            gameUI.SetActive(true);
-
-        var begin = dailyBriefingOnBegin;
-        dailyBriefingOnBegin = null;
-        begin?.Invoke();
+            var begin = dailyBriefingOnBegin;
+            dailyBriefingOnBegin = null;
+            begin?.Invoke();
+        });
     }
 
     /// <summary>Shows the personal-best banner using the Daily-specific "New Personal Best!" copy.</summary>
@@ -1102,8 +1180,8 @@ public class UIManager : MonoBehaviour
     {
         if (instructionsText != null)
         {
-            instructionsText.gameObject.SetActive(true);
             instructionsText.text = LocalizationManager.Get("instructions");
+            UIPopup.Show(instructionsText.gameObject);
         }
     }
 
@@ -1111,7 +1189,7 @@ public class UIManager : MonoBehaviour
     {
         if (instructionsText != null)
         {
-            instructionsText.gameObject.SetActive(false);
+            UIPopup.Hide(instructionsText.gameObject);
         }
     }
 
@@ -1123,8 +1201,17 @@ public class UIManager : MonoBehaviour
     {
         if (instructionsText == null) return;
 
-        instructionsText.gameObject.SetActive(true);
-        SetTextAnimated(instructionsText, message);
+        GameObject label = instructionsText.gameObject;
+        if (!label.activeSelf || UIPopup.IsHiding(label))
+        {
+            // Appearing: the whole label pops in, so don't also pulse the new text.
+            instructionsText.text = message;
+            UIPopup.Show(label);
+        }
+        else
+        {
+            SetTextAnimated(instructionsText, message);
+        }
     }
 
     /// <summary>Hides the instruction label on the tutorial's behalf.</summary>
@@ -1459,21 +1546,22 @@ public class UIManager : MonoBehaviour
         // Show landing accuracy feedback and points popup together
         if (stackableObject != null)
         {
-            int basePoints = CalculatePointsFromAccuracy(stackableObject.LandingAccuracy);
+            // The score was awarded just before the stone joined the stack, so GameManager
+            // knows exactly what it was worth - including Serpent's Edge, variant, boon and
+            // modifier multipliers that a local recalculation would miss.
+            int actualPoints = gameManager != null
+                ? gameManager.LastAwardedPoints
+                : CalculatePointsFromAccuracy(stackableObject.LandingAccuracy);
 
-            // Apply multiplier to get actual points awarded
-            float multiplier = 1f;
-            if (gameManager != null)
-            {
-                multiplier = gameManager.CurrentMultiplier;
-            }
-            int actualPoints = Mathf.RoundToInt(basePoints * multiplier);
-
-            ShowLandingAccuracyAndPoints(stackableObject.LandingAccuracy, actualPoints, stackableObject.transform.position);
+            ShowLandingAccuracyAndPoints(stackableObject.LandingAccuracy, actualPoints, stackableObject.transform.position,
+                stackableObject.IsEdgeDrop ? stackableObject.EdgeScoreMultiplier : 0f);
         }
     }
 
-    private void ShowLandingAccuracyAndPoints(float accuracy, int points, Vector3 worldPosition)
+    /// <param name="edgeMultiplier">Serpent's Edge multiplier for this landing, or 0 when it
+    /// wasn't an edge drop. Shown as a gold line on the accuracy label rather than a banner,
+    /// so it rides with the popup instead of covering it.</param>
+    private void ShowLandingAccuracyAndPoints(float accuracy, int points, Vector3 worldPosition, float edgeMultiplier = 0f)
     {
         if (landingAccuracyText == null) return;
 
@@ -1522,14 +1610,31 @@ public class UIManager : MonoBehaviour
             curPunchRotation = 0f;
         }
 
-        // Add combo count if active (Perfect landing only)
-        if (currentCombo > 0 && accuracy >= 0.9f)
+        // Add combo count if active. A non-Perfect landing that kept the combo says "held"
+        // so the count carrying into the next Perfect doesn't read as a missed reset.
+        bool comboHeld = gameManager != null && gameManager.LastLandingHeldCombo;
+        if (currentCombo > 0 && comboHeld)
+        {
+            landingAccuracyText.text = LocalizationManager.Get("combo_held_format", baseText, currentCombo);
+        }
+        else if (currentCombo > 0 && accuracy >= 0.9f)
         {
             landingAccuracyText.text = LocalizationManager.Get("combo_format", baseText, currentCombo);
         }
         else
         {
             landingAccuracyText.text = baseText;
+        }
+
+        if (edgeMultiplier > 0f)
+        {
+            // Name what the edge itself added, so the player can weigh it against a safe Perfect.
+            string multiplierText = edgeMultiplier.ToString("0.#", System.Globalization.CultureInfo.InvariantCulture);
+            int edgeBonus = RiskWindow.EdgeBonus(points, edgeMultiplier);
+            string edgeLine = edgeBonus > 0
+                ? LocalizationManager.Get("edge_landed_bonus", multiplierText, edgeBonus)
+                : LocalizationManager.Get("edge_landed", multiplierText);
+            landingAccuracyText.text += "\n<color=#" + ColorUtility.ToHtmlStringRGB(RunOverlayUI.Gold) + ">" + edgeLine + "</color>";
         }
 
         // Position the accuracy label at the center of the screen
@@ -1808,6 +1913,29 @@ public class UIManager : MonoBehaviour
         {
             comboDisplay.SetActive(false);
         }
+
+        EnsureComboCaption();
+    }
+
+    /// <summary>
+    /// The badge's multiplier alone ("x5") doesn't say what it multiplies, so a small caption
+    /// sits under it. Built as a child of the multiplier text so it pulses and hides with it.
+    /// </summary>
+    private void EnsureComboCaption()
+    {
+        if (comboCaptionText != null || multiplierText == null) return;
+
+        comboCaptionText = RunOverlayUI.CreateLabel("ComboCaption", multiplierText.transform, "",
+            Mathf.Max(12f, multiplierText.fontSize * comboCaptionSizeRatio), multiplierText.color);
+        comboCaptionText.font = multiplierText.font;
+        comboCaptionText.textWrappingMode = TextWrappingModes.NoWrap;
+        comboCaptionText.overflowMode = TextOverflowModes.Overflow;
+
+        RectTransform rt = comboCaptionText.rectTransform;
+        rt.anchorMin = rt.anchorMax = new Vector2(0.5f, 0f);
+        rt.pivot = new Vector2(0.5f, 1f);
+        rt.anchoredPosition = Vector2.zero;
+        rt.sizeDelta = new Vector2(multiplierText.rectTransform.rect.width, comboCaptionText.fontSize * 1.2f);
     }
 
     /// <summary>
@@ -1840,12 +1968,21 @@ public class UIManager : MonoBehaviour
         if (multiplierText != null && multiplier > 1f)
         {
             // Format multiplier: show one decimal place if needed, otherwise show as integer
-            string multiplierDisplay = (multiplier % 1 == 0) ? $"{multiplier:F0}x" : $"{multiplier:F1}x";
+            // "x5" (not "5x") so every multiplier in the game reads the same way: the rim's "x3",
+            // "Breaks x5" and this badge.
+            string multiplierDisplay = (multiplier % 1 == 0) ? $"x{multiplier:F0}" : $"x{multiplier:F1}";
             multiplierText.text = multiplierDisplay;
 
             // Color code based on multiplier level (use floor for color index)
             int colorIndex = Mathf.Clamp(Mathf.FloorToInt(multiplier) - 1, 0, comboMultiplierColors.Length - 1);
             multiplierText.color = comboMultiplierColors[colorIndex];
+
+            EnsureComboCaption();
+            if (comboCaptionText != null)
+            {
+                comboCaptionText.text = LocalizationManager.Get("combo_badge_caption");
+                comboCaptionText.color = multiplierText.color;
+            }
 
             multiplierText.gameObject.SetActive(true);
         }
@@ -1859,7 +1996,8 @@ public class UIManager : MonoBehaviour
         {
             if (justAppeared)
                 TriggerComboPopIn();
-            else if (!isComboPoppingIn)
+            // A held combo didn't grow, so don't pulse as if it did.
+            else if (!isComboPoppingIn && (gameManager == null || !gameManager.LastLandingHeldCombo))
                 TriggerComboPulse();
 
             // Start updating combo timer if not already
@@ -2104,10 +2242,14 @@ public class UIManager : MonoBehaviour
             gameSoundManager.EnsureMusicPlaying();
         }
 
-        if (gameManager != null)
+        // Restart once the result card has scaled away.
+        UIPopup.Hide(gameOverPanel, () =>
         {
-            gameManager.RestartGame();
-        }
+            if (gameManager != null)
+            {
+                gameManager.RestartGame();
+            }
+        });
     }
 
     // Level Mode Methods
@@ -2281,9 +2423,16 @@ public class UIManager : MonoBehaviour
         yield return new WaitForSeconds(levelCompleteDelay);
 
         // Show level complete panel
+        bool poppedIn = false;
         if (levelCompletePanel != null)
         {
-            levelCompletePanel.SetActive(true);
+            // Clear the previous result first, or the last level's score and lit stars show
+            // while the panel scales in.
+            if (levelScoreText != null)
+                levelScoreText.text = LocalizationManager.Get("level_score_format", 0);
+            ResetLevelCompleteStars();
+
+            poppedIn = UIPopup.Show(levelCompletePanel);
         }
 
         // Update level name
@@ -2291,6 +2440,10 @@ public class UIManager : MonoBehaviour
         {
             levelNameText.text = LocalizationManager.Get("level_complete_format", levelManager.CurrentLevel.levelNumber, LocalizationManager.GetLevelName(levelManager.CurrentLevel));
         }
+
+        // Let the panel settle before the score starts counting
+        if (poppedIn)
+            yield return new WaitForSecondsRealtime(UIPopup.PopInDuration);
 
         // Animate the score counting up; stars light up progressively as the count climbs
         yield return StartCoroutine(AnimateLevelScoreCountUp(score, stars));
@@ -2320,13 +2473,16 @@ public class UIManager : MonoBehaviour
         if (gameManager != null && gameManager.CurrentGameMode == GameMode.StackerLevels)
         {
             // Hide level complete panel if it was shown
-            if (levelCompletePanel != null)
-                levelCompletePanel.SetActive(false);
+            UIPopup.Hide(levelCompletePanel);
 
             // Show game over panel with level-specific messaging
             OnGameOver();
 
-            if (finalScoreText != null && levelManager != null && levelManager.CurrentLevel != null)
+            if (runResultCard != null)
+            {
+                ShowRunResultCard(0);
+            }
+            else if (finalScoreText != null && levelManager != null && levelManager.CurrentLevel != null)
             {
                 int currentHeight = stackManager?.GetStackCount() ?? 0;
                 finalScoreText.text = LocalizationManager.Get("level_failed_format", currentHeight, levelManager.CurrentLevel.requiredStackHeight);
@@ -2348,18 +2504,7 @@ public class UIManager : MonoBehaviour
 
         int totalStarSlots = stars != null ? stars.Length : 0;
 
-        // Reset all stars to "unearned" state at normal scale
-        if (stars != null)
-        {
-            for (int i = 0; i < stars.Length; i++)
-            {
-                if (stars[i] != null)
-                {
-                    stars[i].color = starInitialColor;
-                    stars[i].transform.localScale = Vector3.one;
-                }
-            }
-        }
+        ResetLevelCompleteStars();
 
         // If there's nothing to count or duration is effectively zero, snap to the final value
         // and immediately highlight the earned stars
@@ -2430,6 +2575,23 @@ public class UIManager : MonoBehaviour
     }
 
     /// <summary>
+    /// Resets all stars to "unearned" state at normal scale
+    /// </summary>
+    private void ResetLevelCompleteStars()
+    {
+        if (stars == null) return;
+
+        for (int i = 0; i < stars.Length; i++)
+        {
+            if (stars[i] != null)
+            {
+                stars[i].color = starInitialColor;
+                stars[i].transform.localScale = Vector3.one;
+            }
+        }
+    }
+
+    /// <summary>
     /// Highlights a single star and starts its pop animation. Fire-and-forget so it
     /// runs in parallel with the score count-up coroutine.
     /// </summary>
@@ -2493,22 +2655,22 @@ public class UIManager : MonoBehaviour
     {
         if (levelManager != null)
         {
-            // Hide level complete panel
-            if (levelCompletePanel != null)
-                levelCompletePanel.SetActive(false);
-
-            // Show game UI again
-            if (gameUI != null)
-                gameUI.SetActive(true);
-
-            // Load next level
-            levelManager.NextLevel();
-
-            // Restart the game
-            if (gameManager != null)
+            // Hide level complete panel, then move on once it has scaled away
+            UIPopup.Hide(levelCompletePanel, () =>
             {
-                gameManager.RestartGame();
-            }
+                // Show game UI again
+                if (gameUI != null)
+                    gameUI.SetActive(true);
+
+                // Load next level
+                levelManager.NextLevel();
+
+                // Restart the game
+                if (gameManager != null)
+                {
+                    gameManager.RestartGame();
+                }
+            });
         }
     }
 
@@ -2519,14 +2681,6 @@ public class UIManager : MonoBehaviour
     {
         if (levelManager != null)
         {
-            // Hide level complete panel
-            if (levelCompletePanel != null)
-                levelCompletePanel.SetActive(false);
-
-            // Show game UI again
-            if (gameUI != null)
-                gameUI.SetActive(true);
-
             // Play retry button sound and ensure music is playing
             if (gameSoundManager != null)
             {
@@ -2534,14 +2688,22 @@ public class UIManager : MonoBehaviour
                 gameSoundManager.EnsureMusicPlaying();
             }
 
-            // Restart the current level (doesn't advance)
-            levelManager.RestartLevel();
-
-            // Restart the game
-            if (gameManager != null)
+            // Hide level complete panel, then retry once it has scaled away
+            UIPopup.Hide(levelCompletePanel, () =>
             {
-                gameManager.RestartGame();
-            }
+                // Show game UI again
+                if (gameUI != null)
+                    gameUI.SetActive(true);
+
+                // Restart the current level (doesn't advance)
+                levelManager.RestartLevel();
+
+                // Restart the game
+                if (gameManager != null)
+                {
+                    gameManager.RestartGame();
+                }
+            });
         }
     }
 
@@ -2555,8 +2717,11 @@ public class UIManager : MonoBehaviour
             gameSoundManager.PlayHomeButtonSound();
         }
 
-        // Load the main menu scene
-        SceneLoader.LoadMainMenu();
+        // Whichever result card is up scales away, then load the main menu scene
+        GameObject resultPanel = levelCompletePanel != null && levelCompletePanel.activeInHierarchy
+            ? levelCompletePanel
+            : gameOverPanel;
+        UIPopup.Hide(resultPanel, () => SceneLoader.LoadMainMenu());
     }
 
     // Codex Unlock Popup Methods
@@ -2678,6 +2843,9 @@ public class UIManager : MonoBehaviour
     /// </summary>
     private void TogglePause()
     {
+        // The pause menu is still closing; the resume it triggers is already on its way.
+        if (UIPopup.IsHiding(pauseMenuPanel)) return;
+
         if (isPaused)
         {
             ResumeGame();
@@ -2698,7 +2866,7 @@ public class UIManager : MonoBehaviour
 
         if (pauseMenuPanel != null)
         {
-            pauseMenuPanel.SetActive(true);
+            UIPopup.Show(pauseMenuPanel);
         }
 
         // Play pause sound and pause music
@@ -2719,25 +2887,29 @@ public class UIManager : MonoBehaviour
     /// </summary>
     private void ResumeGame()
     {
-        isPaused = false;
-        Time.timeScale = 1f;
+        if (UIPopup.IsHiding(pauseMenuPanel)) return;
 
-        if (pauseMenuPanel != null)
-        {
-            pauseMenuPanel.SetActive(false);
-        }
-
-        // Play unpause sound and resume music
+        // Unpause sound plays on the tap; the game itself resumes once the menu has scaled away
         if (gameSoundManager != null)
         {
             gameSoundManager.PlayUnpauseSound();
-            gameSoundManager.ResumeMusic();
         }
 
-        // Notify listeners that game has resumed
-        OnGameResumed?.Invoke();
+        UIPopup.Hide(pauseMenuPanel, () =>
+        {
+            isPaused = false;
+            Time.timeScale = 1f;
 
-        Debug.Log("Game Resumed");
+            if (gameSoundManager != null)
+            {
+                gameSoundManager.ResumeMusic();
+            }
+
+            // Notify listeners that game has resumed
+            OnGameResumed?.Invoke();
+
+            Debug.Log("Game Resumed");
+        });
     }
 
     /// <summary>
@@ -2745,16 +2917,6 @@ public class UIManager : MonoBehaviour
     /// </summary>
     private void TryAgainFromPause()
     {
-        // Resume time first
-        Time.timeScale = 1f;
-        isPaused = false;
-
-        // Hide pause menu
-        if (pauseMenuPanel != null)
-        {
-            pauseMenuPanel.SetActive(false);
-        }
-
         // Play retry button sound and ensure music is playing
         if (gameSoundManager != null)
         {
@@ -2762,8 +2924,14 @@ public class UIManager : MonoBehaviour
             gameSoundManager.EnsureMusicPlaying();
         }
 
-        // Restart the game
-        RestartGame();
+        // Hide pause menu, then resume time and restart once it has scaled away
+        UIPopup.Hide(pauseMenuPanel, () =>
+        {
+            Time.timeScale = 1f;
+            isPaused = false;
+
+            RestartGame();
+        });
     }
 
     /// <summary>
@@ -2793,24 +2961,21 @@ public class UIManager : MonoBehaviour
     /// </summary>
     private void GoToMainMenuFromPause()
     {
-        // Resume time first
-        Time.timeScale = 1f;
-        isPaused = false;
-
-        // Hide pause menu
-        if (pauseMenuPanel != null)
-        {
-            pauseMenuPanel.SetActive(false);
-        }
-
         // Play home button sound
         if (gameSoundManager != null)
         {
             gameSoundManager.PlayHomeButtonSound();
         }
 
-        // Go to main menu (don't call sound again since we already played it)
-        SceneLoader.LoadMainMenu();
+        // Hide pause menu, then resume time and go to main menu once it has scaled away
+        // (don't call sound again since we already played it)
+        UIPopup.Hide(pauseMenuPanel, () =>
+        {
+            Time.timeScale = 1f;
+            isPaused = false;
+
+            SceneLoader.LoadMainMenu();
+        });
     }
 
     private void OnDestroy()

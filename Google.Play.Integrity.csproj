@@ -49,25 +49,25 @@
     <Analyzer Include="C:\Program Files\Unity\Hub\Editor\6000.3.10f1\Editor\Data\Tools\BuildPipeline\Unity.SourceGenerators\Unity.UIToolkit.SourceGenerator.dll" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Assets\GooglePlayPlugins\com.google.play.integrity\Runtime\Scripts\StandardIntegrityToken.cs" />
-    <Compile Include="Assets\GooglePlayPlugins\com.google.play.integrity\Runtime\Scripts\Internal\PlayCoreIntegrityTokenResponse.cs" />
     <Compile Include="Assets\GooglePlayPlugins\com.google.play.integrity\Runtime\Scripts\Internal\IntegrityAsyncOperation.cs" />
-    <Compile Include="Assets\GooglePlayPlugins\com.google.play.integrity\Runtime\Scripts\PrepareIntegrityTokenRequest.cs" />
     <Compile Include="Assets\GooglePlayPlugins\com.google.play.integrity\Runtime\Scripts\Internal\PlayCoreIntegrityManager.cs" />
     <Compile Include="Assets\GooglePlayPlugins\com.google.play.integrity\Runtime\Scripts\StandardIntegrityErrorCode.cs" />
-    <Compile Include="Assets\GooglePlayPlugins\com.google.play.integrity\Runtime\Scripts\StandardIntegrityManager.cs" />
     <Compile Include="Assets\GooglePlayPlugins\com.google.play.integrity\Runtime\Scripts\IntegrityTokenResponse.cs" />
     <Compile Include="Assets\GooglePlayPlugins\com.google.play.integrity\Runtime\Scripts\Internal\StandardIntegrityAsyncOperation.cs" />
-    <Compile Include="Assets\GooglePlayPlugins\com.google.play.integrity\Runtime\Scripts\StandardIntegrityTokenProvider.cs" />
-    <Compile Include="Assets\GooglePlayPlugins\com.google.play.integrity\Runtime\Scripts\Internal\PlayCoreStandardIntegrityManager.cs" />
     <Compile Include="Assets\GooglePlayPlugins\com.google.play.integrity\Runtime\Scripts\Internal\PlayCoreStandardIntegrityTokenProvider.cs" />
-    <Compile Include="Assets\GooglePlayPlugins\com.google.play.integrity\Runtime\Scripts\IntegrityErrorCode.cs" />
     <Compile Include="Assets\GooglePlayPlugins\com.google.play.integrity\Runtime\Scripts\IntegrityManager.cs" />
     <Compile Include="Assets\GooglePlayPlugins\com.google.play.integrity\Runtime\Scripts\StandardIntegrityTokenRequest.cs" />
-    <Compile Include="Assets\GooglePlayPlugins\com.google.play.integrity\Runtime\Scripts\IntegrityTokenRequest.cs" />
-    <Compile Include="Assets\GooglePlayPlugins\com.google.play.integrity\Runtime\Scripts\Internal\PlayCoreTranslator.cs" />
     <Compile Include="Assets\GooglePlayPlugins\com.google.play.integrity\Runtime\Scripts\IntegrityDialogResponseCode.cs" />
     <Compile Include="Assets\GooglePlayPlugins\com.google.play.integrity\Runtime\Scripts\Internal\PlayCoreStandardIntegrityToken.cs" />
+    <Compile Include="Assets\GooglePlayPlugins\com.google.play.integrity\Runtime\Scripts\StandardIntegrityToken.cs" />
+    <Compile Include="Assets\GooglePlayPlugins\com.google.play.integrity\Runtime\Scripts\Internal\PlayCoreIntegrityTokenResponse.cs" />
+    <Compile Include="Assets\GooglePlayPlugins\com.google.play.integrity\Runtime\Scripts\PrepareIntegrityTokenRequest.cs" />
+    <Compile Include="Assets\GooglePlayPlugins\com.google.play.integrity\Runtime\Scripts\StandardIntegrityManager.cs" />
+    <Compile Include="Assets\GooglePlayPlugins\com.google.play.integrity\Runtime\Scripts\StandardIntegrityTokenProvider.cs" />
+    <Compile Include="Assets\GooglePlayPlugins\com.google.play.integrity\Runtime\Scripts\Internal\PlayCoreStandardIntegrityManager.cs" />
+    <Compile Include="Assets\GooglePlayPlugins\com.google.play.integrity\Runtime\Scripts\IntegrityErrorCode.cs" />
+    <Compile Include="Assets\GooglePlayPlugins\com.google.play.integrity\Runtime\Scripts\IntegrityTokenRequest.cs" />
+    <Compile Include="Assets\GooglePlayPlugins\com.google.play.integrity\Runtime\Scripts\Internal\PlayCoreTranslator.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\GooglePlayPlugins\com.google.play.integrity\Runtime\Google.Play.Integrity.asmdef" />
@@ -734,7 +734,7 @@
       <Private>False</Private>
     </Reference>
     <Reference Include="AiEditorToolsSdk">
-      <HintPath>Library\PackageCache\com.unity.ai.toolkit@48a271771d1a\Modules\Sdk\Editor\AiEditorToolsSdk.dll</HintPath>
+      <HintPath>Library\PackageCache\com.unity.ai.toolkit@339b745a421a\Modules\Sdk\Editor\AiEditorToolsSdk.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Unity.VisualScripting.TextureAssets">

@@ -6,10 +6,11 @@ using UnityEngine.UI;
 /// <summary>
 /// The player-facing surface for the Google Play in-app update flow.
 ///
-/// Built in code on its own overlay canvas, the same way <see cref="RunBanner"/> and the
-/// boon picker are, so the feature needs no scene wiring and no serialized fields: turn it
-/// off and none of this ever exists. Palette and font come from <see cref="RunOverlayUI"/>,
-/// so it reads as the same temple as the rest of the game.
+/// Presentation comes from a prefab at Resources/UI/AppUpdatePrompt when one exists, so the
+/// prompt can be restyled alongside the rest of the main menu UI. When that prefab is absent
+/// it builds itself in code on its own overlay canvas, the same way <see cref="RunBanner"/>
+/// and the boon picker do, so the feature still needs no scene wiring. Palette and font
+/// come from <see cref="RunOverlayUI"/>, so either path reads as the same temple.
 ///
 /// Three states, only ever one of them visible:
 ///
@@ -22,41 +23,103 @@ using UnityEngine.UI;
 ///
 /// The backdrop is enabled only for the modal states. It is the only full-screen raycast
 /// target here, so with it off a tap passes straight through to the menu behind.
+///
+/// Menu: TamalStacker ▸ Retention ▸ Create App Update Prompt Prefab generates a prefab that
+/// matches the code-built layout, as a starting point to restyle.
 /// </summary>
 public class AppUpdatePromptView : MonoBehaviour
 {
+    /// <summary>Authored prefab that replaces the code-built layout when present.</summary>
+    public const string PrefabResourcePath = "UI/AppUpdatePrompt";
+
     /// <summary>Above the authored UI (sorting order 0) and above the run banners.</summary>
-    private const int SortingOrder = 400;
+    public const int SortingOrder = 400;
 
-    private Image backdrop;
+    [Header("Modal")]
+    [Tooltip("Full-screen tap blocker behind the modal. Shown only while a decision is up.")]
+    [SerializeField] private Image backdrop;
 
-    private RectTransform modal;
-    private TextMeshProUGUI modalTitle;
-    private TextMeshProUGUI modalBody;
-    private Button primaryButton;
-    private TextMeshProUGUI primaryLabel;
-    private Button secondaryButton;
-    private TextMeshProUGUI secondaryLabel;
+    [Tooltip("The decision slab: title, body and the two buttons live under it.")]
+    [SerializeField] private RectTransform modal;
 
-    private RectTransform strip;
-    private TextMeshProUGUI stripLabel;
-    private RectTransform progressFill;
+    [SerializeField] private TextMeshProUGUI modalTitle;
+    [SerializeField] private TextMeshProUGUI modalBody;
+
+    [Tooltip("\"Update\" / \"Restart\". Centred horizontally when the secondary button is hidden.")]
+    [SerializeField] private Button primaryButton;
+    [SerializeField] private TextMeshProUGUI primaryLabel;
+
+    [Tooltip("\"Not now\". Hidden for the single-button restart prompt.")]
+    [SerializeField] private Button secondaryButton;
+    [SerializeField] private TextMeshProUGUI secondaryLabel;
+
+    [Header("Download strip")]
+    [Tooltip("Non-blocking bar shown while the update downloads in the background.")]
+    [SerializeField] private RectTransform strip;
+    [SerializeField] private TextMeshProUGUI stripLabel;
+
+    [Tooltip("Progress fill. A Filled Image uses fillAmount; otherwise the rect's anchorMax.x " +
+             "is scaled 0..1, so keep it left-anchored (anchorMin x 0, pivot x 0).")]
+    [SerializeField] private RectTransform progressFill;
 
     private Action onPrimary;
     private Action onSecondary;
 
-    /// <summary>Creates the view on a fresh persistent GameObject.</summary>
+    private Image progressFillImage;
+    private Vector2 primaryAuthoredPosition;
+
+    /// <summary>
+    /// Creates the view on a fresh persistent GameObject — from the authored prefab when
+    /// there is a usable one, otherwise built in code.
+    /// </summary>
     public static AppUpdatePromptView Create()
     {
-        var host = new GameObject("AppUpdatePromptView");
-        DontDestroyOnLoad(host);
+        AppUpdatePromptView view = CreateFromPrefab();
+        if (view == null)
+        {
+            var host = new GameObject("AppUpdatePromptView");
+            RunOverlayUI.CreateCanvas(host, SortingOrder, interactive: true);
+            view = host.AddComponent<AppUpdatePromptView>();
+            view.Build();
+        }
 
-        RunOverlayUI.CreateCanvas(host, SortingOrder, interactive: true);
-        var view = host.AddComponent<AppUpdatePromptView>();
-        view.Build();
+        DontDestroyOnLoad(view.gameObject);
+        view.Initialize();
         return view;
     }
 
+    private static AppUpdatePromptView CreateFromPrefab()
+    {
+        var prefab = Resources.Load<GameObject>(PrefabResourcePath);
+        if (prefab == null) return null;
+
+        if (prefab.GetComponent<AppUpdatePromptView>() == null)
+        {
+            Debug.LogWarning($"[AppUpdate] Resources/{PrefabResourcePath} has no AppUpdatePromptView " +
+                             "component - using the code-built layout instead.");
+            return null;
+        }
+
+        var instance = Instantiate(prefab);
+        instance.name = "AppUpdatePromptView";
+        var view = instance.GetComponent<AppUpdatePromptView>();
+
+        // Every piece is needed by one state or another; a half-wired prefab would throw
+        // mid-flow, in front of the player, so refuse it up front instead.
+        if (view.modal == null || view.modalTitle == null || view.modalBody == null ||
+            view.primaryButton == null || view.primaryLabel == null ||
+            view.strip == null || view.stripLabel == null || view.progressFill == null)
+        {
+            Debug.LogWarning($"[AppUpdate] Resources/{PrefabResourcePath} is missing required references - " +
+                             "using the code-built layout instead.");
+            Destroy(instance);
+            return null;
+        }
+
+        return view;
+    }
+
+    /// <summary>Code-built fallback layout. Mirrored by AppUpdatePromptPrefabSetup.</summary>
     private void Build()
     {
         Transform root = transform;
@@ -67,7 +130,6 @@ public class AppUpdatePromptView : MonoBehaviour
         backdrop = backdropRect.gameObject.AddComponent<Image>();
         backdrop.color = RunOverlayUI.Backdrop;
         backdrop.raycastTarget = true;
-        backdropRect.gameObject.SetActive(false);
 
         // ── Modal ──
         modal = RunOverlayUI.CreateChild("Modal", root);
@@ -83,13 +145,9 @@ public class AppUpdatePromptView : MonoBehaviour
 
         primaryButton = RunOverlayUI.CreateButton("Primary", modal, string.Empty, RunOverlayUI.Jade, out primaryLabel);
         RunOverlayUI.Place((RectTransform)primaryButton.transform, new Vector2(0.5f, 0f), new Vector2(220f, 100f), new Vector2(400f, 110f));
-        primaryButton.onClick.AddListener(() => onPrimary?.Invoke());
 
         secondaryButton = RunOverlayUI.CreateButton("Secondary", modal, string.Empty, RunOverlayUI.Clay, out secondaryLabel);
         RunOverlayUI.Place((RectTransform)secondaryButton.transform, new Vector2(0.5f, 0f), new Vector2(-220f, 100f), new Vector2(400f, 110f));
-        secondaryButton.onClick.AddListener(() => onSecondary?.Invoke());
-
-        modal.gameObject.SetActive(false);
 
         // ── Download strip ──
         strip = RunOverlayUI.CreateChild("DownloadStrip", root);
@@ -118,7 +176,24 @@ public class AppUpdatePromptView : MonoBehaviour
         var fillImage = progressFill.gameObject.AddComponent<Image>();
         fillImage.color = RunOverlayUI.Gold;
         fillImage.raycastTarget = false;
+    }
 
+    /// <summary>
+    /// Shared by both paths: hooks the buttons and starts every state hidden. The prefab
+    /// keeps its pieces active so they stay easy to edit; they are switched off here.
+    /// </summary>
+    private void Initialize()
+    {
+        primaryButton.onClick.AddListener(() => CloseModalThen(onPrimary));
+        if (secondaryButton != null) secondaryButton.onClick.AddListener(() => CloseModalThen(onSecondary));
+
+        primaryAuthoredPosition = ((RectTransform)primaryButton.transform).anchoredPosition;
+
+        progressFillImage = progressFill.GetComponent<Image>();
+        if (progressFillImage != null && progressFillImage.type != Image.Type.Filled) progressFillImage = null;
+
+        if (backdrop != null) backdrop.gameObject.SetActive(false);
+        modal.gameObject.SetActive(false);
         strip.gameObject.SetActive(false);
     }
 
@@ -137,28 +212,43 @@ public class AppUpdatePromptView : MonoBehaviour
         modalBody.text = body;
         primaryLabel.text = primaryText;
 
-        bool hasSecondary = !string.IsNullOrEmpty(secondaryText);
-        secondaryButton.gameObject.SetActive(hasSecondary);
-        if (hasSecondary) secondaryLabel.text = secondaryText;
+        bool hasSecondary = secondaryButton != null && !string.IsNullOrEmpty(secondaryText);
+        if (secondaryButton != null) secondaryButton.gameObject.SetActive(hasSecondary);
+        if (hasSecondary && secondaryLabel != null) secondaryLabel.text = secondaryText;
 
-        // Centre the single button rather than leaving it sitting off to one side.
-        var primaryRect = (RectTransform)primaryButton.transform;
-        RunOverlayUI.Place(primaryRect, new Vector2(0.5f, 0f),
-            new Vector2(hasSecondary ? 220f : 0f, 100f), new Vector2(400f, 110f));
+        // Centre the single button rather than leaving it sitting off to one side. Only x
+        // moves, so an authored vertical position survives.
+        ((RectTransform)primaryButton.transform).anchoredPosition = hasSecondary
+            ? primaryAuthoredPosition
+            : new Vector2(0f, primaryAuthoredPosition.y);
 
         strip.gameObject.SetActive(false);
-        backdrop.gameObject.SetActive(true);
-        modal.gameObject.SetActive(true);
+        if (backdrop != null) UIPopup.Show(backdrop.gameObject);
+        UIPopup.Show(modal.gameObject);
+    }
+
+    /// <summary>
+    /// Scales the modal away first, then runs the player's choice — so whatever that choice
+    /// shows next (the download strip, the restart prompt) never appears under a modal that
+    /// is still leaving.
+    /// </summary>
+    private void CloseModalThen(Action action)
+    {
+        if (backdrop != null) UIPopup.Hide(backdrop.gameObject);
+        UIPopup.Hide(modal.gameObject, action);
     }
 
     /// <summary>Shows the background-download strip. <paramref name="progress"/> is 0..1.</summary>
     public void ShowProgress(string text, float progress)
     {
         stripLabel.text = text;
-        progressFill.anchorMax = new Vector2(Mathf.Clamp01(progress), 1f);
 
-        modal.gameObject.SetActive(false);
-        backdrop.gameObject.SetActive(false);
+        float clamped = Mathf.Clamp01(progress);
+        if (progressFillImage != null) progressFillImage.fillAmount = clamped;
+        else progressFill.anchorMax = new Vector2(clamped, progressFill.anchorMax.y);
+
+        UIPopup.Hide(modal.gameObject);
+        if (backdrop != null) UIPopup.Hide(backdrop.gameObject);
         strip.gameObject.SetActive(true);
     }
 
@@ -167,8 +257,8 @@ public class AppUpdatePromptView : MonoBehaviour
     {
         onPrimary = null;
         onSecondary = null;
-        modal.gameObject.SetActive(false);
-        backdrop.gameObject.SetActive(false);
+        UIPopup.Hide(modal.gameObject);
+        if (backdrop != null) UIPopup.Hide(backdrop.gameObject);
         strip.gameObject.SetActive(false);
     }
 }

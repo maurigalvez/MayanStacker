@@ -18,6 +18,7 @@ public static class FtueState
     private const string PP_GRACE_RETRY_USED = "Ftue_GraceRetryUsed";
     private const string PP_LANGUAGE_CHOSEN = "Ftue_LanguageChosen";
     private const string PP_BOON_INTRO_SEEN = "Ftue_BoonIntroSeen";
+    private const string PP_EDGE_INTRO_SEEN = "Ftue_EdgeIntroSeen";
 
     /// <summary>Legacy key from the old 3-second instruction overlay, cleared on migration.</summary>
     private const string PP_LEGACY_INSTRUCTIONS_SEEN = "HasSeenInstructions";
@@ -164,6 +165,24 @@ public static class FtueState
 
     #endregion
 
+    #region Serpent's Edge
+
+    /// <summary>
+    /// True once the player has been walked through the Serpent's Edge risk window. Like the
+    /// boon intro this is a later first-time moment: the window stays shut for the whole
+    /// tutorial run, so the core tap is learned before the player is offered a gamble on it.
+    /// </summary>
+    public static bool HasSeenEdgeIntro => PlayerPrefs.GetInt(PP_EDGE_INTRO_SEEN, 0) == 1;
+
+    public static void MarkEdgeIntroSeen()
+    {
+        if (HasSeenEdgeIntro) return;
+        PlayerPrefs.SetInt(PP_EDGE_INTRO_SEEN, 1);
+        PlayerPrefs.Save();
+    }
+
+    #endregion
+
     #region Tutorial
 
     public static TutorialState Tutorial
@@ -243,6 +262,7 @@ public static class FtueState
         PlayerPrefs.DeleteKey(PP_GRACE_RETRY_USED);
         PlayerPrefs.DeleteKey(PP_LANGUAGE_CHOSEN);
         PlayerPrefs.DeleteKey(PP_BOON_INTRO_SEEN);
+        PlayerPrefs.DeleteKey(PP_EDGE_INTRO_SEEN);
         PlayerPrefs.DeleteKey(PP_LEGACY_INSTRUCTIONS_SEEN);
         PlayerPrefs.Save();
 

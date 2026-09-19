@@ -74,6 +74,7 @@ public class LanguageSelectScreen : MonoBehaviour
 
         if (BuildFromPrefab(isFirstLaunch))
         {
+            PopInScreen();
             TrackShown(isFirstLaunch);
             return;
         }
@@ -116,7 +117,15 @@ public class LanguageSelectScreen : MonoBehaviour
             Place(hint.rectTransform, new Vector2(0.5f, 0f), new Vector2(0f, 110f), new Vector2(900f, 50f));
         }
 
+        PopInScreen();
         TrackShown(isFirstLaunch);
+    }
+
+    /// <summary>Pops in whichever canvas was built: the prefab's, or this object's own.</summary>
+    private void PopInScreen()
+    {
+        Canvas canvas = GetComponentInChildren<Canvas>();
+        if (canvas != null) UIPopup.PopIn(canvas.gameObject);
     }
 
     /// <summary>
@@ -207,6 +216,19 @@ public class LanguageSelectScreen : MonoBehaviour
     }
 
     private void Choose(string localeCode)
+    {
+        // The screen scales away before the language is applied and play continues.
+        Canvas canvas = GetComponentInChildren<Canvas>();
+        if (canvas == null)
+        {
+            ApplyChoice(localeCode);
+            return;
+        }
+
+        UIPopup.Hide(canvas.gameObject, () => ApplyChoice(localeCode));
+    }
+
+    private void ApplyChoice(string localeCode)
     {
         if (LocalizationManager.Instance != null)
         {

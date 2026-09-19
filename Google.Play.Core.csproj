@@ -49,15 +49,15 @@
     <Analyzer Include="C:\Program Files\Unity\Hub\Editor\6000.3.10f1\Editor\Data\Tools\BuildPipeline\Unity.SourceGenerators\Unity.UIToolkit.SourceGenerator.dll" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Assets\GooglePlayPlugins\com.google.play.core\Runtime\Scripts\Internal\ActivityResult.cs" />
     <Compile Include="Assets\GooglePlayPlugins\com.google.play.core\Runtime\Scripts\Internal\PlayServicesTask.cs" />
     <Compile Include="Assets\GooglePlayPlugins\com.google.play.core\Runtime\Scripts\Internal\PlayCoreOnFailureListener.cs" />
-    <Compile Include="Assets\GooglePlayPlugins\com.google.play.core\Runtime\Scripts\Internal\TaskOnFailureListener.cs" />
     <Compile Include="Assets\GooglePlayPlugins\com.google.play.core\Runtime\Scripts\Internal\PlayCoreConstants.cs" />
-    <Compile Include="Assets\GooglePlayPlugins\com.google.play.core\Runtime\Scripts\Internal\PlayCoreEventHandler.cs" />
-    <Compile Include="Assets\GooglePlayPlugins\com.google.play.core\Runtime\Scripts\Internal\TaskOnSuccessListener.cs" />
     <Compile Include="Assets\GooglePlayPlugins\com.google.play.core\Runtime\Scripts\Internal\PlayCoreHelper.cs" />
     <Compile Include="Assets\GooglePlayPlugins\com.google.play.core\Runtime\Scripts\Internal\PlayCoreOnSuccessListener.cs" />
+    <Compile Include="Assets\GooglePlayPlugins\com.google.play.core\Runtime\Scripts\Internal\ActivityResult.cs" />
+    <Compile Include="Assets\GooglePlayPlugins\com.google.play.core\Runtime\Scripts\Internal\TaskOnFailureListener.cs" />
+    <Compile Include="Assets\GooglePlayPlugins\com.google.play.core\Runtime\Scripts\Internal\PlayCoreEventHandler.cs" />
+    <Compile Include="Assets\GooglePlayPlugins\com.google.play.core\Runtime\Scripts\Internal\TaskOnSuccessListener.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\GooglePlayPlugins\com.google.play.core\Runtime\Google.Play.Core.asmdef" />
@@ -724,7 +724,7 @@
       <Private>False</Private>
     </Reference>
     <Reference Include="AiEditorToolsSdk">
-      <HintPath>Library\PackageCache\com.unity.ai.toolkit@48a271771d1a\Modules\Sdk\Editor\AiEditorToolsSdk.dll</HintPath>
+      <HintPath>Library\PackageCache\com.unity.ai.toolkit@339b745a421a\Modules\Sdk\Editor\AiEditorToolsSdk.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Unity.VisualScripting.TextureAssets">

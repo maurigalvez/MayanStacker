@@ -44,6 +44,8 @@ public class GameManager : MonoBehaviour
     private bool comboDecayActive = false; // Track if decay timer is running
     private AccuracyLevel lastAccuracyLevel = AccuracyLevel.None; // Track last accuracy level for consistency check
     private int consecutivePerfectHits = 0; // Track consecutive perfect hits for stack straightening
+    private int perfectLandings = 0; // Perfect landings this run, streak or not - shown on the result card
+    private int highScoreAtRunStart = 0; // highScore climbs live during a run, so the best being chased is kept here
 
     // Accuracy level enum for combo consistency
     private enum AccuracyLevel
@@ -75,7 +77,23 @@ public class GameManager : MonoBehaviour
     public bool IsGameModeInitialized => gameModeInitialized;
     public int CurrentCombo => currentCombo;
     public int MaxCombo => maxCombo;
+    public int PerfectLandings => perfectLandings;
+    /// <summary>The high score as it stood when this run began - the best the run was chasing.</summary>
+    public int HighScoreAtRunStart => highScoreAtRunStart;
     public float CurrentMultiplier => GetComboMultiplier();
+
+    /// <summary>
+    /// Points the most recent landing actually awarded, after every multiplier. The points
+    /// popup reads this so it can't disagree with the score (Serpent's Edge, variants, boons).
+    /// </summary>
+    public int LastAwardedPoints { get; private set; }
+
+    /// <summary>
+    /// True when the most recent landing wasn't Perfect but the combo survived it (a Good
+    /// hold or a Jade Eye shield). The HUD reads this to show "held" rather than implying
+    /// the combo grew or silently carried over.
+    /// </summary>
+    public bool LastLandingHeldCombo { get; private set; }
     public int ConsecutivePerfectHits => consecutivePerfectHits;
     public int PerfectHitsRequired => perfectHitsRequired;
     public float FragileStackFailThreshold => fragileStackFailThreshold;
@@ -178,6 +196,7 @@ public class GameManager : MonoBehaviour
         consecutivePerfectHits = 0; // Reset perfect hit streak
         OnConsecutivePerfectHitsChanged?.Invoke(consecutivePerfectHits); // Notify of reset
         highScoreSaved = false; // Reset save flag for new game session
+        ResetRunStats();
 
         // Boons are strictly run-scoped; clear them here as well as in BoonSystem so a
         // stale boon can't survive into a new run if that system isn't present.
@@ -264,17 +283,8 @@ public class GameManager : MonoBehaviour
         // Update combo based on accuracy
         UpdateCombo(accuracy);
 
-        // Calculate points - the combo multiplier only applies for perfect hits.
-        // The Perfect window itself can be tightened by a run modifier, so it's read from
-        // RunModifierService rather than hard-coded (baseline is the original 0.9).
-        bool isPerfectHit = accuracy >= RunModifierService.PerfectThreshold;
-        float multiplier = isPerfectHit ? GetComboMultiplier() : 1f;
-
-        // Run-wide multipliers stack on top of the combo: the modifier's flat bonus, and
-        // whatever boon the player chose mid-run. Both are 1.0 when nothing is active.
-        multiplier *= RunModifierService.ScoreMultiplier * ActiveBoons.ScoreMultiplier;
-
-        int finalPoints = Mathf.RoundToInt(basePoints * multiplier);
+        int finalPoints = PointsFor(basePoints, accuracy, currentCombo);
+        LastAwardedPoints = finalPoints;
 
         // Boons expire per scored block rather than on a timer, so putting the phone down
         // mid-run never costs the player one.
@@ -317,6 +327,34 @@ public class GameManager : MonoBehaviour
         }
 
         return finalPoints;
+    }
+
+    /// <summary>
+    /// Points a landing would award right now, without changing any state - what the Serpent's
+    /// Edge rim shows. Shares <see cref="PointsFor"/> with
+    /// <see cref="AddScoreWithCombo"/>, so a preview can never disagree with the real award.
+    /// </summary>
+    public int PreviewPoints(int basePoints, float accuracy)
+    {
+        // A Perfect grows the combo before its multiplier is read.
+        bool isPerfectHit = accuracy >= RunModifierService.PerfectThreshold;
+        return PointsFor(basePoints, accuracy, isPerfectHit ? currentCombo + 1 : currentCombo);
+    }
+
+    /// <param name="comboAfterLanding">The combo count once this landing has updated it.</param>
+    private int PointsFor(int basePoints, float accuracy, int comboAfterLanding)
+    {
+        // The combo multiplier only applies for perfect hits. The Perfect window itself can be
+        // tightened by a run modifier, so it's read from RunModifierService rather than
+        // hard-coded (baseline is the original 0.9).
+        bool isPerfectHit = accuracy >= RunModifierService.PerfectThreshold;
+        float multiplier = isPerfectHit ? GetComboMultiplier(comboAfterLanding) : 1f;
+
+        // Run-wide multipliers stack on top of the combo: the modifier's flat bonus, and
+        // whatever boon the player chose mid-run. Both are 1.0 when nothing is active.
+        multiplier *= RunModifierService.ScoreMultiplier * ActiveBoons.ScoreMultiplier;
+
+        return Mathf.RoundToInt(basePoints * multiplier);
     }
 
     /// <summary>
@@ -367,6 +405,7 @@ public class GameManager : MonoBehaviour
         if (currentAccuracyLevel == AccuracyLevel.Perfect)
         {
             consecutivePerfectHits++;
+            perfectLandings++;
 
             // Notify listeners of perfect hits change
             if (consecutivePerfectHits != previousPerfectHits)
@@ -393,13 +432,16 @@ public class GameManager : MonoBehaviour
             }
         }
 
+        LastLandingHeldCombo = false;
+
         // Combo rules:
         //  - Perfect  -> grows the combo (and its score multiplier)
-        //  - Good     -> HOLDS the combo (no growth, but doesn't reset) - forgiving so
-        //                a single slightly-off landing doesn't wipe a hard-won streak
+        //  - Good     -> breaks the combo, unless the run's modifier sets GoodHoldsCombo
+        //                (baseline is off: holding made the combo unbreakable once the
+        //                timing was learned, so centre aim stopped mattering)
         //  - Poor     -> breaks the combo
-        // Note: the score multiplier still only APPLIES on Perfect hits (see AddScoreWithCombo),
-        // so a held combo simply preserves the multiplier for the next Perfect.
+        // A Jade Eye combo shield absorbs either break. The score multiplier only APPLIES on
+        // Perfect hits (see AddScoreWithCombo), so a held combo preserves it for the next Perfect.
         if (currentAccuracyLevel == AccuracyLevel.Perfect)
         {
             currentCombo++;
@@ -426,6 +468,7 @@ public class GameManager : MonoBehaviour
             lastComboUpdateTime = Time.time;
             comboDecayActive = true;
             lastAccuracyLevel = currentAccuracyLevel;
+            LastLandingHeldCombo = true;
 
             Debug.Log($"Combo held (Good landing). Combo: {currentCombo}, Multiplier: {GetComboMultiplier()}x");
         }
@@ -438,6 +481,7 @@ public class GameManager : MonoBehaviour
                 lastComboUpdateTime = Time.time;
                 comboDecayActive = true;
                 lastAccuracyLevel = AccuracyLevel.Good;
+                LastLandingHeldCombo = true;
 
                 OnComboChanged?.Invoke(currentCombo, GetComboMultiplier());
                 return;
@@ -500,13 +544,15 @@ public class GameManager : MonoBehaviour
     /// <summary>
     /// Calculates current combo multiplier based on combo count
     /// </summary>
-    private float GetComboMultiplier()
+    private float GetComboMultiplier() => GetComboMultiplier(currentCombo);
+
+    private float GetComboMultiplier(int combo)
     {
-        if (currentCombo <= 1) return 1f;
+        if (combo <= 1) return 1f;
 
         // A modifier may replace linear scaling entirely (Combo Chain compounds instead).
         // Returns -1 when this run uses the baseline progression computed below.
-        float modifierMultiplier = RunModifierService.GetComboMultiplierOverride(currentCombo);
+        float modifierMultiplier = RunModifierService.GetComboMultiplierOverride(combo);
         if (modifierMultiplier >= 0f)
         {
             return modifierMultiplier;
@@ -515,7 +561,7 @@ public class GameManager : MonoBehaviour
         // Calculate multiplier: starts at 1x, increases by multiplierIncrement starting from 2nd landing
         // Example: with multiplierIncrement = 1.0:
         // Combo 1: 1x (first landing, no bonus yet), Combo 2: 2x, Combo 3: 3x, Combo 4: 4x, etc.
-        float multiplier = 1f + ((currentCombo - 1) * multiplierIncrement);
+        float multiplier = 1f + ((combo - 1) * multiplierIncrement);
 
         // Cap at max multiplier
         return Mathf.Min(multiplier, maxComboMultiplier);
@@ -612,6 +658,26 @@ public class GameManager : MonoBehaviour
         OnFtueGraceRetry?.Invoke();
         RestartGame();
         return true;
+    }
+
+    /// <summary>
+    /// Clears the stats the result card reports. maxCombo used to survive between runs, so a
+    /// run's "best combo" could be one from an earlier attempt.
+    /// </summary>
+    private void ResetRunStats()
+    {
+        maxCombo = 0;
+        perfectLandings = 0;
+        highScoreAtRunStart = highScore;
+    }
+
+    /// <summary>
+    /// A stored best can finish loading after the run has started; the run is still chasing it.
+    /// </summary>
+    private void SyncRunStartBest()
+    {
+        if (isGameOver) return;
+        highScoreAtRunStart = Mathf.Max(highScoreAtRunStart, highScore);
     }
 
     public void RestartGame()
@@ -733,6 +799,7 @@ public class GameManager : MonoBehaviour
     {
         string key = GetHighScorePlayerPrefsKey();
         highScore = PlayerPrefs.GetInt(key, 0);
+        SyncRunStartBest();
         OnHighScoreChanged?.Invoke(highScore);
         Debug.Log($"Loaded high score from PlayerPrefs: {highScore} (Key: {key})");
     }
@@ -743,6 +810,7 @@ public class GameManager : MonoBehaviour
     private void OnHighScoreLoaded(int loadedHighScore)
     {
         highScore = loadedHighScore;
+        SyncRunStartBest();
         OnHighScoreChanged?.Invoke(highScore);
         Debug.Log($"Loaded high score from PlayFab: {highScore}");
 
@@ -907,6 +975,7 @@ public class GameManager : MonoBehaviour
         {
             Debug.Log($"Updating Infinite Stacker high score from cloud: {data.infiniteStackerHighScore}");
             highScore = data.infiniteStackerHighScore;
+            SyncRunStartBest();
 
             // Notify UI
             OnHighScoreChanged?.Invoke(highScore);
@@ -924,6 +993,7 @@ public class GameManager : MonoBehaviour
         {
             Debug.Log($"Updating high score from cloud: {cloudHighScore}");
             highScore = cloudHighScore;
+            SyncRunStartBest();
             OnHighScoreChanged?.Invoke(highScore);
         }
     }

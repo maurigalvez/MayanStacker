@@ -152,13 +152,18 @@ public class AltitudeBandManager : MonoBehaviour
 
         if (announce && band.announce && !string.IsNullOrEmpty(band.nameKey))
         {
-            RunBanner.Show(LocalizationManager.Get(band.nameKey), band.announceColor);
+            int height = stackManager != null ? stackManager.GetStackCount() : band.startsAtBlock;
+
+            // The height line is what makes the name mean something: without it a band
+            // banner is a title with no referent, since not every band changes the scene.
+            RunBanner.Show(LocalizationManager.Get(band.nameKey),
+                LocalizationManager.Get("band_height_subtitle", height), band.announceColor);
 
             GameAnalytics.Track("altitude_band_reached", new System.Collections.Generic.Dictionary<string, object>
             {
                 { "band", band.nameKey },
                 { "band_index", index },
-                { "height", stackManager != null ? stackManager.GetStackCount() : 0 }
+                { "height", height }
             });
         }
     }

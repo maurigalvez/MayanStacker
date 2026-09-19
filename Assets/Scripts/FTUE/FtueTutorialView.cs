@@ -65,7 +65,7 @@ public class FtueTutorialView : MonoBehaviour
     {
         // Hidden until the tutorial has something to say; the prefab is authored visible so
         // it stays easy to look at while styling.
-        SetMessageVisible(false);
+        SetMessageVisible(false, animate: false);
         SetSkipVisible(false);
 
         if (skipButton != null) skipButton.onClick.AddListener(HandleSkip);
@@ -83,10 +83,10 @@ public class FtueTutorialView : MonoBehaviour
     {
         if (messageText == null) return;
         messageText.text = message;
-        SetMessageVisible(true);
+        SetMessageVisible(true, animate: true);
     }
 
-    public void HideMessage() => SetMessageVisible(false);
+    public void HideMessage() => SetMessageVisible(false, animate: true);
 
     public void SetSkipVisible(bool visible)
     {
@@ -96,10 +96,19 @@ public class FtueTutorialView : MonoBehaviour
         skipButton.gameObject.SetActive(visible);
     }
 
-    private void SetMessageVisible(bool visible)
+    /// <summary>
+    /// Pops the message in/out. Not animated in Awake, where the prefab's authored-visible
+    /// state is simply switched off before anyone sees it.
+    /// </summary>
+    private void SetMessageVisible(bool visible, bool animate)
     {
-        if (messagePanel != null) messagePanel.SetActive(visible);
-        else if (messageText != null) messageText.gameObject.SetActive(visible);
+        GameObject target = messagePanel != null ? messagePanel
+            : messageText != null ? messageText.gameObject : null;
+        if (target == null) return;
+
+        if (!animate) target.SetActive(visible);
+        else if (visible) UIPopup.Show(target);
+        else UIPopup.Hide(target);
     }
 
     private void HandleSkip() => onSkip?.Invoke();

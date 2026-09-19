@@ -39,8 +39,10 @@ public struct RunModifierDefinition
     public bool endRunOnPoorLanding;
 
     /// <summary>
-    /// When true (the baseline), a Good landing holds the combo instead of breaking it.
-    /// Perfectionist turns this off.
+    /// When true, a Good landing holds the combo instead of breaking it. Off in the baseline
+    /// (only Perfects keep the chain, so centre aim always matters); no shipped modifier
+    /// turns it on.
+    /// Perfectionist predates the baseline change and now only adds its score bonus.
     /// </summary>
     public bool goodHoldsCombo;
 
@@ -94,8 +96,9 @@ public struct RunModifierDefinition
                 break;
 
             case RunModifier.Perfectionist:
-                // The forgiving "Good holds the combo" rule is the thing being taken away,
-                // so this modifier is felt entirely through the combo meter.
+                // Written when Good held the combo by default; the baseline now breaks on
+                // Good too, so this is redundant and only the score bonus differs. Give it a
+                // new rule before adding it to the Daily rotation.
                 def.goodHoldsCombo = false;
                 def.scoreMultiplier = 1.5f;
                 def.nameKey = "daily_modifier_perfectionist";
@@ -136,7 +139,7 @@ public struct RunModifierDefinition
             goodThreshold = BaselineGoodThreshold,
             scoreMultiplier = 1f,
             endRunOnPoorLanding = false,
-            goodHoldsCombo = true,
+            goodHoldsCombo = false,
             geometricCombo = false,
             geometricComboBase = 1.5f,
             comboMultiplierCap = 0f,

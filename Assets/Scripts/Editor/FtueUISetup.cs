@@ -88,6 +88,7 @@ public static class FtueUISetup
         // Forget which special blocks have introduced themselves, so the teaching banners
         // can be tested again rather than only ever firing on a fresh install.
         BlockCodex.ResetAll();
+        TowerStability.ResetIntro();
 
         Debug.Log("[FtueUISetup] First-run state cleared. Next play session will run the FTUE from the top.");
     }

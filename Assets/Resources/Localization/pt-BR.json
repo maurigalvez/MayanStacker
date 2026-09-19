@@ -22,7 +22,11 @@
     },
     {
       "key": "combo_format",
-      "value": "{0}\nx{1} COMBO"
+      "value": "{0}\n{1} SEGUIDOS"
+    },
+    {
+      "key": "combo_held_format",
+      "value": "{0}\n{1} SEGUIDOS - MANTIDO"
     },
     {
       "key": "mode_temple_stacker",
@@ -358,11 +362,11 @@
     },
     {
       "key": "ftue_beat_good",
-      "value": "Bom. O suficiente para manter sua sequência."
+      "value": "Bom. Mas só um Perfeito mantém sua sequência."
     },
     {
       "key": "ftue_beat_poor",
-      "value": "Descuidado. Só uma pedra torta quebra a sequência."
+      "value": "Descuidado. A sequência foi quebrada."
     },
     {
       "key": "ftue_beat_kukulkan",
@@ -509,8 +513,8 @@
       "value": "A Fundação"
     },
     {
-      "key": "band_canopy",
-      "value": "A Copa das Árvores"
+      "key": "band_stairway",
+      "value": "A Grande Escadaria"
     },
     {
       "key": "band_dusk",
@@ -523,6 +527,10 @@
     {
       "key": "band_serpent",
       "value": "O Alcance da Serpente"
+    },
+    {
+      "key": "band_height_subtitle",
+      "value": "{0} pedras de altura"
     },
     {
       "key": "boon_title",
@@ -643,6 +651,105 @@
     {
       "key": "update_button_restart",
       "value": "Reiniciar agora"
-    }
+    },
+    {
+      "key": "stability_label",
+      "value": "Tremor"
+    },
+    {
+      "key": "stability_intro_title",
+      "value": "O Tremor"
+    },
+    {
+      "key": "stability_intro_body",
+      "value": "Pedras fora do centro abalam o templo. Os Perfeitos o acalmam."
+    },
+    {
+      "key": "stability_warning_title",
+      "value": "O templo treme!"
+    },
+    {
+      "key": "stability_warning_body",
+      "value": "Acerte um Perfeito ou ele cai"
+    },
+    {
+      "key": "stability_saved",
+      "value": "Kukulkan firma as pedras"
+    },
+    {
+      "key": "ftue_beat_tremor",
+      "value": "Observe o Tremor: pedras fora do centro abalam o templo e os Perfeitos o acalmam."
+    },
+    {
+      "key": "edge_zone_label",
+      "value": "x{0}"
+    },
+    {
+      "key": "edge_landed",
+      "value": "Fio da Serpente x{0}"
+    },
+    {
+      "key": "edge_intro_title",
+      "value": "O Fio da Serpente"
+    },
+    {
+      "key": "edge_intro_body",
+      "value": "Solte bem no fim do balanço, quando a borda dourada piscar, para um PERFEITO x{0}. Cedo demais é só BOM."
+    },
+    {
+      "key": "edge_intro_followup_title",
+      "value": "x{0} pontos!"
+    },
+    {
+      "key": "edge_intro_followup_body",
+      "value": "Mas o templo sentiu. Observe o Tremor."
+    },
+    {
+      "key": "ghost_best_label",
+      "value": "Recorde {0}"
+    },
+    {
+      "key": "ghost_new_best",
+      "value": "Você superou sua melhor altura!"
+    },
+    { "key": "result_head_new_best", "value": "Novo recorde" },
+    { "key": "result_head_first", "value": "As primeiras pedras foram postas" },
+    { "key": "result_head_near", "value": "Tão perto da glória" },
+    { "key": "result_head_solid", "value": "O templo caiu" },
+    { "key": "result_head_early", "value": "As pedras cederam" },
+    { "key": "result_head_level_near", "value": "Quase conquistado" },
+    { "key": "result_flavor_new_best_1", "value": "Kukulkan honra sua torre." },
+    { "key": "result_flavor_new_best_2", "value": "Os ancestrais falarão deste templo." },
+    { "key": "result_flavor_new_best_3", "value": "Um novo cume para o sol." },
+    { "key": "result_flavor_first", "value": "Seu templo começou. Agora eleve-o mais alto." },
+    { "key": "result_flavor_near_1", "value": "Os deuses estavam assistindo." },
+    { "key": "result_flavor_near_2", "value": "O cume está ao seu alcance." },
+    { "key": "result_flavor_near_3", "value": "Mais uma subida pode bastar." },
+    { "key": "result_flavor_solid_1", "value": "Suas pedras lembram o quão alto chegou." },
+    { "key": "result_flavor_solid_2", "value": "Junte as pedras e construa de novo." },
+    { "key": "result_flavor_solid_3", "value": "Cada queda ensina o construtor." },
+    { "key": "result_flavor_early_1", "value": "Todo templo começa com uma pedra." },
+    { "key": "result_flavor_early_2", "value": "Mãos firmes, paciência ao soltar." },
+    { "key": "result_flavor_early_3", "value": "Respire e construa de novo." },
+    { "key": "result_best", "value": "Recorde {0}" },
+    { "key": "result_best_gap", "value": "Recorde {0} · faltam {1}" },
+    { "key": "result_best_beaten", "value": "Recorde anterior {0} · +{1}" },
+    { "key": "result_daily_best", "value": "Melhor de hoje {0}" },
+    { "key": "result_daily_best_beaten", "value": "Novo melhor de hoje · +{0}" },
+    { "key": "result_level_score", "value": "{0} / {1}" },
+    { "key": "result_level_to_go", "value": "Mais {0} para conquistar este local" },
+    { "key": "result_stat_height", "value": "Altura" },
+    { "key": "result_stat_perfects", "value": "Perfeitos" },
+    { "key": "result_stat_combo", "value": "Melhor combo" },
+    { "key": "result_combo_value", "value": "x{0}" },
+    { "key": "result_tip_straighten", "value": "Acerte {0} Perfeitos seguidos para endireitar sua torre." },
+    { "key": "result_tip_combo", "value": "Só aterrissagens perfeitas mantêm seu combo." },
+    { "key": "result_tip_edge", "value": "Solte quando a borda da Serpente piscar para um PERFEITO x3." },
+    { "key": "edge_landed_bonus", "value": "Fio da Serpente x{0} · +{1}" },
+    { "key": "edge_proj_miss", "value": "Erra" },
+    { "key": "combo_badge_caption", "value": "COMBO" },
+    { "key": "result_edge_line", "value": "Fio da Serpente: {0} acertos · +{1}" },
+    { "key": "result_edge_line_broke", "value": "Fio da Serpente: {0} acertos · +{1} · combos quebrados: {2}" },
+    { "key": "result_tip_align", "value": "Alinhe cada pedra com a de baixo." }
   ]
 }

@@ -56,122 +56,140 @@
     <Compile Include="Assets\Scripts\DailyChallenge\DailyChallengeFallbackSettings.cs" />
     <Compile Include="Assets\Scripts\FTUE\FtueState.cs" />
     <Compile Include="Assets\Scripts\AdManager.cs" />
-    <Compile Include="Assets\Scripts\OfflineScoreQueue.cs" />
-    <Compile Include="Assets\Scripts\LeaderboardManager.cs" />
+    <Compile Include="Assets\Scripts\UI\RunResultCard.cs" />
     <Compile Include="Assets\Scripts\Utilities\ScrollView_PinchScale.cs" />
-    <Compile Include="Assets\Scripts\DailyChallenge\DailyChallengeManager.cs" />
-    <Compile Include="Assets\Scripts\Achievements\AchievementTracker.cs" />
     <Compile Include="Assets\Scripts\FTUE\LanguageSelectView.cs" />
-    <Compile Include="Assets\Scripts\IntegrityManager.cs" />
     <Compile Include="Assets\GooglePlayPlugins\com.google.play.appupdate\Samples\AppUpdateDemo\Scripts\UpdateDownloadDisplay.cs" />
-    <Compile Include="Assets\Scripts\DependencyRegistry\ISaveSystem.cs" />
-    <Compile Include="Assets\Scripts\Achievements\AchievementPanelUI.cs" />
     <Compile Include="Assets\Scripts\DailyChallenge\DailyStreak.cs" />
-    <Compile Include="Assets\Scripts\Analytics\AnalyticsSession.cs" />
-    <Compile Include="Assets\Scripts\StackableObject.cs" />
+    <Compile Include="Assets\Scripts\UI\Motion\UIMotionSettings.cs" />
     <Compile Include="Assets\Scripts\PlayerProgressData.cs" />
     <Compile Include="Assets\Scripts\LeaderboardEntryUI.cs" />
-    <Compile Include="Assets\Scripts\GameSettings.cs" />
-    <Compile Include="Assets\Scripts\Run\RunRandom.cs" />
     <Compile Include="Assets\Scripts\Localization\LocalizedText.cs" />
     <Compile Include="Assets\Scripts\ObjectSpawnerAnimator.cs" />
-    <Compile Include="Assets\GooglePlayPlugins\com.google.play.appupdate\Samples\AppUpdateDemo\Scripts\UpdateDownloader.cs" />
-    <Compile Include="Assets\Scripts\ThemeMainMenuBackground.cs" />
     <Compile Include="Assets\Scripts\UIManager.cs" />
-    <Compile Include="Assets\Scripts\Achievements\AchievementDefinition.cs" />
     <Compile Include="Assets\Scripts\RunModifiers\RunModifier.cs" />
     <Compile Include="Assets\Scripts\GameSoundManager.cs" />
     <Compile Include="Assets\Scripts\RunModifiers\RunModifierDefinition.cs" />
-    <Compile Include="Assets\Scripts\DependencyRegistry\IGameDataManager.cs" />
-    <Compile Include="Assets\Scripts\GameMode.cs" />
-    <Compile Include="Assets\Scripts\Achievements\AchievementTestingUtility.cs" />
-    <Compile Include="Assets\Scripts\Boons\ActiveBoons.cs" />
     <Compile Include="Assets\Scripts\Blocks\BlockVarietyTable.cs" />
+    <Compile Include="Assets\Scripts\Progression\LeaderboardSeason.cs" />
     <Compile Include="Assets\Scripts\UI\AppUpdatePromptView.cs" />
+    <Compile Include="Assets\Scripts\Stability\RiskWindowView.cs" />
     <Compile Include="Assets\Scripts\Ground.cs" />
     <Compile Include="Assets\Scripts\GameFeel\GameFeelSettings.cs" />
-    <Compile Include="Assets\Scripts\Achievements\AchievementManager.cs" />
     <Compile Include="Assets\GooglePlayPlugins\com.google.play.integrity\Samples\IntegrityTestApp\Scripts\FakeIntegrityVerifierServer.cs" />
     <Compile Include="Assets\Scripts\LevelPathRenderer.cs" />
-    <Compile Include="Assets\Scripts\EnvironmentAssetData.cs" />
-    <Compile Include="Assets\GooglePlayPlugins\com.google.play.appupdate\Samples\AppUpdateDemo\Scripts\StartUpdateFlowAction.cs" />
     <Compile Include="Assets\Scripts\SpawnerHolder.cs" />
     <Compile Include="Assets\Scripts\Progression\AltitudeBandSet.cs" />
     <Compile Include="Assets\Scripts\InputManager.cs" />
     <Compile Include="Assets\Scripts\MainMenuSoundManager.cs" />
     <Compile Include="Assets\Scripts\ThemeSelectionUI.cs" />
-    <Compile Include="Assets\Scripts\DependencyRegistry\DependencyRegistry.cs" />
-    <Compile Include="Assets\Scripts\DailyChallenge\DailyChallengeConfig.cs" />
-    <Compile Include="Assets\Scripts\LevelObjective.cs" />
     <Compile Include="Assets\Scripts\GameFeel\GameFeelManager.cs" />
-    <Compile Include="Assets\GooglePlayPlugins\com.google.play.integrity\Samples\IntegrityTestApp\Scripts\RequestIntegrityTokenAction.cs" />
     <Compile Include="Assets\Scripts\FTUE\LanguageSelectScreen.cs" />
     <Compile Include="Assets\Scripts\ReviewManagerHelper.cs" />
-    <Compile Include="Assets\Scripts\ObjectSpawner.cs" />
     <Compile Include="Assets\Scripts\ReadingTime.cs" />
-    <Compile Include="Assets\Scripts\UI\RunBanner.cs" />
     <Compile Include="Assets\Scripts\LeaderboardEntry.cs" />
     <Compile Include="Assets\Scripts\CodexManager.cs" />
     <Compile Include="Assets\Scripts\GameFeel\HapticFeedback.cs" />
+    <Compile Include="Assets\Scripts\RunModifiers\RunModifierService.cs" />
+    <Compile Include="Assets\GooglePlayPlugins\com.google.play.appupdate\Samples\AppUpdateDemo\Scripts\CompleteUpdateAction.cs" />
+    <Compile Include="Assets\Scripts\Localization\LocaleFontSwitcher.cs" />
+    <Compile Include="Assets\Scripts\Stability\TowerStabilityView.cs" />
+    <Compile Include="Assets\Scripts\StyleManager.cs" />
+    <Compile Include="Assets\Scripts\StackManager.cs" />
+    <Compile Include="Assets\Scripts\MainMenuManager.cs" />
+    <Compile Include="Assets\Scripts\UI\RunBannerView.cs" />
+    <Compile Include="Assets\Scripts\Blocks\LevelBlockSequence.cs" />
+    <Compile Include="Assets\Scripts\Blocks\BlockIntroPresenter.cs" />
+    <Compile Include="Assets\GooglePlayPlugins\com.google.play.review\Samples\ReviewDemo\Scripts\ReviewDemo.cs" />
+    <Compile Include="Assets\Scripts\Localization\LocalizationManager.cs" />
+    <Compile Include="Assets\Scripts\FTUE\FtueTutorialView.cs" />
+    <Compile Include="Assets\Scripts\LevelData.cs" />
+    <Compile Include="Assets\Scripts\Boons\BoonSettings.cs" />
+    <Compile Include="Assets\Scripts\Achievements\AchievementEntryUI.cs" />
+    <Compile Include="Assets\Scripts\LevelManager.cs" />
+    <Compile Include="Assets\Scripts\GameManager.cs" />
+    <Compile Include="Assets\Scripts\Boons\BoonSystem.cs" />
+    <Compile Include="Assets\Scripts\LeaderboardPanel.cs" />
+    <Compile Include="Assets\Scripts\IntegritySettings.cs" />
+    <Compile Include="Assets\Scripts\Blocks\BlockVariant.cs" />
+    <Compile Include="Assets\Scripts\OfflineScoreQueue.cs" />
+    <Compile Include="Assets\Scripts\UI\Motion\UIPopup.cs" />
+    <Compile Include="Assets\Scripts\LeaderboardManager.cs" />
+    <Compile Include="Assets\Scripts\DailyChallenge\DailyChallengeManager.cs" />
+    <Compile Include="Assets\Scripts\Achievements\AchievementTracker.cs" />
+    <Compile Include="Assets\Scripts\IntegrityManager.cs" />
+    <Compile Include="Assets\Scripts\DependencyRegistry\ISaveSystem.cs" />
+    <Compile Include="Assets\Scripts\Achievements\AchievementPanelUI.cs" />
+    <Compile Include="Assets\Scripts\Analytics\AnalyticsSession.cs" />
+    <Compile Include="Assets\Scripts\StackableObject.cs" />
+    <Compile Include="Assets\Scripts\GameSettings.cs" />
+    <Compile Include="Assets\Scripts\Run\RunRandom.cs" />
+    <Compile Include="Assets\Scripts\GameFeel\AimGlyphSettings.cs" />
+    <Compile Include="Assets\GooglePlayPlugins\com.google.play.appupdate\Samples\AppUpdateDemo\Scripts\UpdateDownloader.cs" />
+    <Compile Include="Assets\Scripts\ThemeMainMenuBackground.cs" />
+    <Compile Include="Assets\Scripts\Achievements\AchievementDefinition.cs" />
+    <Compile Include="Assets\Scripts\DependencyRegistry\IGameDataManager.cs" />
+    <Compile Include="Assets\Scripts\GameMode.cs" />
+    <Compile Include="Assets\Scripts\Achievements\AchievementTestingUtility.cs" />
+    <Compile Include="Assets\Scripts\Progression\InfiniteBest.cs" />
+    <Compile Include="Assets\Scripts\Boons\ActiveBoons.cs" />
+    <Compile Include="Assets\Scripts\UI\Motion\NoPressScale.cs" />
+    <Compile Include="Assets\Scripts\UI\Motion\UIPressScaleAutoAttach.cs" />
+    <Compile Include="Assets\Scripts\Achievements\AchievementManager.cs" />
+    <Compile Include="Assets\Scripts\EnvironmentAssetData.cs" />
+    <Compile Include="Assets\GooglePlayPlugins\com.google.play.appupdate\Samples\AppUpdateDemo\Scripts\StartUpdateFlowAction.cs" />
+    <Compile Include="Assets\Scripts\DependencyRegistry\DependencyRegistry.cs" />
+    <Compile Include="Assets\Scripts\DailyChallenge\DailyChallengeConfig.cs" />
+    <Compile Include="Assets\Scripts\LevelObjective.cs" />
+    <Compile Include="Assets\GooglePlayPlugins\com.google.play.integrity\Samples\IntegrityTestApp\Scripts\RequestIntegrityTokenAction.cs" />
+    <Compile Include="Assets\Scripts\UI\Motion\UIEase.cs" />
+    <Compile Include="Assets\Scripts\UI\Motion\UIMotionRunner.cs" />
+    <Compile Include="Assets\Scripts\ObjectSpawner.cs" />
+    <Compile Include="Assets\Scripts\UI\Motion\UIPressScale.cs" />
+    <Compile Include="Assets\Scripts\UI\RunBanner.cs" />
+    <Compile Include="Assets\Scripts\Progression\PersonalBestGhostLine.cs" />
     <Compile Include="Assets\Scripts\Progression\AltitudeBandManager.cs" />
     <Compile Include="Assets\Scripts\ThemeManager.cs" />
     <Compile Include="Assets\Scripts\Achievements\GooglePlayAchievementService.cs" />
     <Compile Include="Assets\Scripts\Boons\Boon.cs" />
     <Compile Include="Assets\Scripts\AppUpdatePrompt.cs" />
-    <Compile Include="Assets\Scripts\RunModifiers\RunModifierService.cs" />
     <Compile Include="Assets\Scripts\Utilities\ButtonFallInAnimation.cs" />
     <Compile Include="Assets\Scripts\Utilities\RandomSpriteAssigner.cs" />
     <Compile Include="Assets\GooglePlayPlugins\com.google.play.appupdate\Samples\AppUpdateDemo\Scripts\GetAppUpdateInfoAction.cs" />
-    <Compile Include="Assets\GooglePlayPlugins\com.google.play.appupdate\Samples\AppUpdateDemo\Scripts\CompleteUpdateAction.cs" />
-    <Compile Include="Assets\Scripts\Localization\LocaleFontSwitcher.cs" />
+    <Compile Include="Assets\Scripts\Stability\StabilitySettings.cs" />
     <Compile Include="Assets\Scripts\LevelButtonUI.cs" />
-    <Compile Include="Assets\Scripts\StyleManager.cs" />
     <Compile Include="Assets\Scripts\EnvironmentAsset.cs" />
     <Compile Include="Assets\Scripts\PlayerDataReset.cs" />
-    <Compile Include="Assets\Scripts\StackManager.cs" />
-    <Compile Include="Assets\Scripts\MainMenuManager.cs" />
-    <Compile Include="Assets\Scripts\UI\RunBannerView.cs" />
     <Compile Include="Assets\Scripts\PointsPopup.cs" />
-    <Compile Include="Assets\Scripts\Blocks\LevelBlockSequence.cs" />
     <Compile Include="Assets\Scripts\DailyChallenge\DailyChallengeModifier.cs" />
     <Compile Include="Assets\Scripts\Boons\BoonIntroView.cs" />
     <Compile Include="Assets\Scripts\Achievements\AchievementNotificationUI.cs" />
     <Compile Include="Assets\Scripts\CodexEntryUI.cs" />
-    <Compile Include="Assets\Scripts\Blocks\BlockIntroPresenter.cs" />
     <Compile Include="Assets\Scripts\Utilities\ScalePulseAnimation.cs" />
     <Compile Include="Assets\Scripts\SettingsManager.cs" />
-    <Compile Include="Assets\GooglePlayPlugins\com.google.play.review\Samples\ReviewDemo\Scripts\ReviewDemo.cs" />
     <Compile Include="Assets\Scripts\Achievements\AchievementProgressData.cs" />
-    <Compile Include="Assets\Scripts\Localization\LocalizationManager.cs" />
     <Compile Include="Assets\Scripts\FTUE\FtueTutorial.cs" />
     <Compile Include="Assets\Scripts\Localization\LocaleFontSet.cs" />
-    <Compile Include="Assets\Scripts\FTUE\FtueTutorialView.cs" />
     <Compile Include="Assets\Scripts\EnvironmentSpawnerManager.cs" />
     <Compile Include="Assets\Scripts\Boons\BoonPickerView.cs" />
     <Compile Include="Assets\Scripts\Notifications\NotificationScheduler.cs" />
-    <Compile Include="Assets\Scripts\LevelData.cs" />
     <Compile Include="Assets\ThemeMapSprite.cs" />
-    <Compile Include="Assets\Scripts\Boons\BoonSettings.cs" />
-    <Compile Include="Assets\Scripts\Achievements\AchievementEntryUI.cs" />
+    <Compile Include="Assets\Scripts\Stability\TowerStability.cs" />
     <Compile Include="Assets\Scripts\EnvironmentSpawner.cs" />
-    <Compile Include="Assets\Scripts\LevelManager.cs" />
+    <Compile Include="Assets\Scripts\UI\RunResult.cs" />
     <Compile Include="Assets\Scripts\StackOverviewUI.cs" />
     <Compile Include="Assets\Scripts\Utilities\PositionPingPongAnimation.cs" />
-    <Compile Include="Assets\Scripts\GameManager.cs" />
     <Compile Include="Assets\Scripts\LevelProgressUI.cs" />
     <Compile Include="Assets\Scripts\ThemeTextTint.cs" />
+    <Compile Include="Assets\Scripts\Stability\RiskWindow.cs" />
     <Compile Include="Assets\Scripts\DependencyRegistry\ILevelManager.cs" />
     <Compile Include="Assets\Scripts\UI\RunOverlayUI.cs" />
     <Compile Include="Assets\Scripts\PlayFabManager.cs" />
     <Compile Include="Assets\Scripts\SceneLoader.cs" />
-    <Compile Include="Assets\Scripts\Boons\BoonSystem.cs" />
     <Compile Include="Assets\Scripts\Analytics\GameAnalytics.cs" />
     <Compile Include="Assets\Scripts\ThemeUITint.cs" />
-    <Compile Include="Assets\Scripts\LeaderboardPanel.cs" />
-    <Compile Include="Assets\Scripts\IntegritySettings.cs" />
     <Compile Include="Assets\Scripts\CameraController.cs" />
     <Compile Include="Assets\Scripts\Blocks\BlockCodex.cs" />
-    <Compile Include="Assets\Scripts\Blocks\BlockVariant.cs" />
     <Compile Include="Assets\Scripts\NetworkUtility.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -1467,16 +1485,20 @@
       <HintPath>Library\ScriptAssemblies\UnityEngine.XR.LegacyInputHelpers.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="glTFast.dots">
+      <HintPath>Library\ScriptAssemblies\glTFast.dots.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="Unity.VisualStudio.Editor">
       <HintPath>Library\ScriptAssemblies\Unity.VisualStudio.Editor.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Unity.2D.Tilemap.Editor">
-      <HintPath>Library\ScriptAssemblies\Unity.2D.Tilemap.Editor.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
     <Reference Include="UnityEditor.XR.LegacyInputHelpers">
       <HintPath>Library\ScriptAssemblies\UnityEditor.XR.LegacyInputHelpers.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.2D.Tilemap.Editor">
+      <HintPath>Library\ScriptAssemblies\Unity.2D.Tilemap.Editor.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Unity.InputSystem.ForUI">
@@ -1557,6 +1579,10 @@
     </Reference>
     <Reference Include="UnityEditor.UI.Analytics">
       <HintPath>Library\ScriptAssemblies\UnityEditor.UI.Analytics.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="glTFast.Editor">
+      <HintPath>Library\ScriptAssemblies\glTFast.Editor.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Unity.AI.Navigation">
@@ -1739,12 +1765,16 @@
       <HintPath>Library\ScriptAssemblies\Unity.InferenceEngine.iOSBLAS.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Unity.Notifications.iOS">
-      <HintPath>Library\ScriptAssemblies\Unity.Notifications.iOS.dll</HintPath>
+    <Reference Include="glTFast">
+      <HintPath>Library\ScriptAssemblies\glTFast.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Unity.Settings.Editor">
       <HintPath>Library\ScriptAssemblies\Unity.Settings.Editor.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.Notifications.iOS">
+      <HintPath>Library\ScriptAssemblies\Unity.Notifications.iOS.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="UnityEditor.UI">

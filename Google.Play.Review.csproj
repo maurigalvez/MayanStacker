@@ -49,11 +49,11 @@
     <Analyzer Include="C:\Program Files\Unity\Hub\Editor\6000.3.10f1\Editor\Data\Tools\BuildPipeline\Unity.SourceGenerators\Unity.UIToolkit.SourceGenerator.dll" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Assets\GooglePlayPlugins\com.google.play.review\Runtime\Scripts\PlayReviewInfo.cs" />
     <Compile Include="Assets\GooglePlayPlugins\com.google.play.review\Runtime\Scripts\ReviewErrorCode.cs" />
     <Compile Include="Assets\GooglePlayPlugins\com.google.play.review\Runtime\Scripts\Internal\ReviewPlayServiceTaskManager.cs" />
     <Compile Include="Assets\GooglePlayPlugins\com.google.play.review\Runtime\Scripts\ReviewManager.cs" />
     <Compile Include="Assets\GooglePlayPlugins\com.google.play.review\Runtime\Scripts\Internal\ReviewAsyncOperation.cs" />
+    <Compile Include="Assets\GooglePlayPlugins\com.google.play.review\Runtime\Scripts\PlayReviewInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\GooglePlayPlugins\com.google.play.review\Runtime\Google.Play.Review.asmdef" />
@@ -720,7 +720,7 @@
       <Private>False</Private>
     </Reference>
     <Reference Include="AiEditorToolsSdk">
-      <HintPath>Library\PackageCache\com.unity.ai.toolkit@48a271771d1a\Modules\Sdk\Editor\AiEditorToolsSdk.dll</HintPath>
+      <HintPath>Library\PackageCache\com.unity.ai.toolkit@339b745a421a\Modules\Sdk\Editor\AiEditorToolsSdk.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Unity.VisualScripting.TextureAssets">

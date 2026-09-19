@@ -50,11 +50,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Assets\GooglePlayGames\com.google.play.games\Editor\GPGSProjectSettings.cs" />
-    <Compile Include="Assets\GooglePlayGames\com.google.play.games\Editor\NearbyConnectionUI.cs" />
     <Compile Include="Assets\GooglePlayGames\com.google.play.games\Editor\GPGSUpgrader.cs" />
     <Compile Include="Assets\GooglePlayGames\com.google.play.games\Editor\GPGSDocsUI.cs" />
     <Compile Include="Assets\GooglePlayGames\com.google.play.games\Editor\GPGSStrings.cs" />
     <Compile Include="Assets\GooglePlayGames\com.google.play.games\Editor\GPGSAndroidSetupUI.cs" />
+    <Compile Include="Assets\GooglePlayGames\com.google.play.games\Editor\NearbyConnectionUI.cs" />
     <Compile Include="Assets\GooglePlayGames\com.google.play.games\Editor\GPGSPostBuild.cs" />
     <Compile Include="Assets\GooglePlayGames\com.google.play.games\Editor\GPGSUtil.cs" />
   </ItemGroup>
@@ -753,7 +753,7 @@
       <Private>False</Private>
     </Reference>
     <Reference Include="AiEditorToolsSdk">
-      <HintPath>Library\PackageCache\com.unity.ai.toolkit@48a271771d1a\Modules\Sdk\Editor\AiEditorToolsSdk.dll</HintPath>
+      <HintPath>Library\PackageCache\com.unity.ai.toolkit@339b745a421a\Modules\Sdk\Editor\AiEditorToolsSdk.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Unity.VisualScripting.TextureAssets">

@@ -127,9 +127,11 @@ public class AltitudeBandSet : ScriptableObject
                 specialBlockChanceMultiplier = 1f,
                 announce = false
             },
+            // Named for the temple the player is raising, not the scenery: this band
+            // changes no visuals, so a place name would point at nothing on screen.
             new AltitudeBand
             {
-                nameKey = "band_canopy",
+                nameKey = "band_stairway",
                 startsAtBlock = 12,
                 specialBlockChanceMultiplier = 1.35f,
                 announceColor = RunOverlayUIColors.Jade

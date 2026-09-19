@@ -6,12 +6,17 @@ using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 /// <summary>
-/// The first-run tutorial: three beats, each gated on something the player actually does
+/// The first-run tutorial: four beats, each gated on something the player actually does
 /// rather than on a timer.
 ///
 ///   Beat 1 — "Tap to drop": holds until the player drops their first stone.
 ///   Beat 2 — names the accuracy tier they just earned and what it's worth.
-///   Beat 3 — at their first 2-combo, teases the Kukulkan shift.
+///   Beat 3 — on the next landing, points at the Tremor meter (the cost of sloppy stones).
+///            Skipped in modes where the meter isn't running.
+///   Beat 4 — at their first 2-combo once the Tremor line is read, teases the Kukulkan shift.
+///
+/// The Serpent's Edge risk window is deliberately NOT a beat: it stays shut for the tutorial
+/// run and introduces itself later (RiskWindow), once the tap and the meter are understood.
 ///
 /// Each line holds for as long as its own copy takes to read rather than for a flat couple
 /// of seconds, and a beat that arrives while the previous line is still being read waits its
@@ -35,7 +40,10 @@ public class FtueTutorial : MonoBehaviour
 
     // How many landings to wait for a 2-combo before finishing anyway, so a player who
     // keeps landing Poor doesn't get stuck in a tutorial that never ends.
-    private const int MaxLandingsAwaitingCombo = 5;
+    private const int MaxLandingsAwaitingCombo = 6;
+
+    // How long the Tremor meter pulses while its beat is on screen.
+    private const float TremorHighlightSeconds = 4f;
 
     // Beat lines hold for as long as their own copy needs to be read (see ReadingTime) —
     // these are the floor for that, not the whole hold. A flat 2s was short enough to miss
@@ -57,6 +65,7 @@ public class FtueTutorial : MonoBehaviour
     private int landingsSeen;
     private bool resolved;
     private bool droppedThisTutorial;
+    private bool tremorBeatRead;
     private GameObject skipButton;
     private FtueTutorialView view;
 
@@ -181,8 +190,14 @@ public class FtueTutorial : MonoBehaviour
             return;
         }
 
-        // Don't strand the player in beat 2 forever if they never chain two Perfects.
-        if (currentBeat == 2 && landingsSeen >= MaxLandingsAwaitingCombo)
+        if (currentBeat == 2)
+        {
+            BeginTremorBeat();
+            return;
+        }
+
+        // Don't strand the player in beat 3 forever if they never chain two Perfects.
+        if (currentBeat == 3 && tremorBeatRead && landingsSeen >= MaxLandingsAwaitingCombo)
         {
             CompleteTutorial();
         }
@@ -200,12 +215,53 @@ public class FtueTutorial : MonoBehaviour
         Say(LocalizationManager.Get(key));
     }
 
+    /// <summary>
+    /// Beat 3: the stone they just placed moved the Tremor meter (or a Perfect kept it still),
+    /// so this is the moment the meter means something. The meter pulses while the line is up.
+    /// </summary>
+    private void BeginTremorBeat()
+    {
+        currentBeat = 3;
+
+        TowerStability stability = TowerStability.Instance;
+        if (stability == null || !stability.IsRunLive)
+        {
+            // No meter in this mode - nothing to point at. Go straight to waiting for a combo.
+            tremorBeatRead = true;
+            return;
+        }
+
+        GameAnalytics.TutorialStep(3);
+
+        // The meter's own one-time banner would repeat this line moments later.
+        TowerStability.MarkIntroSeen();
+
+        Say(LocalizationManager.Get("ftue_beat_tremor"),
+            onRead: () =>
+            {
+                tremorBeatRead = true;
+
+                // A player who chained Perfects while reading has already earned the next beat.
+                if (gameManager != null && gameManager.CurrentCombo >= 2) BeginKukulkanBeat();
+            },
+            onShown: () =>
+            {
+                if (TowerStability.Instance != null) TowerStability.Instance.Highlight(TremorHighlightSeconds);
+            });
+    }
+
     private void OnComboChanged(int combo, float multiplier)
     {
-        if (resolved || currentBeat != 2 || combo < 2) return;
+        if (resolved || currentBeat != 3 || !tremorBeatRead || combo < 2) return;
+        BeginKukulkanBeat();
+    }
 
-        currentBeat = 3;
-        GameAnalytics.TutorialStep(3);
+    private void BeginKukulkanBeat()
+    {
+        if (resolved || currentBeat != 3) return;
+
+        currentBeat = 4;
+        GameAnalytics.TutorialStep(4);
 
         int required = gameManager != null ? gameManager.PerfectHitsRequired : 4;
         // The tutorial ends when this last line has been read, not on a fixed timer.
@@ -357,13 +413,13 @@ public class FtueTutorial : MonoBehaviour
     /// <paramref name="onRead"/>. If the previous beat is still being read, this one waits
     /// its turn rather than cutting it off mid-sentence.
     /// </summary>
-    private void Say(string message, Action onRead = null)
+    private void Say(string message, Action onRead = null, Action onShown = null)
     {
         CancelPendingMessage();
-        sayRoutine = StartCoroutine(SayRoutine(message, onRead));
+        sayRoutine = StartCoroutine(SayRoutine(message, onRead, onShown));
     }
 
-    private IEnumerator SayRoutine(string message, Action onRead)
+    private IEnumerator SayRoutine(string message, Action onRead, Action onShown)
     {
         float shownFor = Time.unscaledTime - messageShownAt;
         if (messageVisible && shownFor < MinimumDwell)
@@ -372,6 +428,7 @@ public class FtueTutorial : MonoBehaviour
         }
 
         DisplayMessage(message);
+        onShown?.Invoke();
 
         // Realtime, so a hit-stop or a pause can't eat the read.
         yield return new WaitForSecondsRealtime(ReadingTime.For(message, BeatMinimum));

@@ -50,23 +50,23 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Assets\PlayFabSdk\ExampleTestProject\Assets\Testing\Tests\Shared\TestTitleDataLoader.cs" />
-    <Compile Include="Assets\PlayFabSdk\ExampleTestProject\Assets\Testing\Tests\PersistentSockets\PubSubTest.cs" />
     <Compile Include="Assets\PlayFabSdk\ExampleTestProject\Assets\Testing\Tests\Utility\PluginManagerTests.cs" />
-    <Compile Include="Assets\PlayFabSdk\ExampleTestProject\Assets\Testing\Tests\Entity\EntityApiTests.cs" />
     <Compile Include="Assets\PlayFabSdk\ExampleTestProject\Assets\Testing\Tests\Client\ClientEventTests.cs" />
     <Compile Include="Assets\PlayFabSdk\ExampleTestProject\Assets\Testing\Tests\Client\InstanceAuthTests.cs" />
     <Compile Include="Assets\PlayFabSdk\ExampleTestProject\Assets\Testing\Tests\Utility\JsonUnitTests.cs" />
     <Compile Include="Assets\PlayFabSdk\ExampleTestProject\Assets\Testing\Tests\Client\ClientMultiUserTests.cs" />
     <Compile Include="Assets\PlayFabSdk\ExampleTestProject\Assets\Testing\Tests\Shared\Uunit\UUnitIncrementalTestRunner.cs" />
+    <Compile Include="Assets\PlayFabSdk\ExampleTestProject\Assets\Testing\Tests\Shared\Uunit\UUnitTestCase.cs" />
+    <Compile Include="Assets\PlayFabSdk\ExampleTestProject\Assets\Testing\Tests\Client\ClientApiTests.cs" />
+    <Compile Include="Assets\PlayFabSdk\ExampleTestProject\Assets\Testing\Tests\PersistentSockets\PubSubTest.cs" />
+    <Compile Include="Assets\PlayFabSdk\ExampleTestProject\Assets\Testing\Tests\Entity\EntityApiTests.cs" />
     <Compile Include="Assets\PlayFabSdk\ExampleTestProject\Assets\Testing\Tests\Shared\Uunit\UUnitAssertException.cs" />
     <Compile Include="Assets\PlayFabSdk\ExampleTestProject\Assets\Testing\Tests\Server\ServerInstanceApiTests.cs" />
     <Compile Include="Assets\PlayFabSdk\ExampleTestProject\Assets\Testing\Tests\Shared\Uunit\UUnitTestContext.cs" />
-    <Compile Include="Assets\PlayFabSdk\ExampleTestProject\Assets\Testing\Tests\Shared\Uunit\UUnitTestCase.cs" />
     <Compile Include="Assets\PlayFabSdk\ExampleTestProject\Assets\Testing\Tests\Shared\Uunit\UUnitTestReport.cs" />
     <Compile Include="Assets\PlayFabSdk\ExampleTestProject\Assets\Testing\Tests\Client\StaticAuthTests.cs" />
     <Compile Include="Assets\PlayFabSdk\ExampleTestProject\Assets\Testing\Tests\Server\ServerApiTests.cs" />
     <Compile Include="Assets\PlayFabSdk\ExampleTestProject\Assets\Testing\Tests\Utility\UtilTest.cs" />
-    <Compile Include="Assets\PlayFabSdk\ExampleTestProject\Assets\Testing\Tests\Client\ClientApiTests.cs" />
     <Compile Include="Assets\PlayFabSdk\ExampleTestProject\Assets\Testing\Tests\Shared\Uunit\UUnitTestSuite.cs" />
     <Compile Include="Assets\PlayFabSdk\ExampleTestProject\Assets\Testing\Tests\Shared\Uunit\PlayFabUUnitUtils.cs" />
   </ItemGroup>
@@ -735,7 +735,7 @@
       <Private>False</Private>
     </Reference>
     <Reference Include="AiEditorToolsSdk">
-      <HintPath>Library\PackageCache\com.unity.ai.toolkit@48a271771d1a\Modules\Sdk\Editor\AiEditorToolsSdk.dll</HintPath>
+      <HintPath>Library\PackageCache\com.unity.ai.toolkit@339b745a421a\Modules\Sdk\Editor\AiEditorToolsSdk.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Unity.VisualScripting.TextureAssets">

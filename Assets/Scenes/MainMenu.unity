@@ -977,10 +977,6 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 7372702067826005740, guid: 23215e23a59cf8243b4a17cf47c43f5e, type: 3}
-      propertyPath: useGooglePlayGames
-      value: 0
-      objectReference: {fileID: 0}
     - target: {fileID: 8745447753479278976, guid: 23215e23a59cf8243b4a17cf47c43f5e, type: 3}
       propertyPath: m_Name
       value: PlayFab Manager
@@ -1084,7 +1080,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3146503559796060271, guid: 74a40cd5abedcda4b90ec0e20018ae0e, type: 3}
       propertyPath: m_fontSize
-      value: 101.35
+      value: 101.3
       objectReference: {fileID: 0}
     - target: {fileID: 4095795547163363620, guid: 74a40cd5abedcda4b90ec0e20018ae0e, type: 3}
       propertyPath: m_AnchorMax.y
@@ -1136,7 +1132,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6118861016364253294, guid: 74a40cd5abedcda4b90ec0e20018ae0e, type: 3}
       propertyPath: m_fontSize
-      value: 37.75
+      value: 37.7
       objectReference: {fileID: 0}
     - target: {fileID: 6696180580552805341, guid: 74a40cd5abedcda4b90ec0e20018ae0e, type: 3}
       propertyPath: m_IsActive
@@ -1240,7 +1236,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7765601016763136543, guid: 74a40cd5abedcda4b90ec0e20018ae0e, type: 3}
       propertyPath: m_fontSize
-      value: 95.5
+      value: 95.45
       objectReference: {fileID: 0}
     - target: {fileID: 7865393932041858131, guid: 74a40cd5abedcda4b90ec0e20018ae0e, type: 3}
       propertyPath: m_AnchorMax.y

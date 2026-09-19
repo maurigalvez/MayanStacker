@@ -83,7 +83,8 @@ public class PlayFabManager : MonoBehaviour
     [SerializeField] private bool createAccountIfNotExists = true;
 
     [Header("Android Authentication")]
-    [SerializeField] private bool useGooglePlayGames = true; // If false, uses Android Device ID
+    // Google Play Games is always used on Android (no toggle on purpose: a stray scene
+    // override once turned it off and every new player got a "Player_XXXXXX" name).
     [Tooltip("If Google Play Games login fails, fallback to Android Device ID")]
     [SerializeField] private bool fallbackToDeviceID = true;
 
@@ -102,6 +103,7 @@ public class PlayFabManager : MonoBehaviour
     private bool usedFallbackLogin = false; // Track if fallback was used (important for debugging)
     private string lastGoogleLoginError = null; // Store error from failed Google login for event logging
     private string lastFailedGooglePlayerId = null; // Store Google Player ID from failed login
+    private PlayerProgressData pendingMergedProgress = null; // From a Device ID account being merged into the Google one
 
     // Cloud save constants
     private const string PLAYER_PROGRESS_KEY = "PlayerProgress";
@@ -260,18 +262,11 @@ public class PlayFabManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Login with Android - uses Google Play Games or Device ID based on settings
+    /// Login with Android - always uses Google Play Games (Device ID only as fallback)
     /// </summary>
     private void LoginWithAndroid()
     {
-        if (useGooglePlayGames)
-        {
-            StartCoroutine(LoginWithGooglePlayGames());
-        }
-        else
-        {
-            LoginWithAndroidDeviceID();
-        }
+        StartCoroutine(LoginWithGooglePlayGames());
     }
 
     /// <summary>
@@ -320,6 +315,8 @@ public class PlayFabManager : MonoBehaviour
             else
             {
                 Debug.LogError($"Manual authentication failed with status: {status}");
+                // Without this the player never logs in at all (no leaderboard, no cloud save)
+                FallBackToDeviceId($"gpgs_sign_in_{status}", null);
             }
         });
 #endif
@@ -352,65 +349,56 @@ public class PlayFabManager : MonoBehaviour
         // Sync achievements with Google Play Games now that we're authenticated
         SyncAchievementsWithGooglePlay();
 
-        // Get the server auth code for PlayFab with OPEN_ID scope (required for ID token)
-#if DEBUG_MODE
-        Debug.Log("Requesting server-side access token with OPEN_ID scope for PlayFab...");
+        // Look for an existing Google account first. Creating one straight away would strand
+        // players who so far only had a Device ID account (and their scores) on it.
+        RequestGoogleAuthCode(playerID,
+            code => SubmitGooglePlayGamesLogin(code, playerID, displayName, createAccount: false));
 #endif
+    }
 
-        // Request OPEN_ID scope to ensure ID token is included (required by PlayFab)
+#if UNITY_ANDROID
+    /// <summary>
+    /// Gets a fresh server auth code (OPEN_ID scope, required by PlayFab). Codes are single-use,
+    /// so every PlayFab Google call needs its own. Falls back to Device ID when none is issued.
+    /// </summary>
+    private void RequestGoogleAuthCode(string googlePlayerId, System.Action<string> onCode)
+    {
         List<AuthScope> scopes = new List<AuthScope> { AuthScope.OPEN_ID };
 
         PlayGamesPlatform.Instance.RequestServerSideAccess(true, scopes, (authResponse) =>
         {
-            if (authResponse != null)
+            string serverAuthCode = authResponse?.GetAuthCode();
+            if (!string.IsNullOrEmpty(serverAuthCode))
             {
-                string serverAuthCode = authResponse.GetAuthCode();
-                List<AuthScope> grantedScopes = authResponse.GetGrantedScopes();
-
-#if DEBUG_MODE
-                Debug.Log($"Server auth response received:");
-                Debug.Log($"  - Auth code length: {serverAuthCode?.Length ?? 0}");
-                Debug.Log($"  - Granted scopes: {string.Join(", ", grantedScopes)}");
-#endif
-
-                if (!string.IsNullOrEmpty(serverAuthCode))
-                {
-#if DEBUG_MODE
-                    Debug.Log("✓ Server auth code with OPEN_ID scope received, submitting to PlayFab...");
-#endif
-                    SubmitGooglePlayGamesLogin(serverAuthCode, playerID, displayName);
-                }
-                else
-                {
-                    Debug.LogError("[ACCOUNT WARNING] Server auth code is null or empty");
-
-                    if (fallbackToDeviceID)
-                    {
-                        Debug.LogWarning("[ACCOUNT WARNING] Falling back to Android Device ID (empty auth code). " +
-                            "This may result in a DIFFERENT PlayFab account!");
-                        usedFallbackLogin = true;
-                        lastGoogleLoginError = "server_auth_code_empty";
-                        lastFailedGooglePlayerId = playerID;
-                        LoginWithAndroidDeviceID();
-                    }
-                }
+                onCode(serverAuthCode);
+                return;
             }
-            else
-            {
-                Debug.LogError("[ACCOUNT WARNING] Failed to get server auth response from Google Play Games (response is null)");
 
-                if (fallbackToDeviceID)
-                {
-                    Debug.LogWarning("[ACCOUNT WARNING] Falling back to Android Device ID (null auth response). " +
-                        "This may result in a DIFFERENT PlayFab account!");
-                    usedFallbackLogin = true;
-                    lastGoogleLoginError = "server_auth_response_null";
-                    lastFailedGooglePlayerId = playerID;
-                    LoginWithAndroidDeviceID();
-                }
-            }
+            Debug.LogError("[ACCOUNT WARNING] No server auth code from Google Play Games");
+            FallBackToDeviceId(authResponse == null ? "server_auth_response_null" : "server_auth_code_empty", googlePlayerId);
         });
+    }
 #endif
+
+    /// <summary>
+    /// Logs in with the Android Device ID after Google sign-in could not be used
+    /// </summary>
+    private void FallBackToDeviceId(string reason, string googlePlayerId)
+    {
+        if (!fallbackToDeviceID)
+        {
+            isLoggedIn = false;
+            Debug.LogError($"[ACCOUNT WARNING] Google login failed and Device ID fallback is off: {reason}");
+            OnLoginFailure?.Invoke(reason);
+            return;
+        }
+
+        Debug.LogWarning($"[ACCOUNT WARNING] Falling back to Android Device ID ({reason}). " +
+            "This may result in a DIFFERENT PlayFab account!");
+        usedFallbackLogin = true;
+        lastGoogleLoginError = reason;
+        lastFailedGooglePlayerId = googlePlayerId;
+        LoginWithAndroidDeviceID();
     }
 
     /// <summary>
@@ -453,11 +441,12 @@ public class PlayFabManager : MonoBehaviour
     /// <param name="serverAuthCode">Server auth code from Google Play Games</param>
     /// <param name="playerID">Google Play Games Player ID for logging and verification</param>
     /// <param name="displayName">Google Play Games display name to set in PlayFab</param>
-    private void SubmitGooglePlayGamesLogin(string serverAuthCode, string playerID, string displayName)
+    /// <param name="createAccount">False on the first try, so a Device ID account can be adopted instead</param>
+    private void SubmitGooglePlayGamesLogin(string serverAuthCode, string playerID, string displayName, bool createAccount)
     {
         var request = new LoginWithGoogleAccountRequest
         {
-            CreateAccount = createAccountIfNotExists,
+            CreateAccount = createAccount && createAccountIfNotExists,
             TitleId = PlayFabSettings.staticSettings.TitleId,
             ServerAuthCode = serverAuthCode,
             // InfoRequestParameters helps us get player info for verification AND current display name
@@ -477,28 +466,81 @@ public class PlayFabManager : MonoBehaviour
             result => OnGoogleLoginSuccessCallback(result, playerID, displayName),
             (error) =>
             {
+                if (!createAccount && error.Error == PlayFabErrorCode.AccountNotFound)
+                {
+                    AdoptDeviceAccountForGoogle(playerID, displayName);
+                    return;
+                }
+
                 string errorReport = error.GenerateErrorReport();
                 Debug.LogError($"[ACCOUNT WARNING] PlayFab login with Google Play Games failed: {errorReport}");
+                FallBackToDeviceId(errorReport, playerID);
+            });
+    }
 
-                // Fallback to Device ID if enabled
-                if (fallbackToDeviceID)
+    /// <summary>
+    /// No PlayFab account is linked to this Google user yet. If this device already has a
+    /// Device ID account, link Google to it so the player keeps their progress and scores and
+    /// gets their Google name. Otherwise create a fresh Google account.
+    /// </summary>
+    private void AdoptDeviceAccountForGoogle(string playerID, string displayName)
+    {
+#if UNITY_ANDROID
+        var request = new LoginWithAndroidDeviceIDRequest
+        {
+            AndroidDeviceId = SystemInfo.deviceUniqueIdentifier,
+            CreateAccount = false,
+            TitleId = PlayFabSettings.staticSettings.TitleId,
+            InfoRequestParameters = new GetPlayerCombinedInfoRequestParams
+            {
+                GetPlayerProfile = true,
+                GetUserAccountInfo = true
+            }
+        };
+
+        PlayFabClientAPI.LoginWithAndroidDeviceID(request,
+            deviceResult =>
+            {
+                // Linked to a different Google user (shared phone): leave it alone
+                if (deviceResult.InfoResultPayload?.AccountInfo?.GoogleInfo != null)
                 {
-                    // IMPORTANT: Log a prominent warning - fallback can cause account mismatch!
-                    Debug.LogWarning("[ACCOUNT WARNING] Falling back to Android Device ID authentication. " +
-                        "This may result in a DIFFERENT PlayFab account than expected if Google account was previously linked!");
-                    Debug.LogWarning($"[ACCOUNT WARNING] Google Player ID that failed: {playerID}");
+                    RequestGoogleAuthCode(playerID,
+                        code => SubmitGooglePlayGamesLogin(code, playerID, displayName, createAccount: true));
+                    return;
+                }
 
-                    usedFallbackLogin = true;
-                    // Store error info for logging after fallback login succeeds
-                    lastGoogleLoginError = errorReport;
-                    lastFailedGooglePlayerId = playerID;
-                    LoginWithAndroidDeviceID();
+                RequestGoogleAuthCode(playerID, code =>
+                    PlayFabClientAPI.LinkGoogleAccount(
+                        new LinkGoogleAccountRequest { ServerAuthCode = code, ForceLink = false },
+                        _ =>
+                        {
+                            Debug.Log($"[Account Recovery] Linked Google to existing Device ID account {deviceResult.PlayFabId}");
+                            OnGoogleLoginSuccessCallback(deviceResult, playerID, displayName);
+                        },
+                        linkError =>
+                        {
+                            // Still logged into the device account, so the player keeps their progress
+                            Debug.LogWarning($"[Account Recovery] Could not link Google to device account: {linkError.GenerateErrorReport()}");
+                            usedFallbackLogin = true;
+                            lastGoogleLoginError = linkError.GenerateErrorReport();
+                            lastFailedGooglePlayerId = playerID;
+                            OnLoginSuccessCallback(deviceResult);
+                        }));
+            },
+            error =>
+            {
+                if (error.Error == PlayFabErrorCode.AccountNotFound)
+                {
+                    // Brand-new player
+                    RequestGoogleAuthCode(playerID,
+                        code => SubmitGooglePlayGamesLogin(code, playerID, displayName, createAccount: true));
                 }
                 else
                 {
                     OnLoginFailureCallback(error);
                 }
             });
+#endif
     }
 
     /// <summary>
@@ -507,6 +549,18 @@ public class PlayFabManager : MonoBehaviour
     /// Links Android Device ID to this account for fallback recovery
     /// </summary>
     private void OnGoogleLoginSuccessCallback(LoginResult result, string googlePlayerID, string googleDisplayName)
+    {
+        string linkedDeviceId = result.InfoResultPayload?.AccountInfo?.AndroidDeviceInfo?.AndroidDeviceId;
+        if (linkedDeviceId == SystemInfo.deviceUniqueIdentifier)
+        {
+            FinishGoogleLogin(result, googlePlayerID, googleDisplayName);
+            return;
+        }
+
+        LinkDeviceOrMergeSplitAccount(result, googlePlayerID, googleDisplayName);
+    }
+
+    private void FinishGoogleLogin(LoginResult result, string googlePlayerID, string googleDisplayName)
     {
         isLoggedIn = true;
         playFabId = result.PlayFabId;
@@ -561,10 +615,6 @@ public class PlayFabManager : MonoBehaviour
         // This helps detect account mismatches if fallback is used later
         StoreExpectedAccountInfo(playFabId, googlePlayerID);
 
-        // IMPORTANT: Link Android Device ID to this Google account for fallback recovery
-        // This ensures if Google login fails in the future, Device ID login will find the same account
-        LinkAndroidDeviceIdToCurrentAccount();
-
         // Only update display name if needed (not already set correctly)
         StartCoroutine(SetDisplayNameIfNeeded(googleDisplayName, currentPlayFabDisplayName));
 
@@ -595,43 +645,144 @@ public class PlayFabManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Links the current Android Device ID to the currently logged-in PlayFab account
-    /// This enables account recovery via Device ID if Google login fails in the future
+    /// Links this device to the Google account so a later Device ID fallback finds the same
+    /// account. If the device already belongs to another, Google-less account (players who got
+    /// a Device ID account while Google sign-in was off), that account's progress and scores
+    /// are merged into this one and the device is moved over. Login finishes afterwards.
     /// </summary>
-    private void LinkAndroidDeviceIdToCurrentAccount()
+    private void LinkDeviceOrMergeSplitAccount(LoginResult googleResult, string googlePlayerID, string googleDisplayName)
     {
 #if UNITY_ANDROID
         var request = new LinkAndroidDeviceIDRequest
         {
             AndroidDeviceId = SystemInfo.deviceUniqueIdentifier,
-            ForceLink = false // Don't override if already linked to another account
+            ForceLink = false // Don't take the device from another account without merging it first
         };
 
-        Debug.Log("[Account Recovery] Linking Android Device ID to Google account for fallback recovery...");
-
         PlayFabClientAPI.LinkAndroidDeviceID(request,
-            result =>
+            _ =>
             {
-                Debug.Log("[Account Recovery] ✓ Android Device ID successfully linked to this account");
-                Debug.Log("[Account Recovery] If Google login fails in the future, Device ID login will find this same account");
                 LogDeviceLinkingEvent(true);
+                FinishGoogleLogin(googleResult, googlePlayerID, googleDisplayName);
             },
             error =>
             {
-                // Check if device is already linked - this is usually OK for account recovery
-                // PlayFab may return LinkedAccountAlreadyLinked or similar errors
-                string errorReport = error.GenerateErrorReport().ToLower();
-                if (errorReport.Contains("already linked") || errorReport.Contains("linkedaccount"))
+                string mergeCheckedKey = $"DeviceMergeChecked_{googleResult.PlayFabId}";
+                if (error.Error == PlayFabErrorCode.LinkedDeviceAlreadyClaimed && PlayerPrefs.GetInt(mergeCheckedKey, 0) == 0)
                 {
-                    Debug.Log("[Account Recovery] Android Device ID already linked to an account (this is expected for returning users)");
-                    LogDeviceLinkingEvent(true, "already_linked");
+                    // Only ever try once per account, so a failure can't cost extra logins every launch
+                    PlayerPrefs.SetInt(mergeCheckedKey, 1);
+                    PlayerPrefs.Save();
+                    MergeDeviceAccountInto(googlePlayerID, googleDisplayName);
+                    return;
                 }
-                else
-                {
-                    Debug.LogWarning($"[Account Recovery] Could not link Android Device ID: {error.GenerateErrorReport()}");
-                    LogDeviceLinkingEvent(false, error.GenerateErrorReport());
-                }
+
+                Debug.LogWarning($"[Account Recovery] Could not link Android Device ID: {error.GenerateErrorReport()}");
+                LogDeviceLinkingEvent(false, error.GenerateErrorReport());
+                FinishGoogleLogin(googleResult, googlePlayerID, googleDisplayName);
             });
+#else
+        FinishGoogleLogin(googleResult, googlePlayerID, googleDisplayName);
+#endif
+    }
+
+    /// <summary>
+    /// Reads the progress off the account this device is linked to, logs back into the Google
+    /// account, moves the device over and finishes login. The progress is merged in
+    /// SyncProgressOnLogin, which also resubmits the merged best scores.
+    /// </summary>
+    private void MergeDeviceAccountInto(string googlePlayerID, string googleDisplayName)
+    {
+#if UNITY_ANDROID
+        var request = new LoginWithAndroidDeviceIDRequest
+        {
+            AndroidDeviceId = SystemInfo.deviceUniqueIdentifier,
+            CreateAccount = false,
+            TitleId = PlayFabSettings.staticSettings.TitleId,
+            InfoRequestParameters = new GetPlayerCombinedInfoRequestParams
+            {
+                GetUserAccountInfo = true,
+                GetUserData = true,
+                UserDataKeys = new List<string> { PLAYER_PROGRESS_KEY }
+            }
+        };
+
+        PlayFabClientAPI.LoginWithAndroidDeviceID(request,
+            deviceResult =>
+            {
+                // A device account linked to another Google user is someone else's: don't merge it
+                bool ownedByOtherGoogleUser = deviceResult.InfoResultPayload?.AccountInfo?.GoogleInfo != null;
+                if (!ownedByOtherGoogleUser)
+                {
+                    var userData = deviceResult.InfoResultPayload?.UserData;
+                    if (userData != null && userData.TryGetValue(PLAYER_PROGRESS_KEY, out var record))
+                    {
+                        pendingMergedProgress = PlayerProgressData.FromJson(record.Value);
+                    }
+                    Debug.Log($"[Account Recovery] Merging Device ID account {deviceResult.PlayFabId} into the Google account");
+                }
+
+                LoginToGoogleAccountAgain(googlePlayerID, googleDisplayName, moveDevice: !ownedByOtherGoogleUser);
+            },
+            error =>
+            {
+                Debug.LogWarning($"[Account Recovery] Could not read the device's account: {error.GenerateErrorReport()}");
+                LoginToGoogleAccountAgain(googlePlayerID, googleDisplayName, moveDevice: false);
+            });
+#endif
+    }
+
+    /// <summary>
+    /// Restores the Google account session after MergeDeviceAccountInto logged into the
+    /// device account, optionally taking over the device link, then finishes login.
+    /// </summary>
+    private void LoginToGoogleAccountAgain(string googlePlayerID, string googleDisplayName, bool moveDevice)
+    {
+#if UNITY_ANDROID
+        RequestGoogleAuthCode(googlePlayerID, code =>
+        {
+            var request = new LoginWithGoogleAccountRequest
+            {
+                CreateAccount = false,
+                TitleId = PlayFabSettings.staticSettings.TitleId,
+                ServerAuthCode = code,
+                InfoRequestParameters = new GetPlayerCombinedInfoRequestParams
+                {
+                    GetPlayerProfile = true,
+                    GetUserAccountInfo = true,
+                    GetUserData = true
+                }
+            };
+
+            PlayFabClientAPI.LoginWithGoogleAccount(request,
+                googleResult =>
+                {
+                    if (!moveDevice)
+                    {
+                        FinishGoogleLogin(googleResult, googlePlayerID, googleDisplayName);
+                        return;
+                    }
+
+                    PlayFabClientAPI.LinkAndroidDeviceID(
+                        new LinkAndroidDeviceIDRequest { AndroidDeviceId = SystemInfo.deviceUniqueIdentifier, ForceLink = true },
+                        _ =>
+                        {
+                            LogDeviceLinkingEvent(true, "moved_from_device_account");
+                            FinishGoogleLogin(googleResult, googlePlayerID, googleDisplayName);
+                        },
+                        error =>
+                        {
+                            LogDeviceLinkingEvent(false, error.GenerateErrorReport());
+                            FinishGoogleLogin(googleResult, googlePlayerID, googleDisplayName);
+                        });
+                },
+                error =>
+                {
+                    // Lands on the device account again, where the pending merge would be a no-op
+                    pendingMergedProgress = null;
+                    FallBackToDeviceId(error.GenerateErrorReport(), googlePlayerID);
+                });
+        });
 #endif
     }
 
@@ -683,7 +834,7 @@ public class PlayFabManager : MonoBehaviour
 #endif
 
         // Check if current PlayFab display name is already correct
-        if (!string.IsNullOrEmpty(currentPlayFabDisplayName) && currentPlayFabDisplayName == displayName)
+        if (isValidName && IsGoogleNameApplied(currentPlayFabDisplayName, displayName))
         {
 #if DEBUG_MODE
             Debug.Log($"✓ PlayFab display name already set correctly to: {currentPlayFabDisplayName}");
@@ -714,10 +865,10 @@ public class PlayFabManager : MonoBehaviour
                 Debug.LogWarning($"Could not update display name: {error}");
                 if (error.Contains("Name not available"))
                 {
-                    Debug.LogWarning("The display name is already in use. This is OK - your scores are still saved correctly.");
-#if DEBUG_MODE
-                    Debug.Log($"Your leaderboard entries will show as: {currentPlayFabDisplayName ?? "[Entity ID]"}");
-#endif
+                    // Display names are unique per title: keep the Google name, add a stable tag
+                    string taggedName = WithNameTag(displayName);
+                    Debug.LogWarning($"'{displayName}' is taken, using '{taggedName}'");
+                    SetDisplayNameDirectly(taggedName, onSuccess: () => currentDisplayName = taggedName);
                 }
             });
         }
@@ -748,6 +899,28 @@ public class PlayFabManager : MonoBehaviour
             Debug.Log($"Display name '{currentPlayFabDisplayName}' is acceptable, keeping as-is");
 #endif
         }
+    }
+
+    private const int NameTagBaseMaxLength = 20; // PlayFab display names are 3-25 chars; "#XXXX" takes 5
+
+    /// <summary>
+    /// The Google name with "#" and the last 4 characters of the PlayFab ID, e.g. "Carlos#1A2B".
+    /// Always the same for a player, so it doesn't change between logins.
+    /// </summary>
+    private string WithNameTag(string googleName)
+    {
+        string baseName = googleName.Length > NameTagBaseMaxLength ? googleName.Substring(0, NameTagBaseMaxLength) : googleName;
+        string tag = playFabId.Length > 4 ? playFabId.Substring(playFabId.Length - 4) : playFabId;
+        return $"{baseName}#{tag}";
+    }
+
+    /// <summary>
+    /// True when the PlayFab name already is the Google name, plain or with its tag
+    /// </summary>
+    private bool IsGoogleNameApplied(string playFabName, string googleName)
+    {
+        if (string.IsNullOrEmpty(playFabName) || string.IsNullOrEmpty(googleName)) return false;
+        return playFabName == googleName || playFabName == WithNameTag(googleName);
     }
 
     /// <summary>
@@ -825,14 +998,18 @@ public class PlayFabManager : MonoBehaviour
 
 #if UNITY_ANDROID
         // For Android with Google Play Games, refresh the display name
-        if (useGooglePlayGames && PlayGamesPlatform.Instance != null)
+        // Only on the Google-linked account: a Device ID fallback account taking the name
+        // would force the real account onto the tagged name
+        if (usedGoogleLogin && PlayGamesPlatform.Instance != null)
         {
             string googleDisplayName = PlayGamesPlatform.Instance.GetUserDisplayName();
 
             if (!string.IsNullOrEmpty(googleDisplayName))
             {
-                Debug.Log($"Ensuring PlayFab display name is set to Google Play name: {googleDisplayName}");
-                SetDisplayNameDirectly(googleDisplayName);
+                if (!IsGoogleNameApplied(currentDisplayName, googleDisplayName))
+                {
+                    StartCoroutine(SetDisplayNameIfNeeded(googleDisplayName, currentDisplayName));
+                }
             }
             else
             {
@@ -1603,12 +1780,6 @@ public class PlayFabManager : MonoBehaviour
     public void AttemptAccountRecovery(System.Action onSuccess = null, System.Action<string> onFailure = null)
     {
 #if UNITY_ANDROID
-        if (!useGooglePlayGames)
-        {
-            onFailure?.Invoke("Google Play Games is not enabled");
-            return;
-        }
-
         Debug.Log("[Account Recovery] Attempting to re-authenticate with Google Play Games...");
 
         // Force manual authentication to allow user to pick the correct account
@@ -1702,7 +1873,25 @@ public class PlayFabManager : MonoBehaviour
             onSuccess: (data) =>
             {
                 Debug.Log("Cloud progress loaded successfully");
+
+                bool merged = pendingMergedProgress != null;
+                if (merged)
+                {
+                    data.MergeFrom(pendingMergedProgress);
+                    pendingMergedProgress = null;
+                }
+
+                // Merged here rather than by a listener: the ghost line only lives in the game
+                // scene, and login usually happens before one is loaded.
+                InfiniteBest.MergeFromCloud(data);
+
                 OnProgressSynced?.Invoke(data);
+
+                if (merged)
+                {
+                    SaveProgressToCloud(data);
+                }
+                BackfillBestScores(data, force: merged);
             },
             onFailure: (error) =>
             {
@@ -1890,6 +2079,10 @@ public class PlayFabManager : MonoBehaviour
             data.infiniteStackerHighScore = PlayerPrefs.GetInt("HighScore_InfiniteStacker", 0);
         }
 
+        // Tallest Infinite tower (drives the personal-best ghost line). Always local, so it
+        // survives saves made from any mode.
+        InfiniteBest.WriteTo(data);
+
         // Get achievement progress from AchievementManager
         // Fallback to PlayerPrefs if manager isn't available or initialized
         var achievementManager = DependencyRegistry.Find<TamalStacker.Achievements.AchievementManager>();
@@ -1934,6 +2127,90 @@ public class PlayFabManager : MonoBehaviour
             {
                 Debug.LogWarning($"Failed to save current progress: {error}");
             });
+    }
+
+    #endregion
+
+    #region Best Score Backfill
+
+    /// <summary>
+    /// Makes sure this account's leaderboard stats hold the player's saved bests. GameManager
+    /// only submits a score that beats the saved best, so an account that never received one
+    /// (a merged or newly linked account) would otherwise stay off the boards. Runs once per
+    /// account per season, or again after a merge. Only raises stats, never lowers them.
+    /// </summary>
+    private void BackfillBestScores(PlayerProgressData data, bool force)
+    {
+        string doneKey = $"ScoresBackfilled_{playFabId}_S{LeaderboardSeason.Current}";
+        if (!force && PlayerPrefs.GetInt(doneKey, 0) == 1) return;
+        if (NetworkUtility.IsOffline()) return;
+
+        var bests = new System.Collections.Generic.Dictionary<string, int>();
+        int infinite = System.Math.Max(data.infiniteStackerHighScore, PlayerPrefs.GetInt("HighScore_InfiniteStacker", 0));
+        if (infinite > 0)
+        {
+            bests["InfiniteStackerHighScores"] = infinite;
+        }
+        foreach (var kvp in data.levelHighScores)
+        {
+            int best = System.Math.Max(kvp.Value, PlayerPrefs.GetInt($"Level_{kvp.Key}_HighScore", 0));
+            if (best > 0)
+            {
+                bests[$"StackerLevel_{kvp.Key}"] = best;
+            }
+        }
+
+        if (bests.Count == 0)
+        {
+            PlayerPrefs.SetInt(doneKey, 1);
+            PlayerPrefs.Save();
+            return;
+        }
+
+        string accountId = playFabId;
+        PlayFabProgressionAPI.GetStatistics(
+            new PlayFab.ProgressionModels.GetStatisticsRequest { StatisticNames = new System.Collections.Generic.List<string>(bests.Keys) },
+            result =>
+            {
+                if (accountId != playFabId) return; // Account changed mid-request
+
+                var updates = new System.Collections.Generic.List<PlayFab.ProgressionModels.StatisticUpdate>();
+                foreach (var kvp in bests)
+                {
+                    int onServer = 0;
+                    if (result.Statistics != null && result.Statistics.TryGetValue(kvp.Key, out var stat) &&
+                        stat.Scores != null && stat.Scores.Count > 0)
+                    {
+                        int.TryParse(stat.Scores[0], out onServer);
+                    }
+                    if (kvp.Value > onServer)
+                    {
+                        updates.Add(new PlayFab.ProgressionModels.StatisticUpdate
+                        {
+                            Name = kvp.Key,
+                            Scores = new System.Collections.Generic.List<string> { kvp.Value.ToString() }
+                        });
+                    }
+                }
+
+                if (updates.Count == 0)
+                {
+                    PlayerPrefs.SetInt(doneKey, 1);
+                    PlayerPrefs.Save();
+                    return;
+                }
+
+                PlayFabProgressionAPI.UpdateStatistics(
+                    new PlayFab.ProgressionModels.UpdateStatisticsRequest { Statistics = updates },
+                    _ =>
+                    {
+                        Debug.Log($"[Score Backfill] Resubmitted {updates.Count} best score(s) to account {accountId}");
+                        PlayerPrefs.SetInt(doneKey, 1);
+                        PlayerPrefs.Save();
+                    },
+                    error => Debug.LogWarning($"[Score Backfill] Failed to submit bests: {error.GenerateErrorReport()}"));
+            },
+            error => Debug.LogWarning($"[Score Backfill] Failed to read stats: {error.GenerateErrorReport()}"));
     }
 
     #endregion

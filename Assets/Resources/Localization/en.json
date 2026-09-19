@@ -22,7 +22,11 @@
     },
     {
       "key": "combo_format",
-      "value": "{0}\nx{1} COMBO"
+      "value": "{0}\n{1} IN A ROW"
+    },
+    {
+      "key": "combo_held_format",
+      "value": "{0}\n{1} IN A ROW - HELD"
     },
     {
       "key": "mode_temple_stacker",
@@ -358,11 +362,11 @@
     },
     {
       "key": "ftue_beat_good",
-      "value": "Good. Close enough to hold your streak."
+      "value": "Good. But only a Perfect keeps your streak alive."
     },
     {
       "key": "ftue_beat_poor",
-      "value": "Careless. Only a sloppy stone breaks the streak."
+      "value": "Careless. The streak is broken."
     },
     {
       "key": "ftue_beat_kukulkan",
@@ -509,8 +513,8 @@
       "value": "The Foundation"
     },
     {
-      "key": "band_canopy",
-      "value": "The Canopy"
+      "key": "band_stairway",
+      "value": "The Great Stairway"
     },
     {
       "key": "band_dusk",
@@ -523,6 +527,10 @@
     {
       "key": "band_serpent",
       "value": "The Serpent's Reach"
+    },
+    {
+      "key": "band_height_subtitle",
+      "value": "{0} stones high"
     },
     {
       "key": "boon_title",
@@ -643,6 +651,105 @@
     {
       "key": "update_button_restart",
       "value": "Restart now"
-    }
+    },
+    {
+      "key": "stability_label",
+      "value": "Tremor"
+    },
+    {
+      "key": "stability_intro_title",
+      "value": "The Tremor"
+    },
+    {
+      "key": "stability_intro_body",
+      "value": "Off-center stones shake the temple. Perfect drops calm it."
+    },
+    {
+      "key": "stability_warning_title",
+      "value": "The temple trembles!"
+    },
+    {
+      "key": "stability_warning_body",
+      "value": "Land a Perfect or it falls"
+    },
+    {
+      "key": "stability_saved",
+      "value": "Kukulkan steadies the stones"
+    },
+    {
+      "key": "ftue_beat_tremor",
+      "value": "Watch the Tremor meter: off-center stones shake the temple, Perfect ones calm it."
+    },
+    {
+      "key": "edge_zone_label",
+      "value": "x{0}"
+    },
+    {
+      "key": "edge_landed",
+      "value": "Serpent's Edge x{0}"
+    },
+    {
+      "key": "edge_intro_title",
+      "value": "The Serpent's Edge"
+    },
+    {
+      "key": "edge_intro_body",
+      "value": "Release at the very end of the swing, as the gold rim flashes, for a x{0} Perfect. Too early is only a Good."
+    },
+    {
+      "key": "edge_intro_followup_title",
+      "value": "x{0} points!"
+    },
+    {
+      "key": "edge_intro_followup_body",
+      "value": "But the temple felt it. Watch the Tremor."
+    },
+    {
+      "key": "ghost_best_label",
+      "value": "Best {0}"
+    },
+    {
+      "key": "ghost_new_best",
+      "value": "Past your best height!"
+    },
+    { "key": "result_head_new_best", "value": "New High Score" },
+    { "key": "result_head_first", "value": "The First Stones Are Laid" },
+    { "key": "result_head_near", "value": "So Close to Glory" },
+    { "key": "result_head_solid", "value": "The Temple Fell" },
+    { "key": "result_head_early", "value": "The Stones Shifted" },
+    { "key": "result_head_level_near", "value": "Almost Claimed" },
+    { "key": "result_flavor_new_best_1", "value": "Kukulkan honors your tower." },
+    { "key": "result_flavor_new_best_2", "value": "The ancients will speak of this temple." },
+    { "key": "result_flavor_new_best_3", "value": "A new summit for the sun." },
+    { "key": "result_flavor_first", "value": "Your temple has begun. Now raise it higher." },
+    { "key": "result_flavor_near_1", "value": "The gods were watching." },
+    { "key": "result_flavor_near_2", "value": "The summit is within reach." },
+    { "key": "result_flavor_near_3", "value": "One more climb could do it." },
+    { "key": "result_flavor_solid_1", "value": "Its stones remember how high it rose." },
+    { "key": "result_flavor_solid_2", "value": "Gather the stones and build again." },
+    { "key": "result_flavor_solid_3", "value": "Every fall teaches the builder." },
+    { "key": "result_flavor_early_1", "value": "Every temple starts with one stone." },
+    { "key": "result_flavor_early_2", "value": "Steady hands, patient drops." },
+    { "key": "result_flavor_early_3", "value": "Breathe, and build again." },
+    { "key": "result_best", "value": "Best {0}" },
+    { "key": "result_best_gap", "value": "Best {0} · {1} to go" },
+    { "key": "result_best_beaten", "value": "Old best {0} · +{1}" },
+    { "key": "result_daily_best", "value": "Today's best {0}" },
+    { "key": "result_daily_best_beaten", "value": "New best today · +{0}" },
+    { "key": "result_level_score", "value": "{0} / {1}" },
+    { "key": "result_level_to_go", "value": "{0} more to claim this site" },
+    { "key": "result_stat_height", "value": "Height" },
+    { "key": "result_stat_perfects", "value": "Perfects" },
+    { "key": "result_stat_combo", "value": "Best combo" },
+    { "key": "result_combo_value", "value": "x{0}" },
+    { "key": "result_tip_straighten", "value": "Land {0} Perfects in a row to straighten your tower." },
+    { "key": "result_tip_combo", "value": "Only Perfect landings keep your combo alive." },
+    { "key": "result_tip_edge", "value": "Release as the Serpent's Edge rim flashes for a x3 Perfect." },
+    { "key": "edge_landed_bonus", "value": "Serpent's Edge x{0} · +{1}" },
+    { "key": "edge_proj_miss", "value": "Miss" },
+    { "key": "combo_badge_caption", "value": "COMBO" },
+    { "key": "result_edge_line", "value": "Serpent's Edge: {0} landed · +{1}" },
+    { "key": "result_edge_line_broke", "value": "Serpent's Edge: {0} landed · +{1} · combos broken: {2}" },
+    { "key": "result_tip_align", "value": "Line each stone up with the one below." }
   ]
 }

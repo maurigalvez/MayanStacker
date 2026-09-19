@@ -68,6 +68,12 @@ public class StackableObject : MonoBehaviour
     // instantiates the block; anything created another way stays an ordinary block.
     private BlockVariant variant = BlockVariant.Standard;
 
+    // Set by RiskWindow when the stone is released at the edge of the swing.
+    private bool isEdgeDrop = false;
+    private float edgeScoreMultiplier = 1f;
+    private bool isEdgeSweetSpot = false;
+    private float physicalLandingAccuracy = 0f;
+
     // Events
     public System.Action<StackableObject, float> OnObjectLanded;
 
@@ -319,22 +325,55 @@ public class StackableObject : MonoBehaviour
         // Calculate how centered this object is on top of the other
         // Rotation is already locked and snapped to 0, so bounds.center is now accurate
         // This gives us the actual center of the collider, accounting for any pivot offset
-        Vector2 thisCenter = col.bounds.center;
-        Vector2 otherCenter = otherObject.Collider.bounds.center;
-        float centerDistance = Mathf.Abs(thisCenter.x - otherCenter.x);
+        landingAccuracy = AccuracyOn(otherObject, col.bounds.center.x);
+        physicalLandingAccuracy = landingAccuracy;
+
+        // A sweet-spot edge drop is judged on its timing, not on where it lands - it always
+        // lands off-centre. Upgrading the accuracy here keeps score, combo, tremor tier and the
+        // PERFECT! popup in agreement. It still has to land on the stone to count.
+        if (IsEdgeSweetSpot && landingAccuracy > 0f)
+        {
+            landingAccuracy = 1f;
+        }
+    }
+
+    /// <summary>
+    /// Accuracy (1 = perfect centre, 0 = completely off) this stone would score landing with
+    /// its centre at <paramref name="centerX"/> on <paramref name="below"/>. The landing uses
+    /// it, and so does the Serpent's Edge preview - so the rim can't promise a different tier.
+    /// </summary>
+    public float AccuracyOn(StackableObject below, float centerX)
+    {
+        if (below == null || below.Collider == null) return 0f;
+
+        float centerDistance = Mathf.Abs(centerX - below.Collider.bounds.center.x);
 
         // Get collider sizes for accurate calculations using references
         BoxCollider2D thisCollider = col as BoxCollider2D;
-        BoxCollider2D otherCollider = otherObject.Collider as BoxCollider2D;
+        BoxCollider2D otherCollider = below.Collider as BoxCollider2D;
 
         float thisWidth = thisCollider != null ? thisCollider.size.x : 1f;
         float otherWidth = otherCollider != null ? otherCollider.size.x : 1f;
 
         float maxDistance = (thisWidth + otherWidth) * 0.5f;
-
-        // landingAccuracy: 1 = perfect center, 0 = completely off
-        landingAccuracy = Mathf.Clamp01(1f - (centerDistance / maxDistance));
+        return Mathf.Clamp01(1f - (centerDistance / maxDistance));
     }
+
+    /// <summary>
+    /// Base points (before combo and run-wide multipliers) a landing at
+    /// <paramref name="accuracy"/> would earn with the given edge multiplier. Feeds
+    /// <see cref="GameManager.PreviewPoints"/> for the Serpent's Edge rim.
+    /// </summary>
+    public int PreviewBaseScore(float accuracy, float edgeMultiplier)
+    {
+        return BaseScoreFor(accuracy, Mathf.Max(1f, edgeMultiplier));
+    }
+
+    /// <summary>True when <paramref name="accuracy"/> would grade as a Perfect this run.</summary>
+    public bool IsPerfectAccuracy(float accuracy) => accuracy >= PerfectCutoff;
+
+    /// <summary>True when <paramref name="accuracy"/> would grade as at least Good this run.</summary>
+    public bool IsGoodAccuracy(float accuracy) => accuracy >= GoodCutoff;
 
     /// <summary>
     /// Base points for this landing, before the combo and any run-wide multipliers.
@@ -344,17 +383,19 @@ public class StackableObject : MonoBehaviour
     /// variant's own multiplier is applied last — that's what makes a jade sliver worth
     /// taking a risk on.
     /// </summary>
-    private int CalculateScore()
+    private int CalculateScore() => BaseScoreFor(landingAccuracy, edgeScoreMultiplier);
+
+    private int BaseScoreFor(float accuracy, float edgeMultiplier)
     {
         int baseScore;
-        if (landingAccuracy >= PerfectCutoff)
+        if (accuracy >= PerfectCutoff)
             baseScore = perfectScore;
-        else if (landingAccuracy >= GoodCutoff)
+        else if (accuracy >= GoodCutoff)
             baseScore = goodScore;
         else
             baseScore = poorScore;
 
-        return Mathf.RoundToInt(baseScore * Variant.scoreMultiplier);
+        return Mathf.RoundToInt(baseScore * Variant.scoreMultiplier * edgeMultiplier);
     }
 
     /// <summary>
@@ -575,6 +616,7 @@ public class StackableObject : MonoBehaviour
         hasLanded = false;
         landedOnStackable = false;
         landingAccuracy = 0f;
+        physicalLandingAccuracy = 0f;
 
         // Reset physics
         if (rb != null)
@@ -618,10 +660,44 @@ public class StackableObject : MonoBehaviour
     public bool HasLanded => hasLanded;
     public float LandingAccuracy => landingAccuracy;
     public Collider2D Collider => col;
+
+    /// <summary>
+    /// World x of the collider's centre, valid even while the collider is disabled (a hanging
+    /// stone) - bounds are empty then, so it's worked out from the offset instead.
+    /// </summary>
+    public float ColliderCenterX => col != null ? col.transform.TransformPoint(col.offset).x : transform.position.x;
     public SpriteRenderer SpriteRenderer => spriteRenderer;
 
     /// <summary>What kind of block this is. Never null — an unassigned block reads as standard.</summary>
     public BlockVariant Variant => variant ?? BlockVariant.Standard;
+
+    /// <summary>True when this stone was released in the Serpent's Edge window.</summary>
+    public bool IsEdgeDrop => isEdgeDrop;
+
+    /// <summary>Score multiplier the edge drop earned; 1 when it wasn't one.</summary>
+    public float EdgeScoreMultiplier => isEdgeDrop ? edgeScoreMultiplier : 1f;
+
+    /// <summary>True when this edge drop was released in the sweet spot and so lands as a Perfect.</summary>
+    public bool IsEdgeSweetSpot => isEdgeDrop && isEdgeSweetSpot;
+
+    /// <summary>
+    /// How centred the stone physically landed. Differs from <see cref="LandingAccuracy"/> only
+    /// for a sweet-spot edge drop, which is scored as a Perfect wherever it lands.
+    /// </summary>
+    public float PhysicalLandingAccuracy => physicalLandingAccuracy;
+
+    /// <summary>
+    /// Marks a just-dropped stone as a Serpent's Edge risk. Only valid between the drop and
+    /// the landing, since that's when the score is worked out. A <paramref name="sweetSpot"/>
+    /// release lands as a Perfect: the edge is a timing test, not a free off-centre Good.
+    /// </summary>
+    public void MarkEdgeDrop(float scoreMultiplier, bool sweetSpot)
+    {
+        if (!isDropped || hasLanded) return;
+        isEdgeDrop = true;
+        isEdgeSweetSpot = sweetSpot;
+        edgeScoreMultiplier = Mathf.Max(1f, scoreMultiplier);
+    }
 
     /// <summary>
     /// Stamps this block as a particular variant and applies its physical deviations.

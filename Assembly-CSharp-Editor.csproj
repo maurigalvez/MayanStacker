@@ -52,13 +52,17 @@
     <Analyzer Include="D:\Repositories\TamalStacker\Library\PackageCache\com.unity.dt.app-ui@8ac7e730dd5d\Runtime\MVVM\SourceGenerators\netstandard2.0\MVVMSourceGenerators.dll" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Assets\Scripts\Editor\LanguageSelectPrefabSetup.cs" />
     <Compile Include="Assets\Scripts\Editor\CJKFontFallbackSetup.cs" />
     <Compile Include="Assets\Scripts\Editor\DailyChallengeUISetup.cs" />
     <Compile Include="Assets\Scripts\Editor\RunBannerPrefabSetup.cs" />
+    <Compile Include="Assets\Scripts\Editor\LocaleFontSetup.cs" />
+    <Compile Include="Assets\Scripts\Editor\TowerStabilityUISetup.cs" />
+    <Compile Include="Assets\Scripts\Editor\LanguageSelectPrefabSetup.cs" />
     <Compile Include="Assets\Scripts\Editor\BoonUISetup.cs" />
     <Compile Include="Assets\Scripts\Editor\FtueTutorialPrefabSetup.cs" />
-    <Compile Include="Assets\Scripts\Editor\LocaleFontSetup.cs" />
+    <Compile Include="Assets\Scripts\Editor\R8OptimizeGradle.cs" />
+    <Compile Include="Assets\Scripts\Editor\AppUpdatePromptPrefabSetup.cs" />
+    <Compile Include="Assets\Scripts\Editor\GameOverUISetup.cs" />
     <Compile Include="Assets\Scripts\Editor\PlayAppUpdateDefine.cs" />
     <Compile Include="Assets\Scripts\Editor\NotificationsAndReviewSetup.cs" />
     <Compile Include="Assets\Scripts\Editor\RunContentSetup.cs" />
@@ -762,7 +766,7 @@
       <Private>False</Private>
     </Reference>
     <Reference Include="AiEditorToolsSdk">
-      <HintPath>Library\PackageCache\com.unity.ai.toolkit@48a271771d1a\Modules\Sdk\Editor\AiEditorToolsSdk.dll</HintPath>
+      <HintPath>Library\PackageCache\com.unity.ai.toolkit@339b745a421a\Modules\Sdk\Editor\AiEditorToolsSdk.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Unity.VisualScripting.TextureAssets">
@@ -1449,16 +1453,20 @@
       <HintPath>Library\ScriptAssemblies\UnityEngine.XR.LegacyInputHelpers.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="glTFast.dots">
+      <HintPath>Library\ScriptAssemblies\glTFast.dots.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="Unity.VisualStudio.Editor">
       <HintPath>Library\ScriptAssemblies\Unity.VisualStudio.Editor.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Unity.2D.Tilemap.Editor">
-      <HintPath>Library\ScriptAssemblies\Unity.2D.Tilemap.Editor.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
     <Reference Include="UnityEditor.XR.LegacyInputHelpers">
       <HintPath>Library\ScriptAssemblies\UnityEditor.XR.LegacyInputHelpers.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.2D.Tilemap.Editor">
+      <HintPath>Library\ScriptAssemblies\Unity.2D.Tilemap.Editor.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Unity.InputSystem.ForUI">
@@ -1539,6 +1547,10 @@
     </Reference>
     <Reference Include="UnityEditor.UI.Analytics">
       <HintPath>Library\ScriptAssemblies\UnityEditor.UI.Analytics.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="glTFast.Editor">
+      <HintPath>Library\ScriptAssemblies\glTFast.Editor.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Unity.AI.Navigation">
@@ -1721,12 +1733,16 @@
       <HintPath>Library\ScriptAssemblies\Unity.InferenceEngine.iOSBLAS.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Unity.Notifications.iOS">
-      <HintPath>Library\ScriptAssemblies\Unity.Notifications.iOS.dll</HintPath>
+    <Reference Include="glTFast">
+      <HintPath>Library\ScriptAssemblies\glTFast.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Unity.Settings.Editor">
       <HintPath>Library\ScriptAssemblies\Unity.Settings.Editor.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.Notifications.iOS">
+      <HintPath>Library\ScriptAssemblies\Unity.Notifications.iOS.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="UnityEditor.UI">

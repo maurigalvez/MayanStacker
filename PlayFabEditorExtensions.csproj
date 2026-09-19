@@ -49,23 +49,23 @@
     <Analyzer Include="C:\Program Files\Unity\Hub\Editor\6000.3.10f1\Editor\Data\Tools\BuildPipeline\Unity.SourceGenerators\Unity.UIToolkit.SourceGenerator.dll" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Assets\PlayFabSdk\ExampleTestProject\Assets\PlayFabEditorExtensions\Editor\Scripts\Panels\PlayFabEditorSettings.cs" />
+    <Compile Include="Assets\PlayFabSdk\ExampleTestProject\Assets\PlayFabEditorExtensions\Editor\Scripts\PlayFabEditorSDK\SimpleJson.cs" />
+    <Compile Include="Assets\PlayFabSdk\ExampleTestProject\Assets\PlayFabEditorExtensions\Editor\Scripts\Components\ProgressBar.cs" />
+    <Compile Include="Assets\PlayFabSdk\ExampleTestProject\Assets\PlayFabEditorExtensions\Editor\Scripts\Utils\PlayFabEditorHelper.cs" />
+    <Compile Include="Assets\PlayFabSdk\ExampleTestProject\Assets\PlayFabEditorExtensions\Editor\Scripts\Panels\PlayFabEditorMenu.cs" />
+    <Compile Include="Assets\PlayFabSdk\ExampleTestProject\Assets\PlayFabEditorExtensions\Editor\Scripts\Panels\PlayFabEditorHeader.cs" />
+    <Compile Include="Assets\PlayFabSdk\ExampleTestProject\Assets\PlayFabEditorExtensions\Editor\Scripts\PlayFabEditorSDK\PlayFabEditorModels.cs" />
     <Compile Include="Assets\PlayFabSdk\ExampleTestProject\Assets\PlayFabEditorExtensions\Editor\Scripts\Utils\PlayFabEditorUtils.cs" />
     <Compile Include="Assets\PlayFabSdk\ExampleTestProject\Assets\PlayFabEditorExtensions\Editor\Scripts\Components\SubMenuComponent.cs" />
     <Compile Include="Assets\PlayFabSdk\ExampleTestProject\Assets\PlayFabEditorExtensions\Editor\Scripts\PlayFabEditorSDK\ISerializer.cs" />
     <Compile Include="Assets\PlayFabSdk\ExampleTestProject\Assets\PlayFabEditorExtensions\Editor\Scripts\Utils\PlayFabGuiFieldHelper.cs" />
     <Compile Include="Assets\PlayFabSdk\ExampleTestProject\Assets\PlayFabEditorExtensions\Editor\Scripts\PlayFabEditorSDK\PlayFabEditorHttp.cs" />
-    <Compile Include="Assets\PlayFabSdk\ExampleTestProject\Assets\PlayFabEditorExtensions\Editor\Scripts\Panels\PlayFabEditorSettings.cs" />
     <Compile Include="Assets\PlayFabSdk\ExampleTestProject\Assets\PlayFabEditorExtensions\Editor\PlayFabEditor.cs" />
-    <Compile Include="Assets\PlayFabSdk\ExampleTestProject\Assets\PlayFabEditorExtensions\Editor\Scripts\PlayFabEditorSDK\SimpleJson.cs" />
     <Compile Include="Assets\PlayFabSdk\ExampleTestProject\Assets\PlayFabEditorExtensions\Editor\Scripts\Utils\PlayFabEditorPrefsSO.cs" />
-    <Compile Include="Assets\PlayFabSdk\ExampleTestProject\Assets\PlayFabEditorExtensions\Editor\Scripts\Components\ProgressBar.cs" />
     <Compile Include="Assets\PlayFabSdk\ExampleTestProject\Assets\PlayFabEditorExtensions\Editor\Scripts\Utils\PlayFabEditorVersion.cs" />
     <Compile Include="Assets\PlayFabSdk\ExampleTestProject\Assets\PlayFabEditorExtensions\Editor\Scripts\Panels\PlayFabEditorSDKTools.cs" />
-    <Compile Include="Assets\PlayFabSdk\ExampleTestProject\Assets\PlayFabEditorExtensions\Editor\Scripts\Utils\PlayFabEditorHelper.cs" />
-    <Compile Include="Assets\PlayFabSdk\ExampleTestProject\Assets\PlayFabEditorExtensions\Editor\Scripts\Panels\PlayFabEditorMenu.cs" />
-    <Compile Include="Assets\PlayFabSdk\ExampleTestProject\Assets\PlayFabEditorExtensions\Editor\Scripts\Panels\PlayFabEditorHeader.cs" />
     <Compile Include="Assets\PlayFabSdk\ExampleTestProject\Assets\PlayFabEditorExtensions\Editor\Scripts\Panels\PlayFabEditorHelpMenu.cs" />
-    <Compile Include="Assets\PlayFabSdk\ExampleTestProject\Assets\PlayFabEditorExtensions\Editor\Scripts\PlayFabEditorSDK\PlayFabEditorModels.cs" />
     <Compile Include="Assets\PlayFabSdk\ExampleTestProject\Assets\PlayFabEditorExtensions\Editor\Scripts\Utils\EditorCoroutine.cs" />
     <Compile Include="Assets\PlayFabSdk\ExampleTestProject\Assets\PlayFabEditorExtensions\Editor\Scripts\Utils\PlayFabEditorDataService.cs" />
   </ItemGroup>
@@ -764,7 +764,7 @@
       <Private>False</Private>
     </Reference>
     <Reference Include="AiEditorToolsSdk">
-      <HintPath>Library\PackageCache\com.unity.ai.toolkit@48a271771d1a\Modules\Sdk\Editor\AiEditorToolsSdk.dll</HintPath>
+      <HintPath>Library\PackageCache\com.unity.ai.toolkit@339b745a421a\Modules\Sdk\Editor\AiEditorToolsSdk.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Unity.VisualScripting.TextureAssets">

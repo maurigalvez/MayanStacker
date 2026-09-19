@@ -51,10 +51,10 @@
   <ItemGroup>
     <Compile Include="Assets\GooglePlayPlugins\com.google.play.common\Runtime\Scripts\LoadingScreen\ScrollingFillAnimator.cs" />
     <Compile Include="Assets\GooglePlayPlugins\com.google.play.common\Runtime\Scripts\VoidResult.cs" />
+    <Compile Include="Assets\GooglePlayPlugins\com.google.play.common\Runtime\Scripts\LoadingScreen\LoadingScreen.cs" />
     <Compile Include="Assets\GooglePlayPlugins\com.google.play.common\Runtime\Scripts\Internal\PlayAsyncOperationImpl.cs" />
     <Compile Include="Assets\GooglePlayPlugins\com.google.play.common\Runtime\Scripts\LoadingScreen\LoadingBar.cs" />
     <Compile Include="Assets\GooglePlayPlugins\com.google.play.common\Runtime\Scripts\Internal\AndroidConstants.cs" />
-    <Compile Include="Assets\GooglePlayPlugins\com.google.play.common\Runtime\Scripts\LoadingScreen\LoadingScreen.cs" />
     <Compile Include="Assets\GooglePlayPlugins\com.google.play.common\Runtime\Scripts\UnityPlayerHelper.cs" />
     <Compile Include="Assets\GooglePlayPlugins\com.google.play.common\Runtime\Scripts\PlayAsyncOperation.cs" />
   </ItemGroup>
@@ -723,7 +723,7 @@
       <Private>False</Private>
     </Reference>
     <Reference Include="AiEditorToolsSdk">
-      <HintPath>Library\PackageCache\com.unity.ai.toolkit@48a271771d1a\Modules\Sdk\Editor\AiEditorToolsSdk.dll</HintPath>
+      <HintPath>Library\PackageCache\com.unity.ai.toolkit@339b745a421a\Modules\Sdk\Editor\AiEditorToolsSdk.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Unity.VisualScripting.TextureAssets">

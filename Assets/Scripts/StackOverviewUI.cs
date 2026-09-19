@@ -516,20 +516,26 @@ public class StackOverviewUI : MonoBehaviour
     /// </summary>
     private void OnStackChanged(StackableObject obj)
     {
+        if (!gameObject.activeInHierarchy) return;
         UpdateStackData();
         RefreshVisualization();
     }
 
     private void OnGameModeChanged(GameMode mode)
     {
-        // Show for all game modes
-        gameObject.SetActive(true);
-        RefreshVisualization();
+        // Infinite only: Levels and the Daily have their own targets, and there the tremor
+        // meter already says how the tower is holding up.
+        bool show = mode == GameMode.InfiniteStacker;
+        gameObject.SetActive(show);
+
+        if (show) RefreshVisualization();
+        else ClearBlockImages();
     }
 
     private void OnGameStart()
     {
         isGameOver = false;
+        if (!gameObject.activeInHierarchy) return;
         UpdateStackData();
         RefreshVisualization();
     }
@@ -545,6 +551,7 @@ public class StackOverviewUI : MonoBehaviour
         isGameOver = false;
         ClearBlockImages();
         cachedStackObjects.Clear();
+        if (!gameObject.activeInHierarchy) return;
         UpdateStackData();
         RefreshVisualization();
     }

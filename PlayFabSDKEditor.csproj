@@ -49,8 +49,8 @@
     <Analyzer Include="C:\Program Files\Unity\Hub\Editor\6000.3.10f1\Editor\Data\Tools\BuildPipeline\Unity.SourceGenerators\Unity.UIToolkit.SourceGenerator.dll" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Assets\PlayFabSdk\ExampleTestProject\Assets\PlayFabSDK\Shared\Editor\MakeSharedSettingsObj.cs" />
     <Compile Include="Assets\PlayFabSdk\ExampleTestProject\Assets\PlayFabSDK\Shared\Editor\PlayFabHelp.cs" />
+    <Compile Include="Assets\PlayFabSdk\ExampleTestProject\Assets\PlayFabSDK\Shared\Editor\MakeSharedSettingsObj.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\PlayFabSdk\ExampleTestProject\Assets\PlayFabSDK\Shared\Editor\PlayFabSdkEditor.asmdef" />
@@ -741,7 +741,7 @@
       <Private>False</Private>
     </Reference>
     <Reference Include="AiEditorToolsSdk">
-      <HintPath>Library\PackageCache\com.unity.ai.toolkit@48a271771d1a\Modules\Sdk\Editor\AiEditorToolsSdk.dll</HintPath>
+      <HintPath>Library\PackageCache\com.unity.ai.toolkit@339b745a421a\Modules\Sdk\Editor\AiEditorToolsSdk.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Unity.VisualScripting.TextureAssets">

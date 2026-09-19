@@ -22,7 +22,11 @@
     },
     {
       "key": "combo_format",
-      "value": "{0}\nx{1} コンボ"
+      "value": "{0}\n{1}連続"
+    },
+    {
+      "key": "combo_held_format",
+      "value": "{0}\n{1}連続 維持"
     },
     {
       "key": "mode_temple_stacker",
@@ -358,11 +362,11 @@
     },
     {
       "key": "ftue_beat_good",
-      "value": "グッド。連鎖を保つには十分。"
+      "value": "グッド。だが連鎖を保てるのはパーフェクトだけ。"
     },
     {
       "key": "ftue_beat_poor",
-      "value": "雑だ。ずれた石だけが連鎖を断つ。"
+      "value": "雑だ。連鎖が途切れた。"
     },
     {
       "key": "ftue_beat_kukulkan",
@@ -509,8 +513,8 @@
       "value": "礎"
     },
     {
-      "key": "band_canopy",
-      "value": "樹冠"
+      "key": "band_stairway",
+      "value": "大階段"
     },
     {
       "key": "band_dusk",
@@ -523,6 +527,10 @@
     {
       "key": "band_serpent",
       "value": "羽蛇の高み"
+    },
+    {
+      "key": "band_height_subtitle",
+      "value": "{0}段の高さ"
     },
     {
       "key": "boon_title",
@@ -643,6 +651,105 @@
     {
       "key": "update_button_restart",
       "value": "今すぐ再起動"
-    }
+    },
+    {
+      "key": "stability_label",
+      "value": "揺れ"
+    },
+    {
+      "key": "stability_intro_title",
+      "value": "神殿の揺れ"
+    },
+    {
+      "key": "stability_intro_body",
+      "value": "中心を外した石は神殿を揺らす。パーフェクトで鎮まる。"
+    },
+    {
+      "key": "stability_warning_title",
+      "value": "神殿が揺れている！"
+    },
+    {
+      "key": "stability_warning_body",
+      "value": "パーフェクトを決めないと崩れる"
+    },
+    {
+      "key": "stability_saved",
+      "value": "ククルカンが石を鎮めた"
+    },
+    {
+      "key": "ftue_beat_tremor",
+      "value": "揺れメーターに注目。中心を外した石は神殿を揺らし、パーフェクトで鎮まる。"
+    },
+    {
+      "key": "edge_zone_label",
+      "value": "x{0}"
+    },
+    {
+      "key": "edge_landed",
+      "value": "蛇の縁 x{0}"
+    },
+    {
+      "key": "edge_intro_title",
+      "value": "蛇の縁"
+    },
+    {
+      "key": "edge_intro_body",
+      "value": "振り子の端で金の縁が光った瞬間に落とすと、x{0}のパーフェクト。早すぎるとグッド止まり。"
+    },
+    {
+      "key": "edge_intro_followup_title",
+      "value": "スコアx{0}！"
+    },
+    {
+      "key": "edge_intro_followup_body",
+      "value": "だが神殿は揺れた。揺れメーターに注意。"
+    },
+    {
+      "key": "ghost_best_label",
+      "value": "ベスト {0}"
+    },
+    {
+      "key": "ghost_new_best",
+      "value": "自己ベストの高さを超えた！"
+    },
+    { "key": "result_head_new_best", "value": "ハイスコア更新" },
+    { "key": "result_head_first", "value": "最初の石が置かれた" },
+    { "key": "result_head_near", "value": "栄光まであと少し" },
+    { "key": "result_head_solid", "value": "神殿が崩れた" },
+    { "key": "result_head_early", "value": "石がずれた" },
+    { "key": "result_head_level_near", "value": "制覇まであと少し" },
+    { "key": "result_flavor_new_best_1", "value": "ククルカンがあなたの塔を称えている。" },
+    { "key": "result_flavor_new_best_2", "value": "古の民がこの神殿を語り継ぐだろう。" },
+    { "key": "result_flavor_new_best_3", "value": "太陽に届く新たな頂。" },
+    { "key": "result_flavor_first", "value": "神殿づくりが始まった。もっと高く積もう。" },
+    { "key": "result_flavor_near_1", "value": "神々が見守っていた。" },
+    { "key": "result_flavor_near_2", "value": "頂はもう手の届くところに。" },
+    { "key": "result_flavor_near_3", "value": "あと一度の挑戦で届くかも。" },
+    { "key": "result_flavor_solid_1", "value": "石たちはその高さを覚えている。" },
+    { "key": "result_flavor_solid_2", "value": "石を集めて、もう一度積もう。" },
+    { "key": "result_flavor_solid_3", "value": "崩れるたびに、築き手は学ぶ。" },
+    { "key": "result_flavor_early_1", "value": "どんな神殿も一つの石から始まる。" },
+    { "key": "result_flavor_early_2", "value": "落ち着いた手で、焦らず落とそう。" },
+    { "key": "result_flavor_early_3", "value": "深呼吸して、もう一度。" },
+    { "key": "result_best", "value": "ベスト {0}" },
+    { "key": "result_best_gap", "value": "ベスト {0} · あと{1}" },
+    { "key": "result_best_beaten", "value": "前回ベスト {0} · +{1}" },
+    { "key": "result_daily_best", "value": "今日のベスト {0}" },
+    { "key": "result_daily_best_beaten", "value": "今日のベスト更新 · +{0}" },
+    { "key": "result_level_score", "value": "{0} / {1}" },
+    { "key": "result_level_to_go", "value": "この遺跡の制覇まであと{0}" },
+    { "key": "result_stat_height", "value": "高さ" },
+    { "key": "result_stat_perfects", "value": "パーフェクト" },
+    { "key": "result_stat_combo", "value": "最大コンボ" },
+    { "key": "result_combo_value", "value": "x{0}" },
+    { "key": "result_tip_straighten", "value": "パーフェクトを{0}回連続で決めると塔がまっすぐになる。" },
+    { "key": "result_tip_combo", "value": "コンボを保てるのはパーフェクトな着地だけ。" },
+    { "key": "result_tip_edge", "value": "蛇の縁が光った瞬間に落とすとx3のパーフェクト。" },
+    { "key": "edge_landed_bonus", "value": "蛇の縁 x{0} · +{1}" },
+    { "key": "edge_proj_miss", "value": "落下" },
+    { "key": "combo_badge_caption", "value": "コンボ" },
+    { "key": "result_edge_line", "value": "蛇の縁：{0}回成功 · +{1}" },
+    { "key": "result_edge_line_broke", "value": "蛇の縁：{0}回成功 · +{1} · コンボ途切れ：{2}" },
+    { "key": "result_tip_align", "value": "下の石にぴったり合わせよう。" }
   ]
 }

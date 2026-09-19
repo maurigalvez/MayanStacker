@@ -224,6 +224,7 @@ public class BoonSystem : MonoBehaviour
         if (settings.showIntroOnFirstOffer && !FtueState.HasSeenBoonIntro)
         {
             BuildIntro();
+            PopInPicker();
             ArmAfterDelay();
 
             GameAnalytics.Track("boon_intro_shown", new Dictionary<string, object>
@@ -240,6 +241,7 @@ public class BoonSystem : MonoBehaviour
     private void ShowOffers()
     {
         BuildPicker(pendingOffers);
+        PopInPicker();
         ArmAfterDelay();
 
         GameAnalytics.Track("boon_offered", new Dictionary<string, object>
@@ -254,7 +256,8 @@ public class BoonSystem : MonoBehaviour
         FtueState.MarkBoonIntroSeen();
         GameAnalytics.Track("boon_intro_acknowledged");
 
-        ShowOffers();
+        // The explainer scales away before the cards pop in behind it.
+        HidePickerThen(ShowOffers);
     }
 
     // ---- Arming ----
@@ -532,16 +535,47 @@ public class BoonSystem : MonoBehaviour
     {
         int height = stackManager != null ? stackManager.GetStackCount() : 0;
 
-        // Close first: granting can trigger the Kukulkan shift, whose slow-motion needs a
-        // running clock to play out.
-        ClosePicker(resumeGame: true);
-
-        ActiveBoons.Grant(id);
-
-        GameAnalytics.Track("boon_chosen", new Dictionary<string, object>
+        // Let the picker scale away, then close first: granting can trigger the Kukulkan
+        // shift, whose slow-motion needs a running clock to play out.
+        HidePickerThen(() =>
         {
-            { "boon", id.ToString() },
-            { "height", height }
+            ClosePicker(resumeGame: true);
+
+            ActiveBoons.Grant(id);
+
+            GameAnalytics.Track("boon_chosen", new Dictionary<string, object>
+            {
+                { "boon", id.ToString() },
+                { "height", height }
+            });
+        });
+    }
+
+    /// <summary>Pops in the intro/picker that was just built.</summary>
+    private void PopInPicker()
+    {
+        Canvas canvas = pickerRoot != null ? pickerRoot.GetComponentInChildren<Canvas>() : null;
+        if (canvas != null) UIPopup.PopIn(canvas.gameObject);
+    }
+
+    /// <summary>
+    /// Scales the current intro/picker away, then runs <paramref name="then"/>. Skipped if
+    /// the picker was closed some other way meanwhile (run ended, restart), so a late tap
+    /// can never grant a boon or unfreeze time after that.
+    /// </summary>
+    private void HidePickerThen(System.Action then)
+    {
+        GameObject root = pickerRoot;
+        Canvas canvas = root != null ? root.GetComponentInChildren<Canvas>() : null;
+        if (canvas == null)
+        {
+            then();
+            return;
+        }
+
+        UIPopup.Hide(canvas.gameObject, () =>
+        {
+            if (IsChoosing && pickerRoot == root) then();
         });
     }
 

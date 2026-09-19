@@ -22,7 +22,11 @@
     },
     {
       "key": "combo_format",
-      "value": "{0}\nx{1} 连击"
+      "value": "{0}\n连续{1}次"
+    },
+    {
+      "key": "combo_held_format",
+      "value": "{0}\n连续{1}次 保持"
     },
     {
       "key": "mode_temple_stacker",
@@ -358,11 +362,11 @@
     },
     {
       "key": "ftue_beat_good",
-      "value": "不错。足以保持连击。"
+      "value": "不错。但只有完美才能保持连击。"
     },
     {
       "key": "ftue_beat_poor",
-      "value": "太随意了。只有歪斜的石块会中断连击。"
+      "value": "太随意了。连击中断了。"
     },
     {
       "key": "ftue_beat_kukulkan",
@@ -509,8 +513,8 @@
       "value": "地基"
     },
     {
-      "key": "band_canopy",
-      "value": "树冠"
+      "key": "band_stairway",
+      "value": "大阶梯"
     },
     {
       "key": "band_dusk",
@@ -523,6 +527,10 @@
     {
       "key": "band_serpent",
       "value": "羽蛇的高度"
+    },
+    {
+      "key": "band_height_subtitle",
+      "value": "已垒起{0}块石"
     },
     {
       "key": "boon_title",
@@ -643,6 +651,105 @@
     {
       "key": "update_button_restart",
       "value": "立即重启"
-    }
+    },
+    {
+      "key": "stability_label",
+      "value": "震颤"
+    },
+    {
+      "key": "stability_intro_title",
+      "value": "神庙震颤"
+    },
+    {
+      "key": "stability_intro_body",
+      "value": "偏离中心的石块会让神庙震动，完美落石能使其平静。"
+    },
+    {
+      "key": "stability_warning_title",
+      "value": "神庙在颤抖！"
+    },
+    {
+      "key": "stability_warning_body",
+      "value": "打出完美，否则神庙将倒塌"
+    },
+    {
+      "key": "stability_saved",
+      "value": "库库尔坎稳住了石块"
+    },
+    {
+      "key": "ftue_beat_tremor",
+      "value": "留意震颤计：偏离中心的石块会让神庙震动，完美落石能使其平静。"
+    },
+    {
+      "key": "edge_zone_label",
+      "value": "x{0}"
+    },
+    {
+      "key": "edge_landed",
+      "value": "蛇之锋 x{0}"
+    },
+    {
+      "key": "edge_intro_title",
+      "value": "蛇之锋"
+    },
+    {
+      "key": "edge_intro_body",
+      "value": "在摆动的最末端、金色边缘闪光时松手，即可获得 x{0} 完美。松手太早只算不错。"
+    },
+    {
+      "key": "edge_intro_followup_title",
+      "value": "x{0} 分！"
+    },
+    {
+      "key": "edge_intro_followup_body",
+      "value": "但神庙感受到了。留意震颤计。"
+    },
+    {
+      "key": "ghost_best_label",
+      "value": "最佳 {0}"
+    },
+    {
+      "key": "ghost_new_best",
+      "value": "超越最佳高度！"
+    },
+    { "key": "result_head_new_best", "value": "新纪录" },
+    { "key": "result_head_first", "value": "第一批石块已就位" },
+    { "key": "result_head_near", "value": "荣耀近在咫尺" },
+    { "key": "result_head_solid", "value": "神殿倒塌了" },
+    { "key": "result_head_early", "value": "石块松动了" },
+    { "key": "result_head_level_near", "value": "即将征服" },
+    { "key": "result_flavor_new_best_1", "value": "库库尔坎赞颂你的高塔。" },
+    { "key": "result_flavor_new_best_2", "value": "先祖们会传颂这座神殿。" },
+    { "key": "result_flavor_new_best_3", "value": "献给太阳的新巅峰。" },
+    { "key": "result_flavor_first", "value": "你的神殿已经开工，把它建得更高吧。" },
+    { "key": "result_flavor_near_1", "value": "众神都在注视着你。" },
+    { "key": "result_flavor_near_2", "value": "巅峰触手可及。" },
+    { "key": "result_flavor_near_3", "value": "再攀登一次就能做到。" },
+    { "key": "result_flavor_solid_1", "value": "石块铭记着它曾到达的高度。" },
+    { "key": "result_flavor_solid_2", "value": "拾起石块，再建一次。" },
+    { "key": "result_flavor_solid_3", "value": "每一次倒塌都在教会建造者。" },
+    { "key": "result_flavor_early_1", "value": "每座神殿都始于一块石头。" },
+    { "key": "result_flavor_early_2", "value": "手要稳，放块要耐心。" },
+    { "key": "result_flavor_early_3", "value": "深呼吸，再建一次。" },
+    { "key": "result_best", "value": "最佳 {0}" },
+    { "key": "result_best_gap", "value": "最佳 {0} · 还差{1}" },
+    { "key": "result_best_beaten", "value": "旧纪录 {0} · +{1}" },
+    { "key": "result_daily_best", "value": "今日最佳 {0}" },
+    { "key": "result_daily_best_beaten", "value": "今日新纪录 · +{0}" },
+    { "key": "result_level_score", "value": "{0} / {1}" },
+    { "key": "result_level_to_go", "value": "再{0}块即可征服此地" },
+    { "key": "result_stat_height", "value": "高度" },
+    { "key": "result_stat_perfects", "value": "完美" },
+    { "key": "result_stat_combo", "value": "最高连击" },
+    { "key": "result_combo_value", "value": "x{0}" },
+    { "key": "result_tip_straighten", "value": "连续{0}次完美落块可以扶正高塔。" },
+    { "key": "result_tip_combo", "value": "只有完美落块才能保持连击。" },
+    { "key": "result_tip_edge", "value": "蛇之锋边缘闪光时松手，获得 x3 完美。" },
+    { "key": "edge_landed_bonus", "value": "蛇之锋 x{0} · +{1}" },
+    { "key": "edge_proj_miss", "value": "落空" },
+    { "key": "combo_badge_caption", "value": "连击" },
+    { "key": "result_edge_line", "value": "蛇之锋：成功{0}次 · +{1}" },
+    { "key": "result_edge_line_broke", "value": "蛇之锋：成功{0}次 · +{1} · 连击中断：{2}" },
+    { "key": "result_tip_align", "value": "让每块石头与下面那块对齐。" }
   ]
 }

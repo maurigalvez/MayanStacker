@@ -238,7 +238,7 @@ public class ThemeSelectionUI : MonoBehaviour
             unlockInfoDescription.text = description;
 
         // Show panel
-        unlockInfoPanel.SetActive(true);
+        UIPopup.Show(unlockInfoPanel);
         soundManager?.PlayPanelOpen();
     }
 
@@ -249,7 +249,7 @@ public class ThemeSelectionUI : MonoBehaviour
     {
         if (unlockInfoPanel != null)
         {
-            unlockInfoPanel.SetActive(false);
+            UIPopup.Hide(unlockInfoPanel);
             soundManager?.PlayPanelClose();
         }
     }
@@ -276,19 +276,28 @@ public class ThemeSelectionUI : MonoBehaviour
             confirmationMessage.text = LocalizationManager.Get("theme_confirm_message_format", themeName);
 
         // Show panel
-        confirmationPanel.SetActive(true);
+        UIPopup.Show(confirmationPanel);
         soundManager?.PlayPanelOpen();
     }
 
     /// <summary>
     /// Hide confirmation panel
     /// </summary>
-    private void HideConfirmation()
+    private void HideConfirmation() => HideConfirmationThen(null);
+
+    /// <summary>
+    /// Hide confirmation panel, running <paramref name="onHidden"/> once it has scaled away
+    /// </summary>
+    private void HideConfirmationThen(System.Action onHidden)
     {
         if (confirmationPanel != null)
         {
-            confirmationPanel.SetActive(false);
+            UIPopup.Hide(confirmationPanel, onHidden);
             soundManager?.PlayPanelClose();
+        }
+        else
+        {
+            onHidden?.Invoke();
         }
     }
 
@@ -299,14 +308,17 @@ public class ThemeSelectionUI : MonoBehaviour
     {
         if (themeManager == null) return;
 
-        // Set the selected theme
-        themeManager.SetSelectedTheme(pendingThemeSelection);
+        GameTheme selection = pendingThemeSelection;
 
-        // Hide confirmation panel
-        HideConfirmation();
+        // Hide confirmation panel, then apply the theme once it has scaled away
+        HideConfirmationThen(() =>
+        {
+            // Set the selected theme
+            themeManager.SetSelectedTheme(selection);
 
-        // Update button states to reflect new selection
-        UpdateThemeButtonStates();
+            // Update button states to reflect new selection
+            UpdateThemeButtonStates();
+        });
 
         soundManager?.PlayButtonClick();
     }

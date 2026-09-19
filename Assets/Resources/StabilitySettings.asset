@@ -1,0 +1,52 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 056f2319afed84a469388ea68df756d9, type: 3}
+  m_Name: StabilitySettings
+  m_EditorClassIdentifier: Assembly-CSharp::StabilitySettings
+  enableStability: 1
+  applyToInfinite: 1
+  applyToLevels: 1
+  applyToDaily: 1
+  perfectRelief: 0.15
+  goodStrainMin: 0.05
+  goodStrainMax: 0.18
+  poorStrain: 0.4
+  kukulkanRelief: 0.35
+  tremorAfterSave: 0.5
+  kukulkanOnSave: 1
+  warningHoldSeconds: 2.2
+  trembleShakeTrauma: 0.12
+  trembleShakeInterval: 0.3
+  suppressDuringTutorial: 1
+  tutorialCap: 0.9
+  enableEdge: 1
+  edgePhaseThreshold: 0.92
+  edgeScoreMultiplier: 3
+  edgeStrain: 0.3
+  edgeMinStackHeight: 2
+  edgeUnlockRuns: 2
+  edgeIntroMaxDrops: 6
+  edgeRattleClip: {fileID: 8300000, guid: e0d21de011f334a4b99ac2af9b0374d0, type: 3}
+  edgeRattleVolume: 0.5
+  edgeEntryHaptic: 1
+  edgeCueCooldown: 0.5
+  edgeZoneSurfaceOffset: 0
+  edgeZoneWorldWidth: 1.2
+  edgeZoneHeight: 22
+  edgeZoneMinWidth: 60
+  edgeCanvasSortingOrder: 2990
+  edgeIntroBannerYOffset: 0
+  barAnchor: {x: 1, y: 0.5}
+  barPosition: {x: -56, y: 0}
+  barSize: {x: 36, y: 520}
+  canvasSortingOrder: 3000
+  introBannerYOffset: 260
