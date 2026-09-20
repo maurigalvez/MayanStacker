@@ -17,6 +17,10 @@
 /Assets/GeneratedLocalRepo
 /Assets/GoogleMobileAds
 /Assets/GooglePlayPlugins
+# Note: the Android build templates under Assets/Plugins/Android (proguard-user.txt,
+# mainTemplate.gradle, gradleTemplate.properties, settingsTemplate.gradle) are tracked
+# explicitly despite this rule -- they carry the R8 keep rules that Play Review and
+# In-App Update need to survive minification. Force-add any new one: git add -f <path>
 /Assets/Plugins
 /Logs
 /Logs

@@ -112,6 +112,11 @@ public class PlayerDataReset : MonoBehaviour
         PlayerPrefs.DeleteKey("InfiniteMode_InstructionsSeen");
         PlayerPrefs.DeleteKey("ReviewPromptShown");
 
+        // The in-app update snooze is per-version-code, so a reset player would otherwise
+        // stay silently deferred on whatever release they last said "Not now" to.
+        PlayerPrefs.DeleteKey("AppUpdate_SnoozedVersion");
+        PlayerPrefs.DeleteKey("AppUpdate_SnoozedAt");
+
         // Onboarding, streak and reminder state — without this a reset player keeps their
         // ad grace burned and never sees the tutorial again, which makes FTUE untestable.
         FtueState.ResetAll();
