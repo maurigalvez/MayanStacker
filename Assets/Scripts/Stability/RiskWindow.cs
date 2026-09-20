@@ -356,9 +356,12 @@ public class RiskWindow : MonoBehaviour
         // landing yet, its warning simply replaces the banner a moment later.
         if (stability == null || !stability.IsTrembling)
         {
+            // Only a Perfect (the sweet spot) earns the full xN; anything else scored a Good or
+            // worse and broke the combo, so the follow-up teaches the timing instead of cheering.
+            bool perfect = block.LandingAccuracy >= gameManager.PerfectThreshold;
             RunBanner.Show(
-                LocalizationManager.Get("edge_intro_followup_title", FormatMultiplier()),
-                LocalizationManager.Get("edge_intro_followup_body"),
+                LocalizationManager.Get(perfect ? "edge_intro_followup_title" : "edge_intro_early_title", FormatMultiplier()),
+                LocalizationManager.Get(perfect ? "edge_intro_followup_body" : "edge_intro_early_body", FormatMultiplier()),
                 RunOverlayUI.Gold,
                 FollowupBannerHold,
                 settings.edgeIntroBannerYOffset);

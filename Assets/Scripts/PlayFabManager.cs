@@ -27,7 +27,9 @@ using System.Collections.Generic;
 /// This manager automatically sets player display names for leaderboards:
 /// - Google Play Games users: Display name is automatically fetched and synced on login
 /// - Before each score submission, the Google Play display name is verified and refreshed
-/// - Other users: A friendly "Player_XXXXXX" format is used instead of raw IDs
+/// - Other users (no Google name): a temple name from MayanNameGenerator, e.g. "Jade Itzel".
+///   Old "Player_XXXXXX" names are replaced on their next login; a later Google sign-in
+///   replaces the temple name with the Google one.
 /// - Display names can be manually updated using UpdateDisplayName() method
 /// - Leaderboards will show these display names instead of entity IDs
 /// 
@@ -96,6 +98,7 @@ public class PlayFabManager : MonoBehaviour
     // State
     private bool isLoggedIn = false;
     private string playFabId = "";
+    private string entityId = ""; // title_player_account id - leaderboard rankings are keyed by this, not playFabId
     private string currentDisplayName = "";
     private bool isSyncing = false;
     private string lastIntegrityToken = null; // Store last integrity token for logging
@@ -104,6 +107,7 @@ public class PlayFabManager : MonoBehaviour
     private string lastGoogleLoginError = null; // Store error from failed Google login for event logging
     private string lastFailedGooglePlayerId = null; // Store Google Player ID from failed login
     private PlayerProgressData pendingMergedProgress = null; // From a Device ID account being merged into the Google one
+    private bool loginInProgress = false; // Launch login or a "Sign in with Google Play" tap still running
 
     // Cloud save constants
     private const string PLAYER_PROGRESS_KEY = "PlayerProgress";
@@ -125,9 +129,31 @@ public class PlayFabManager : MonoBehaviour
     // Properties
     public bool IsLoggedIn => isLoggedIn;
     public string PlayFabId => playFabId;
+    public string EntityId => entityId;
     public string CurrentDisplayName => currentDisplayName;
     public bool UsedFallbackLogin => usedFallbackLogin;
     public bool UsedGoogleLogin => usedGoogleLogin;
+    public bool IsLoggingIn => loginInProgress;
+
+    /// <summary>
+    /// True when the player can still tap "Sign in with Google Play": on an Android device,
+    /// logged in some other way (Device ID fallback) and not already signing in
+    /// </summary>
+    public bool CanSignInWithGoogle
+    {
+        get
+        {
+#if UNITY_ANDROID && !UNITY_EDITOR
+            return !usedGoogleLogin && !loginInProgress;
+#else
+            return false;
+#endif
+        }
+    }
+
+    // Fired when who the player is could have changed: login, login failure, a new display
+    // name, or a Google sign-in starting or ending. The identity UI refreshes on it.
+    public System.Action OnAccountChanged;
 
     // Events for account mismatch detection
     public System.Action<string, string> OnAccountMismatchDetected; // (expectedId, actualId)
@@ -249,7 +275,9 @@ public class PlayFabManager : MonoBehaviour
 #endif
 
         // Notify UI that login is starting
+        loginInProgress = true;
         OnLoginStarted?.Invoke();
+        OnAccountChanged?.Invoke();
 
 #if UNITY_ANDROID
         LoginWithAndroid();
@@ -323,6 +351,36 @@ public class PlayFabManager : MonoBehaviour
     }
 
     /// <summary>
+    /// Player-initiated Google Play sign-in (Settings button) for someone whose launch sign-in
+    /// failed. Runs the normal Google login, which links Google to this device's account or
+    /// merges it into an existing Google account, so no progress or scores are lost.
+    /// </summary>
+    public void SignInWithGooglePlay()
+    {
+#if UNITY_ANDROID && !UNITY_EDITOR
+        if (!CanSignInWithGoogle) return;
+
+        loginInProgress = true;
+        OnAccountChanged?.Invoke();
+
+        PlayGamesPlatform.Instance.ManuallyAuthenticate(status =>
+        {
+            if (status == SignInStatus.Success)
+            {
+                OnLoginStarted?.Invoke();
+                OnGooglePlayGamesAuthenticationSuccess();
+                return;
+            }
+
+            // Still logged into the device account, so there is nothing to fall back to
+            Debug.LogWarning($"Google Play sign-in from Settings failed: {status}");
+            loginInProgress = false;
+            OnAccountChanged?.Invoke();
+        });
+#endif
+    }
+
+    /// <summary>
     /// Called when Google Play Games authentication succeeds
     /// Handles getting server auth code and submitting to PlayFab
     /// </summary>
@@ -388,8 +446,10 @@ public class PlayFabManager : MonoBehaviour
         if (!fallbackToDeviceID)
         {
             isLoggedIn = false;
+            loginInProgress = false;
             Debug.LogError($"[ACCOUNT WARNING] Google login failed and Device ID fallback is off: {reason}");
             OnLoginFailure?.Invoke(reason);
+            OnAccountChanged?.Invoke();
             return;
         }
 
@@ -564,8 +624,10 @@ public class PlayFabManager : MonoBehaviour
     {
         isLoggedIn = true;
         playFabId = result.PlayFabId;
+        entityId = result.EntityToken?.Entity?.Id ?? "";
         usedGoogleLogin = true;
         usedFallbackLogin = false;
+        loginInProgress = false;
 
 #if DEBUG_MODE
         Debug.Log($"✓ PlayFab login successful via Google Play Games!");
@@ -577,7 +639,7 @@ public class PlayFabManager : MonoBehaviour
 
         // Check current PlayFab display name
         string currentPlayFabDisplayName = result.InfoResultPayload?.PlayerProfile?.DisplayName;
-        currentDisplayName = currentPlayFabDisplayName ?? ""; // Store for public access
+        SetCurrentDisplayName(currentPlayFabDisplayName);
 #if DEBUG_MODE
         Debug.Log($"  - Current PlayFab Display Name: {currentPlayFabDisplayName ?? "[Not Set]"}");
 #endif
@@ -619,6 +681,7 @@ public class PlayFabManager : MonoBehaviour
         StartCoroutine(SetDisplayNameIfNeeded(googleDisplayName, currentPlayFabDisplayName));
 
         OnLoginSuccess?.Invoke(playFabId);
+        OnAccountChanged?.Invoke();
 
         // Sync progress from cloud after login
         SyncProgressOnLogin();
@@ -842,56 +905,19 @@ public class PlayFabManager : MonoBehaviour
             yield break; // No need to update
         }
 
-        // Check if current name looks like an entity ID (needs updating)
-        bool currentNameIsEntityId = string.IsNullOrEmpty(currentPlayFabDisplayName) ||
-                                     currentPlayFabDisplayName.Length > 16 || // Entity IDs are long
-                                     currentPlayFabDisplayName.All(c => char.IsLetterOrDigit(c) || c == '-'); // Entity IDs are alphanumeric with dashes
-
         // Set the display name if valid and needed
         if (isValidName)
         {
 #if DEBUG_MODE
             Debug.Log($"Updating PlayFab display name from '{currentPlayFabDisplayName ?? "[Not Set]"}' to '{displayName}'");
 #endif
-            SetDisplayNameDirectly(displayName, onSuccess: () =>
-            {
-                currentDisplayName = displayName; // Update stored display name on success
-#if DEBUG_MODE
-                Debug.Log($"✓ Display name successfully updated to: {displayName}");
-#endif
-            },
-            onFailure: (error) =>
-            {
-                Debug.LogWarning($"Could not update display name: {error}");
-                if (error.Contains("Name not available"))
-                {
-                    // Display names are unique per title: keep the Google name, add a stable tag
-                    string taggedName = WithNameTag(displayName);
-                    Debug.LogWarning($"'{displayName}' is taken, using '{taggedName}'");
-                    SetDisplayNameDirectly(taggedName, onSuccess: () => currentDisplayName = taggedName);
-                }
-            });
+            SetUniqueDisplayName(displayName);
         }
-        else if (currentNameIsEntityId)
+        else if (MayanNameGenerator.IsPlaceholder(currentPlayFabDisplayName))
         {
-            // Current name looks bad and we couldn't get a good Google name
-            Debug.LogError($"Failed to get valid Google Play display name. Display name: '{displayName}'");
-            Debug.LogWarning("Leaderboards may show entity IDs instead of player names.");
-
-            // Try to set a fallback display name
-            string fallbackName = $"Player_{playFabId.Substring(0, System.Math.Min(6, playFabId.Length))}";
-#if DEBUG_MODE
-            Debug.Log($"Attempting to set fallback display name: {fallbackName}");
-#endif
-            SetDisplayNameDirectly(fallbackName,
-            onSuccess: () =>
-            {
-                currentDisplayName = fallbackName; // Update stored display name on success
-            },
-            onFailure: (error) =>
-            {
-                Debug.LogWarning("Could not set fallback name either. Scores will still save correctly.");
-            });
+            // No usable Google name and nothing chosen yet (or the old "Player_XXXXXX")
+            Debug.LogWarning($"Failed to get valid Google Play display name ('{displayName}'), using a temple name");
+            AssignMayanName();
         }
         else
         {
@@ -904,14 +930,51 @@ public class PlayFabManager : MonoBehaviour
     private const int NameTagBaseMaxLength = 20; // PlayFab display names are 3-25 chars; "#XXXX" takes 5
 
     /// <summary>
-    /// The Google name with "#" and the last 4 characters of the PlayFab ID, e.g. "Carlos#1A2B".
+    /// The name with "#" and the last 4 characters of the PlayFab ID, e.g. "Carlos#1A2B".
     /// Always the same for a player, so it doesn't change between logins.
     /// </summary>
-    private string WithNameTag(string googleName)
+    private string WithNameTag(string name)
     {
-        string baseName = googleName.Length > NameTagBaseMaxLength ? googleName.Substring(0, NameTagBaseMaxLength) : googleName;
+        string baseName = name.Length > NameTagBaseMaxLength ? name.Substring(0, NameTagBaseMaxLength) : name;
         string tag = playFabId.Length > 4 ? playFabId.Substring(playFabId.Length - 4) : playFabId;
         return $"{baseName}#{tag}";
+    }
+
+    /// <summary>
+    /// Sets the name, or the tagged name when another player already has it
+    /// (display names are unique per title)
+    /// </summary>
+    private void SetUniqueDisplayName(string name)
+    {
+        SetDisplayNameDirectly(name, onFailure: error =>
+        {
+            if (!error.Contains("Name not available")) return;
+
+            string taggedName = WithNameTag(name);
+            Debug.LogWarning($"'{name}' is taken, using '{taggedName}'");
+            SetDisplayNameDirectly(taggedName);
+        });
+    }
+
+    /// <summary>
+    /// Gives a player without a Google Play name a temple name instead of "Player_XXXXXX"
+    /// </summary>
+    private void AssignMayanName()
+    {
+        string name = MayanNameGenerator.For(playFabId);
+#if DEBUG_MODE
+        Debug.Log($"Assigning temple name: {name}");
+#endif
+        SetUniqueDisplayName(name);
+    }
+
+    private void SetCurrentDisplayName(string name)
+    {
+        name = name ?? "";
+        if (name == currentDisplayName) return;
+
+        currentDisplayName = name;
+        OnAccountChanged?.Invoke();
     }
 
     /// <summary>
@@ -943,7 +1006,7 @@ public class PlayFabManager : MonoBehaviour
         PlayFabClientAPI.UpdateUserTitleDisplayName(request,
             result =>
             {
-                currentDisplayName = result.DisplayName; // Update stored display name
+                SetCurrentDisplayName(result.DisplayName);
 #if DEBUG_MODE
                 Debug.Log($"✓ PlayFab display name set to: {result.DisplayName}");
 #endif
@@ -1096,13 +1159,12 @@ public class PlayFabManager : MonoBehaviour
     {
         isLoggedIn = true;
         playFabId = result.PlayFabId;
+        entityId = result.EntityToken?.Entity?.Id ?? "";
         usedGoogleLogin = false;
+        loginInProgress = false;
 
-        // Get current display name if available
-        if (result.InfoResultPayload?.PlayerProfile?.DisplayName != null)
-        {
-            currentDisplayName = result.InfoResultPayload.PlayerProfile.DisplayName;
-        }
+        // Not kept from an earlier login this session: that may have been another account
+        SetCurrentDisplayName(result.InfoResultPayload?.PlayerProfile?.DisplayName);
 
 #if DEBUG_MODE
         Debug.Log($"PlayFab login successful! PlayFabId: {playFabId}");
@@ -1128,14 +1190,19 @@ public class PlayFabManager : MonoBehaviour
         // IMPORTANT: Check for account mismatch (especially after fallback from Google login failure)
         CheckForAccountMismatch(result);
 
+        // New accounts, and old ones still on "Player_XXXXXX", get a temple name.
+        // A Google-linked account reached through the fallback keeps its Google name.
+        if (MayanNameGenerator.IsPlaceholder(currentDisplayName))
+        {
+            AssignMayanName();
+        }
+
         // Check if this is a new account
         if (result.NewlyCreated)
         {
 #if DEBUG_MODE
             Debug.Log("New PlayFab account created for this device");
 #endif
-            // For new accounts without Google, set a default display name
-            SetDefaultDisplayName();
 
             // If fallback was used and this is a NEW account, this is likely the bug scenario!
             if (usedFallbackLogin)
@@ -1156,6 +1223,7 @@ public class PlayFabManager : MonoBehaviour
         }
 
         OnLoginSuccess?.Invoke(playFabId);
+        OnAccountChanged?.Invoke();
 
         // Sync progress from cloud after login
         SyncProgressOnLogin();
@@ -1197,44 +1265,18 @@ public class PlayFabManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Sets a default display name for accounts not using Google Play Games
-    /// Uses a player-friendly format instead of showing raw IDs
-    /// </summary>
-    private void SetDefaultDisplayName()
-    {
-        // Create a more user-friendly display name
-        string defaultName = $"Player_{playFabId.Substring(0, System.Math.Min(6, playFabId.Length))}";
-
-        var request = new UpdateUserTitleDisplayNameRequest
-        {
-            DisplayName = defaultName
-        };
-
-        PlayFabClientAPI.UpdateUserTitleDisplayName(request,
-            result =>
-            {
-                currentDisplayName = result.DisplayName; // Update stored display name
-#if DEBUG_MODE
-                Debug.Log($"Default display name set to: {result.DisplayName}");
-#endif
-            },
-            error =>
-            {
-                Debug.LogWarning($"Failed to set default display name: {error.GenerateErrorReport()}");
-            });
-    }
-
-    /// <summary>
     /// Called when login fails
     /// </summary>
     private void OnLoginFailureCallback(PlayFabError error)
     {
         isLoggedIn = false;
+        loginInProgress = false;
 
         string errorMessage = $"PlayFab login failed: {error.GenerateErrorReport()}";
         Debug.LogError(errorMessage);
 
         OnLoginFailure?.Invoke(errorMessage);
+        OnAccountChanged?.Invoke();
     }
 
     #endregion
@@ -1471,6 +1513,18 @@ public class PlayFabManager : MonoBehaviour
     }
 
     /// <summary>
+    /// True when a leaderboard ranking belongs to the signed-in player.
+    /// Progression rankings are keyed by the title_player_account entity, so playFabId
+    /// (the master account id) never matches - it is only kept as a fallback.
+    /// </summary>
+    private bool IsSelf(PlayFab.ProgressionModels.EntityKey entity)
+    {
+        if (entity == null || string.IsNullOrEmpty(entity.Id)) return false;
+        if (!string.IsNullOrEmpty(entityId) && entity.Id == entityId) return true;
+        return !string.IsNullOrEmpty(playFabId) && entity.Id == playFabId;
+    }
+
+    /// <summary>
     /// Get the top entries for a specific leaderboard using the new Statistics V2 API
     /// </summary>
     /// <param name="leaderboardName">Name of the leaderboard statistic</param>
@@ -1523,7 +1577,7 @@ public class PlayFabManager : MonoBehaviour
         foreach (var entry in result.Rankings)
         {
             // Check if this is the current player's entity
-            bool isCurrentPlayer = entry.Entity != null && entry.Entity.Id == playFabId;
+            bool isCurrentPlayer = IsSelf(entry.Entity);
 
             // Parse the score from string to int
             int score = 0;
@@ -1609,7 +1663,7 @@ public class PlayFabManager : MonoBehaviour
             foreach (var entry in result.Rankings)
             {
                 // Check if this is the current player's entity
-                bool isCurrentPlayer = entry.Entity != null && entry.Entity.Id == playFabId;
+                bool isCurrentPlayer = IsSelf(entry.Entity);
 
                 // Parse the score from string to int
                 int score = 0;
@@ -1627,7 +1681,7 @@ public class PlayFabManager : MonoBehaviour
             }
 
             // Find and log the player's entry
-            var playerEntry = result.Rankings.Find(e => e.Entity != null && e.Entity.Id == playFabId);
+            var playerEntry = result.Rankings.Find(e => IsSelf(e.Entity));
             if (playerEntry != null)
             {
                 int playerScore = 0;
@@ -1725,6 +1779,7 @@ public class PlayFabManager : MonoBehaviour
         PlayFabClientAPI.UpdateUserTitleDisplayName(request,
             result =>
             {
+                SetCurrentDisplayName(result.DisplayName);
 #if DEBUG_MODE
                 Debug.Log($"Display name updated successfully to: {result.DisplayName}");
 #endif
@@ -1758,7 +1813,8 @@ public class PlayFabManager : MonoBehaviour
 #endif
             // Get current display name from Google Play Games and force update
             string googleDisplayName = PlayGamesPlatform.Instance.GetUserDisplayName();
-            StartCoroutine(SetDisplayNameIfNeeded(googleDisplayName, null)); // null current name to force update
+            // Passing the real current name: with a null one a missing Google name would replace it
+            StartCoroutine(SetDisplayNameIfNeeded(googleDisplayName, currentDisplayName));
         }
         else
         {

@@ -42,6 +42,12 @@ public class LeaderboardManager : MonoBehaviour
         {
             Debug.LogError("LeaderboardManager: PlayFabManager not found!");
         }
+        else
+        {
+            // A rename or account switch leaves cached boards with the old name and the
+            // wrong "this is you" row
+            playFabManager.OnAccountChanged += ClearCache;
+        }
 
         // Find LevelManager
         levelManager = DependencyRegistry.Find<ILevelManager>();
@@ -364,6 +370,11 @@ public class LeaderboardManager : MonoBehaviour
 
     private void OnDestroy()
     {
+        if (playFabManager != null)
+        {
+            playFabManager.OnAccountChanged -= ClearCache;
+        }
+
         // Unregister from dependency registry
         DependencyRegistry.Unregister<LeaderboardManager>(this);
     }

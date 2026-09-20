@@ -42,6 +42,10 @@ public class LeaderboardPanel : MonoBehaviour
     [SerializeField] private bool showPlayerIfNotInTop = true;
     [SerializeField] private float leaderboardRefreshDelay = 0.5f; // Delay before refreshing when selecting a temple/level
 
+    [Header("Your Row")]
+    [Tooltip("Optional: pinned below the list, shown only when the player has no entry on this board")]
+    [SerializeField] private LeaderboardEntryUI playerRow;
+
     // State
     private List<GameObject> spawnedEntries = new List<GameObject>();
     private string currentLeaderboardName = "";
@@ -624,6 +628,7 @@ public class LeaderboardPanel : MonoBehaviour
     private void OnLeaderboardLoaded(List<LeaderboardEntry> entries)
     {
         ShowLoading(false);
+        ShowPlayerRow(entries);
 
         if (entries == null || entries.Count == 0)
         {
@@ -633,6 +638,33 @@ public class LeaderboardPanel : MonoBehaviour
 
         ShowNoData(false);
         DisplayEntries(entries);
+    }
+
+    /// <summary>
+    /// Shows the pinned row with the player's name and "no score yet", but only when they
+    /// have no entry in the list - repeating a row that is already on screen reads as a bug
+    /// </summary>
+    private void ShowPlayerRow(List<LeaderboardEntry> entries)
+    {
+        if (playerRow == null) return;
+
+        bool alreadyListed = entries != null && entries.Exists(e => e.isCurrentPlayer);
+        if (alreadyListed)
+        {
+            playerRow.gameObject.SetActive(false);
+            return;
+        }
+
+        var playFabManager = DependencyRegistry.Find<PlayFabManager>();
+        string name = playFabManager != null ? playFabManager.CurrentDisplayName : "";
+        if (string.IsNullOrEmpty(name))
+        {
+            playerRow.gameObject.SetActive(false);
+            return;
+        }
+
+        playerRow.gameObject.SetActive(true);
+        playerRow.SetUnranked(name, LocalizationManager.Get("leaderboard_no_score_yet"));
     }
 
     /// <summary>
@@ -692,6 +724,9 @@ public class LeaderboardPanel : MonoBehaviour
     /// </summary>
     private void ShowLoading(bool show)
     {
+        // Hidden while loading and after errors; ShowPlayerRow brings it back with fresh data
+        if (playerRow != null) playerRow.gameObject.SetActive(false);
+
         if (loadingIndicator != null)
         {
             loadingIndicator.SetActive(show);

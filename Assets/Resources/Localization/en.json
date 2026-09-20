@@ -698,11 +698,19 @@
     },
     {
       "key": "edge_intro_followup_title",
-      "value": "x{0} points!"
+      "value": "x{0} Perfect!"
     },
     {
       "key": "edge_intro_followup_body",
       "value": "But the temple felt it. Watch the Tremor."
+    },
+    {
+      "key": "edge_intro_early_title",
+      "value": "Too early!"
+    },
+    {
+      "key": "edge_intro_early_body",
+      "value": "Only a Good, and your combo broke. Wait for the rim to flash for a x{0} Perfect."
     },
     {
       "key": "ghost_best_label",
@@ -750,6 +758,25 @@
     { "key": "combo_badge_caption", "value": "COMBO" },
     { "key": "result_edge_line", "value": "Serpent's Edge: {0} landed · +{1}" },
     { "key": "result_edge_line_broke", "value": "Serpent's Edge: {0} landed · +{1} · combos broken: {2}" },
-    { "key": "result_tip_align", "value": "Line each stone up with the one below." }
+    { "key": "result_tip_align", "value": "Line each stone up with the one below." },
+    { "key": "player_identity_format", "value": "Playing as {0}" },
+    { "key": "player_identity_signing_in", "value": "Signing in..." },
+    { "key": "player_identity_offline", "value": "Not signed in" },
+    { "key": "player_identity_google", "value": "Signed in with Google Play" },
+    { "key": "player_identity_device", "value": "Saved on this device only" },
+    { "key": "settings_google_sign_in", "value": "Sign in with Google Play" },
+    { "key": "leaderboard_no_score_yet", "value": "No score yet" },
+    { "key": "mayan_title_0", "value": "Jade" },
+    { "key": "mayan_title_1", "value": "Jaguar" },
+    { "key": "mayan_title_2", "value": "Serpent" },
+    { "key": "mayan_title_3", "value": "Sun" },
+    { "key": "mayan_title_4", "value": "Moon" },
+    { "key": "mayan_title_5", "value": "Obsidian" },
+    { "key": "mayan_title_6", "value": "Quetzal" },
+    { "key": "mayan_title_7", "value": "Maize" },
+    { "key": "mayan_title_8", "value": "Eagle" },
+    { "key": "mayan_title_9", "value": "Star" },
+    { "key": "mayan_title_10", "value": "Temple" },
+    { "key": "mayan_title_11", "value": "Cacao" }
   ]
 }

@@ -698,11 +698,19 @@
     },
     {
       "key": "edge_intro_followup_title",
-      "value": "¡x{0} puntos!"
+      "value": "¡PERFECTO! x{0}"
     },
     {
       "key": "edge_intro_followup_body",
       "value": "Pero el templo lo sintió. Vigila el Temblor."
+    },
+    {
+      "key": "edge_intro_early_title",
+      "value": "¡Muy pronto!"
+    },
+    {
+      "key": "edge_intro_early_body",
+      "value": "Solo BIEN, y se rompió tu combo. Espera a que destelle el borde para un ¡PERFECTO! x{0}."
     },
     {
       "key": "ghost_best_label",
@@ -750,6 +758,25 @@
     { "key": "combo_badge_caption", "value": "COMBO" },
     { "key": "result_edge_line", "value": "Filo de la Serpiente: {0} aciertos · +{1}" },
     { "key": "result_edge_line_broke", "value": "Filo de la Serpiente: {0} aciertos · +{1} · combos rotos: {2}" },
-    { "key": "result_tip_align", "value": "Alinea cada piedra con la de abajo." }
+    { "key": "result_tip_align", "value": "Alinea cada piedra con la de abajo." },
+    { "key": "player_identity_format", "value": "Jugando como {0}" },
+    { "key": "player_identity_signing_in", "value": "Iniciando sesión..." },
+    { "key": "player_identity_offline", "value": "Sin sesión iniciada" },
+    { "key": "player_identity_google", "value": "Sesión iniciada con Google Play" },
+    { "key": "player_identity_device", "value": "Guardado solo en este dispositivo" },
+    { "key": "settings_google_sign_in", "value": "Iniciar sesión con Google Play" },
+    { "key": "leaderboard_no_score_yet", "value": "Sin puntaje aún" },
+    { "key": "mayan_title_0", "value": "Jade" },
+    { "key": "mayan_title_1", "value": "Jaguar" },
+    { "key": "mayan_title_2", "value": "Serpiente" },
+    { "key": "mayan_title_3", "value": "Sol" },
+    { "key": "mayan_title_4", "value": "Luna" },
+    { "key": "mayan_title_5", "value": "Obsidiana" },
+    { "key": "mayan_title_6", "value": "Quetzal" },
+    { "key": "mayan_title_7", "value": "Maíz" },
+    { "key": "mayan_title_8", "value": "Águila" },
+    { "key": "mayan_title_9", "value": "Estrella" },
+    { "key": "mayan_title_10", "value": "Templo" },
+    { "key": "mayan_title_11", "value": "Cacao" }
   ]
 }

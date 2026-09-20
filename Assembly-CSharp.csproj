@@ -90,6 +90,7 @@
     <Compile Include="Assets\Scripts\LeaderboardEntry.cs" />
     <Compile Include="Assets\Scripts\CodexManager.cs" />
     <Compile Include="Assets\Scripts\GameFeel\HapticFeedback.cs" />
+    <Compile Include="Assets\Scripts\Account\PlayerIdentityView.cs" />
     <Compile Include="Assets\Scripts\RunModifiers\RunModifierService.cs" />
     <Compile Include="Assets\GooglePlayPlugins\com.google.play.appupdate\Samples\AppUpdateDemo\Scripts\CompleteUpdateAction.cs" />
     <Compile Include="Assets\Scripts\Localization\LocaleFontSwitcher.cs" />
@@ -140,6 +141,7 @@
     <Compile Include="Assets\GooglePlayPlugins\com.google.play.appupdate\Samples\AppUpdateDemo\Scripts\StartUpdateFlowAction.cs" />
     <Compile Include="Assets\Scripts\DependencyRegistry\DependencyRegistry.cs" />
     <Compile Include="Assets\Scripts\DailyChallenge\DailyChallengeConfig.cs" />
+    <Compile Include="Assets\Scripts\Account\MayanNameGenerator.cs" />
     <Compile Include="Assets\Scripts\LevelObjective.cs" />
     <Compile Include="Assets\GooglePlayPlugins\com.google.play.integrity\Samples\IntegrityTestApp\Scripts\RequestIntegrityTokenAction.cs" />
     <Compile Include="Assets\Scripts\UI\Motion\UIEase.cs" />

@@ -98,6 +98,16 @@ public class LeaderboardEntryUI : MonoBehaviour
     }
 
     /// <summary>
+    /// The player's own row when they have no score on this board yet
+    /// </summary>
+    public void SetUnranked(string playerName, string scoreLabel)
+    {
+        SetData(new LeaderboardEntry(0, playerName, 0, isCurrentPlayer: true));
+        if (positionText != null) positionText.text = "-";
+        if (scoreText != null) scoreText.text = scoreLabel;
+    }
+
+    /// <summary>
     /// Clear the entry data
     /// </summary>
     public void Clear()

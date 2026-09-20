@@ -698,11 +698,19 @@
     },
     {
       "key": "edge_intro_followup_title",
-      "value": "x{0} 分！"
+      "value": "x{0} 完美！"
     },
     {
       "key": "edge_intro_followup_body",
       "value": "但神廟感受到了。留意震顫計。"
+    },
+    {
+      "key": "edge_intro_early_title",
+      "value": "太早了！"
+    },
+    {
+      "key": "edge_intro_early_body",
+      "value": "只算不錯，連擊也斷了。等邊緣閃光再鬆手，即可獲得 x{0} 完美。"
     },
     {
       "key": "ghost_best_label",
@@ -750,6 +758,25 @@
     { "key": "combo_badge_caption", "value": "連擊" },
     { "key": "result_edge_line", "value": "蛇之鋒：成功{0}次 · +{1}" },
     { "key": "result_edge_line_broke", "value": "蛇之鋒：成功{0}次 · +{1} · 連擊中斷：{2}" },
-    { "key": "result_tip_align", "value": "讓每塊石頭與下面那塊對齊。" }
+    { "key": "result_tip_align", "value": "讓每塊石頭與下面那塊對齊。" },
+    { "key": "player_identity_format", "value": "目前玩家：{0}" },
+    { "key": "player_identity_signing_in", "value": "正在登入..." },
+    { "key": "player_identity_offline", "value": "未登入" },
+    { "key": "player_identity_google", "value": "已透過 Google Play 登入" },
+    { "key": "player_identity_device", "value": "僅儲存在此裝置上" },
+    { "key": "settings_google_sign_in", "value": "使用 Google Play 登入" },
+    { "key": "leaderboard_no_score_yet", "value": "尚無分數" },
+    { "key": "mayan_title_0", "value": "翡翠" },
+    { "key": "mayan_title_1", "value": "美洲豹" },
+    { "key": "mayan_title_2", "value": "羽蛇" },
+    { "key": "mayan_title_3", "value": "太陽" },
+    { "key": "mayan_title_4", "value": "月亮" },
+    { "key": "mayan_title_5", "value": "黑曜石" },
+    { "key": "mayan_title_6", "value": "格查爾" },
+    { "key": "mayan_title_7", "value": "玉米" },
+    { "key": "mayan_title_8", "value": "雄鷹" },
+    { "key": "mayan_title_9", "value": "星辰" },
+    { "key": "mayan_title_10", "value": "神殿" },
+    { "key": "mayan_title_11", "value": "可可" }
   ]
 }

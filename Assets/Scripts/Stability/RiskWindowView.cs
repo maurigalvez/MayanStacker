@@ -4,8 +4,9 @@ using UnityEngine.UI;
 
 /// <summary>
 /// Inspector-authored face of the Serpent's Edge markers: two golden strips on the top stone's
-/// rim, under where a drop from either end of the swing lands, each with what an edge drop there
-/// would actually score above it - gold when that beats a safe Perfect, red when it doesn't.
+/// rim, under where a drop from either end of the swing lands, each with what a sweet-spot edge
+/// drop there would score above it. The value stays small and quiet until the sweet spot opens,
+/// then pops big (gold when it beats a safe Perfect) - big means "release now". Red = worse/miss.
 /// Only the edge's own value is shown; a second "safe Perfect" number beside it read as clutter.
 ///
 /// <see cref="RiskWindow"/> positions the strips every frame to follow the swing, so style
@@ -80,8 +81,29 @@ public class RiskWindowView : MonoBehaviour
     [Range(1f, 2f)]
     [SerializeField] private float sweetScale = 1.45f;
 
-    [Tooltip("Label colour during the sweet spot.")]
+    [Tooltip("Label colour during the sweet spot when the edge is worth no more than a safe Perfect. " +
+             "A better edge uses the gold value colour instead.")]
     [SerializeField] private Color sweetLabelColor = Color.white;
+
+    [Header("Value focus")]
+    [Tooltip("Value size before the sweet spot. Kept small and quiet so a big number never reads " +
+             "as \"release now\" while releasing would still land as a Good.")]
+    [Range(0.3f, 1f)]
+    [SerializeField] private float waitLabelScale = 0.6f;
+
+    [Tooltip("Alpha multiplier on the value before the sweet spot.")]
+    [Range(0f, 1f)]
+    [SerializeField] private float waitLabelAlpha = 0.6f;
+
+    [Tooltip("Value size during the sweet spot - the one moment the number is big.")]
+    [Range(1f, 2.5f)]
+    [SerializeField] private float sweetLabelScale = 1.6f;
+
+    [Tooltip("Extra scale the value overshoots by as the sweet spot opens, settling over the pop duration.")]
+    [Range(0f, 1f)]
+    [SerializeField] private float sweetLabelPop = 0.35f;
+
+    [SerializeField] private float sweetLabelPopDuration = 0.12f;
 
     [Header("Value preview")]
     [Tooltip("Label colour when the edge beats a safe Perfect.")]
@@ -99,6 +121,10 @@ public class RiskWindowView : MonoBehaviour
 
     private Worth leftWorth;
     private Worth rightWorth;
+    private bool leftWasSweet;
+    private bool rightWasSweet;
+    private float leftSweetAt;
+    private float rightSweetAt;
 
     /// <summary>True when this view can actually show both markers.</summary>
     public bool IsUsable => leftZone != null && rightZone != null;
@@ -185,25 +211,50 @@ public class RiskWindowView : MonoBehaviour
             if (image != null) image.color = (sweet ? sweetColor : Color.Lerp(idleColor, activeColor, k)) * zoneTint;
         }
 
+        // Remember when this side's sweet spot opened, for the value's pop-in.
+        bool wasSweet = side < 0 ? leftWasSweet : rightWasSweet;
+        if (sweet && !wasSweet)
+        {
+            if (side < 0) leftSweetAt = Time.unscaledTime; else rightSweetAt = Time.unscaledTime;
+        }
+        if (side < 0) leftWasSweet = sweet; else rightWasSweet = sweet;
+
         if (label != null)
         {
+            // The value is only big and gold in the sweet spot - the moment to release. Before
+            // that it stays small and neutral: a big gold number read as "release now" while a
+            // release there still lands as a Good. A worse edge or miss stays red (a "don't"
+            // cue), just small.
+            float labelScale;
             if (sweet)
             {
-                label.color = sweetLabelColor;
-            }
-            else if (worth == Worth.Neutral)
-            {
-                label.color = Color.Lerp(labelIdleColor, labelActiveColor, k);
+                label.color = worth == Worth.Better ? betterLabelColor
+                    : worth == Worth.Worse ? worseLabelColor
+                    : sweetLabelColor;
+
+                float since = Time.unscaledTime - (side < 0 ? leftSweetAt : rightSweetAt);
+                float pop = sweetLabelPopDuration > 0f ? 1f - Mathf.Clamp01(since / sweetLabelPopDuration) : 0f;
+                labelScale = sweetLabelScale + sweetLabelPop * pop;
             }
             else
             {
-                Color full = worth == Worth.Better ? betterLabelColor : worseLabelColor;
-                Color idle = full;
-                idle.a *= projectionIdleAlpha;
-                label.color = Color.Lerp(idle, full, k);
+                Color c;
+                if (worth == Worth.Worse)
+                {
+                    Color idle = worseLabelColor;
+                    idle.a *= projectionIdleAlpha;
+                    c = Color.Lerp(idle, worseLabelColor, k);
+                }
+                else
+                {
+                    c = Color.Lerp(labelIdleColor, labelActiveColor, k);
+                }
+                c.a *= waitLabelAlpha;
+                label.color = c;
+                labelScale = waitLabelScale;
             }
-            // The label is a child of the zone: divide out the zone's uniform scale so it grows once.
-            label.rectTransform.localScale = Vector3.one * (grow / zoneScale);
+            // The label is a child of the zone: divide out the zone's scale so only labelScale applies.
+            label.rectTransform.localScale = Vector3.one * (labelScale / zoneScale);
         }
     }
 

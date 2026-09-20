@@ -58,6 +58,7 @@
     <Compile Include="Assets\Scripts\Editor\LocaleFontSetup.cs" />
     <Compile Include="Assets\Scripts\Editor\TowerStabilityUISetup.cs" />
     <Compile Include="Assets\Scripts\Editor\LanguageSelectPrefabSetup.cs" />
+    <Compile Include="Assets\Scripts\Editor\PlayerIdentityUISetup.cs" />
     <Compile Include="Assets\Scripts\Editor\BoonUISetup.cs" />
     <Compile Include="Assets\Scripts\Editor\FtueTutorialPrefabSetup.cs" />
     <Compile Include="Assets\Scripts\Editor\R8OptimizeGradle.cs" />

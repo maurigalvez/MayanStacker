@@ -54,10 +54,10 @@ MonoBehaviour:
   scoreText: {fileID: 2023569746273869566}
   backgroundImage: {fileID: 6973512716108516885}
   normalColor: {r: 1, g: 1, b: 1, a: 1}
-  currentPlayerColor: {r: 1, g: 0.42477313, b: 0, a: 1}
+  currentPlayerColor: {r: 0.5254902, g: 1, b: 0, a: 1}
   topThreeColor: {r: 1, g: 1, b: 1, a: 1}
   normalTextColor: {r: 0.9529412, g: 0.9529412, b: 0.9529412, a: 1}
-  currentPlayerTextColor: {r: 0.3019608, g: 0.5019608, b: 0.8000001, a: 1}
+  currentPlayerTextColor: {r: 1, g: 1, b: 1, a: 1}
   firstPlaceTextColor: {r: 1, g: 0.84, b: 0, a: 1}
   secondPlaceTextColor: {r: 0.75, g: 0.75, b: 0.75, a: 1}
   thirdPlaceTextColor: {r: 0.8, g: 0.5, b: 0.2, a: 1}
@@ -211,6 +211,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 210d133f4611f854dbc113dd3c6209b5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LocaleFontSwitcher
+  keepOriginalFont: 0
 --- !u!1 &5954703159195034207
 GameObject:
   m_ObjectHideFlags: 0
@@ -361,6 +362,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 210d133f4611f854dbc113dd3c6209b5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LocaleFontSwitcher
+  keepOriginalFont: 0
 --- !u!1 &7773441391131112498
 GameObject:
   m_ObjectHideFlags: 0
@@ -511,6 +513,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 210d133f4611f854dbc113dd3c6209b5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LocaleFontSwitcher
+  keepOriginalFont: 0
 --- !u!1 &8594402346382274812
 GameObject:
   m_ObjectHideFlags: 0
