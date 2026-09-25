@@ -33,15 +33,12 @@ MonoBehaviour:
   swingSpeedMultiplier: 1.3
   swingAmplitudeMultiplier: 1.25
   gameMusic: {fileID: 8300000, guid: 81c7c67fd9b57b24687ca3d54d8c683a, type: 3}
-  rule: 4
+  rule: 3
   secondRule: 0
   capstonePayoff: 1
   capstoneSilhouette: {fileID: 0}
-  quakeSettings:
-    firstAtHeight: 7
-    everyNStones: 9
-    warningSeconds: 1.5
-    quakeSeconds: 2
-    joltsPerSecond: 3
-    joltSpeed: 0.9
-    bracedFactor: 0.15
+  rainSettings:
+    slideFraction: 0.45
+    maxSlideOfWidth: 0.18
+    slideSeconds: 0.26
+    poorSlides: 1

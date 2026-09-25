@@ -10,8 +10,6 @@ using UnityEngine.SceneManagement;
 /// rule (each inert unless the current temple uses it), and at the start of an attempt shows
 /// a banner naming the temple's rule(s) and what they do — the first attempt at a temple each
 /// session, so a retry isn't slowed down by a banner the player has just read.
-///
-/// The Ball-court ring predates this host and bootstraps itself; it is only named here.
 /// </summary>
 public class TempleRules : MonoBehaviour
 {
@@ -152,7 +150,6 @@ public class TempleRules : MonoBehaviour
     {
         switch (rule)
         {
-            case LevelRule.BallCourtRing: return "rule_ball_court_ring";
             case LevelRule.JungleWind: return "rule_jungle_wind";
             case LevelRule.RainSlick: return "rule_rain_slick";
             case LevelRule.Earthquake: return "rule_earthquake";

@@ -29,15 +29,15 @@ MonoBehaviour:
   oneStarScore: 1050
   twoStarScore: 2150
   threeStarScore: 3700
-  swingSpeedMultiplier: 1.25
-  swingAmplitudeMultiplier: 1.25
+  swingSpeedMultiplier: 1.15
+  swingAmplitudeMultiplier: 1.15
   gameMusic: {fileID: 8300000, guid: 81c7c67fd9b57b24687ca3d54d8c683a, type: 3}
   rule: 3
   secondRule: 0
   capstonePayoff: 1
   capstoneSilhouette: {fileID: 0}
   rainSettings:
-    slideFraction: 0.25
-    maxSlideOfWidth: 0.1
+    slideFraction: 0.2
+    maxSlideOfWidth: 0.08
     slideSeconds: 0.3
     poorSlides: 1

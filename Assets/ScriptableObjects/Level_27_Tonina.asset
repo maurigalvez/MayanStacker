@@ -35,10 +35,15 @@ MonoBehaviour:
   swingSpeedMultiplier: 1.6
   swingAmplitudeMultiplier: 1.45
   gameMusic: {fileID: 8300000, guid: 20f2e874c2c59eb45a147d95739dbf17, type: 3}
-  rule: 4
-  secondRule: 5
+  rule: 5
+  secondRule: 4
   capstonePayoff: 1
   capstoneSilhouette: {fileID: 0}
+  cenoteSettings:
+    startDelaySeconds: 4
+    stonesPerSecond: 0.24
+    maxLagStones: 5
+    warningStones: 1.5
   quakeSettings:
     firstAtHeight: 6
     everyNStones: 7
@@ -47,8 +52,3 @@ MonoBehaviour:
     joltsPerSecond: 3.5
     joltSpeed: 1.25
     bracedFactor: 0.18
-  cenoteSettings:
-    startDelaySeconds: 4
-    stonesPerSecond: 0.24
-    maxLagStones: 5
-    warningStones: 1.5

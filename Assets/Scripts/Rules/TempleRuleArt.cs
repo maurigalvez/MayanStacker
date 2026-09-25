@@ -17,13 +17,6 @@ public class TempleRuleArt : ScriptableObject
     [Tooltip("Played with the banner that names the temple's rule at the start of an attempt.")]
     public AudioClip ruleIntroSting;
 
-    [Header("Ball-court ring")]
-    [Tooltip("Far half of the hoop (drawn behind the stones). Null = code-drawn ring.")]
-    public Sprite ringBack;
-    [Tooltip("Near half of the hoop (drawn in front of the stones). Null = code-drawn ring.")]
-    public Sprite ringFront;
-    public AudioClip ringPassSound;
-
     [Header("Jungle wind")]
     [Tooltip("One leaf, blown across the screen by the particle system.")]
     public Sprite windLeaf;

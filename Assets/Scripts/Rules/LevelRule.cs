@@ -14,8 +14,8 @@ public enum LevelRule
 {
     None = 0,
 
-    /// <summary>A stone hoop drifts above the tower; dropping a stone through it pays a bonus.</summary>
-    BallCourtRing = 1,
+    // 1 was BallCourtRing, removed 2026-09-25. Don't reuse the number: level assets and
+    // analytics store rules by value.
 
     /// <summary>Gusts push the swing and the falling stone to one side; leaves show which way.</summary>
     JungleWind = 2,
@@ -31,41 +31,6 @@ public enum LevelRule
 
     /// <summary>Only the top of the tower is lit; the lean below has to be remembered.</summary>
     Eclipse = 6
-}
-
-/// <summary>Per-level tuning for <see cref="LevelRule.BallCourtRing"/>. Estimates; tune on device.</summary>
-[System.Serializable]
-public class BallCourtRingSettings
-{
-    [Tooltip("The ring appears for every Nth stone.")]
-    [Min(1)]
-    public int everyNthStone = 3;
-
-    [Tooltip("No ring before the stack is this tall, so the first stones are about the tower.")]
-    [Min(1)]
-    public int firstAtHeight = 2;
-
-    [Tooltip("Room to spare between the stone and the rim, in world units, both sides together. " +
-             "The hole is the stone's width plus this, so a stone scores exactly when it visibly " +
-             "fits through: its centre within half of this of the ring's centre.")]
-    [Min(0.1f)]
-    public float clearance = 1.2f;
-
-    [Tooltip("How far either side of the tower's centre the ring drifts, in world units.")]
-    [Min(0f)]
-    public float driftRange = 2.4f;
-
-    [Tooltip("Drift speed, in full left-right-left cycles per second.")]
-    [Range(0.05f, 2f)]
-    public float driftCyclesPerSecond = 0.35f;
-
-    [Tooltip("Where between the tower top (0) and the hanging stone (1) the ring floats.")]
-    [Range(0.2f, 0.8f)]
-    public float heightBetween = 0.5f;
-
-    [Tooltip("Points for a stone through the ring. Counts toward the temple's stars.")]
-    [Min(0)]
-    public int bonusPoints = 150;
 }
 
 /// <summary>Per-level tuning for <see cref="LevelRule.JungleWind"/>. Estimates; tune on device.</summary>

@@ -66,9 +66,6 @@ public class LevelData : ScriptableObject
     [Tooltip("A second rule running alongside the first, for the late temples. None = one rule.")]
     public LevelRule secondRule = LevelRule.None;
 
-    [Tooltip("Used when either rule is Ball-court Ring.")]
-    public BallCourtRingSettings ringSettings = new BallCourtRingSettings();
-
     [Tooltip("Used when either rule is Jungle Wind.")]
     public JungleWindSettings windSettings = new JungleWindSettings();
 

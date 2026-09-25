@@ -15,7 +15,7 @@ using UnityEngine;
 /// </summary>
 public class RisingCenote : TempleRuleBehaviour
 {
-    private const int WaterSortingOrder = 11;     // in front of the stones and the ring's back half
+    private const int WaterSortingOrder = 11;     // in front of the stones
     private const float BodyAlpha = 0.5f;
     private const float FloodMarginStones = 0.3f; // flooded once the water is this close to the top
     private const float SurfaceHeightWorld = 0.35f;

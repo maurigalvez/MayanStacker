@@ -73,7 +73,6 @@
     <Compile Include="Assets\Scripts\UIManager.cs" />
     <Compile Include="Assets\Scripts\Rules\Eclipse.cs" />
     <Compile Include="Assets\Scripts\RunModifiers\RunModifier.cs" />
-    <Compile Include="Assets\Scripts\Rules\BallCourtRing.cs" />
     <Compile Include="Assets\Scripts\GameSoundManager.cs" />
     <Compile Include="Assets\Scripts\RunModifiers\RunModifierDefinition.cs" />
     <Compile Include="Assets\Scripts\UI\ReviewPromptView.cs" />

@@ -30,26 +30,18 @@ MonoBehaviour:
     of the ancient Maya."
   siteImage: {fileID: 21300000, guid: bc3f9c10ed79fa2459ba15ad4e80c65b, type: 3}
   requiredStackHeight: 42
-  oneStarScore: 2600
-  twoStarScore: 5250
-  threeStarScore: 8750
-  swingSpeedMultiplier: 1.4
+  oneStarScore: 2150
+  twoStarScore: 4350
+  threeStarScore: 7250
+  swingSpeedMultiplier: 1.45
   swingAmplitudeMultiplier: 1.3
   gameMusic: {fileID: 8300000, guid: 81c7c67fd9b57b24687ca3d54d8c683a, type: 3}
-  rule: 6
-  secondRule: 1
+  rule: 5
+  secondRule: 0
   capstonePayoff: 1
   capstoneSilhouette: {fileID: 0}
-  eclipseSettings:
-    litStones: 2.5
-    fadeStones: 1.5
-    darkness: 0.9
-    skyDim: 0.25
-  ringSettings:
-    everyNthStone: 3
-    firstAtHeight: 2
-    clearance: 1.1
-    driftRange: 2.4
-    driftCyclesPerSecond: 0.45
-    heightBetween: 0.5
-    bonusPoints: 150
+  cenoteSettings:
+    startDelaySeconds: 4
+    stonesPerSecond: 0.22
+    maxLagStones: 5
+    warningStones: 1.5

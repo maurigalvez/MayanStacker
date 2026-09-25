@@ -30,27 +30,18 @@ MonoBehaviour:
     the way its temples harmonize with the surrounding hills."
   siteImage: {fileID: 21300000, guid: 71e3ba860b4ad3b4ba41ad083846654f, type: 3}
   requiredStackHeight: 42
-  oneStarScore: 2550
-  twoStarScore: 5100
-  threeStarScore: 8450
-  swingSpeedMultiplier: 1.45
-  swingAmplitudeMultiplier: 1.35
+  oneStarScore: 2350
+  twoStarScore: 4700
+  threeStarScore: 7750
+  swingSpeedMultiplier: 1.4
+  swingAmplitudeMultiplier: 1.3
   gameMusic: {fileID: 8300000, guid: 81c7c67fd9b57b24687ca3d54d8c683a, type: 3}
-  rule: 2
-  secondRule: 1
+  rule: 5
+  secondRule: 0
   capstonePayoff: 1
   capstoneSilhouette: {fileID: 0}
-  windSettings:
-    swingPush: 0.7
-    fallPush: 1.6
-    stonesPerGust: 3
-    gustRampSeconds: 1.4
-    firstAtHeight: 2
-  ringSettings:
-    everyNthStone: 3
-    firstAtHeight: 2
-    clearance: 1.1
-    driftRange: 2.4
-    driftCyclesPerSecond: 0.42
-    heightBetween: 0.5
-    bonusPoints: 150
+  cenoteSettings:
+    startDelaySeconds: 4
+    stonesPerSecond: 0.19
+    maxLagStones: 5
+    warningStones: 1.5

@@ -32,21 +32,22 @@ MonoBehaviour:
     enduring connection to nature."
   siteImage: {fileID: 21300000, guid: 96fe4944313d18d409facb3e4108211f, type: 3}
   requiredStackHeight: 46
-  oneStarScore: 2500
-  twoStarScore: 4750
-  threeStarScore: 8050
-  swingSpeedMultiplier: 1.45
+  oneStarScore: 2250
+  twoStarScore: 4300
+  threeStarScore: 7250
+  swingSpeedMultiplier: 1.5
   swingAmplitudeMultiplier: 1.35
   gameMusic: {fileID: 8300000, guid: 20f2e874c2c59eb45a147d95739dbf17, type: 3}
-  rule: 6
+  rule: 2
   secondRule: 4
   capstonePayoff: 1
   capstoneSilhouette: {fileID: 0}
-  eclipseSettings:
-    litStones: 2.5
-    fadeStones: 1.5
-    darkness: 0.9
-    skyDim: 0.25
+  windSettings:
+    swingPush: 0.7
+    fallPush: 1.6
+    stonesPerGust: 3
+    gustRampSeconds: 1.4
+    firstAtHeight: 2
   quakeSettings:
     firstAtHeight: 6
     everyNStones: 8

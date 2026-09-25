@@ -31,9 +31,6 @@ public static class TempleRulesSetup
     private static readonly (string field, string file, Kind kind)[] RuleFiles =
     {
         ("ruleIntroSting",     "SFX_Rule_Intro",          Kind.OneShot),
-        ("ringBack",           "Rule_Ring_Back",          Kind.Sprite),
-        ("ringFront",          "Rule_Ring_Front",         Kind.Sprite),
-        ("ringPassSound",      "SFX_Ring_Pass",           Kind.OneShot),
         ("windLeaf",           "Rule_Wind_Leaf",          Kind.Sprite),
         ("windLoop",           "SFX_Wind_Loop",           Kind.Loop),
         ("windGustSound",      "SFX_Wind_Gust",           Kind.OneShot),

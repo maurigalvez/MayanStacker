@@ -25,11 +25,11 @@ MonoBehaviour:
     world."
   siteImage: {fileID: 21300000, guid: 8bcb762a1606d484381e22eb7bd14d5b, type: 3}
   requiredStackHeight: 16
-  oneStarScore: 750
-  twoStarScore: 1550
-  threeStarScore: 2650
-  swingSpeedMultiplier: 1.2
-  swingAmplitudeMultiplier: 1.2
+  oneStarScore: 800
+  twoStarScore: 1700
+  threeStarScore: 2850
+  swingSpeedMultiplier: 1.15
+  swingAmplitudeMultiplier: 1.15
   blockSequence:
     slots:
     - rolled: 0
@@ -65,13 +65,15 @@ MonoBehaviour:
     - rolled: 0
       variant: 0
   gameMusic: {fileID: 8300000, guid: f2ce965d9c6cbe549a4d5f319321c81e, type: 3}
-  rule: 2
+  rule: 4
   secondRule: 0
   capstonePayoff: 1
   capstoneSilhouette: {fileID: 0}
-  windSettings:
-    swingPush: 0.7
-    fallPush: 1.6
-    stonesPerGust: 3
-    gustRampSeconds: 1.4
-    firstAtHeight: 2
+  quakeSettings:
+    firstAtHeight: 6
+    everyNStones: 8
+    warningSeconds: 1.5
+    quakeSeconds: 2
+    joltsPerSecond: 3
+    joltSpeed: 0.9
+    bracedFactor: 0.15

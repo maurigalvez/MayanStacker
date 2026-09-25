@@ -11,7 +11,7 @@ using UnityEngine;
 /// </summary>
 public class Eclipse : TempleRuleBehaviour
 {
-    private const int ShadeSortingOrder = 15; // above stones (4-5), ring (10), water (11-12), leaves (12)
+    private const int ShadeSortingOrder = 15; // above stones (4-5), water (11-12), leaves (12)
     private const int SunSortingOrder = 16;
     private const float FadeInSeconds = 1.4f;
     private const float FadeOutSeconds = 1.0f;

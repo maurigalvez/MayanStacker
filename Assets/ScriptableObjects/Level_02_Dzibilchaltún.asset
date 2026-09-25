@@ -53,7 +53,7 @@ MonoBehaviour:
     - rolled: 0
       variant: 0
   gameMusic: {fileID: 8300000, guid: f2ce965d9c6cbe549a4d5f319321c81e, type: 3}
-  capstonePayoff: 1
-  capstoneSilhouette: {fileID: 0}
   rule: 0
   secondRule: 0
+  capstonePayoff: 1
+  capstoneSilhouette: {fileID: 0}
