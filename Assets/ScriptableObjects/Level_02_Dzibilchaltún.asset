@@ -25,9 +25,9 @@ MonoBehaviour:
     sunlight passes through the temple\u2019s \u201Ceyes.\u201D"
   siteImage: {fileID: 21300000, guid: 341225cdc9513034a80e8907cbe32916, type: 3}
   requiredStackHeight: 10
-  oneStarScore: 500
-  twoStarScore: 750
-  threeStarScore: 1200
+  oneStarScore: 450
+  twoStarScore: 1050
+  threeStarScore: 1850
   swingSpeedMultiplier: 1
   swingAmplitudeMultiplier: 1
   blockSequence:
@@ -53,3 +53,7 @@ MonoBehaviour:
     - rolled: 0
       variant: 0
   gameMusic: {fileID: 8300000, guid: f2ce965d9c6cbe549a4d5f319321c81e, type: 3}
+  capstonePayoff: 1
+  capstoneSilhouette: {fileID: 0}
+  rule: 0
+  secondRule: 0

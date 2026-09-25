@@ -653,6 +653,22 @@
       "value": "Restart now"
     },
     {
+      "key": "review_prompt_title",
+      "value": "Help Others Find the Temple?"
+    },
+    {
+      "key": "review_prompt_body",
+      "value": "A word on the Play Store is how new stackers find this place. It opens right here — your run stays where it is."
+    },
+    {
+      "key": "review_prompt_confirm",
+      "value": "Of Course"
+    },
+    {
+      "key": "review_prompt_decline",
+      "value": "Not Now"
+    },
+    {
       "key": "stability_label",
       "value": "Tremor"
     },
@@ -777,6 +793,46 @@
     { "key": "mayan_title_8", "value": "Eagle" },
     { "key": "mayan_title_9", "value": "Star" },
     { "key": "mayan_title_10", "value": "Temple" },
-    { "key": "mayan_title_11", "value": "Cacao" }
+    { "key": "mayan_title_11", "value": "Cacao" },
+    { "key": "power_jaguar_slam_name", "value": "Jaguar Slam" },
+    { "key": "power_jaguar_slam_desc", "value": "Tap the full meter to knock the top stone back onto the centre of the one below." },
+    { "key": "power_intro_title", "value": "{0} is ready" },
+    { "key": "power_unlocked_title", "value": "Power earned: {0}" },
+    { "key": "power_unlocked_body", "value": "Perfect landings fill its meter. Tap it when the tower needs it." },
+    { "key": "ring_hint", "value": "Drop a stone through the ring" },
+    { "key": "ring_passed_title", "value": "Through the ring!" },
+    { "key": "ring_passed_count", "value": "{0} through the ball-court ring" },
+    { "key": "power_quetzal_feather_name", "value": "Quetzal Feather" },
+    { "key": "power_quetzal_feather_desc", "value": "Tap the full meter to slow the swing and the fall for the next {0} stones." },
+    { "key": "power_obsidian_blade_name", "value": "Obsidian Blade" },
+    { "key": "power_obsidian_blade_desc", "value": "Tap the full meter to cut off the part of the top stone hanging past the one below." },
+    { "key": "power_kukulkans_call_name", "value": "Kukulkan's Call" },
+    { "key": "power_kukulkans_call_desc", "value": "Tap the full meter to call Kukulkan's Shift now and straighten the tower." },
+    { "key": "power_loadout_title", "value": "Choose a power" },
+    { "key": "power_loadout_play", "value": "PLAY" },
+    { "key": "power_loadout_back", "value": "Back" },
+    { "key": "rule_pair_title", "value": "{0} + {1}" },
+    { "key": "rule_ball_court_ring_name", "value": "Ball-court Ring" },
+    { "key": "rule_ball_court_ring_desc", "value": "A stone ring drifts above the tower. Drop a stone through it for a bonus." },
+    { "key": "rule_ball_court_ring_short", "value": "Drop through the drifting ring" },
+    { "key": "rule_jungle_wind_name", "value": "Jungle Wind" },
+    { "key": "rule_jungle_wind_desc", "value": "Gusts push the swing and the falling stone. Watch the leaves." },
+    { "key": "rule_jungle_wind_short", "value": "Gusts push your stones" },
+    { "key": "rule_rain_slick_name", "value": "Rain-slick Stones" },
+    { "key": "rule_rain_slick_desc", "value": "In the rain, any landing that isn't Perfect slides a little further out." },
+    { "key": "rule_rain_slick_short", "value": "Only Perfect stays put" },
+    { "key": "rule_earthquake_name", "value": "Cabracán" },
+    { "key": "rule_earthquake_desc", "value": "The ground shakes as the tower grows. Press and hold to brace it." },
+    { "key": "rule_earthquake_short", "value": "Hold to brace when it shakes" },
+    { "key": "rule_rising_cenote_name", "value": "Rising Cenote" },
+    { "key": "rule_rising_cenote_desc", "value": "The sacred well is rising. Keep building before the water reaches the top." },
+    { "key": "rule_rising_cenote_short", "value": "Stay above the water" },
+    { "key": "rule_eclipse_name", "value": "Eclipse" },
+    { "key": "rule_eclipse_desc", "value": "The sun is hidden. Only the top of the tower is lit." },
+    { "key": "rule_eclipse_short", "value": "Only the top is lit" },
+    { "key": "quake_hold", "value": "HOLD TO BRACE!" },
+    { "key": "quake_braced", "value": "BRACED!" },
+    { "key": "quake_survived", "value": "The ground is still" },
+    { "key": "cenote_warning", "value": "The water is rising!" }
   ]
 }

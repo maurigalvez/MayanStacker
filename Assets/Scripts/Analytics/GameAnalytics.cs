@@ -252,6 +252,20 @@ public static class GameAnalytics
     }
 
     /// <summary>
+    /// The lead-in card that precedes the automatic review prompt. <paramref name="stage"/>
+    /// is shown / accepted / declined — three events per card rather than one, because a card
+    /// the player never answers is itself the interesting case. Paired with
+    /// <see cref="ReviewPrompt"/>: every "accepted" is followed by exactly one review_prompt,
+    /// so the gap between those two counts is the share who said yes and got nothing from Play.
+    /// </summary>
+    public static void ReviewCard(string source, string stage)
+    {
+        Track("review_card", Data(
+            "trigger", source,
+            "stage", stage));
+    }
+
+    /// <summary>
     /// A step in the Google Play in-app update flow. <paramref name="stage"/> is one of
     /// prompt_shown / accepted / declined / downloaded / restart_prompt / restart_accepted /
     /// restart_declined / already_downloaded, or one of the failure stages (not_allowed,

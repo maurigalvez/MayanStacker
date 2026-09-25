@@ -24,9 +24,9 @@ MonoBehaviour:
     sparks of the Classic Maya world."
   siteImage: {fileID: 21300000, guid: b0e2f22612498ff4598a2315bcfb9b24, type: 3}
   requiredStackHeight: 15
-  oneStarScore: 800
-  twoStarScore: 1200
-  threeStarScore: 2000
+  oneStarScore: 700
+  twoStarScore: 1450
+  threeStarScore: 2450
   swingSpeedMultiplier: 1.2
   swingAmplitudeMultiplier: 1.2
   blockSequence:
@@ -62,3 +62,13 @@ MonoBehaviour:
     - rolled: 0
       variant: 0
   gameMusic: {fileID: 8300000, guid: f2ce965d9c6cbe549a4d5f319321c81e, type: 3}
+  rule: 2
+  secondRule: 0
+  capstonePayoff: 1
+  capstoneSilhouette: {fileID: 0}
+  windSettings:
+    swingPush: 0.5
+    fallPush: 1.1
+    stonesPerGust: 4
+    gustRampSeconds: 1.6
+    firstAtHeight: 2

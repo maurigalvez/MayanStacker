@@ -2391,17 +2391,16 @@ public class UIManager : MonoBehaviour
         if (gameUI != null)
             gameUI.SetActive(false);
 
+        // The temple's capstone beat plays first; the popup and panel wait it out. Progress
+        // and the codex unlock are already saved - only their presentation is held.
+        LevelData completedLevel = levelManager != null ? levelManager.CurrentLevel : null;
+        float capstoneHold = CapstonePayoff.HoldSecondsFor(completedLevel);
+
         // Show codex unlock popup if this is the first completion
-        if (showCodexPopup && levelManager != null && levelManager.CurrentLevel != null)
+        if (showCodexPopup && completedLevel != null)
         {
-            ShowCodexUnlockPopup(LocalizationManager.GetLevelName(levelManager.CurrentLevel));
-
-            // Ask for notification permission here and nowhere else: the player has just
-            // finished a temple, which is the only moment they have a reason to say yes.
-            NotificationScheduler.RequestPermissionIfEarned();
-
-            // Mark codex as unlocked after showing popup
-            levelManager.MarkCodexUnlockedForLevel(levelManager.CurrentLevel.levelNumber);
+            // Mark codex as unlocked now, whatever happens to the popup during the hold
+            levelManager.MarkCodexUnlockedForLevel(completedLevel.levelNumber);
         }
 
         // Stop any existing level complete coroutine
@@ -2411,16 +2410,30 @@ public class UIManager : MonoBehaviour
         }
 
         // Start coroutine to show level complete panel after delay
-        levelCompleteCoroutine = StartCoroutine(ShowLevelCompletePanelDelayed(stars, score));
+        levelCompleteCoroutine = StartCoroutine(ShowLevelCompletePanelDelayed(stars, score,
+            showCodexPopup ? completedLevel : null, capstoneHold));
     }
 
     /// <summary>
     /// Coroutine to show the level complete panel after a delay
     /// </summary>
-    private IEnumerator ShowLevelCompletePanelDelayed(int stars, int score)
+    private IEnumerator ShowLevelCompletePanelDelayed(int stars, int score, LevelData codexLevel, float capstoneHold)
     {
-        // Wait for the specified delay
-        yield return new WaitForSeconds(levelCompleteDelay);
+        if (capstoneHold > 0f)
+            yield return new WaitForSecondsRealtime(capstoneHold);
+
+        // Show codex unlock popup if this is the first completion
+        if (codexLevel != null)
+        {
+            ShowCodexUnlockPopup(LocalizationManager.GetLevelName(codexLevel));
+
+            // Ask for notification permission here and nowhere else: the player has just
+            // finished a temple, which is the only moment they have a reason to say yes.
+            NotificationScheduler.RequestPermissionIfEarned();
+        }
+
+        // Wait for the specified delay. Shortened by a capstone, which is already a beat.
+        yield return new WaitForSeconds(capstoneHold > 0f ? 0.3f : levelCompleteDelay);
 
         // Show level complete panel
         bool poppedIn = false;

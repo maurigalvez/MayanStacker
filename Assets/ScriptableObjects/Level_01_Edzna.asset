@@ -24,9 +24,9 @@ MonoBehaviour:
     in 1907, excavated in 1958, and restored in 1986 with international support."
   siteImage: {fileID: 21300000, guid: 973910f7bc8b4e04fa37739fce4fd280, type: 3}
   requiredStackHeight: 8
-  oneStarScore: 250
-  twoStarScore: 500
-  threeStarScore: 800
+  oneStarScore: 350
+  twoStarScore: 850
+  threeStarScore: 1400
   swingSpeedMultiplier: 1
   swingAmplitudeMultiplier: 1
   blockSequence:
@@ -48,3 +48,7 @@ MonoBehaviour:
     - rolled: 0
       variant: 0
   gameMusic: {fileID: 8300000, guid: f2ce965d9c6cbe549a4d5f319321c81e, type: 3}
+  capstonePayoff: 1
+  capstoneSilhouette: {fileID: 0}
+  rule: 0
+  secondRule: 0

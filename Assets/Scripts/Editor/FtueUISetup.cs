@@ -89,6 +89,7 @@ public static class FtueUISetup
         // can be tested again rather than only ever firing on a fresh install.
         BlockCodex.ResetAll();
         TowerStability.ResetIntro();
+        PowerUnlocks.ResetAll();
 
         Debug.Log("[FtueUISetup] First-run state cleared. Next play session will run the FTUE from the top.");
     }

@@ -653,6 +653,22 @@
       "value": "今すぐ再起動"
     },
     {
+      "key": "review_prompt_title",
+      "value": "この神殿を広めますか？"
+    },
+    {
+      "key": "review_prompt_body",
+      "value": "Playストアの一言が、新たな積み手をここへ導きます。この場で開くので、プレイはそのままです。"
+    },
+    {
+      "key": "review_prompt_confirm",
+      "value": "もちろん"
+    },
+    {
+      "key": "review_prompt_decline",
+      "value": "あとで"
+    },
+    {
       "key": "stability_label",
       "value": "揺れ"
     },
@@ -777,6 +793,46 @@
     { "key": "mayan_title_8", "value": "鷲" },
     { "key": "mayan_title_9", "value": "星" },
     { "key": "mayan_title_10", "value": "神殿" },
-    { "key": "mayan_title_11", "value": "カカオ" }
+    { "key": "mayan_title_11", "value": "カカオ" },
+    { "key": "power_jaguar_slam_name", "value": "ジャガーの一撃" },
+    { "key": "power_jaguar_slam_desc", "value": "満タンのメーターをタップすると、一番上の石を下の石の中央へ叩き戻す。" },
+    { "key": "power_intro_title", "value": "{0}の準備完了" },
+    { "key": "power_unlocked_title", "value": "力を授かった：{0}" },
+    { "key": "power_unlocked_body", "value": "パーフェクトでメーターがたまる。塔が危ういときにタップしよう。" },
+    { "key": "ring_hint", "value": "石を輪にくぐらせよう" },
+    { "key": "ring_passed_title", "value": "輪をくぐった！" },
+    { "key": "ring_passed_count", "value": "球技場の輪を{0}回くぐった" },
+    { "key": "power_quetzal_feather_name", "value": "ケツァールの羽" },
+    { "key": "power_quetzal_feather_desc", "value": "満タンのメーターをタップすると、次の{0}個の石の揺れと落下がゆっくりになる。" },
+    { "key": "power_obsidian_blade_name", "value": "黒曜石の刃" },
+    { "key": "power_obsidian_blade_desc", "value": "満タンのメーターをタップすると、一番上の石が下の石からはみ出た部分を切り落とす。" },
+    { "key": "power_kukulkans_call_name", "value": "ククルカンの呼び声" },
+    { "key": "power_kukulkans_call_desc", "value": "満タンのメーターをタップすると、今すぐククルカンの揺らぎを呼び、塔をまっすぐにする。" },
+    { "key": "power_loadout_title", "value": "パワーを選ぼう" },
+    { "key": "power_loadout_play", "value": "プレイ" },
+    { "key": "power_loadout_back", "value": "戻る" },
+    { "key": "rule_pair_title", "value": "{0}＋{1}" },
+    { "key": "rule_ball_court_ring_name", "value": "球技場の輪" },
+    { "key": "rule_ball_court_ring_desc", "value": "石の輪が塔の上を漂う。石をくぐらせるとボーナス。" },
+    { "key": "rule_ball_court_ring_short", "value": "動く輪をくぐらせよう" },
+    { "key": "rule_jungle_wind_name", "value": "密林の風" },
+    { "key": "rule_jungle_wind_desc", "value": "突風が揺れと落ちる石を押し流す。葉の動きを見よう。" },
+    { "key": "rule_jungle_wind_short", "value": "突風が石を押し流す" },
+    { "key": "rule_rain_slick_name", "value": "雨に濡れた石" },
+    { "key": "rule_rain_slick_desc", "value": "雨の中では、パーフェクト以外の着地は少し外側へ滑る。" },
+    { "key": "rule_rain_slick_short", "value": "パーフェクト以外は滑る" },
+    { "key": "rule_earthquake_name", "value": "Cabracán" },
+    { "key": "rule_earthquake_desc", "value": "塔が高くなると大地が揺れる。長押しで塔を支えよう。" },
+    { "key": "rule_earthquake_short", "value": "揺れたら長押しで支えよう" },
+    { "key": "rule_rising_cenote_name", "value": "満ちるセノーテ" },
+    { "key": "rule_rising_cenote_desc", "value": "聖なる泉の水位が上がっていく。水が頂上に届く前に積み上げよう。" },
+    { "key": "rule_rising_cenote_short", "value": "水より上に積もう" },
+    { "key": "rule_eclipse_name", "value": "日食" },
+    { "key": "rule_eclipse_desc", "value": "太陽が隠れた。塔の頂上だけが照らされる。" },
+    { "key": "rule_eclipse_short", "value": "頂上だけが明るい" },
+    { "key": "quake_hold", "value": "長押しで支えろ！" },
+    { "key": "quake_braced", "value": "耐えた！" },
+    { "key": "quake_survived", "value": "大地が静まった" },
+    { "key": "cenote_warning", "value": "水位が上がっている！" }
   ]
 }

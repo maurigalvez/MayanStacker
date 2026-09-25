@@ -653,6 +653,22 @@
       "value": "Reiniciar agora"
     },
     {
+      "key": "review_prompt_title",
+      "value": "Ajuda outros a acharem o templo?"
+    },
+    {
+      "key": "review_prompt_body",
+      "value": "Uma avaliação na Play Store é como novos empilhadores encontram este lugar. Ela abre aqui mesmo: sua partida não se perde."
+    },
+    {
+      "key": "review_prompt_confirm",
+      "value": "Claro"
+    },
+    {
+      "key": "review_prompt_decline",
+      "value": "Agora não"
+    },
+    {
       "key": "stability_label",
       "value": "Tremor"
     },
@@ -777,6 +793,46 @@
     { "key": "mayan_title_8", "value": "Águia" },
     { "key": "mayan_title_9", "value": "Estrela" },
     { "key": "mayan_title_10", "value": "Templo" },
-    { "key": "mayan_title_11", "value": "Cacau" }
+    { "key": "mayan_title_11", "value": "Cacau" },
+    { "key": "power_jaguar_slam_name", "value": "Golpe da Onça" },
+    { "key": "power_jaguar_slam_desc", "value": "Toque no medidor cheio para devolver a pedra do topo ao centro da de baixo." },
+    { "key": "power_intro_title", "value": "{0} está pronto" },
+    { "key": "power_unlocked_title", "value": "Poder conquistado: {0}" },
+    { "key": "power_unlocked_body", "value": "Pousos perfeitos enchem o medidor. Toque quando a torre precisar." },
+    { "key": "ring_hint", "value": "Solte uma pedra pelo aro" },
+    { "key": "ring_passed_title", "value": "Pelo aro!" },
+    { "key": "ring_passed_count", "value": "{0} pelo aro do jogo de bola" },
+    { "key": "power_quetzal_feather_name", "value": "Pena de Quetzal" },
+    { "key": "power_quetzal_feather_desc", "value": "Toque no medidor cheio para desacelerar o balanço e a queda das próximas {0} pedras." },
+    { "key": "power_obsidian_blade_name", "value": "Lâmina de Obsidiana" },
+    { "key": "power_obsidian_blade_desc", "value": "Toque no medidor cheio para cortar a parte da pedra do topo que passa da de baixo." },
+    { "key": "power_kukulkans_call_name", "value": "Chamado de Kukulkan" },
+    { "key": "power_kukulkans_call_desc", "value": "Toque no medidor cheio para invocar agora a Mudança de Kukulkan e endireitar a torre." },
+    { "key": "power_loadout_title", "value": "Escolha um poder" },
+    { "key": "power_loadout_play", "value": "JOGAR" },
+    { "key": "power_loadout_back", "value": "Voltar" },
+    { "key": "rule_pair_title", "value": "{0} + {1}" },
+    { "key": "rule_ball_court_ring_name", "value": "Aro do Jogo de Bola" },
+    { "key": "rule_ball_court_ring_desc", "value": "Um aro de pedra flutua sobre a torre. Solte uma pedra por ele para ganhar bônus." },
+    { "key": "rule_ball_court_ring_short", "value": "Passe pelo aro que se move" },
+    { "key": "rule_jungle_wind_name", "value": "Vento da Selva" },
+    { "key": "rule_jungle_wind_desc", "value": "Rajadas empurram o balanço e a pedra que cai. Observe as folhas." },
+    { "key": "rule_jungle_wind_short", "value": "Rajadas empurram suas pedras" },
+    { "key": "rule_rain_slick_name", "value": "Pedras Escorregadias" },
+    { "key": "rule_rain_slick_desc", "value": "Na chuva, todo pouso que não for perfeito escorrega um pouco mais." },
+    { "key": "rule_rain_slick_short", "value": "Só o perfeito fica parado" },
+    { "key": "rule_earthquake_name", "value": "Cabracán" },
+    { "key": "rule_earthquake_desc", "value": "O chão treme conforme a torre cresce. Toque e segure para firmá-la." },
+    { "key": "rule_earthquake_short", "value": "Segure quando tremer" },
+    { "key": "rule_rising_cenote_name", "value": "Cenote Subindo" },
+    { "key": "rule_rising_cenote_desc", "value": "O poço sagrado está subindo. Continue construindo antes que a água chegue ao topo." },
+    { "key": "rule_rising_cenote_short", "value": "Fique acima da água" },
+    { "key": "rule_eclipse_name", "value": "Eclipse" },
+    { "key": "rule_eclipse_desc", "value": "O sol se escondeu. Só o topo da torre está iluminado." },
+    { "key": "rule_eclipse_short", "value": "Só o topo tem luz" },
+    { "key": "quake_hold", "value": "SEGURE PARA FIRMAR!" },
+    { "key": "quake_braced", "value": "FIRME!" },
+    { "key": "quake_survived", "value": "O chão se acalmou" },
+    { "key": "cenote_warning", "value": "A água está subindo!" }
   ]
 }

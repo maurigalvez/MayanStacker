@@ -64,6 +64,11 @@ public class PlayerProgressData
     public bool nightThemeUnlocked = false;
 
     /// <summary>
+    /// Powers the player has earned (PowerId names, see PowerUnlocks). Merged as a union.
+    /// </summary>
+    public List<string> unlockedPowers = new List<string>();
+
+    /// <summary>
     /// Creates a new empty PlayerProgressData
     /// </summary>
     public PlayerProgressData()
@@ -100,7 +105,8 @@ public class PlayerProgressData
             lastSyncTimestamp = this.lastSyncTimestamp,
             achievementProgressJson = this.achievementProgressJson,
             sunsetThemeUnlocked = this.sunsetThemeUnlocked,
-            nightThemeUnlocked = this.nightThemeUnlocked
+            nightThemeUnlocked = this.nightThemeUnlocked,
+            unlockedPowers = new List<string>(unlockedPowers ?? new List<string>())
         };
 
         return JsonUtility.ToJson(wrapper);
@@ -132,7 +138,9 @@ public class PlayerProgressData
                 lastSyncTimestamp = wrapper.lastSyncTimestamp,
                 achievementProgressJson = wrapper.achievementProgressJson ?? "",
                 sunsetThemeUnlocked = wrapper.sunsetThemeUnlocked,
-                nightThemeUnlocked = wrapper.nightThemeUnlocked
+                nightThemeUnlocked = wrapper.nightThemeUnlocked,
+                // Saves from before powers existed have no list.
+                unlockedPowers = wrapper.unlockedPowers ?? new List<string>()
             };
 
             // Reconstruct dictionaries
@@ -196,6 +204,15 @@ public class PlayerProgressData
 
         sunsetThemeUnlocked |= other.sunsetThemeUnlocked;
         nightThemeUnlocked |= other.nightThemeUnlocked;
+
+        if (other.unlockedPowers != null)
+        {
+            unlockedPowers ??= new List<string>();
+            foreach (string power in other.unlockedPowers)
+            {
+                if (!unlockedPowers.Contains(power)) unlockedPowers.Add(power);
+            }
+        }
     }
 
     /// <summary>
@@ -224,6 +241,7 @@ public class PlayerProgressData
         public string achievementProgressJson = "";
         public bool sunsetThemeUnlocked = false;
         public bool nightThemeUnlocked = false;
+        public List<string> unlockedPowers = new List<string>();
     }
 }
 

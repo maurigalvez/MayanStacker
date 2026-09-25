@@ -653,6 +653,22 @@
       "value": "Reiniciar ahora"
     },
     {
+      "key": "review_prompt_title",
+      "value": "¿Ayudas a que encuentren el templo?"
+    },
+    {
+      "key": "review_prompt_body",
+      "value": "Una reseña en Play Store es como los nuevos apiladores encuentran este lugar. Se abre aquí mismo: no perderás tu partida."
+    },
+    {
+      "key": "review_prompt_confirm",
+      "value": "Claro que sí"
+    },
+    {
+      "key": "review_prompt_decline",
+      "value": "Ahora no"
+    },
+    {
       "key": "stability_label",
       "value": "Temblor"
     },
@@ -777,6 +793,46 @@
     { "key": "mayan_title_8", "value": "Águila" },
     { "key": "mayan_title_9", "value": "Estrella" },
     { "key": "mayan_title_10", "value": "Templo" },
-    { "key": "mayan_title_11", "value": "Cacao" }
+    { "key": "mayan_title_11", "value": "Cacao" },
+    { "key": "power_jaguar_slam_name", "value": "Zarpazo del Jaguar" },
+    { "key": "power_jaguar_slam_desc", "value": "Toca el medidor lleno para devolver la piedra de arriba al centro de la de abajo." },
+    { "key": "power_intro_title", "value": "{0} está listo" },
+    { "key": "power_unlocked_title", "value": "Poder obtenido: {0}" },
+    { "key": "power_unlocked_body", "value": "Los aterrizajes perfectos llenan su medidor. Tócalo cuando la torre lo necesite." },
+    { "key": "ring_hint", "value": "Deja caer una piedra por el aro" },
+    { "key": "ring_passed_title", "value": "¡Por el aro!" },
+    { "key": "ring_passed_count", "value": "{0} por el aro del juego de pelota" },
+    { "key": "power_quetzal_feather_name", "value": "Pluma de Quetzal" },
+    { "key": "power_quetzal_feather_desc", "value": "Toca el medidor lleno para frenar el balanceo y la caída de las próximas {0} piedras." },
+    { "key": "power_obsidian_blade_name", "value": "Hoja de Obsidiana" },
+    { "key": "power_obsidian_blade_desc", "value": "Toca el medidor lleno para cortar la parte de la piedra de arriba que sobresale de la de abajo." },
+    { "key": "power_kukulkans_call_name", "value": "Llamado de Kukulkán" },
+    { "key": "power_kukulkans_call_desc", "value": "Toca el medidor lleno para invocar ahora el Cambio de Kukulkán y enderezar la torre." },
+    { "key": "power_loadout_title", "value": "Elige un poder" },
+    { "key": "power_loadout_play", "value": "JUGAR" },
+    { "key": "power_loadout_back", "value": "Volver" },
+    { "key": "rule_pair_title", "value": "{0} + {1}" },
+    { "key": "rule_ball_court_ring_name", "value": "Aro del Juego de Pelota" },
+    { "key": "rule_ball_court_ring_desc", "value": "Un aro de piedra flota sobre la torre. Deja caer una piedra por él para ganar un bono." },
+    { "key": "rule_ball_court_ring_short", "value": "Atraviesa el aro que se mueve" },
+    { "key": "rule_jungle_wind_name", "value": "Viento de la Selva" },
+    { "key": "rule_jungle_wind_desc", "value": "Las ráfagas empujan el balanceo y la piedra que cae. Mira las hojas." },
+    { "key": "rule_jungle_wind_short", "value": "Las ráfagas empujan tus piedras" },
+    { "key": "rule_rain_slick_name", "value": "Piedras Resbalosas" },
+    { "key": "rule_rain_slick_desc", "value": "Con la lluvia, todo aterrizaje que no sea perfecto se desliza un poco más." },
+    { "key": "rule_rain_slick_short", "value": "Solo lo perfecto se queda quieto" },
+    { "key": "rule_earthquake_name", "value": "Cabracán" },
+    { "key": "rule_earthquake_desc", "value": "El suelo tiembla mientras la torre crece. Mantén presionado para sujetarla." },
+    { "key": "rule_earthquake_short", "value": "Mantén presionado cuando tiemble" },
+    { "key": "rule_rising_cenote_name", "value": "Cenote Creciente" },
+    { "key": "rule_rising_cenote_desc", "value": "El pozo sagrado está subiendo. Sigue construyendo antes de que el agua llegue a la cima." },
+    { "key": "rule_rising_cenote_short", "value": "Mantente sobre el agua" },
+    { "key": "rule_eclipse_name", "value": "Eclipse" },
+    { "key": "rule_eclipse_desc", "value": "El sol se ha ocultado. Solo la cima de la torre tiene luz." },
+    { "key": "rule_eclipse_short", "value": "Solo la cima tiene luz" },
+    { "key": "quake_hold", "value": "¡MANTÉN PARA SUJETAR!" },
+    { "key": "quake_braced", "value": "¡FIRME!" },
+    { "key": "quake_survived", "value": "La tierra se calma" },
+    { "key": "cenote_warning", "value": "¡El agua sube!" }
   ]
 }

@@ -14,6 +14,14 @@ using Google.Play.Review;
 /// a plain collapse — asking someone what they think of the game in the second after it beat
 /// them is how a 5-star player leaves 2 stars.
 ///
+/// The automatic route goes through our own lead-in card first (<see cref="ReviewPromptView"/>),
+/// and only a "yes" reaches Play. Two reasons. Play's sheet lands in Google's chrome over
+/// whatever is on screen, which reads as the game having lurched into a system dialog right
+/// after a celebration; and far more often it lands nowhere at all — the API reports success
+/// and draws nothing, so without a card of ours the one automatic ask this game ever gets can
+/// be spent on a player who never saw anything. The card is also the only part of the flow
+/// that can be seen in the Editor or on a sideloaded build.
+///
 /// Manual, any time, from the "Rate this game" button in Settings
 /// (<see cref="RequestReviewFromPlayer"/>). That route ignores the once-ever latch, because
 /// a player who taps a rate button has asked for something and must get it.
@@ -31,6 +39,11 @@ public class ReviewManagerHelper : MonoBehaviour
     [Tooltip("Stars required on a temple clear before the automatic prompt may fire. 3 = only a perfect clear counts as a good moment.")]
     [SerializeField] private int minStarsForReview = 3;
 
+    [Tooltip("Unscaled seconds between the good moment and the lead-in card. Long enough for " +
+             "the run result card to finish revealing (its own delay, pop-in and score count-up " +
+             "run about 2.5s) so the ask never lands on top of the celebration it follows.")]
+    [SerializeField] private float leadInDelaySeconds = 3f;
+
     // References
     private GameManager gameManager;
     private LevelManager levelManager;
@@ -46,6 +59,20 @@ public class ReviewManagerHelper : MonoBehaviour
     /// reappear after the player dismisses the first one.
     /// </summary>
     private bool isReviewFlowRunning = false;
+
+    /// <summary>
+    /// The lead-in card, created on first use and kept for the life of the helper. Only the
+    /// automatic route uses it: the Settings button is a deliberate press and goes straight
+    /// to Play, with the store listing as its fallback.
+    /// </summary>
+    private ReviewPromptView leadInView;
+
+    /// <summary>
+    /// True from the moment a good moment arms the card until it is answered. The delay
+    /// before the card appears is long enough for a second trigger to land inside it — a
+    /// three-star clear that is also a personal best — and two cards would be two asks.
+    /// </summary>
+    private bool isLeadInPending;
 
 #if UNITY_ANDROID
     private ReviewManager playReviewManager;
@@ -273,15 +300,68 @@ public class ReviewManagerHelper : MonoBehaviour
         }
 
 #if DEBUG
-        Debug.Log("[ReviewManager] CheckAndShowReview - Proceeding to mark review as shown and request flow");
+        Debug.Log("[ReviewManager] CheckAndShowReview - Proceeding to the lead-in card");
 #endif
 
-        // Mark as shown immediately to prevent multiple prompts
-        MarkReviewShown();
+        if (isLeadInPending) return;
+        isLeadInPending = true;
+        StartCoroutine(ShowLeadInCard(source));
+    }
 
-        // Request and show review. The automatic route never falls back to the store page:
-        // if Play declines to show the sheet, the player asked for nothing and gets nothing.
-        StartCoroutine(RequestAndShowReview(source, allowStoreFallback: false));
+    /// <summary>
+    /// Waits out the celebration, then asks the player — in the game's own voice — whether to
+    /// open the review sheet. Only "yes" reaches Play.
+    /// </summary>
+    /// <remarks>
+    /// The once-ever latch is spent when the card appears, not when it is answered. A player
+    /// who backgrounds the app with the card up has still been asked, and re-asking them on
+    /// the next personal best because they never tapped a button is precisely the nagging
+    /// this whole design avoids.
+    /// </remarks>
+    private IEnumerator ShowLeadInCard(string source)
+    {
+        // A scene load during the wait means the player has moved on — restarted, or gone
+        // back to the menu. The celebration this ask was chained behind is gone, so drop it
+        // rather than raise a card over whatever came next; the trigger stays unspent.
+        int sceneAtArm = SceneManager.GetActiveScene().handle;
+
+        yield return new WaitForSecondsRealtime(leadInDelaySeconds);
+
+        if (SceneManager.GetActiveScene().handle != sceneAtArm)
+        {
+#if DEBUG
+            Debug.Log("[ReviewManager] Scene changed during the lead-in delay; dropping the ask.");
+#endif
+            isLeadInPending = false;
+            yield break;
+        }
+
+        MarkReviewShown();
+        GameAnalytics.ReviewCard(source, "shown");
+
+        EnsureLeadInView().Show(accepted =>
+        {
+            isLeadInPending = false;
+            if (!accepted)
+            {
+                GameAnalytics.ReviewCard(source, "declined");
+#if DEBUG
+                Debug.Log("[ReviewManager] Lead-in card declined; the automatic ask is done for good.");
+#endif
+                return;
+            }
+
+            GameAnalytics.ReviewCard(source, "accepted");
+            // Still no store fallback on this route. The player agreed to a card that said
+            // it opens right here; bouncing them out to the Play listing is not that.
+            StartCoroutine(RequestAndShowReview(source, allowStoreFallback: false));
+        });
+    }
+
+    private ReviewPromptView EnsureLeadInView()
+    {
+        if (leadInView == null) leadInView = ReviewPromptView.Create();
+        return leadInView;
     }
 
     /// <summary>
@@ -574,6 +654,15 @@ public class ReviewManagerHelper : MonoBehaviour
 
         // Unsubscribe from events
         UnsubscribeFromEvents();
+
+        // The card lives on its own DontDestroyOnLoad canvas, so it would outlive this
+        // helper and sit there unanswerable.
+        if (leadInView != null)
+        {
+            leadInView.Hide();
+            Destroy(leadInView.gameObject);
+            leadInView = null;
+        }
     }
 }
 

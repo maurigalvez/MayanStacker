@@ -16,7 +16,7 @@ MonoBehaviour:
   firstOfferAtBlock: 10
   blocksBetweenOffers: 10
   offerCount: 3
-  applyToInfinite: 1
+  applyToInfinite: 0
   applyToDaily: 0
   applyToLevels: 0
   suppressDuringFtue: 1

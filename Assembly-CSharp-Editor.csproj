@@ -55,6 +55,7 @@
     <Compile Include="Assets\Scripts\Editor\CJKFontFallbackSetup.cs" />
     <Compile Include="Assets\Scripts\Editor\DailyChallengeUISetup.cs" />
     <Compile Include="Assets\Scripts\Editor\RunBannerPrefabSetup.cs" />
+    <Compile Include="Assets\Scripts\Editor\PowersSetup.cs" />
     <Compile Include="Assets\Scripts\Editor\LocaleFontSetup.cs" />
     <Compile Include="Assets\Scripts\Editor\TowerStabilityUISetup.cs" />
     <Compile Include="Assets\Scripts\Editor\LanguageSelectPrefabSetup.cs" />
@@ -66,6 +67,7 @@
     <Compile Include="Assets\Scripts\Editor\GameOverUISetup.cs" />
     <Compile Include="Assets\Scripts\Editor\PlayAppUpdateDefine.cs" />
     <Compile Include="Assets\Scripts\Editor\NotificationsAndReviewSetup.cs" />
+    <Compile Include="Assets\Scripts\Editor\TempleRulesSetup.cs" />
     <Compile Include="Assets\Scripts\Editor\RunContentSetup.cs" />
     <Compile Include="Assets\Scripts\Editor\FtueUISetup.cs" />
   </ItemGroup>

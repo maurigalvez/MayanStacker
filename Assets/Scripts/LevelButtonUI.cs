@@ -349,7 +349,12 @@ public class LevelButtonUI : MonoBehaviour
     {
         if (button != null)
         {
-            button.onClick.AddListener(() => onClick?.Invoke(levelIndex));
+            button.onClick.AddListener(() =>
+            {
+                // A finger lifting at the end of a map pinch isn't a tap on this level
+                if (ScrollView_PinchScale.BlocksTaps) return;
+                onClick?.Invoke(levelIndex);
+            });
         }
     }
 

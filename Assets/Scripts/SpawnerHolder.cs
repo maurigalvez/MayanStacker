@@ -567,7 +567,7 @@ public class SpawnerHolder : MonoBehaviour
     private void UpdateSwingMotion()
     {
         // Increment swing time
-        swingTime += swingSpeed * Time.deltaTime;
+        swingTime += swingSpeed * SwingModifiers.SpeedScale * Time.deltaTime;
     }
 
 
@@ -618,6 +618,9 @@ public class SpawnerHolder : MonoBehaviour
         }
 
         // Calculate final spawner position
+
+        // Jungle Wind leans the whole swing; zero everywhere else.
+        swingOffset.x += SwingModifiers.LateralOffset;
 
         Vector3 finalSpawnerPosition = holderCenterPosition + spawnerOffset + swingOffset;
 

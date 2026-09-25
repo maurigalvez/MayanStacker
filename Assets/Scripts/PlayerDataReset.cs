@@ -126,6 +126,7 @@ public class PlayerDataReset : MonoBehaviour
         // can be tested again rather than only ever firing on a fresh install.
         BlockCodex.ResetAll();
         TowerStability.ResetIntro();
+        PowerUnlocks.ResetAll();
 
         // Cancels the reminders AND forgets that permission was ever asked for, so the
         // first-launch dialog can be tested from the editor rather than only by uninstalling.

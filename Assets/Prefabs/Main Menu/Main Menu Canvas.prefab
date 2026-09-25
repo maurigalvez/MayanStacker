@@ -9369,9 +9369,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 4452773070488693449}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1aa08ab6e0800fa44ae55d278d1423e3, type: 3}
+  m_Script: {fileID: 11500000, guid: 958701f3e77a49248de681fc4242f80e, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.ScrollRect
+  m_EditorClassIdentifier: Assembly-CSharp::LevelMapScrollRect
   m_Content: {fileID: 3505238312695809785}
   m_Horizontal: 1
   m_Vertical: 1
@@ -9403,11 +9403,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ScrollView_PinchScale
   mapRect: {fileID: 3505238312695809785}
-  zoomSpeed: 0.1
   minZoom: 2
   maxZoom: 7
-  mouseScrollSensitivity: 0.1
-  pinchSensitivity: 0.05
+  wheelZoomStep: 1.15
   centeringAnimationDuration: 0.5
   centeringAnimationCurve:
     serializedVersion: 2
@@ -9434,7 +9432,6 @@ MonoBehaviour:
     m_PostInfinity: 2
     m_RotationOrder: 4
   enableDebugLogs: 0
-  useFallbackTouchscreen: 0
 --- !u!1 &4509736671965745012
 GameObject:
   m_ObjectHideFlags: 0

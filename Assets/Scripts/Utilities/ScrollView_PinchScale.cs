@@ -1,25 +1,28 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
-using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.EnhancedTouch;
 using UnityEngine.UI;
 using Touch = UnityEngine.InputSystem.EnhancedTouch.Touch;
 
 /// <summary>
-/// Handles pinch-to-zoom and scroll-to-zoom for a UI ScrollView using the new Unity Input System
+/// Pinch-to-zoom (touch) and wheel-to-zoom (mouse) for the level map.
+/// One-finger panning belongs to the LevelMapScrollRect on the same object; while two fingers
+/// are down this component owns the map: it zooms around the point between the fingers and
+/// pans with them, and tells the ScrollRect to stand down so the two don't fight.
 /// </summary>
-public class ScrollView_PinchScale : MonoBehaviour, IDragHandler, IScrollHandler
+public class ScrollView_PinchScale : MonoBehaviour, IScrollHandler
 {
     [Header("References")]
     [SerializeField] private RectTransform mapRect;
     private ScrollRect scrollRect;
+    private LevelMapScrollRect mapScrollRect;
 
     [Header("Zoom Settings")]
-    [SerializeField] private float zoomSpeed = 0.1f;
     [SerializeField] private float minZoom = 0.5f;
     [SerializeField] private float maxZoom = 7f;
-    [SerializeField] private float mouseScrollSensitivity = 0.1f;
-    [SerializeField] private float pinchSensitivity = 0.01f;
+    [Tooltip("Zoom factor applied per mouse-wheel notch")]
+    [SerializeField] private float wheelZoomStep = 1.15f;
 
     [Header("Animation Settings")]
     [SerializeField] private float centeringAnimationDuration = 0.5f;
@@ -27,40 +30,58 @@ public class ScrollView_PinchScale : MonoBehaviour, IDragHandler, IScrollHandler
 
     [Header("Debug")]
     [SerializeField] private bool enableDebugLogs = false;
-    [SerializeField] private bool useFallbackTouchscreen = false;
+
+    // How long after a pinch level buttons keep ignoring taps, so lifting the
+    // finger that held still during the pinch doesn't open a level
+    private const float TapBlockWindow = 0.15f;
+    // Fingers closer than this (pixels) give an unstable zoom ratio
+    private const float MinPinchDistance = 10f;
+
+    private static float lastPinchTime = float.NegativeInfinity;
 
     private float currentZoom;
-    private float previousTouchDistance = 0f;
-    private bool isPinching = false;
+    private bool isPinching;
+    private bool pinchRejected;
+    private bool gestureHadPinch;
+    private float previousTouchDistance;
+    private Vector2 previousTouchCenter;
+    private Camera uiCamera;
     private Coroutine centeringAnimationCoroutine;
+    private readonly List<RaycastResult> raycastResults = new List<RaycastResult>();
 
     // Public property to access current zoom
     public float CurrentZoom => currentZoom;
 
-    private void Start()
+    /// <summary>
+    /// True during a pinch and briefly after, so level buttons can ignore taps that are really
+    /// the end of a zoom gesture.
+    /// </summary>
+    public static bool BlocksTaps => Time.unscaledTime - lastPinchTime < TapBlockWindow;
+
+    private void Awake()
     {
-        // Ensure ScrollRect is found (in case it wasn't found in Awake)
+        // Register with dependency registry
+        DependencyRegistry.Register<ScrollView_PinchScale>(this);
+
+        scrollRect = GetComponent<ScrollRect>();
         if (scrollRect == null)
         {
-            scrollRect = GetComponent<ScrollRect>();
-            if (scrollRect == null)
-            {
-                scrollRect = GetComponentInParent<ScrollRect>();
-            }
+            scrollRect = GetComponentInParent<ScrollRect>();
         }
+        mapScrollRect = scrollRect as LevelMapScrollRect;
 
-        if (enableDebugLogs)
-        {
-            if (scrollRect != null)
-            {
-                Debug.Log($"ScrollView_PinchScale: ScrollRect found - Content: {scrollRect.content?.name}, Viewport: {scrollRect.viewport?.name}");
-            }
-            else
-            {
-                Debug.LogWarning("ScrollView_PinchScale: No ScrollRect found");
-            }
-        }
+        if (scrollRect == null)
+            Debug.LogWarning("ScrollView_PinchScale: No ScrollRect found");
+        else if (mapScrollRect == null)
+            Debug.LogWarning("ScrollView_PinchScale: ScrollRect is not a LevelMapScrollRect, two-finger pinch will fight the scroll drag");
 
+        Canvas canvas = GetComponentInParent<Canvas>();
+        if (canvas != null && canvas.renderMode != RenderMode.ScreenSpaceOverlay)
+            uiCamera = canvas.rootCanvas.worldCamera;
+    }
+
+    private void Start()
+    {
         // Initialize zoom at maximum scale
         currentZoom = maxZoom;
         if (mapRect != null)
@@ -69,335 +90,158 @@ public class ScrollView_PinchScale : MonoBehaviour, IDragHandler, IScrollHandler
         }
     }
 
-    private void Awake()
-    {
-        // Register with dependency registry
-        DependencyRegistry.Register<ScrollView_PinchScale>(this);
-
-        // Try to find ScrollRect early (might be on this GameObject or parent)
-        scrollRect = GetComponent<ScrollRect>();
-        if (scrollRect == null)
-        {
-            scrollRect = GetComponentInParent<ScrollRect>();
-        }
-
-        if (enableDebugLogs && scrollRect != null)
-        {
-            Debug.Log($"ScrollView_PinchScale: Found ScrollRect in Awake");
-        }
-
-#if UNITY_ANDROID || UNITY_IOS
-        // Enable Enhanced Touch for multi-touch support on mobile platforms only
-        if (!EnhancedTouchSupport.enabled)
-        {
-            EnhancedTouchSupport.Enable();
-            if (enableDebugLogs)
-                Debug.Log("Enhanced Touch Support Enabled");
-        }
-#endif
-    }
-
     private void OnEnable()
     {
-#if UNITY_ANDROID || UNITY_IOS
+        // Needed for multi-touch; left enabled on disable since other scripts may rely on it
         if (!EnhancedTouchSupport.enabled)
-        {
             EnhancedTouchSupport.Enable();
-            if (enableDebugLogs)
-                Debug.Log("Enhanced Touch Support Enabled in OnEnable");
-        }
-#endif
     }
 
     private void OnDisable()
     {
-#if UNITY_ANDROID || UNITY_IOS
-        // Don't disable here as it might be needed by other scripts
-        // EnhancedTouchSupport.Disable();
-#endif
+        EndPinch();
+        gestureHadPinch = false;
+        pinchRejected = false;
     }
 
     private void Update()
     {
-#if UNITY_ANDROID || UNITY_IOS
-        // Handle pinch zoom on mobile platforms only
-        if (useFallbackTouchscreen)
+        if (mapRect == null) return;
+
+        var touches = Touch.activeTouches;
+
+        if (touches.Count >= 2)
         {
-            HandlePinchZoomFallback();
+            HandlePinch(touches[0], touches[1]);
         }
         else
         {
-            HandlePinchZoom();
+            if (isPinching) EndPinch();
+            pinchRejected = false;
         }
-#endif
 
-#if UNITY_STANDALONE || UNITY_WEBGL || UNITY_EDITOR
-        // Mouse scroll works on desktop, web, and editor only
-        HandleMouseScrollWheel();
-#endif
+        // Keep blocking taps until every finger of a pinch gesture has lifted
+        if (touches.Count == 0)
+            gestureHadPinch = false;
+        if (gestureHadPinch)
+            lastPinchTime = Time.unscaledTime;
     }
 
-    /// <summary>
-    /// Handles pinch-to-zoom gesture on touch devices using the new Input System
-    /// </summary>
-    private void HandlePinchZoom()
+    private void HandlePinch(Touch touchZero, Touch touchOne)
     {
-        int touchCount = Touch.activeTouches.Count;
+        Vector2 posZero = touchZero.screenPosition;
+        Vector2 posOne = touchOne.screenPosition;
+        float distance = Vector2.Distance(posZero, posOne);
+        Vector2 center = (posZero + posOne) * 0.5f;
 
-        if (enableDebugLogs && touchCount > 0)
+        if (!isPinching)
         {
-            Debug.Log($"Active touches: {touchCount}");
-        }
-
-        // Check if there are exactly 2 active touches
-        if (touchCount == 2)
-        {
-            Touch touchZero = Touch.activeTouches[0];
-            Touch touchOne = Touch.activeTouches[1];
-
-            // Calculate current distance between touches
-            float currentDistance = Vector2.Distance(touchZero.screenPosition, touchOne.screenPosition);
-
-            // On first frame of two-touch gesture, just store the distance
-            if (!isPinching ||
-                touchZero.phase == UnityEngine.InputSystem.TouchPhase.Began ||
-                touchOne.phase == UnityEngine.InputSystem.TouchPhase.Began)
+            if (pinchRejected) return;
+            if (!IsOverMap(touchZero.startScreenPosition) || !IsOverMap(touchOne.startScreenPosition))
             {
-                previousTouchDistance = currentDistance;
-                isPinching = true;
-
-                if (enableDebugLogs)
-                    Debug.Log($"Started pinch - Initial distance: {currentDistance}");
+                // Pinch started on a popup or another panel, leave the map alone until the fingers lift
+                pinchRejected = true;
                 return;
             }
-
-            // Calculate the difference in distance
-            float distanceDelta = currentDistance - previousTouchDistance;
-
-            if (enableDebugLogs && Mathf.Abs(distanceDelta) > 1f)
-            {
-                Debug.Log($"Pinch distance delta: {distanceDelta}, Current: {currentDistance}, Previous: {previousTouchDistance}");
-            }
-
-            previousTouchDistance = currentDistance;
-
-            // Apply zoom based on distance change, zooming towards the midpoint between fingers
-            if (Mathf.Abs(distanceDelta) > 0.1f) // Add threshold to avoid jitter
-            {
-                // Calculate the midpoint between the two touches as the focal point
-                Vector2 pinchCenter = (touchZero.screenPosition + touchOne.screenPosition) / 2f;
-                Zoom(distanceDelta * pinchSensitivity, pinchCenter);
-            }
-        }
-        else
-        {
-            // Reset previous distance when not pinching
-            if (isPinching && enableDebugLogs)
-            {
-                Debug.Log("Pinch ended");
-            }
-            previousTouchDistance = 0f;
-            isPinching = false;
-        }
-    }
-
-    /// <summary>
-    /// Fallback pinch-to-zoom using Touchscreen API directly
-    /// </summary>
-    private void HandlePinchZoomFallback()
-    {
-        var touchscreen = Touchscreen.current;
-        if (touchscreen == null)
-        {
-            if (enableDebugLogs)
-                Debug.LogWarning("No touchscreen detected!");
+            BeginPinch(distance, center);
             return;
         }
 
-        var touches = touchscreen.touches;
-        int activeTouchCount = 0;
-        UnityEngine.InputSystem.Controls.TouchControl touch0 = null;
-        UnityEngine.InputSystem.Controls.TouchControl touch1 = null;
-
-        // Count active touches
-        for (int i = 0; i < touches.Count; i++)
+        // Pan with the fingers, then scale around the point between them
+        RectTransform parentRect = mapRect.parent as RectTransform;
+        if (parentRect != null &&
+            RectTransformUtility.ScreenPointToLocalPointInRectangle(parentRect, previousTouchCenter, uiCamera, out Vector2 previousLocal) &&
+            RectTransformUtility.ScreenPointToLocalPointInRectangle(parentRect, center, uiCamera, out Vector2 currentLocal))
         {
-            if (touches[i].press.isPressed)
-            {
-                if (activeTouchCount == 0)
-                    touch0 = touches[i];
-                else if (activeTouchCount == 1)
-                    touch1 = touches[i];
-
-                activeTouchCount++;
-            }
+            mapRect.anchoredPosition += currentLocal - previousLocal;
         }
 
-        if (enableDebugLogs && activeTouchCount > 0)
+        if (previousTouchDistance > MinPinchDistance && distance > MinPinchDistance)
         {
-            Debug.Log($"Fallback - Active touches: {activeTouchCount}");
+            ZoomTo(currentZoom * (distance / previousTouchDistance), center);
         }
 
-        if (activeTouchCount == 2 && touch0 != null && touch1 != null)
-        {
-            Vector2 pos0 = touch0.position.ReadValue();
-            Vector2 pos1 = touch1.position.ReadValue();
-
-            float currentDistance = Vector2.Distance(pos0, pos1);
-
-            if (!isPinching)
-            {
-                previousTouchDistance = currentDistance;
-                isPinching = true;
-
-                if (enableDebugLogs)
-                    Debug.Log($"Fallback - Started pinch: {currentDistance}");
-                return;
-            }
-
-            float distanceDelta = currentDistance - previousTouchDistance;
-
-            if (enableDebugLogs && Mathf.Abs(distanceDelta) > 1f)
-            {
-                Debug.Log($"Fallback - Delta: {distanceDelta}");
-            }
-
-            previousTouchDistance = currentDistance;
-
-            if (Mathf.Abs(distanceDelta) > 0.1f)
-            {
-                // Calculate the midpoint between the two touches as the focal point
-                Vector2 pinchCenter = (pos0 + pos1) / 2f;
-                Zoom(distanceDelta * pinchSensitivity, pinchCenter);
-            }
-        }
-        else
-        {
-            if (isPinching && enableDebugLogs)
-            {
-                Debug.Log("Fallback - Pinch ended");
-            }
-            previousTouchDistance = 0f;
-            isPinching = false;
-        }
+        previousTouchDistance = distance;
+        previousTouchCenter = center;
     }
 
-    /// <summary>
-    /// Handles mouse scroll wheel zoom using the new Input System
-    /// </summary>
-    private void HandleMouseScrollWheel()
+    private void BeginPinch(float distance, Vector2 center)
     {
-        // Get scroll delta from mouse
-        var mouse = Mouse.current;
-        if (mouse != null)
-        {
-            Vector2 scrollDelta = mouse.scroll.ReadValue();
+        isPinching = true;
+        gestureHadPinch = true;
+        previousTouchDistance = distance;
+        previousTouchCenter = center;
 
-            // Only process if there's actual scroll input
-            if (scrollDelta.y != 0)
-            {
-                // Zoom towards the mouse cursor position
-                Vector2 mousePosition = mouse.position.ReadValue();
-                Zoom(scrollDelta.y * mouseScrollSensitivity, mousePosition);
-            }
+        if (mapScrollRect != null)
+            mapScrollRect.DragSuppressed = true;
+
+        if (centeringAnimationCoroutine != null)
+        {
+            StopCoroutine(centeringAnimationCoroutine);
+            centeringAnimationCoroutine = null;
         }
+
+        if (enableDebugLogs)
+            Debug.Log($"ScrollView_PinchScale: Pinch started - distance {distance}, zoom {currentZoom}");
     }
 
-    /// <summary>
-    /// Handles drag events from Unity's EventSystem (for panning the map)
-    /// </summary>
-    public void OnDrag(PointerEventData eventData)
+    private void EndPinch()
     {
-#if UNITY_ANDROID || UNITY_IOS
-        // Don't drag when pinching with two fingers
-        if (isPinching || Touch.activeTouches.Count > 1)
-        {
-            if (enableDebugLogs)
-                Debug.Log("Drag blocked - pinching active");
-            return;
-        }
-#endif
+        if (!isPinching) return;
+        isPinching = false;
 
-        if (mapRect != null)
-        {
-            mapRect.anchoredPosition += eventData.delta;
-        }
+        if (mapScrollRect != null)
+            mapScrollRect.DragSuppressed = false;
+
+        if (enableDebugLogs)
+            Debug.Log($"ScrollView_PinchScale: Pinch ended - zoom {currentZoom}");
     }
 
     /// <summary>
-    /// Handles scroll events from Unity's EventSystem (backup for mouse scroll)
-    /// This provides compatibility with UI ScrollRect and other UI elements
+    /// True when the topmost UI element under the screen point belongs to this map,
+    /// so pinching on a popup drawn over the map doesn't zoom it.
+    /// </summary>
+    private bool IsOverMap(Vector2 screenPosition)
+    {
+        EventSystem eventSystem = EventSystem.current;
+        if (eventSystem == null) return true;
+
+        var pointerData = new PointerEventData(eventSystem) { position = screenPosition };
+        raycastResults.Clear();
+        eventSystem.RaycastAll(pointerData, raycastResults);
+        return raycastResults.Count > 0 && raycastResults[0].gameObject.transform.IsChildOf(transform);
+    }
+
+    /// <summary>
+    /// Mouse wheel zoom (desktop and Editor), towards the cursor
     /// </summary>
     public void OnScroll(PointerEventData eventData)
     {
-        // Zoom towards the pointer position
-        Zoom(eventData.scrollDelta.y * zoomSpeed, eventData.position);
+        float scroll = eventData.scrollDelta.y;
+        if (Mathf.Approximately(scroll, 0f)) return;
+
+        ZoomTo(currentZoom * (scroll > 0f ? wheelZoomStep : 1f / wheelZoomStep), eventData.position);
     }
 
     /// <summary>
-    /// Applies zoom increment to the map and clamps it within min/max bounds.
-    /// Zooms towards a specific screen position (e.g., pinch center or mouse cursor),
-    /// keeping that point stationary on screen while scaling around it.
+    /// Sets the zoom, clamped to [minZoom, maxZoom], keeping the map point under
+    /// screenPosition where it is on screen. The ScrollRect clamps the result to the viewport.
     /// </summary>
-    /// <param name="increment">The amount to zoom (positive = zoom in, negative = zoom out)</param>
-    /// <param name="screenPosition">Optional screen position to zoom towards. If null, zooms towards viewport center</param>
-    private void Zoom(float increment, Vector2? screenPosition = null)
+    private void ZoomTo(float targetZoom, Vector2 screenPosition)
     {
-        if (mapRect != null)
+        float newZoom = Mathf.Clamp(targetZoom, minZoom, maxZoom);
+        if (Mathf.Approximately(newZoom, currentZoom)) return;
+
+        // Local point relative to the map pivot; it sits at anchoredPosition + point * zoom in the parent
+        if (RectTransformUtility.ScreenPointToLocalPointInRectangle(mapRect, screenPosition, uiCamera, out Vector2 focalPoint))
         {
-            // Calculate new zoom level
-            float newZoom = Mathf.Clamp(currentZoom + increment, minZoom, maxZoom);
-
-            // Only proceed if zoom actually changed
-            if (Mathf.Abs(newZoom - currentZoom) < 0.001f)
-                return;
-
-            // Get the zoom focal point
-            RectTransform parentRect = mapRect.parent as RectTransform;
-            if (parentRect != null)
-            {
-                Vector2 zoomFocalPoint;
-
-                if (screenPosition.HasValue)
-                {
-                    // Use the provided screen position (e.g., pinch center)
-                    zoomFocalPoint = screenPosition.Value;
-                }
-                else
-                {
-                    // Default to center of the viewport
-                    Vector2 viewportCenter = parentRect.rect.center;
-                    zoomFocalPoint = RectTransformUtility.WorldToScreenPoint(null, parentRect.TransformPoint(viewportCenter));
-                }
-
-                // Convert focal point to local point on the map (before scaling)
-                RectTransformUtility.ScreenPointToLocalPointInRectangle(
-                    mapRect,
-                    zoomFocalPoint,
-                    null,
-                    out Vector2 localPointBeforeZoom
-                );
-
-                // Calculate the ratio of zoom change
-                float zoomRatio = newZoom / currentZoom;
-
-                // Apply the new zoom
-                currentZoom = newZoom;
-                mapRect.localScale = Vector3.one * currentZoom;
-
-                // The local point will now be at a different screen position due to scaling
-                // We need to adjust the anchored position to keep that point at the same screen position
-                Vector2 offsetDelta = localPointBeforeZoom * (zoomRatio - 1f);
-                mapRect.anchoredPosition -= offsetDelta;
-            }
-            else
-            {
-                // Fallback to simple zoom if no parent rect
-                currentZoom = newZoom;
-                mapRect.localScale = Vector3.one * currentZoom;
-            }
+            mapRect.anchoredPosition -= focalPoint * (newZoom - currentZoom);
         }
+
+        currentZoom = newZoom;
+        mapRect.localScale = Vector3.one * currentZoom;
     }
+
 
     /// <summary>
     /// Centers the map view on a specific RectTransform (e.g., a level button)

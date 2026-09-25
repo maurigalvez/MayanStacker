@@ -1043,7 +1043,9 @@ public class MainMenuManager : MonoBehaviour
     {
         soundManager?.PlayInfiniteModeSelect();
         Debug.Log("Infinite Mode selected");
-        SceneLoader.LoadGameScene(gameSceneName, GameMode.InfiniteStacker);
+        // Pick a power first when there's a choice; its PLAY button loads the run.
+        PowerLoadoutScreen.ShowOrContinue(GameMode.InfiniteStacker,
+            () => SceneLoader.LoadGameScene(gameSceneName, GameMode.InfiniteStacker));
     }
 
     private void OnLevelModeSelected()
@@ -1056,7 +1058,9 @@ public class MainMenuManager : MonoBehaviour
     {
         soundManager?.PlayInfiniteModeSelect();
         Debug.Log("Daily Challenge selected");
-        SceneLoader.LoadGameScene(gameSceneName, GameMode.DailyChallenge);
+        // Powers are off in the Daily by default, so this normally loads straight away.
+        PowerLoadoutScreen.ShowOrContinue(GameMode.DailyChallenge,
+            () => SceneLoader.LoadGameScene(gameSceneName, GameMode.DailyChallenge));
     }
 
     private void OnLevelButtonClicked(int levelIndex)
@@ -1070,7 +1074,8 @@ public class MainMenuManager : MonoBehaviour
         // Update level label
         UpdateSelectedLevelLabel();
 
-        SceneLoader.LoadGameScene(gameSceneName, GameMode.StackerLevels, levelIndex);
+        PowerLoadoutScreen.ShowOrContinue(GameMode.StackerLevels,
+            () => SceneLoader.LoadGameScene(gameSceneName, GameMode.StackerLevels, levelIndex));
     }
 
     private void OnGoToNextLevelClicked()
@@ -1081,7 +1086,8 @@ public class MainMenuManager : MonoBehaviour
         {
             soundManager?.PlayLevelButtonClick();
             Debug.Log($"Going to next playable level: {nextLevelIndex + 1}");
-            SceneLoader.LoadGameScene(gameSceneName, GameMode.StackerLevels, nextLevelIndex);
+            PowerLoadoutScreen.ShowOrContinue(GameMode.StackerLevels,
+                () => SceneLoader.LoadGameScene(gameSceneName, GameMode.StackerLevels, nextLevelIndex));
         }
         else
         {

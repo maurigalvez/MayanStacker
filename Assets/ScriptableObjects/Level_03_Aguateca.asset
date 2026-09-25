@@ -24,9 +24,9 @@ MonoBehaviour:
     as much as power, a rare glimpse into daily elite life."
   siteImage: {fileID: 21300000, guid: 3db13226b53f0be4bb5d15c7c8c8ee06, type: 3}
   requiredStackHeight: 12
-  oneStarScore: 750
-  twoStarScore: 1000
-  threeStarScore: 1500
+  oneStarScore: 600
+  twoStarScore: 1400
+  threeStarScore: 2350
   swingSpeedMultiplier: 1.1
   swingAmplitudeMultiplier: 1.1
   blockSequence:
@@ -56,3 +56,15 @@ MonoBehaviour:
     - rolled: 0
       variant: 0
   gameMusic: {fileID: 8300000, guid: f2ce965d9c6cbe549a4d5f319321c81e, type: 3}
+  rule: 1
+  ringSettings:
+    everyNthStone: 3
+    firstAtHeight: 2
+    clearance: 1.2
+    driftRange: 2.4
+    driftCyclesPerSecond: 0.35
+    heightBetween: 0.5
+    bonusPoints: 150
+  capstonePayoff: 1
+  capstoneSilhouette: {fileID: 0}
+  secondRule: 0

@@ -38,7 +38,7 @@ public class LevelData : ScriptableObject
     public float timeLimitSeconds = 60f;
 
     [Header("Star Rating Thresholds")]
-    [Tooltip("Score required for 1 star (minimum to pass)")]
+    [Tooltip("Score for 1 star. Cosmetic: reaching the height always earns at least 1 star.")]
     public int oneStarScore = 100;
     [Tooltip("Score required for 2 stars")]
     public int twoStarScore = 500;
@@ -58,6 +58,43 @@ public class LevelData : ScriptableObject
     [Header("Block Sequence")]
     [Tooltip("Optional hand-authored block order, from the bottom of the stack up. Leave empty to let the level's seed decide every block - it will still be the same order on every attempt.")]
     public LevelBlockSequence blockSequence = new LevelBlockSequence();
+
+    [Header("Temple Rule")]
+    [Tooltip("A visible rule that makes this temple play differently. None is the original behaviour.")]
+    public LevelRule rule = LevelRule.None;
+
+    [Tooltip("A second rule running alongside the first, for the late temples. None = one rule.")]
+    public LevelRule secondRule = LevelRule.None;
+
+    [Tooltip("Used when either rule is Ball-court Ring.")]
+    public BallCourtRingSettings ringSettings = new BallCourtRingSettings();
+
+    [Tooltip("Used when either rule is Jungle Wind.")]
+    public JungleWindSettings windSettings = new JungleWindSettings();
+
+    [Tooltip("Used when either rule is Rain-slick Stones.")]
+    public RainSlickSettings rainSettings = new RainSlickSettings();
+
+    [Tooltip("Used when either rule is Earthquake.")]
+    public EarthquakeSettings quakeSettings = new EarthquakeSettings();
+
+    [Tooltip("Used when either rule is Rising Cenote.")]
+    public RisingCenoteSettings cenoteSettings = new RisingCenoteSettings();
+
+    [Tooltip("Used when either rule is Eclipse.")]
+    public EclipseSettings eclipseSettings = new EclipseSettings();
+
+    /// <summary>True when this temple runs <paramref name="r"/>, as its first or second rule.</summary>
+    public bool HasRule(LevelRule r) => r != LevelRule.None && (rule == r || secondRule == r);
+
+    [Header("Capstone")]
+    [Tooltip("Play the capstone beat when the final stone lands: the stack locks, the camera " +
+             "punches in, a gold flash and the temple's silhouette, then the result panel.")]
+    public bool capstonePayoff = false;
+
+    [Tooltip("This temple's silhouette, drawn over the finished tower. Optional - without it " +
+             "the capstone is the gold flash alone.")]
+    public Sprite capstoneSilhouette;
 
     [Header("Audio")]
     [Tooltip("Music track to play for this level (optional - uses default if not set)")]
@@ -94,13 +131,14 @@ public class LevelData : ScriptableObject
     }
 
     /// <summary>
-    /// Calculate the number of stars earned based on score
+    /// Stars for a completed climb. Only called once the height (and objective) is met, so
+    /// completion is always worth at least 1 star - the score only decides 2 and 3. A
+    /// score gate on 1 star used to block the next temple from unlocking even after the
+    /// player reached the top.
     /// </summary>
     public int CalculateStars(int score)
     {
-        if (score < oneStarScore)
-            return 0; // Failed to complete level
-        else if (score < twoStarScore)
+        if (score < twoStarScore)
             return 1;
         else if (score < threeStarScore)
             return 2;

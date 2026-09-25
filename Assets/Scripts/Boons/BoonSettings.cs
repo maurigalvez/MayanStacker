@@ -31,8 +31,9 @@ public class BoonSettings : ScriptableObject
     public int offerCount = 3;
 
     [Header("Where boons apply")]
-    [Tooltip("Infinite runs are long enough for choices to compound.")]
-    public bool applyToInfinite = true;
+    [Tooltip("Off since the power meter replaced the picker in Infinite (boons were folded into " +
+             "powers). Kept rather than deleted so it can be switched back on if powers test badly.")]
+    public bool applyToInfinite = false;
 
     [Tooltip("Daily runs are a fixed-length fairness contract - everyone gets the same run. Off by default.")]
     public bool applyToDaily = false;

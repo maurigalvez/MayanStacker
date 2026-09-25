@@ -1940,6 +1940,7 @@ public class PlayFabManager : MonoBehaviour
                 // Merged here rather than by a listener: the ghost line only lives in the game
                 // scene, and login usually happens before one is loaded.
                 InfiniteBest.MergeFromCloud(data);
+                PowerUnlocks.MergeFromCloud(data);
 
                 OnProgressSynced?.Invoke(data);
 
@@ -2138,6 +2139,9 @@ public class PlayFabManager : MonoBehaviour
         // Tallest Infinite tower (drives the personal-best ghost line). Always local, so it
         // survives saves made from any mode.
         InfiniteBest.WriteTo(data);
+
+        // Earned powers. Local flags only ever grow, so this never drops a cloud unlock.
+        PowerUnlocks.WriteTo(data);
 
         // Get achievement progress from AchievementManager
         // Fallback to PlayerPrefs if manager isn't available or initialized

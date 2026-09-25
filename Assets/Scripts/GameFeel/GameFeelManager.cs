@@ -505,6 +505,22 @@ public class GameFeelManager : MonoBehaviour
         cameraController?.Shake(trauma);
     }
 
+    /// <summary>
+    /// A brief time-scale dip for moments other than landings (a power firing). Goes through
+    /// the same guards as a landing hit-stop, so it never fights a pause or the Kukulkan
+    /// slow-motion for the clock.
+    /// </summary>
+    public static void HitStop(float duration)
+    {
+        if (instance != null && duration > 0f) instance.DoHitStop(duration);
+    }
+
+    /// <summary>A full-screen colour flash (color.a = peak alpha). Respects reduce-motion.</summary>
+    public static void Flash(Color color, float duration)
+    {
+        if (instance != null) instance.FlashScreen(color, duration);
+    }
+
     private void DoHitStop(float duration)
     {
         // Don't freeze if the game is paused, already over, or the Kukulkan slow-mo owns the clock.

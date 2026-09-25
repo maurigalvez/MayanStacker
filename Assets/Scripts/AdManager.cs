@@ -343,7 +343,9 @@ public class AdManager : MonoBehaviour
         if (gameOverCount % adFrequency == 0)
         {
             Debug.Log($"[AdManager] ✅ Ad frequency check passed! Will show ad after {adShowDelay}s delay");
-            StartCoroutine(ShowAdAfterDelay());
+            // Never cut into the temple's capstone beat.
+            float capstoneHold = CapstonePayoff.HoldSecondsFor(levelManager != null ? levelManager.CurrentLevel : null);
+            StartCoroutine(ShowAdAfterDelay(capstoneHold));
         }
         else
         {
@@ -355,10 +357,10 @@ public class AdManager : MonoBehaviour
     /// <summary>
     /// Show ad after a small delay to avoid interrupting UI animations
     /// </summary>
-    private IEnumerator ShowAdAfterDelay()
+    private IEnumerator ShowAdAfterDelay(float extraDelay = 0f)
     {
-        Debug.Log($"[AdManager] ⏳ Waiting {adShowDelay} seconds before showing ad...");
-        yield return new WaitForSeconds(adShowDelay);
+        Debug.Log($"[AdManager] ⏳ Waiting {adShowDelay + extraDelay} seconds before showing ad...");
+        yield return new WaitForSeconds(adShowDelay + extraDelay);
         ShowInterstitialAd();
     }
 

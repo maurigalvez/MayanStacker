@@ -653,6 +653,22 @@
       "value": "立即重新啟動"
     },
     {
+      "key": "review_prompt_title",
+      "value": "幫更多人找到這座神廟？"
+    },
+    {
+      "key": "review_prompt_body",
+      "value": "Play 商店上的一句評價，能讓新的堆疊者找到這裡。評價就在此處打開，你的進度不會遺失。"
+    },
+    {
+      "key": "review_prompt_confirm",
+      "value": "當然"
+    },
+    {
+      "key": "review_prompt_decline",
+      "value": "暫不"
+    },
+    {
       "key": "stability_label",
       "value": "震顫"
     },
@@ -777,6 +793,46 @@
     { "key": "mayan_title_8", "value": "雄鷹" },
     { "key": "mayan_title_9", "value": "星辰" },
     { "key": "mayan_title_10", "value": "神殿" },
-    { "key": "mayan_title_11", "value": "可可" }
+    { "key": "mayan_title_11", "value": "可可" },
+    { "key": "power_jaguar_slam_name", "value": "美洲豹之擊" },
+    { "key": "power_jaguar_slam_desc", "value": "點擊已滿的能量槽，把最上面的石塊拍回下方石塊的正中。" },
+    { "key": "power_intro_title", "value": "{0}已就緒" },
+    { "key": "power_unlocked_title", "value": "獲得力量：{0}" },
+    { "key": "power_unlocked_body", "value": "完美落石會充滿能量槽。塔需要時點擊它。" },
+    { "key": "ring_hint", "value": "讓石塊穿過石環" },
+    { "key": "ring_passed_title", "value": "穿過石環！" },
+    { "key": "ring_passed_count", "value": "已穿過球場石環 {0} 次" },
+    { "key": "power_quetzal_feather_name", "value": "格查爾之羽" },
+    { "key": "power_quetzal_feather_desc", "value": "點擊已滿的能量槽，讓接下來{0}塊石塊的擺動和下落變慢。" },
+    { "key": "power_obsidian_blade_name", "value": "黑曜石之刃" },
+    { "key": "power_obsidian_blade_desc", "value": "點擊已滿的能量槽，切掉最上面石塊超出下方石塊的部分。" },
+    { "key": "power_kukulkans_call_name", "value": "庫庫爾坎的召喚" },
+    { "key": "power_kukulkans_call_desc", "value": "點擊已滿的能量槽，立即召喚庫庫爾坎之變，讓塔恢復筆直。" },
+    { "key": "power_loadout_title", "value": "選擇一種能力" },
+    { "key": "power_loadout_play", "value": "開始" },
+    { "key": "power_loadout_back", "value": "返回" },
+    { "key": "rule_pair_title", "value": "{0} + {1}" },
+    { "key": "rule_ball_court_ring_name", "value": "球場石環" },
+    { "key": "rule_ball_court_ring_desc", "value": "石環在塔上方漂移。讓石塊穿過它可獲得獎勵。" },
+    { "key": "rule_ball_court_ring_short", "value": "讓石塊穿過移動的石環" },
+    { "key": "rule_jungle_wind_name", "value": "叢林之風" },
+    { "key": "rule_jungle_wind_desc", "value": "陣風會推動擺動和下落的石塊。留意樹葉。" },
+    { "key": "rule_jungle_wind_short", "value": "陣風推動石塊" },
+    { "key": "rule_rain_slick_name", "value": "雨濕石階" },
+    { "key": "rule_rain_slick_desc", "value": "雨中，任何非完美的落點都會再向外滑一點。" },
+    { "key": "rule_rain_slick_short", "value": "只有完美才能站穩" },
+    { "key": "rule_earthquake_name", "value": "Cabracán" },
+    { "key": "rule_earthquake_desc", "value": "塔越高，大地越會震動。按住螢幕穩住塔。" },
+    { "key": "rule_earthquake_short", "value": "震動時按住穩住" },
+    { "key": "rule_rising_cenote_name", "value": "上漲的天然井" },
+    { "key": "rule_rising_cenote_desc", "value": "聖井的水位正在上漲。在水淹到塔頂之前繼續建造。" },
+    { "key": "rule_rising_cenote_short", "value": "保持在水面之上" },
+    { "key": "rule_eclipse_name", "value": "日食" },
+    { "key": "rule_eclipse_desc", "value": "太陽被遮住了。只有塔頂還亮著。" },
+    { "key": "rule_eclipse_short", "value": "只有塔頂有光" },
+    { "key": "quake_hold", "value": "按住穩住！" },
+    { "key": "quake_braced", "value": "穩住了！" },
+    { "key": "quake_survived", "value": "大地平靜了" },
+    { "key": "cenote_warning", "value": "水位在上漲！" }
   ]
 }
