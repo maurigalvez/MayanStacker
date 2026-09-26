@@ -36,6 +36,16 @@ public class SettingsManager : MonoBehaviour
     [Tooltip("Opens the Google Play in-app review sheet, falling back to the store listing.")]
     [SerializeField] private Button rateGameButton;
 
+    [Header("Remove Ads")]
+    [Tooltip("Opens the Remove Ads offer card (price, one-time, what it removes); only its Buy opens Play. Shows the Play price, and a thank-you once owned.")]
+    [SerializeField] private Button removeAdsButton;
+    [Tooltip("The Remove Ads button's label; found in the button's children when left empty.")]
+    [SerializeField] private TextMeshProUGUI removeAdsLabel;
+    [Tooltip("Re-asks Google Play what this account owns. Hidden once Remove Ads is owned.")]
+    [SerializeField] private Button restorePurchasesButton;
+    [Tooltip("One line for purchase results: pending payment, failures, restore outcome.")]
+    [SerializeField] private TextMeshProUGUI purchaseStatusText;
+
     [Header("General Settings UI")]
     [SerializeField] private Button resetDefaultsButton;
     [SerializeField] private Button applyButton;
@@ -120,6 +130,12 @@ public class SettingsManager : MonoBehaviour
         // Notifications reflect the OS, not just our own flag, so they are re-read every
         // time the panel opens rather than cached.
         RefreshNotificationsUI();
+
+        // A player who launched offline gets another chance to reach the store.
+        SubscribeToPurchases();
+        if (PurchaseManager.Instance != null) PurchaseManager.Instance.EnsureConnected();
+        SetPurchaseStatus(null);
+        RefreshPurchaseUI();
     }
 
     private void SetupUIListeners()
@@ -155,6 +171,16 @@ public class SettingsManager : MonoBehaviour
         // Feedback
         if (rateGameButton != null)
             rateGameButton.onClick.AddListener(OnRateGamePressed);
+
+        // Remove Ads
+        if (removeAdsButton != null)
+            removeAdsButton.onClick.AddListener(OnRemoveAdsPressed);
+
+        if (restorePurchasesButton != null)
+            restorePurchasesButton.onClick.AddListener(OnRestorePurchasesPressed);
+
+        RemoveAds.Changed += OnRemoveAdsChanged;
+        SubscribeToPurchases();
 
         // General Buttons
         if (resetDefaultsButton != null)
@@ -266,6 +292,121 @@ public class SettingsManager : MonoBehaviour
 
         reviewHelper.RequestReviewFromPlayer();
     }
+
+    #region Remove Ads
+
+    private void OnRemoveAdsPressed()
+    {
+        if (mainMenuSoundManager != null)
+            mainMenuSoundManager.PlayButtonClick();
+
+        SetPurchaseStatus(null);
+
+        // The offer card states the price and terms before Play can charge anything, so it
+        // needs Play's price; without one the store isn't really reachable anyway.
+        if (!RemoveAdsOffer.TryOpen(RemoveAdsOffer.SourceSettings))
+            SetPurchaseStatus("iap_store_unavailable");
+    }
+
+    private void OnRestorePurchasesPressed()
+    {
+        if (mainMenuSoundManager != null)
+            mainMenuSoundManager.PlayButtonClick();
+
+        SetPurchaseStatus(null);
+        if (PurchaseManager.Instance != null) PurchaseManager.Instance.RestorePurchases();
+        else SetPurchaseStatus("iap_store_unavailable");
+    }
+
+    private PurchaseManager subscribedPurchases;
+
+    /// <summary>
+    /// PurchaseManager bootstraps itself after the first scene loads, so it may not exist yet
+    /// when Start runs; this is retried each time the panel opens and only subscribes once.
+    /// </summary>
+    private void SubscribeToPurchases()
+    {
+        var purchases = PurchaseManager.Instance;
+        if (purchases == null || purchases == subscribedPurchases) return;
+
+        subscribedPurchases = purchases;
+        purchases.StateChanged += RefreshPurchaseUI;
+        purchases.PlayerActionFinished += OnPurchaseActionFinished;
+    }
+
+    private void OnRemoveAdsChanged(bool owned) => RefreshPurchaseUI();
+
+    private void OnPurchaseActionFinished(PurchaseManager.Outcome outcome)
+    {
+        switch (outcome)
+        {
+            // Purchased needs no line: the button itself turns into the thank-you.
+            case PurchaseManager.Outcome.Purchased:
+            case PurchaseManager.Outcome.Cancelled:
+                SetPurchaseStatus(null);
+                break;
+            case PurchaseManager.Outcome.Restored:
+                SetPurchaseStatus("iap_restored");
+                break;
+            case PurchaseManager.Outcome.NothingToRestore:
+                SetPurchaseStatus("iap_nothing_to_restore");
+                break;
+            case PurchaseManager.Outcome.Pending:
+                SetPurchaseStatus("iap_pending");
+                break;
+            case PurchaseManager.Outcome.StoreUnavailable:
+                SetPurchaseStatus("iap_store_unavailable");
+                break;
+            default:
+                SetPurchaseStatus("iap_failed");
+                break;
+        }
+    }
+
+    /// <summary>
+    /// Owned: the buy button becomes a disabled "Ads removed — thank you!" and Restore goes
+    /// away. Not owned: "Remove Ads · $2.99", clickable only while the store can sell it.
+    /// </summary>
+    private void RefreshPurchaseUI()
+    {
+        if (removeAdsButton == null) return;
+
+        if (removeAdsLabel == null)
+            removeAdsLabel = removeAdsButton.GetComponentInChildren<TextMeshProUGUI>(true);
+
+        var purchases = PurchaseManager.Instance;
+        bool owned = RemoveAds.Owned;
+        bool busy = purchases != null && purchases.Busy;
+
+        if (removeAdsLabel != null)
+        {
+            if (owned)
+                removeAdsLabel.text = LocalizationManager.Get("settings_ads_removed");
+            else if (purchases != null && !string.IsNullOrEmpty(purchases.RemoveAdsPrice))
+                removeAdsLabel.text = LocalizationManager.Get("settings_remove_ads_price", purchases.RemoveAdsPrice);
+            else
+                removeAdsLabel.text = LocalizationManager.Get("settings_remove_ads");
+        }
+
+        removeAdsButton.interactable = !owned && !busy && purchases != null && purchases.CanPurchase;
+
+        if (restorePurchasesButton != null)
+        {
+            restorePurchasesButton.gameObject.SetActive(!owned);
+            restorePurchasesButton.interactable = !busy;
+        }
+    }
+
+    /// <summary>Shows a localized line under the buttons, or hides it for a null key.</summary>
+    private void SetPurchaseStatus(string key)
+    {
+        if (purchaseStatusText == null) return;
+        bool show = !string.IsNullOrEmpty(key);
+        purchaseStatusText.gameObject.SetActive(show);
+        if (show) purchaseStatusText.text = LocalizationManager.Get(key);
+    }
+
+    #endregion
 
     // Audio Callbacks
     private void OnMasterVolumeChanged(float value)
@@ -516,6 +657,14 @@ public class SettingsManager : MonoBehaviour
     {
         // Unregister from dependency registry
         DependencyRegistry.Unregister<SettingsManager>(this);
+
+        // PurchaseManager outlives this scene, so these would otherwise leak a dead panel.
+        RemoveAds.Changed -= OnRemoveAdsChanged;
+        if (subscribedPurchases != null)
+        {
+            subscribedPurchases.StateChanged -= RefreshPurchaseUI;
+            subscribedPurchases.PlayerActionFinished -= OnPurchaseActionFinished;
+        }
 
         // Clean up slider listeners
         if (masterVolumeSlider != null)

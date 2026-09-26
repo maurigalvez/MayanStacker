@@ -15,4 +15,6 @@
     </activity>
   </application>
   <uses-permission android:name="android.permission.VIBRATE" />
+  <!-- Play Billing (Remove Ads). The billing AAR merges this in too; declared here so it survives manifest edits. -->
+  <uses-permission android:name="com.android.vending.BILLING" />
 </manifest>

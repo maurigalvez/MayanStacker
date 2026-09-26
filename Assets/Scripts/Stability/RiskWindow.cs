@@ -105,6 +105,9 @@ public class RiskWindow : MonoBehaviour
     private const float IntroBannerHold = 3.4f;
     private const float FollowupBannerHold = 2.4f;
 
+    // The guide lane's lesson id: the intro and its follow-up share one run's lesson slot.
+    private const string EdgeLessonId = "serpents_edge";
+
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     private static void Bootstrap()
     {
@@ -225,7 +228,8 @@ public class RiskWindow : MonoBehaviour
         if (IsSweet && !wasSweet && settings.edgeSweetSpotHaptic) HapticFeedback.Trigger(HapticFeedback.HapticType.Light);
         wasSweet = IsSweet;
 
-        if (IsAvailable && !introActive && !FtueState.HasSeenEdgeIntro)
+        // Waits for a run whose lesson slot is still free; CanTeach is cheap enough per frame.
+        if (IsAvailable && !introActive && !FtueState.HasSeenEdgeIntro && GuideLane.CanTeach(EdgeLessonId))
         {
             BeginIntro();
         }
@@ -348,8 +352,7 @@ public class RiskWindow : MonoBehaviour
         if (stability != null) stability.Highlight(introActive ? FollowupBannerHold : 0.9f);
 
         // In regular play the "Serpent's Edge xN" callout is a line on UIManager's landing
-        // label, not a banner - a full-width strip here sat on top of the points/combo popup.
-        // Only the FTUE follow-up still uses the banner, placed in the lower screen.
+        // label. Only the lesson's follow-up speaks, in the guide lane.
         if (!introActive) return;
 
         // The trembling warning outranks the follow-up. If the meter hasn't processed this
@@ -359,12 +362,11 @@ public class RiskWindow : MonoBehaviour
             // Only a Perfect (the sweet spot) earns the full xN; anything else scored a Good or
             // worse and broke the combo, so the follow-up teaches the timing instead of cheering.
             bool perfect = block.LandingAccuracy >= gameManager.PerfectThreshold;
-            RunBanner.Show(
+            GuideLane.TryTeach(EdgeLessonId,
                 LocalizationManager.Get(perfect ? "edge_intro_followup_title" : "edge_intro_early_title", FormatMultiplier()),
                 LocalizationManager.Get(perfect ? "edge_intro_followup_body" : "edge_intro_early_body", FormatMultiplier()),
                 RunOverlayUI.Gold,
-                FollowupBannerHold,
-                settings.edgeIntroBannerYOffset);
+                FollowupBannerHold);
         }
 
         CompleteIntro("taken");
@@ -374,15 +376,17 @@ public class RiskWindow : MonoBehaviour
 
     private void BeginIntro()
     {
+        if (!GuideLane.TryTeach(EdgeLessonId,
+                LocalizationManager.Get("edge_intro_title"),
+                LocalizationManager.Get("edge_intro_body", FormatMultiplier()),
+                RunOverlayUI.Gold,
+                IntroBannerHold))
+        {
+            return;
+        }
+
         introActive = true;
         introDrops = 0;
-
-        RunBanner.Show(
-            LocalizationManager.Get("edge_intro_title"),
-            LocalizationManager.Get("edge_intro_body", FormatMultiplier()),
-            RunOverlayUI.Gold,
-            IntroBannerHold,
-            settings.edgeIntroBannerYOffset);
 
         // Point at the cost as well as the reward.
         TowerStability stability = TowerStability.Instance;

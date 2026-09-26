@@ -341,6 +341,8 @@ public class MainMenuManager : MonoBehaviour
         if (backFromLevelSelectionButton != null)
             backFromLevelSelectionButton.onClick.AddListener(ShowMainMenu);
 
+        BackButton.Register(OnBackPressed);
+
         // Level Selection - Codex and Leaderboard buttons
         if (codexButtonFromLevelSelection != null)
             codexButtonFromLevelSelection.onClick.AddListener(OnCodexFromLevelSelection);
@@ -1413,8 +1415,45 @@ public class MainMenuManager : MonoBehaviour
         HideSyncScreen();
     }
 
+    /// <summary>
+    /// Android back on the menu: an open panel goes back through its own Back button (so
+    /// codex/leaderboard still return to wherever they were opened from); the root screen
+    /// asks before quitting.
+    /// </summary>
+    private bool OnBackPressed()
+    {
+        // The sync overlay hides itself; don't act on the menu underneath it
+        if (syncPanel != null && syncPanel.activeInHierarchy) return true;
+
+        if (TryPressBack(codexPanel, backFromCodexButton)) return true;
+        if (TryPressBack(leaderboardPanel, backFromLeaderboardButton)) return true;
+        if (TryPressBack(achievementPanel, backFromAchievementButton)) return true;
+        if (TryPressBack(settingsPanel, backFromSettingsButton)) return true;
+        if (TryPressBack(creditsPanel, backFromCreditsButton)) return true;
+        if (TryPressBack(levelSelectionPanel, backFromLevelSelectionButton)) return true;
+
+        if (mainMenuPanel != null && mainMenuPanel.activeInHierarchy)
+        {
+            QuitConfirmView.Show();
+            return true;
+        }
+
+        return false;
+    }
+
+    private static bool TryPressBack(GameObject panel, Button backButton)
+    {
+        if (panel == null || !panel.activeInHierarchy) return false;
+        if (backButton == null || !backButton.isActiveAndEnabled || !backButton.interactable) return true;
+
+        backButton.onClick.Invoke();
+        return true;
+    }
+
     private void OnDestroy()
     {
+        BackButton.Unregister(OnBackPressed);
+
         // Unsubscribe from PlayFab events
         if (playFabManager != null)
         {

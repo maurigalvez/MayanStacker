@@ -101,8 +101,6 @@ public class PowerSettings : ScriptableObject
     [Min(1)]
     public int introMaxDrops = 4;
 
-    public float introBannerYOffset = -180f;
-
     [Header("Button (code-built layout; a prefab's own placement wins)")]
     [Tooltip("Bottom-left, on the same line as the Kukulkan medallion - keep it in the HUD strip, off the playfield.")]
     public Vector2 buttonAnchor = new Vector2(0f, 0f);

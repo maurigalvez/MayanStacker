@@ -145,18 +145,9 @@ public class StabilitySettings : ScriptableObject
     public float edgeZoneMinWidth = 60f;
     public int edgeCanvasSortingOrder = 2990;
 
-    [Tooltip("Vertical position of the first-time Serpent's Edge intro banners (FTUE only; " +
-             "in regular play the xN callout is a line on the landing label). The banner is a " +
-             "full-width strip, so it sits in the lower screen, clear of the swing (where the " +
-             "x3 markers are), the landing popup at screen center, and the Tremor meter.")]
-    public float edgeIntroBannerYOffset = -560f;
-
     [Header("Meter UI (1080x1920 reference)")]
     public Vector2 barAnchor = new Vector2(1f, 0.5f);
     public Vector2 barPosition = new Vector2(-56f, 0f);
     public Vector2 barSize = new Vector2(36f, 520f);
     public int canvasSortingOrder = 3000;
-
-    [Tooltip("Vertical offset of the one-time explainer banner.")]
-    public float introBannerYOffset = 260f;
 }

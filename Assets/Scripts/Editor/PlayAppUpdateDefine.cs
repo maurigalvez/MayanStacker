@@ -51,11 +51,11 @@ public static class PlayAppUpdateDefine
     [MenuItem("TamalStacker/Retention/Refresh In-App Update Support")]
     public static void Sync()
     {
-        bool pluginPresent = IsPluginPresent();
+        bool pluginPresent = IsTypePresent(PluginTypeName);
 
         var changed = new List<string>();
-        SyncPlayerSettings(pluginPresent, changed);
-        SyncBuildProfiles(pluginPresent, changed);
+        SyncPlayerSettings(Symbol, pluginPresent, changed);
+        SyncBuildProfiles(Symbol, pluginPresent, changed);
 
         if (changed.Count == 0) return;
 
@@ -71,17 +71,17 @@ public static class PlayAppUpdateDefine
     /// overrides is active, this API is wired to that profile's copy rather than the global
     /// one — which is exactly why the profile pass below exists as well.
     /// </summary>
-    private static void SyncPlayerSettings(bool wanted, List<string> changed)
+    internal static void SyncPlayerSettings(string symbol, bool wanted, List<string> changed)
     {
         var target = NamedBuildTarget.Android;
         PlayerSettings.GetScriptingDefineSymbols(target, out string[] defines);
 
-        bool present = Array.IndexOf(defines, Symbol) >= 0;
+        bool present = Array.IndexOf(defines, symbol) >= 0;
         if (present == wanted) return;
 
         var updated = new List<string>(defines);
-        if (wanted) updated.Add(Symbol);
-        else updated.Remove(Symbol);
+        if (wanted) updated.Add(symbol);
+        else updated.Remove(symbol);
 
         PlayerSettings.SetScriptingDefineSymbols(target, updated.ToArray());
         changed.Add("Player Settings");
@@ -91,7 +91,7 @@ public static class PlayAppUpdateDefine
     /// Every Android build profile in the project, whether or not it is the active one — a
     /// profile that is wrong only at build time is the worst kind of wrong.
     /// </summary>
-    private static void SyncBuildProfiles(bool wanted, List<string> changed)
+    internal static void SyncBuildProfiles(string symbol, bool wanted, List<string> changed)
     {
         foreach (string guid in AssetDatabase.FindAssets("t:BuildProfile"))
         {
@@ -108,14 +108,14 @@ public static class PlayAppUpdateDefine
             var listProp = so.FindProperty("m_ScriptingDefines");
             if (hasProp == null || listProp == null) continue;
 
-            int index = IndexOf(listProp, Symbol);
+            int index = IndexOf(listProp, symbol);
             bool present = index >= 0;
             if (present == wanted) continue;
 
             if (wanted)
             {
                 listProp.InsertArrayElementAtIndex(listProp.arraySize);
-                listProp.GetArrayElementAtIndex(listProp.arraySize - 1).stringValue = Symbol;
+                listProp.GetArrayElementAtIndex(listProp.arraySize - 1).stringValue = symbol;
                 hasProp.boolValue = true;
             }
             else
@@ -140,14 +140,14 @@ public static class PlayAppUpdateDefine
         return -1;
     }
 
-    private static bool IsPluginPresent()
+    internal static bool IsTypePresent(string typeName)
     {
         foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
         {
             // A dynamic or unloadable assembly can throw on GetType; none of those are ours.
             try
             {
-                if (assembly.GetType(PluginTypeName, throwOnError: false) != null) return true;
+                if (assembly.GetType(typeName, throwOnError: false) != null) return true;
             }
             catch (Exception)
             {

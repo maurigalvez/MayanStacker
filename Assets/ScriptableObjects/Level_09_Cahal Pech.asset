@@ -37,7 +37,7 @@ MonoBehaviour:
   capstonePayoff: 1
   capstoneSilhouette: {fileID: 0}
   rainSettings:
-    slideFraction: 0.35
-    maxSlideOfWidth: 0.14
+    slideFraction: 0.42
+    maxSlideOfWidth: 0.168
     slideSeconds: 0.28
     poorSlides: 1

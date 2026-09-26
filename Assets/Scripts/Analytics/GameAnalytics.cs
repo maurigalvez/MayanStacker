@@ -211,6 +211,31 @@ public static class GameAnalytics
             "lifetime_runs", lifetimeRuns));
     }
 
+    /// <summary>
+    /// A step in an in-app purchase. <paramref name="stage"/> is started / restore_started,
+    /// or one of PurchaseManager.Outcome (Purchased, Restored, NothingToRestore, Pending,
+    /// Cancelled, Failed, StoreUnavailable). Started against Purchased is the conversion
+    /// rate of the Play sheet itself. The offer card adds offer_shown / offer_declined.
+    /// <paramref name="source"/> is the placement that opened the offer (settings, main_menu,
+    /// result_card), carried through to the purchase result so each placement's conversion
+    /// can be compared. Null for restores and store housekeeping.
+    /// </summary>
+    public static void Purchase(string productId, string stage, string source = null)
+    {
+        if (string.IsNullOrEmpty(source))
+        {
+            Track("iap", Data(
+                "product", productId,
+                "stage", stage));
+            return;
+        }
+
+        Track("iap", Data(
+            "product", productId,
+            "stage", stage,
+            "source", source));
+    }
+
     /// <summary>An interstitial was suppressed by the FTUE grace period.</summary>
     public static void AdSuppressed(string reason, int lifetimeRuns)
     {

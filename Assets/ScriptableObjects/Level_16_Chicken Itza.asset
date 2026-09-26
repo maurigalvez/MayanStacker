@@ -30,7 +30,7 @@ MonoBehaviour:
   oneStarScore: 1850
   twoStarScore: 3750
   threeStarScore: 6650
-  swingSpeedMultiplier: 1.35
+  swingSpeedMultiplier: 1.25
   swingAmplitudeMultiplier: 1.25
   gameMusic: {fileID: 8300000, guid: 81c7c67fd9b57b24687ca3d54d8c683a, type: 3}
   rule: 2
@@ -38,8 +38,10 @@ MonoBehaviour:
   capstonePayoff: 1
   capstoneSilhouette: {fileID: 0}
   windSettings:
-    swingPush: 0.55
-    fallPush: 1.3
+    swingPush: 0.45
+    fallPush: 1
     stonesPerGust: 4
-    gustRampSeconds: 1.5
-    firstAtHeight: 2
+    gustRampSeconds: 1.7
+    firstAtHeight: 3
+    leadSeconds: 0.8
+    steadyDirection: 0

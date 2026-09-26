@@ -45,7 +45,7 @@ MonoBehaviour:
     darkness: 0.9
     skyDim: 0.25
   rainSettings:
-    slideFraction: 0.4
-    maxSlideOfWidth: 0.16
+    slideFraction: 0.48
+    maxSlideOfWidth: 0.192
     slideSeconds: 0.27
     poorSlides: 1

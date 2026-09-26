@@ -36,7 +36,6 @@ MonoBehaviour:
   bladeHitStop: 0.06
   bladeFlash: {r: 0.8, g: 0.78, b: 1, a: 0.3}
   introMaxDrops: 4
-  introBannerYOffset: -180
   buttonAnchor: {x: 0, y: 0}
   buttonPosition: {x: 125, y: 125}
   buttonSize: {x: 160, y: 160}

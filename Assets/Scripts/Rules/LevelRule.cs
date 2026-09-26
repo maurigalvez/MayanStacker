@@ -57,6 +57,15 @@ public class JungleWindSettings
     [Tooltip("No wind before the stack is this tall.")]
     [Min(0)]
     public int firstAtHeight = 2;
+
+    [Tooltip("Seconds the streaks, leaves and gust sound show a new gust before it starts to push, " +
+             "so the player can read the wind before it bites.")]
+    [Range(0f, 2f)]
+    public float leadSeconds = 0.7f;
+
+    [Tooltip("Every gust blows the same way (only its strength changes). Used on the first wind " +
+             "temple so the player learns 'aim upwind' before the wind starts turning.")]
+    public bool steadyDirection;
 }
 
 /// <summary>Per-level tuning for <see cref="LevelRule.RainSlick"/>. Estimates; tune on device.</summary>
@@ -65,11 +74,11 @@ public class RainSlickSettings
 {
     [Tooltip("Share of a non-Perfect landing's offset that the stone slides further out.")]
     [Range(0f, 1f)]
-    public float slideFraction = 0.35f;
+    public float slideFraction = 0.42f;
 
     [Tooltip("Longest slide, as a share of the stone's width, so a slide never throws a stone off on its own.")]
     [Range(0f, 0.4f)]
-    public float maxSlideOfWidth = 0.14f;
+    public float maxSlideOfWidth = 0.168f;
 
     [Tooltip("Realtime seconds the slide takes.")]
     [Range(0.05f, 1f)]
@@ -106,7 +115,7 @@ public class EarthquakeSettings
     [Tooltip("Sideways speed a jolt gives the top stone when not braced, in world units/s. " +
              "Lower stones get less, in proportion to their height.")]
     [Range(0f, 4f)]
-    public float joltSpeed = 1.1f;
+    public float joltSpeed = 1.5f;
 
     [Tooltip("Share of the jolt that still lands while the player holds to brace.")]
     [Range(0f, 1f)]

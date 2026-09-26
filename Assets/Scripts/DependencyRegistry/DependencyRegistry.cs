@@ -48,4 +48,13 @@ public class DependencyRegistry
         Debug.LogWarning($"Dependency of type {type} not found.");
         return null;
     }
+
+    /// <summary>
+    /// Find without the "not found" warning, for callers that poll until a dependency appears.
+    /// </summary>
+    public static bool TryFind<T>(out T dependency) where T : class
+    {
+        dependency = Instance._dependencies.TryGetValue(typeof(T), out var obj) ? obj as T : null;
+        return dependency != null;
+    }
 }

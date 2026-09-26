@@ -323,6 +323,8 @@ public class UIManager : MonoBehaviour
             pauseButton.onClick.AddListener(TogglePause);
         }
 
+        BackButton.Register(OnBackPressed);
+
         if (resumeButton != null)
         {
             resumeButton.onClick.AddListener(ResumeGame);
@@ -567,22 +569,6 @@ public class UIManager : MonoBehaviour
         // Instructions will be shown after title finishes (handled in GameTitleRoutine)
     }
 
-    private IEnumerator InstructionRoutine()
-    {
-        // A flat 3s was too quick for two lines someone is reading for the first time while
-        // a block swings overhead, so the hold follows the length of the copy instead.
-        string copy = instructionsText != null ? instructionsText.text : null;
-        yield return new WaitForSeconds(ReadingTime.For(copy));
-
-        HideInstructions();
-
-        // Mark that player has seen instructions in Infinite Mode
-        if (gameManager != null && gameManager.CurrentGameMode == GameMode.InfiniteStacker)
-        {
-            PlayerPrefs.SetInt(INSTRUCTIONS_SEEN_KEY, 1);
-            PlayerPrefs.Save();
-        }
-    }
 
     private void OnGameOver()
     {
@@ -1127,12 +1113,9 @@ public class UIManager : MonoBehaviour
         // Don't show title here - OnGameStart() will be called after RestartGame() and will show it
         // This prevents the title from showing twice during restart
 
-        // Instructions will be shown after title finishes if needed (handled in GameTitleRoutine)
-        // Otherwise, make sure they're hidden
-        if (!ShouldShowInstructions())
-        {
-            HideInstructions();
-        }
+        // Instructions are taught through the guide lane after the title (GameTitleRoutine);
+        // the scene's old label only ever needs to stay hidden.
+        HideInstructions();
     }
 
     /// <summary>
@@ -1141,83 +1124,49 @@ public class UIManager : MonoBehaviour
     /// </summary>
     private void OnFtueGraceRetry()
     {
-        ShowTutorialMessage(LocalizationManager.Get("ftue_grace_retry"));
+        string message = LocalizationManager.Get("ftue_grace_retry");
+        GuideLane.Say(message, null, RunOverlayUI.Parchment, ReadingTime.For(message));
     }
 
     /// <summary>
-    /// Determines if instructions should be shown based on game mode and player experience
+    /// The one-time "how to play" line, for a player who reaches Infinite without having
+    /// seen it. The FTUE tutorial teaches the tap on the first run, so Level Mode no longer
+    /// repeats this on every replay of the first temple.
     /// </summary>
     private bool ShouldShowInstructions()
     {
         if (gameManager == null) return false;
 
-        // The FTUE tutorial owns the instruction label when it's running — it gates on the
-        // player's actions rather than a timer, so the old one-shot overlay must stay out
-        // of its way.
+        // The tutorial is teaching the tap itself on this run.
         if (FtueState.NeedsTutorial) return false;
 
-        // In Level Mode: Only show for level 1
-        if (gameManager.CurrentGameMode == GameMode.StackerLevels)
-        {
-            if (levelManager != null && levelManager.CurrentLevelIndex == 0)
-            {
-                return true; // Level 1 (index 0)
-            }
-            return false;
-        }
-
-        // In Infinite Mode: Only show if player hasn't seen instructions before
-        if (gameManager.CurrentGameMode == GameMode.InfiniteStacker)
-        {
-            bool hasSeenInstructions = PlayerPrefs.GetInt(INSTRUCTIONS_SEEN_KEY, 0) == 1;
-            return !hasSeenInstructions;
-        }
-
-        return false;
-    }
-
-    private void ShowInstructions()
-    {
-        if (instructionsText != null)
-        {
-            instructionsText.text = LocalizationManager.Get("instructions");
-            UIPopup.Show(instructionsText.gameObject);
-        }
-    }
-
-    private void HideInstructions()
-    {
-        if (instructionsText != null)
-        {
-            UIPopup.Hide(instructionsText.gameObject);
-        }
+        if (gameManager.CurrentGameMode != GameMode.InfiniteStacker) return false;
+        return PlayerPrefs.GetInt(INSTRUCTIONS_SEEN_KEY, 0) == 0;
     }
 
     /// <summary>
-    /// Drives the instruction label for the FTUE tutorial. Kept public so FtueTutorial can
-    /// own the copy and the timing without duplicating the label or its styling.
+    /// Teaches the instructions through the guide lane. Counts as the run's one lesson, and
+    /// only marks itself seen when the lane actually took it.
     /// </summary>
-    public void ShowTutorialMessage(string message)
+    private void ShowInstructions()
     {
-        if (instructionsText == null) return;
+        string copy = LocalizationManager.Get("instructions");
+        if (!GuideLane.TryTeach("instructions", copy, null, RunOverlayUI.Parchment, ReadingTime.For(copy))) return;
 
-        GameObject label = instructionsText.gameObject;
-        if (!label.activeSelf || UIPopup.IsHiding(label))
-        {
-            // Appearing: the whole label pops in, so don't also pulse the new text.
-            instructionsText.text = message;
-            UIPopup.Show(label);
-        }
-        else
-        {
-            SetTextAnimated(instructionsText, message);
-        }
+        PlayerPrefs.SetInt(INSTRUCTIONS_SEEN_KEY, 1);
+        PlayerPrefs.Save();
     }
 
-    /// <summary>Hides the instruction label on the tutorial's behalf.</summary>
-    public void HideTutorialMessage()
+    /// <summary>
+    /// The scene's authored instruction label is retired — every lesson now lives in the
+    /// guide lane — but it is still switched off here in case the scene has it visible.
+    /// </summary>
+    private void HideInstructions()
     {
-        HideInstructions();
+        if (instructionsText != null && instructionsText.gameObject.activeSelf)
+        {
+            UIPopup.Hide(instructionsText.gameObject);
+        }
     }
 
     /// <summary>The canvas the tutorial parents its Skip control to.</summary>
@@ -1508,7 +1457,6 @@ public class UIManager : MonoBehaviour
         if (ShouldShowInstructions())
         {
             ShowInstructions();
-            StartCoroutine(InstructionRoutine());
         }
     }
 
@@ -2870,6 +2818,29 @@ public class UIManager : MonoBehaviour
     }
 
     /// <summary>
+    /// Android back in a run: pause a live run, resume from the pause menu. Leaving the run
+    /// stays an explicit tap on the pause menu's Home button. Anything else (result card,
+    /// the pre-run countdown, a modal that froze time itself) ignores the press.
+    /// </summary>
+    private bool OnBackPressed()
+    {
+        if (isPaused)
+        {
+            ResumeGame(); // no-op while the pause menu is already closing
+            return true;
+        }
+
+        if (gameManager == null || !gameManager.IsGameActive || gameManager.IsGameOver) return false;
+
+        // Time already stopped by another modal (boon picker, tutorial card): that screen
+        // owns this moment, and pausing under it would leave time frozen when it closes.
+        if (Time.timeScale == 0f) return false;
+
+        PauseGame();
+        return true;
+    }
+
+    /// <summary>
     /// Pauses the game and shows pause menu
     /// </summary>
     private void PauseGame()
@@ -3073,6 +3044,8 @@ public class UIManager : MonoBehaviour
         {
             mainMenuButton.onClick.RemoveListener(GoToMainMenu);
         }
+
+        BackButton.Unregister(OnBackPressed);
 
         // Remove pause menu button listeners
         if (pauseButton != null)

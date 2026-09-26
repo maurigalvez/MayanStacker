@@ -117,6 +117,11 @@ public class PlayerDataReset : MonoBehaviour
         PlayerPrefs.DeleteKey("AppUpdate_SnoozedVersion");
         PlayerPrefs.DeleteKey("AppUpdate_SnoozedAt");
 
+        // Only the local cache: on a Play build the purchase itself is restored on the next
+        // launch, which is exactly what a reset should prove.
+        RemoveAds.ResetCache();
+        RemoveAdsOffer.ResetPacing();
+
         // Onboarding, streak and reminder state — without this a reset player keeps their
         // ad grace burned and never sees the tutorial again, which makes FTUE untestable.
         FtueState.ResetAll();

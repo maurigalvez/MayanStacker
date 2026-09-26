@@ -15,7 +15,6 @@ public class TempleRules : MonoBehaviour
 {
     private const float IntroDelaySeconds = 1.1f;
     private const float IntroHoldSeconds = 3.2f;
-    private const float IntroYOffset = -180f; // below centre: the swing band is up top
 
     private static TempleRules instance;
 
@@ -102,7 +101,7 @@ public class TempleRules : MonoBehaviour
 
         LevelData level = levelManager != null ? levelManager.CurrentLevel : null;
         if (level == null || level.rule == LevelRule.None && level.secondRule == LevelRule.None) return;
-        if (!introducedThisSession.Add(level.levelNumber)) return;
+        if (introducedThisSession.Contains(level.levelNumber)) return;
 
         if (introRoutine != null) StopCoroutine(introRoutine);
         introRoutine = StartCoroutine(ShowIntro(level));
@@ -132,7 +131,10 @@ public class TempleRules : MonoBehaviour
             body = LocalizationManager.Get(ShortKey(first)) + "\n" + LocalizationManager.Get(ShortKey(second));
         }
 
-        RunBanner.Show(title, body, RunOverlayUI.Gold, IntroHoldSeconds, IntroYOffset);
+        // A refused lesson (the tutorial run, or another lesson got there first) stays owed
+        // and is taught on the next run of this temple instead.
+        if (!GuideLane.TryTeach("temple_rule", title, body, RunOverlayUI.Gold, IntroHoldSeconds)) yield break;
+        introducedThisSession.Add(level.levelNumber);
 
         TempleRuleArt art = TempleRuleArt.Current;
         if (art.ruleIntroSting != null && soundManager != null) soundManager.PlaySound(art.ruleIntroSting, 0.9f);

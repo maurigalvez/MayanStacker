@@ -343,15 +343,20 @@ public class TowerStability : MonoBehaviour
         // The tutorial has its own Tremor beat (FtueTutorial), which marks this seen.
         if (FtueState.NeedsTutorial) return;
 
-        PlayerPrefs.SetInt(IntroSeenKey, 1);
-        PlayerPrefs.Save();
+        // Another lesson already had this run: stay unseen and teach on a later one.
+        if (!GuideLane.CanTeach("tremor")) return;
 
-        RunBanner.Show(
+        GuideLane.TryTeach("tremor",
             LocalizationManager.Get("stability_intro_title"),
             LocalizationManager.Get("stability_intro_body"),
             RunOverlayUI.Gold,
-            2.6f,
-            settings.introBannerYOffset);
+            2.6f);
+
+        PlayerPrefs.SetInt(IntroSeenKey, 1);
+        PlayerPrefs.Save();
+
+        // The lane is at the bottom; the pulse is what points at the meter itself.
+        Highlight(2.6f);
 
         GameAnalytics.Track("tremor_intro_shown");
     }

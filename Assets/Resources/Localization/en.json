@@ -449,6 +449,70 @@
       "value": "Rate this game"
     },
     {
+      "key": "settings_remove_ads",
+      "value": "Remove Ads"
+    },
+    {
+      "key": "settings_remove_ads_price",
+      "value": "Remove Ads · {0}"
+    },
+    {
+      "key": "settings_ads_removed",
+      "value": "Ads removed — thank you!"
+    },
+    {
+      "key": "settings_restore_purchases",
+      "value": "Restore Purchases"
+    },
+    {
+      "key": "iap_pending",
+      "value": "Purchase pending — waiting for payment."
+    },
+    {
+      "key": "iap_failed",
+      "value": "The purchase didn't go through. Please try again."
+    },
+    {
+      "key": "iap_store_unavailable",
+      "value": "Can't reach the store right now."
+    },
+    {
+      "key": "iap_restored",
+      "value": "Purchases restored."
+    },
+    {
+      "key": "iap_nothing_to_restore",
+      "value": "No purchases to restore."
+    },
+    {
+      "key": "remove_ads_offer_title",
+      "value": "Remove Ads"
+    },
+    {
+      "key": "remove_ads_offer_price",
+      "value": "{0} · one-time purchase"
+    },
+    {
+      "key": "remove_ads_offer_body",
+      "value": "No more ads between runs.\nPay once. No subscription.\nLinked to your Google Play account, so it comes back on a new device."
+    },
+    {
+      "key": "remove_ads_offer_buy",
+      "value": "Buy · {0}"
+    },
+    {
+      "key": "remove_ads_offer_decline",
+      "value": "Not now"
+    },
+    {
+      "key": "remove_ads_nudge",
+      "value": "Tired of ads? Remove them"
+    },
+    {
+      "key": "remove_ads_chip",
+      "value": "No Ads"
+    },
+    {
       "key": "notif_lapse_body_site",
       "value": "{0} is still unfinished."
     },
@@ -827,6 +891,10 @@
     { "key": "quake_hold", "value": "HOLD TO BRACE!" },
     { "key": "quake_braced", "value": "BRACED!" },
     { "key": "quake_survived", "value": "The ground is still" },
-    { "key": "cenote_warning", "value": "The water is rising!" }
+    { "key": "cenote_warning", "value": "The water is rising!" },
+    { "key": "quit_confirm_title", "value": "Leave the Temple?" },
+    { "key": "quit_confirm_body", "value": "Your progress is saved. The tower will wait for you." },
+    { "key": "quit_confirm_leave", "value": "Leave" },
+    { "key": "quit_confirm_stay", "value": "Stay" }
   ]
 }

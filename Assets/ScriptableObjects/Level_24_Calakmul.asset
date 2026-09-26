@@ -54,5 +54,5 @@ MonoBehaviour:
     warningSeconds: 1.3
     quakeSeconds: 2.4
     joltsPerSecond: 3.2
-    joltSpeed: 1.1
+    joltSpeed: 1.5
     bracedFactor: 0.15

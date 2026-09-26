@@ -449,6 +449,70 @@
       "value": "このゲームを評価"
     },
     {
+      "key": "settings_remove_ads",
+      "value": "広告を削除"
+    },
+    {
+      "key": "settings_remove_ads_price",
+      "value": "広告を削除 · {0}"
+    },
+    {
+      "key": "settings_ads_removed",
+      "value": "広告を削除しました。ありがとう！"
+    },
+    {
+      "key": "settings_restore_purchases",
+      "value": "購入を復元"
+    },
+    {
+      "key": "iap_pending",
+      "value": "購入処理中です。支払いを待っています。"
+    },
+    {
+      "key": "iap_failed",
+      "value": "購入が完了しませんでした。もう一度お試しください。"
+    },
+    {
+      "key": "iap_store_unavailable",
+      "value": "現在ストアに接続できません。"
+    },
+    {
+      "key": "iap_restored",
+      "value": "購入を復元しました。"
+    },
+    {
+      "key": "iap_nothing_to_restore",
+      "value": "復元できる購入はありません。"
+    },
+    {
+      "key": "remove_ads_offer_title",
+      "value": "広告を削除"
+    },
+    {
+      "key": "remove_ads_offer_price",
+      "value": "{0} · 買い切り"
+    },
+    {
+      "key": "remove_ads_offer_body",
+      "value": "プレイの合間の広告が表示されなくなります。\n一度の購入のみ。定期購入ではありません。\nGoogle Play アカウントに紐づくので、新しい端末でも復元できます。"
+    },
+    {
+      "key": "remove_ads_offer_buy",
+      "value": "購入 · {0}"
+    },
+    {
+      "key": "remove_ads_offer_decline",
+      "value": "今はしない"
+    },
+    {
+      "key": "remove_ads_nudge",
+      "value": "広告にうんざり？ 広告を削除"
+    },
+    {
+      "key": "remove_ads_chip",
+      "value": "広告なし"
+    },
+    {
       "key": "notif_lapse_body_site",
       "value": "{0}はまだ未完成だ。"
     },
@@ -827,6 +891,10 @@
     { "key": "quake_hold", "value": "長押しで支えろ！" },
     { "key": "quake_braced", "value": "耐えた！" },
     { "key": "quake_survived", "value": "大地が静まった" },
-    { "key": "cenote_warning", "value": "水位が上がっている！" }
+    { "key": "cenote_warning", "value": "水位が上がっている！" },
+    { "key": "quit_confirm_title", "value": "神殿を離れますか？" },
+    { "key": "quit_confirm_body", "value": "進行状況は保存されています。塔はあなたを待っています。" },
+    { "key": "quit_confirm_leave", "value": "離れる" },
+    { "key": "quit_confirm_stay", "value": "とどまる" }
   ]
 }

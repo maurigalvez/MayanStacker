@@ -23,6 +23,7 @@ MonoBehaviour:
   m_HasScriptingDefines: 1
   m_ScriptingDefines:
   - PLAY_APP_UPDATE
+  - UNITY_PURCHASING_IAP
   m_PlayerSettingsYaml:
     m_Settings:
     - line: '| PlayerSettings:'

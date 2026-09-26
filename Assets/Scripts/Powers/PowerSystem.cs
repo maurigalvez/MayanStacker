@@ -35,6 +35,9 @@ public class PowerSystem : MonoBehaviour
     /// <summary>Authored meter prefab that replaces the code-built button when present.</summary>
     public const string MeterPrefabResourcePath = "UI/PowerMeter";
 
+    // One guide-lane lesson id for every power: a run teaches at most one of them.
+    private const string PowerLessonId = "power";
+
     private static PowerSystem instance;
 
     public static PowerSystem Instance => instance;
@@ -261,7 +264,7 @@ public class PowerSystem : MonoBehaviour
 
         GameAnalytics.Track("power_meter_full", RunEventData());
 
-        if (!introActive && !PowerUnlocks.HasSeenIntro(equipped)) BeginIntro();
+        if (!introActive && !PowerUnlocks.HasSeenIntro(equipped) && GuideLane.CanTeach(PowerLessonId)) BeginIntro();
     }
 
     // ---- Firing ----
@@ -297,7 +300,8 @@ public class PowerSystem : MonoBehaviour
         charge = Mathf.Max(0f, charge - 1f);
 
         // No score of its own and no Perfect: every stone keeps the landing it earned.
-        RunBanner.Show(LocalizationManager.Get(def.nameKey), def.accentColor, 0.9f, settings.introBannerYOffset);
+        // Named in the lane, right above the button that fired it.
+        GuideLane.Say(LocalizationManager.Get(def.nameKey), null, def.accentColor, 0.9f);
 
         GameAnalytics.Track("power_used", data);
         OnPowerUsed?.Invoke(id);
@@ -475,17 +479,19 @@ public class PowerSystem : MonoBehaviour
     {
         PowerDefinition def = settings.Get(equipped);
 
+        if (!GuideLane.TryTeach(PowerLessonId,
+                LocalizationManager.Get("power_intro_title", LocalizationManager.Get(def.nameKey)),
+                // {0} is the Quetzal Feather's drop count; the other descriptions have no slot.
+                LocalizationManager.Get(def.descriptionKey, settings.quetzalDrops),
+                def.accentColor,
+                3.4f))
+        {
+            return;
+        }
+
         introActive = true;
         introDrops = 0;
         highlightUntil = Time.unscaledTime + 3.4f;
-
-        RunBanner.Show(
-            LocalizationManager.Get("power_intro_title", LocalizationManager.Get(def.nameKey)),
-            // {0} is the Quetzal Feather's drop count; the other descriptions have no slot.
-            LocalizationManager.Get(def.descriptionKey, settings.quetzalDrops),
-            def.accentColor,
-            3.4f,
-            settings.introBannerYOffset);
 
         var data = RunEventData();
         data["power"] = def.id.ToString();

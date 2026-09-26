@@ -342,3 +342,17 @@
 # Play Core's shared plumbing, used by both the update and review flows.
 -keep class com.google.android.play.core.common.** { *; }
 -dontwarn com.google.android.play.core.**
+
+# ---------------------------------------------------------------------------
+# Play Billing (com.android.billingclient:billing, injected by Unity IAP 5)
+#
+# Unity IAP drives BillingClient entirely through JNI and implements its listeners
+# (PurchasesUpdatedListener, BillingClientStateListener, ProductDetailsResponseListener...)
+# as AndroidJavaProxy, which binds by class and method name at runtime. R8 sees no Java
+# caller, so without these rules a minified release build connects to nothing and the
+# Remove Ads button stays unavailable.
+# ---------------------------------------------------------------------------
+-keep class com.android.billingclient.** { *; }
+-keep interface com.android.billingclient.** { *; }
+-keep class com.android.vending.billing.** { *; }
+-dontwarn com.android.billingclient.**

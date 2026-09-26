@@ -27,7 +27,6 @@ public static class FtueTutorialPrefabSetup
     // Same Mayan temple palette as the code-built controls, so the generated prefab is a
     // faithful starting point rather than a different-looking placeholder.
     private static readonly Color Stone = new Color(0.06f, 0.09f, 0.08f, 0.55f);
-    private static readonly Color Parchment = new Color(0.93f, 0.90f, 0.82f, 1f);
     private static readonly Color SkipLabel = new Color(0.85f, 0.89f, 0.85f, 0.9f);
 
     [MenuItem("TamalStacker/FTUE/Create Tutorial Prefab")]
@@ -57,9 +56,8 @@ public static class FtueTutorialPrefabSetup
 
         EditorUtility.DisplayDialog("FTUE Tutorial Prefab",
             "Created " + PrefabPath + ".\n\n" +
-            "Open it to set the intended font on MessageText and SkipButton/Label, and to " +
-            "restyle the banner. The copy shown is only a preview — at runtime it comes from " +
-            "the localization table.\n\n" +
+            "Open it to set the intended font on SkipButton/Label. The beat lines themselves " +
+            "are styled on the Guide Lane prefab (TamalStacker ▸ UI ▸ Create Guide Lane Prefab).\n\n" +
             "Delete the prefab to go back to the code-built presentation.", "OK");
     }
 
@@ -79,17 +77,8 @@ public static class FtueTutorialPrefabSetup
         scaler.screenMatchMode = CanvasScaler.ScreenMatchMode.MatchWidthOrHeight;
         scaler.matchWidthOrHeight = 1f;
 
-        // The banner sits below the middle of the screen: the block being taught about is
-        // swinging across the top, and a banner over it would hide the thing it describes.
-        var messagePanel = CreateChild("MessagePanel", root.transform);
-        Place(messagePanel, new Vector2(0.5f, 0.5f), new Vector2(0f, -180f), new Vector2(920f, 160f));
-        var panelImage = messagePanel.gameObject.AddComponent<Image>();
-        panelImage.color = Stone;
-        panelImage.raycastTarget = false; // never swallow the tap that drops the block
-
-        var message = CreateLabel("MessageText", messagePanel, "Tap to drop.", 44, Parchment);
-        Stretch(message.rectTransform);
-        message.enableWordWrapping = true;
+        // No message panel: the beat lines speak through the GuideLane strip (see
+        // GuideLanePrefabSetup), which every lesson shares.
 
         // A quiet corner control: it should sit back rather than compete with the copy.
         var skip = CreateChild("SkipButton", root.transform);
@@ -107,8 +96,6 @@ public static class FtueTutorialPrefabSetup
         Stretch(skipText.rectTransform);
 
         var so = new SerializedObject(root.GetComponent<FtueTutorialView>());
-        so.FindProperty("messageText").objectReferenceValue = message;
-        so.FindProperty("messagePanel").objectReferenceValue = messagePanel.gameObject;
         so.FindProperty("skipButton").objectReferenceValue = skipButton;
         so.FindProperty("skipLabel").objectReferenceValue = skipText;
         so.ApplyModifiedPropertiesWithoutUndo();
@@ -165,15 +152,6 @@ public static class FtueTutorialPrefabSetup
         rt.anchorMax = Vector2.one;
         rt.offsetMin = Vector2.zero;
         rt.offsetMax = Vector2.zero;
-    }
-
-    private static void Place(RectTransform rt, Vector2 anchor, Vector2 position, Vector2 size)
-    {
-        rt.anchorMin = rt.anchorMax = anchor;
-        rt.pivot = new Vector2(0.5f, 0.5f);
-        rt.sizeDelta = size;
-        rt.anchoredPosition = position;
-        rt.localScale = Vector3.one;
     }
 }
 #endif

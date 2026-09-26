@@ -41,6 +41,17 @@ public class PlayerIdentityView : MonoBehaviour
         }
     }
 
+    private void Update()
+    {
+        // Awake order across objects isn't fixed, so this view can come up before
+        // LocalizationManager or PlayFabManager and would then sit on the raw key
+        // ("player_identity_offline") while the sync screen already names the player.
+        // Keep binding until both exist, and re-render whenever the sign-in state moves
+        // without an event reaching us.
+        if (playFabManager == null || localization == null) Bind();
+        if (StateChanged()) Refresh();
+    }
+
     private void OnDisable()
     {
         Unbind();
@@ -56,10 +67,9 @@ public class PlayerIdentityView : MonoBehaviour
 
     private void Bind()
     {
-        if (playFabManager == null)
+        if (playFabManager == null && DependencyRegistry.TryFind(out playFabManager))
         {
-            playFabManager = DependencyRegistry.Find<PlayFabManager>();
-            if (playFabManager != null) playFabManager.OnAccountChanged += Refresh;
+            playFabManager.OnAccountChanged += Refresh;
         }
 
         if (localization == null)
@@ -77,10 +87,36 @@ public class PlayerIdentityView : MonoBehaviour
         localization = null;
     }
 
+    // What the view last rendered; Update re-renders when any of it moves.
+    private bool shownLoggedIn;
+    private bool shownLoggingIn;
+    private bool shownHasManager;
+    private string shownName;
+    private bool rendered;
+
+    private bool StateChanged()
+    {
+        if (!rendered) return true;
+        bool hasManager = playFabManager != null;
+        return hasManager != shownHasManager
+            || (hasManager && (playFabManager.IsLoggedIn != shownLoggedIn
+                               || playFabManager.IsLoggingIn != shownLoggingIn
+                               || playFabManager.CurrentDisplayName != shownName));
+    }
+
     private void Refresh()
     {
+        // Without LocalizationManager every string would come out as its raw key
+        if (LocalizationManager.Instance == null) return;
+
         bool loggedIn = playFabManager != null && playFabManager.IsLoggedIn;
         string name = loggedIn ? playFabManager.CurrentDisplayName : "";
+
+        rendered = true;
+        shownHasManager = playFabManager != null;
+        shownLoggedIn = loggedIn;
+        shownLoggingIn = playFabManager != null && playFabManager.IsLoggingIn;
+        shownName = playFabManager != null ? playFabManager.CurrentDisplayName : null;
 
         if (nameText != null)
         {
@@ -88,9 +124,10 @@ public class PlayerIdentityView : MonoBehaviour
             {
                 nameText.text = LocalizationManager.Get(nameFormatKey, name);
             }
-            else if (playFabManager != null && (playFabManager.IsLoggingIn || loggedIn))
+            else if (playFabManager == null || playFabManager.IsLoggingIn || loggedIn)
             {
-                // Logged in but the temple name is still being saved counts as signing in too
+                // Logged in but the temple name is still being saved counts as signing in too,
+                // and so does PlayFabManager not having come up yet: that's not "offline".
                 nameText.text = LocalizationManager.Get("player_identity_signing_in");
             }
             else

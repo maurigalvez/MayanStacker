@@ -44,9 +44,7 @@ MonoBehaviour:
   edgeZoneHeight: 22
   edgeZoneMinWidth: 60
   edgeCanvasSortingOrder: 2990
-  edgeIntroBannerYOffset: 0
   barAnchor: {x: 1, y: 0.5}
   barPosition: {x: -56, y: 0}
   barSize: {x: 36, y: 520}
   canvasSortingOrder: 3000
-  introBannerYOffset: 260

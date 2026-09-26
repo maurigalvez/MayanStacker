@@ -24,11 +24,10 @@ using UnityEngine.UI;
 /// could be finished.
 ///
 /// Self-bootstraps into any gameplay scene while FtueState says the tutorial is unresolved,
-/// so it needs zero scene wiring. Presentation comes from a prefab at
-/// Resources/UI/FtueTutorial (see <see cref="FtueTutorialView"/>), so the first screen a new
-/// player reads can be styled — font included — alongside the rest of the UI. Without that
-/// prefab it falls back to borrowing UIManager's instruction label and building the Skip
-/// control in code, so the tutorial still works with zero scene wiring.
+/// so it needs zero scene wiring. The beat lines speak through the <see cref="GuideLane"/>,
+/// the same low strip every later lesson uses, so the tutorial never covers the stone it is
+/// teaching. The Skip control comes from a prefab at Resources/UI/FtueTutorial (see
+/// <see cref="FtueTutorialView"/>), or is built in code without it.
 ///
 /// Skip appears from beat 2 onward — never during beat 1, because the single tap that
 /// teaches the core verb is the one thing nobody should be able to skip past.
@@ -77,6 +76,7 @@ public class FtueTutorial : MonoBehaviour
     private Coroutine sayRoutine;
     private float messageShownAt;
     private bool messageVisible;
+    private int lineHandle;
 
     #region Bootstrap
 
@@ -159,6 +159,9 @@ public class FtueTutorial : MonoBehaviour
         currentBeat = 1;
         FtueState.Tutorial = FtueState.TutorialState.InProgress;
         GameAnalytics.TutorialStep(1);
+
+        // The tutorial run teaches the basics and nothing else: no feature lesson joins in.
+        GuideLane.ReserveRun("tutorial");
 
         // No timer on this one: it stays up until the player actually taps.
         SayUntilAction(LocalizationManager.Get("ftue_beat_tap"));
@@ -453,16 +456,11 @@ public class FtueTutorial : MonoBehaviour
         messageVisible = true;
         messageShownAt = Time.unscaledTime;
 
-        if (view != null && view.HasMessageLabel)
-        {
-            // The prefab is speaking now — silence UIManager's own instruction line so the
-            // first run doesn't show two overlapping messages.
-            if (uiManager != null) uiManager.HideTutorialMessage();
-            view.ShowMessage(message);
-            return;
-        }
-
-        if (uiManager != null) uiManager.ShowTutorialMessage(message);
+        // Every beat speaks through the guide lane, low on the screen, so the lesson never
+        // sits between the swinging stone and the tower it is teaching the player to hit.
+        // The tutorial keeps its own timing; the lane just holds the line until told.
+        GuideLane.Hide(lineHandle);
+        lineHandle = GuideLane.Say(message, null, RunOverlayUI.Parchment, 0f);
     }
 
     private void HideMessage()
@@ -470,13 +468,8 @@ public class FtueTutorial : MonoBehaviour
         CancelPendingMessage();
         messageVisible = false;
 
-        if (view != null && view.HasMessageLabel)
-        {
-            view.HideMessage();
-            return;
-        }
-
-        if (uiManager != null) uiManager.HideTutorialMessage();
+        GuideLane.Hide(lineHandle);
+        lineHandle = 0;
     }
 
     private void Cleanup()

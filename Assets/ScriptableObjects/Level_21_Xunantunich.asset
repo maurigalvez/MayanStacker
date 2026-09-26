@@ -46,10 +46,10 @@ MonoBehaviour:
     warningSeconds: 1.3
     quakeSeconds: 2.4
     joltsPerSecond: 3.2
-    joltSpeed: 1.1
+    joltSpeed: 1.5
     bracedFactor: 0.15
   rainSettings:
-    slideFraction: 0.35
-    maxSlideOfWidth: 0.14
+    slideFraction: 0.42
+    maxSlideOfWidth: 0.168
     slideSeconds: 0.28
     poorSlides: 1

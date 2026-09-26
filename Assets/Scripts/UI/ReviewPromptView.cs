@@ -19,8 +19,12 @@ using UnityEngine.UI;
 /// do something — help other stackers find the temple — and neither button branches on a
 /// sentiment.
 ///
-/// Built in code on its own overlay canvas, like <see cref="AppUpdatePromptView"/> and the
-/// boon picker, so it needs no scene wiring and no authored prefab to exist.
+/// Presentation comes from a prefab at Resources/UI/ReviewPrompt when one exists, styled like
+/// the rest of the temple UI. Without it the card builds itself in code on its own overlay
+/// canvas, like <see cref="AppUpdatePromptView"/>, so it still needs no scene wiring.
+///
+/// Menu: TamalStacker ▸ Retention ▸ Create Review Prompt Prefab generates that prefab in the
+/// house style (see UIHouseStyle).
 /// </summary>
 public class ReviewPromptView : MonoBehaviour
 {
@@ -30,30 +34,96 @@ public class ReviewPromptView : MonoBehaviour
     /// </summary>
     public const int SortingOrder = 4500;
 
-    private Image backdrop;
-    private RectTransform modal;
-    private TextMeshProUGUI titleLabel;
-    private TextMeshProUGUI bodyLabel;
-    private Button confirmButton;
-    private TextMeshProUGUI confirmLabel;
-    private Button declineButton;
-    private TextMeshProUGUI declineLabel;
+    /// <summary>Authored prefab that replaces the code-built layout when present.</summary>
+    public const string PrefabResourcePath = "UI/ReviewPrompt";
+
+    [Tooltip("Full-screen tap blocker behind the card.")]
+    [SerializeField] private Image backdrop;
+    [SerializeField] private RectTransform modal;
+    [SerializeField] private TextMeshProUGUI titleLabel;
+    [SerializeField] private TextMeshProUGUI bodyLabel;
+    [Tooltip("\"Sure\" — opens Play's review sheet.")]
+    [SerializeField] private Button confirmButton;
+    [SerializeField] private TextMeshProUGUI confirmLabel;
+    [Tooltip("\"Not now\" — ends the automatic ask for good.")]
+    [SerializeField] private Button declineButton;
+    [SerializeField] private TextMeshProUGUI declineLabel;
 
     private Action<bool> onAnswered;
 
     /// <summary>Guards against a double tap landing on both buttons in the same frame.</summary>
     private bool answered;
 
+    /// <summary>
+    /// Creates the card on a fresh persistent GameObject — from the authored prefab when
+    /// there is a usable one, otherwise built in code.
+    /// </summary>
     public static ReviewPromptView Create()
     {
-        var host = new GameObject("ReviewPromptView");
-        RunOverlayUI.CreateCanvas(host, SortingOrder, interactive: true);
-        var view = host.AddComponent<ReviewPromptView>();
-        view.Build();
-        DontDestroyOnLoad(host);
+        ReviewPromptView view = CreateFromPrefab();
+        if (view == null)
+        {
+            var host = new GameObject("ReviewPromptView");
+            RunOverlayUI.CreateCanvas(host, SortingOrder, interactive: true);
+            view = host.AddComponent<ReviewPromptView>();
+            view.Build();
+        }
+
+        view.Initialize();
+        DontDestroyOnLoad(view.gameObject);
         return view;
     }
 
+    private static ReviewPromptView CreateFromPrefab()
+    {
+        var prefab = Resources.Load<GameObject>(PrefabResourcePath);
+        if (prefab == null) return null;
+
+        if (prefab.GetComponent<ReviewPromptView>() == null)
+        {
+            Debug.LogWarning($"[ReviewManager] Resources/{PrefabResourcePath} has no ReviewPromptView " +
+                             "component - using the code-built layout instead.");
+            return null;
+        }
+
+        var instance = Instantiate(prefab);
+        instance.name = "ReviewPromptView";
+        var view = instance.GetComponent<ReviewPromptView>();
+
+        // A half-wired card would throw in front of the player, or show a button that does
+        // nothing; refuse it up front instead.
+        if (view.backdrop == null || view.modal == null || view.titleLabel == null ||
+            view.bodyLabel == null || view.confirmButton == null || view.confirmLabel == null ||
+            view.declineButton == null || view.declineLabel == null)
+        {
+            Debug.LogWarning($"[ReviewManager] Resources/{PrefabResourcePath} is missing required references - " +
+                             "using the code-built layout instead.");
+            Destroy(instance);
+            return null;
+        }
+
+        // The prefab's own canvas order may have been nudged while restyling; the card must
+        // still sit above the game-over UI and below the tutorial.
+        var canvas = instance.GetComponent<Canvas>();
+        if (canvas != null) canvas.sortingOrder = SortingOrder;
+
+        return view;
+    }
+
+    /// <summary>
+    /// Wires the buttons and hides everything. Shared by both paths; the authored prefab is
+    /// saved with everything visible so it can be edited.
+    /// </summary>
+    private void Initialize()
+    {
+        confirmButton.onClick.AddListener(() => Answer(true));
+        declineButton.onClick.AddListener(() => Answer(false));
+
+        backdrop.gameObject.SetActive(false);
+        modal.gameObject.SetActive(false);
+    }
+
+    /// <summary>Code-built fallback layout. Mirrored by ReviewPromptPrefabSetup.</summary>
     private void Build()
     {
         Transform root = transform;
@@ -85,12 +155,6 @@ public class ReviewPromptView : MonoBehaviour
 
         declineButton = RunOverlayUI.CreateButton("Decline", modal, string.Empty, RunOverlayUI.Clay, out declineLabel);
         RunOverlayUI.Place((RectTransform)declineButton.transform, new Vector2(0.5f, 0f), new Vector2(-220f, 100f), new Vector2(400f, 110f));
-
-        confirmButton.onClick.AddListener(() => Answer(true));
-        declineButton.onClick.AddListener(() => Answer(false));
-
-        backdrop.gameObject.SetActive(false);
-        modal.gameObject.SetActive(false);
     }
 
     /// <summary>

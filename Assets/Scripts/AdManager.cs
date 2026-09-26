@@ -21,9 +21,9 @@ public class AdManager : MonoBehaviour
     [SerializeField] private string productionAndroidAdUnitId = "";
 
     [Header("Ad Frequency")]
-    [Tooltip("Show ad every N game overs (1 = every game, 2 = every other game, etc.)")]
+    [Tooltip("Show ad every N losses (1 = every loss, 2 = every other loss, etc.). Temple wins never count.")]
     [SerializeField] private int adFrequency = 2;
-    [Tooltip("Delay in seconds before showing ad after game over/level complete")]
+    [Tooltip("Delay in seconds before showing ad after a loss")]
     [SerializeField] private float adShowDelay = 1.0f;
 
     [Header("Debug")]
@@ -36,6 +36,12 @@ public class AdManager : MonoBehaviour
     private bool isMobileAdsInitialized = false;
     private int gameOverCount = 0;
     private string currentAdUnitId;
+
+    // The ad waits adShowDelay after a loss so the result card can land. If the player starts
+    // the next run inside that window, the pending ad is cancelled (it must never open over a
+    // live run) and owed to the next loss instead, so tapping fast doesn't skip it.
+    private Coroutine pendingAdRoutine;
+    private bool adOwed = false;
 
     // References
     private GameManager gameManager;
@@ -74,8 +80,42 @@ public class AdManager : MonoBehaviour
         // Find initial dependencies
         FindDependencies();
 
+        RemoveAds.Changed += OnRemoveAdsChanged;
+
+        // A Remove Ads owner never starts the ads SDK at all — no ad requests, and none of
+        // its memory or network cost.
+        if (RemoveAds.Owned)
+        {
+            DebugLog("Remove Ads owned — skipping Mobile Ads initialization.");
+            return;
+        }
+
         // Initialize Google Mobile Ads SDK
         InitializeMobileAds();
+    }
+
+    /// <summary>
+    /// Ownership can arrive mid-session: a purchase, or Play restoring one shortly after a
+    /// reinstall. Drop the loaded ad on grant; start the SDK if a refund takes it away.
+    /// </summary>
+    private void OnRemoveAdsChanged(bool owned)
+    {
+        if (owned)
+        {
+            if (interstitialAd != null)
+            {
+                interstitialAd.Destroy();
+                interstitialAd = null;
+            }
+            isAdLoaded = false;
+            StopAllCoroutines();
+            pendingAdRoutine = null;
+            adOwed = false;
+            return;
+        }
+
+        if (isMobileAdsInitialized) LoadInterstitialAd();
+        else InitializeMobileAds();
     }
 
     /// <summary>
@@ -85,6 +125,9 @@ public class AdManager : MonoBehaviour
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
         DebugLog($"Scene loaded: {scene.name}, refreshing dependencies...");
+        // Next Level / Try Again can reload the scene; an ad queued by the last run must not
+        // open on top of the new one.
+        CancelPendingAd();
         FindDependencies();
     }
 
@@ -98,11 +141,13 @@ public class AdManager : MonoBehaviour
         if (gameManager != null)
         {
             gameManager.OnGameOver -= OnGameOver;
+            gameManager.OnGameStart -= CancelPendingAd;
+            gameManager.OnGameRestart -= CancelPendingAd;
         }
 
         if (levelManager != null)
         {
-            levelManager.OnLevelCompleted -= OnLevelCompleted;
+            levelManager.OnLevelFailed -= OnLevelFailed;
         }
 
         // Find new references
@@ -113,6 +158,8 @@ public class AdManager : MonoBehaviour
         if (gameManager != null)
         {
             gameManager.OnGameOver += OnGameOver;
+            gameManager.OnGameStart += CancelPendingAd;
+            gameManager.OnGameRestart += CancelPendingAd;
             DebugLog("Subscribed to GameManager.OnGameOver");
         }
         else
@@ -122,8 +169,8 @@ public class AdManager : MonoBehaviour
 
         if (levelManager != null)
         {
-            levelManager.OnLevelCompleted += OnLevelCompleted;
-            DebugLog("Subscribed to LevelManager.OnLevelCompleted");
+            levelManager.OnLevelFailed += OnLevelFailed;
+            DebugLog("Subscribed to LevelManager.OnLevelFailed");
         }
         else
         {
@@ -144,6 +191,10 @@ public class AdManager : MonoBehaviour
 
         DebugLog("Initializing Google Mobile Ads SDK...");
 
+        // The SDK raises its callbacks on a Java thread by default, where StartCoroutine and
+        // the UI the Remove Ads nudge opens are not allowed. Have it post them to Unity's.
+        MobileAds.RaiseAdEventsOnUnityMainThread = true;
+
         // Initialize the SDK
         MobileAds.Initialize(initStatus =>
         {
@@ -160,6 +211,8 @@ public class AdManager : MonoBehaviour
     /// </summary>
     private void LoadInterstitialAd()
     {
+        if (RemoveAds.Owned) return;
+
         if (!isMobileAdsInitialized)
         {
             Debug.LogWarning("AdManager: Cannot load ad - SDK not initialized yet");
@@ -242,6 +295,10 @@ public class AdManager : MonoBehaviour
 
             isAdLoaded = false;
 
+            // Counts the ad and, when due, shows the Remove Ads nudge on the result card
+            // the player is returning to.
+            RemoveAdsOffer.NotifyInterstitialClosed();
+
             // Load the next ad
             LoadInterstitialAd();
         };
@@ -280,6 +337,12 @@ public class AdManager : MonoBehaviour
     /// </summary>
     private void ShowInterstitialAd()
     {
+        if (RemoveAds.Owned)
+        {
+            DebugLog("Remove Ads owned — not showing an interstitial.");
+            return;
+        }
+
         // FTUE grace period. A new player has no reason to tolerate a full-screen ad
         // before the game has shown them anything worth staying for, so interstitials
         // wait until they've finished a temple, played a few runs, and come back.
@@ -311,56 +374,86 @@ public class AdManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Called when game over event is triggered (Infinite Mode)
+    /// Game over in Infinite / Daily. Level mode goes through OnLevelFailed instead, because
+    /// there GameOver also fires when a temple is won by falling after reaching its goal.
     /// </summary>
     private void OnGameOver()
     {
-        gameOverCount++;
-        Debug.Log($"[AdManager] 🎮 Game Over #{gameOverCount} triggered");
-
-        // Check if we should show an ad based on frequency
-        if (gameOverCount % adFrequency == 0)
-        {
-            Debug.Log($"[AdManager] ✅ Ad frequency check passed! Will show ad after {adShowDelay}s delay");
-            StartCoroutine(ShowAdAfterDelay());
-        }
-        else
-        {
-            int nextAdAt = gameOverCount + (adFrequency - (gameOverCount % adFrequency));
-            Debug.Log($"[AdManager] ⏭️ Skipping ad (count: {gameOverCount}, frequency: {adFrequency}). Next ad at game over #{nextAdAt}");
-        }
+        if (gameManager != null && gameManager.CurrentGameMode == GameMode.StackerLevels) return;
+        RegisterLoss("Game Over");
     }
 
     /// <summary>
-    /// Called when level complete event is triggered (Level Mode)
+    /// A temple attempt that ended short of its goal. Temple wins never show or count toward
+    /// an ad: the win is the moment the player should be left to enjoy.
     /// </summary>
-    private void OnLevelCompleted(int stars, int score, bool showCodexPopup)
+    private void OnLevelFailed()
+    {
+        if (gameManager == null || gameManager.CurrentGameMode != GameMode.StackerLevels) return;
+        RegisterLoss("Level Failed");
+    }
+
+    private void RegisterLoss(string label)
     {
         gameOverCount++;
-        Debug.Log($"[AdManager] 🏆 Level Complete #{gameOverCount} triggered (stars: {stars}, score: {score})");
+        Debug.Log($"[AdManager] 🎮 {label} #{gameOverCount} triggered");
+
+        if (adOwed)
+        {
+            Debug.Log($"[AdManager] ✅ Showing the ad owed from a cancelled slot after {adShowDelay}s delay");
+            ScheduleAd();
+            return;
+        }
 
         // Check if we should show an ad based on frequency
         if (gameOverCount % adFrequency == 0)
         {
             Debug.Log($"[AdManager] ✅ Ad frequency check passed! Will show ad after {adShowDelay}s delay");
-            // Never cut into the temple's capstone beat.
-            float capstoneHold = CapstonePayoff.HoldSecondsFor(levelManager != null ? levelManager.CurrentLevel : null);
-            StartCoroutine(ShowAdAfterDelay(capstoneHold));
+            ScheduleAd();
         }
         else
         {
             int nextAdAt = gameOverCount + (adFrequency - (gameOverCount % adFrequency));
-            Debug.Log($"[AdManager] ⏭️ Skipping ad (count: {gameOverCount}, frequency: {adFrequency}). Next ad at level #{nextAdAt}");
+            Debug.Log($"[AdManager] ⏭️ Skipping ad (count: {gameOverCount}, frequency: {adFrequency}). Next ad at loss #{nextAdAt}");
         }
+    }
+
+    private void ScheduleAd()
+    {
+        if (pendingAdRoutine != null) StopCoroutine(pendingAdRoutine);
+        adOwed = true; // cleared only once the delay runs out with no run in progress
+        pendingAdRoutine = StartCoroutine(ShowAdAfterDelay());
+    }
+
+    /// <summary>
+    /// A new run started (or the scene changed) while an ad was still waiting out its delay.
+    /// </summary>
+    private void CancelPendingAd()
+    {
+        if (pendingAdRoutine == null) return;
+
+        StopCoroutine(pendingAdRoutine);
+        pendingAdRoutine = null;
+        Debug.Log("[AdManager] ⏹️ New run started before the ad delay ended — ad moved to the next loss.");
     }
 
     /// <summary>
     /// Show ad after a small delay to avoid interrupting UI animations
     /// </summary>
-    private IEnumerator ShowAdAfterDelay(float extraDelay = 0f)
+    private IEnumerator ShowAdAfterDelay()
     {
-        Debug.Log($"[AdManager] ⏳ Waiting {adShowDelay + extraDelay} seconds before showing ad...");
-        yield return new WaitForSeconds(adShowDelay + extraDelay);
+        Debug.Log($"[AdManager] ⏳ Waiting {adShowDelay} seconds before showing ad...");
+        yield return new WaitForSeconds(adShowDelay);
+        pendingAdRoutine = null;
+
+        // A run that began without raising OnGameStart must not get an ad over it either.
+        if (gameManager != null && gameManager.IsGameActive)
+        {
+            Debug.Log("[AdManager] ⏹️ A run is live — ad moved to the next loss.");
+            yield break;
+        }
+
+        adOwed = false;
         ShowInterstitialAd();
     }
 
@@ -403,16 +496,19 @@ public class AdManager : MonoBehaviour
     {
         // Unsubscribe from scene loaded events
         SceneManager.sceneLoaded -= OnSceneLoaded;
+        RemoveAds.Changed -= OnRemoveAdsChanged;
 
         // Unsubscribe from game events
         if (gameManager != null)
         {
             gameManager.OnGameOver -= OnGameOver;
+            gameManager.OnGameStart -= CancelPendingAd;
+            gameManager.OnGameRestart -= CancelPendingAd;
         }
 
         if (levelManager != null)
         {
-            levelManager.OnLevelCompleted -= OnLevelCompleted;
+            levelManager.OnLevelFailed -= OnLevelFailed;
         }
 
         // Clean up ad

@@ -6,7 +6,7 @@
     },
     {
       "key": "instructions",
-      "value": "\u00a1Toca en cualquier lugar para soltar el bloque!\n\u00a1Intenta apilarlos perfectamente!"
+      "value": "¡Toca en cualquier lugar para soltar el bloque!\n¡Intenta apilarlos a la perfección!"
     },
     {
       "key": "accuracy_perfect",
@@ -50,11 +50,11 @@
     },
     {
       "key": "level_complete_format",
-      "value": "\u00a1Nivel {0}\n{1} Completado!"
+      "value": "¡Nivel {0}\n{1} completado!"
     },
     {
       "key": "level_failed_format",
-      "value": "\u00a1Nivel Fallido!\nAlcanzaste: {0}/{1}"
+      "value": "¡No superaste el nivel!\nLlegaste a {0}/{1}"
     },
     {
       "key": "level_score_format",
@@ -70,7 +70,7 @@
     },
     {
       "key": "leaderboard_no_scores",
-      "value": "\u00a1A\u00fan no hay puntuaciones. S\u00e9 el primero!"
+      "value": "Aún no hay puntuaciones. ¡Sé el primero!"
     },
     {
       "key": "leaderboard_unlock_required",
@@ -90,11 +90,11 @@
     },
     {
       "key": "codex_unlock_format",
-      "value": "C\u00f3dice de {0} Desbloqueado"
+      "value": "Códice de {0} desbloqueado"
     },
     {
       "key": "codex_empty_state",
-      "value": "\u00a1A\u00fan no hay niveles desbloqueados. Juega niveles para desbloquear entradas en el C\u00f3dice!"
+      "value": "Aún no hay niveles desbloqueados. ¡Juega niveles para desbloquear entradas del Códice!"
     },
     {
       "key": "codex_hidden_name",
@@ -106,7 +106,7 @@
     },
     {
       "key": "codex_unknown_location",
-      "value": "Ubicaci\u00f3n Desconocida"
+      "value": "Ubicación desconocida"
     },
     {
       "key": "codex_no_description",
@@ -130,11 +130,11 @@
     },
     {
       "key": "theme_confirm_title_format",
-      "value": "\u00bfSeleccionar Tema {0}?"
+      "value": "¿Seleccionar el tema {0}?"
     },
     {
       "key": "theme_confirm_message_format",
-      "value": "\u00bfEst\u00e1s seguro de que deseas cambiar el tema a {0}?"
+      "value": "¿Seguro que quieres cambiar el tema a {0}?"
     },
     {
       "key": "achievement_hidden_title",
@@ -142,7 +142,7 @@
     },
     {
       "key": "achievement_hidden_description",
-      "value": "Logro Secreto - Desbl\u00f3quealo para revelar"
+      "value": "Logro secreto: desbloquéalo para descubrirlo"
     },
     {
       "key": "achievement_not_found",
@@ -162,7 +162,7 @@
     },
     {
       "key": "sync_verifying",
-      "value": "Verificando integridad de la app..."
+      "value": "Verificando la integridad de la app..."
     },
     {
       "key": "sync_authenticating",
@@ -182,7 +182,7 @@
     },
     {
       "key": "sync_failed",
-      "value": "Sincronizaci\u00f3n fallida. Jugando sin conexi\u00f3n."
+      "value": "No se pudo sincronizar. Jugando sin conexión."
     },
     {
       "key": "settings_language",
@@ -198,7 +198,7 @@
     },
     {
       "key": "daily_challenge_title",
-      "value": "Reto Diario"
+      "value": "Reto diario"
     },
     {
       "key": "daily_challenge_subtitle",
@@ -210,19 +210,19 @@
     },
     {
       "key": "daily_result_modifier",
-      "value": "Modificador de Hoy: {0}"
+      "value": "Modificador de hoy: {0}"
     },
     {
       "key": "daily_result_rank",
-      "value": "Posici\u00f3n de Hoy: #{0}"
+      "value": "Posición de hoy: #{0}"
     },
     {
       "key": "daily_result_rank_loading",
-      "value": "Posici\u00f3n de Hoy: ..."
+      "value": "Posición de hoy: ..."
     },
     {
       "key": "daily_result_rank_unavailable",
-      "value": "Posici\u00f3n de Hoy: --"
+      "value": "Posición de hoy: --"
     },
     {
       "key": "daily_modifier_speedrun",
@@ -250,7 +250,7 @@
     },
     {
       "key": "daily_speedrun_result",
-      "value": "Tiempo: {0}:{1:D2} | Bonus: +{2}"
+      "value": "Tiempo: {0}:{1:D2} | Bono de tiempo: +{2}"
     },
     {
       "key": "daily_briefing_target",
@@ -258,19 +258,19 @@
     },
     {
       "key": "daily_briefing_begin",
-      "value": "Comenzar el Ritual"
+      "value": "Comenzar el ritual"
     },
     {
       "key": "daily_result_complete",
-      "value": "Ritual Completo"
+      "value": "Ritual completado"
     },
     {
       "key": "daily_result_broken",
-      "value": "Ritual Roto"
+      "value": "Ritual roto"
     },
     {
       "key": "daily_result_complete_flavor",
-      "value": "Kukulkán está honrado."
+      "value": "Kukulkán se siente honrado."
     },
     {
       "key": "daily_result_progress",
@@ -282,7 +282,7 @@
     },
     {
       "key": "daily_new_best",
-      "value": "¡Nuevo Récord Personal!"
+      "value": "¡Nuevo récord personal!"
     },
     {
       "key": "daily_reset_countdown",
@@ -290,7 +290,7 @@
     },
     {
       "key": "daily_played_today",
-      "value": "Jugado hoy · reinicia en {0}"
+      "value": "Ya jugaste hoy · se reinicia en {0}"
     },
     {
       "key": "daily_time_left",
@@ -350,7 +350,7 @@
     },
     {
       "key": "settings_saved",
-      "value": "\u00a1Configuraci\u00f3n Guardada!"
+      "value": "¡Configuración guardada!"
     },
     {
       "key": "ftue_beat_tap",
@@ -366,7 +366,7 @@
     },
     {
       "key": "ftue_beat_poor",
-      "value": "Descuidado. Se rompió la racha."
+      "value": "Descuido. Se rompió la racha."
     },
     {
       "key": "ftue_beat_kukulkan",
@@ -378,7 +378,7 @@
     },
     {
       "key": "ftue_grace_retry",
-      "value": "Las piedras se movieron: otra vez."
+      "value": "Las piedras se movieron. Inténtalo otra vez."
     },
     {
       "key": "next_goal_near_best",
@@ -390,7 +390,7 @@
     },
     {
       "key": "next_goal_sites_remaining",
-      "value": "Quedan {0} sitios por reclamar."
+      "value": "Quedan {0} sitios por conquistar."
     },
     {
       "key": "codex_sites_remaining",
@@ -402,7 +402,7 @@
     },
     {
       "key": "daily_streak_at_risk",
-      "value": "Racha de {0} días: en pie hasta la medianoche"
+      "value": "Racha de {0} días: sigue viva hasta la medianoche"
     },
     {
       "key": "daily_streak_defend",
@@ -414,7 +414,7 @@
     },
     {
       "key": "notif_channel_description",
-      "value": "Ritual diario y recordatorios de regreso"
+      "value": "Ritual diario y recordatorios para volver"
     },
     {
       "key": "notif_daily_title",
@@ -449,6 +449,70 @@
       "value": "Califica el juego"
     },
     {
+      "key": "settings_remove_ads",
+      "value": "Quitar anuncios"
+    },
+    {
+      "key": "settings_remove_ads_price",
+      "value": "Quitar anuncios · {0}"
+    },
+    {
+      "key": "settings_ads_removed",
+      "value": "Anuncios quitados. ¡Gracias!"
+    },
+    {
+      "key": "settings_restore_purchases",
+      "value": "Restaurar compras"
+    },
+    {
+      "key": "iap_pending",
+      "value": "Compra pendiente: esperando el pago."
+    },
+    {
+      "key": "iap_failed",
+      "value": "La compra no se completó. Inténtalo de nuevo."
+    },
+    {
+      "key": "iap_store_unavailable",
+      "value": "No se pudo conectar con la tienda en este momento."
+    },
+    {
+      "key": "iap_restored",
+      "value": "Compras restauradas."
+    },
+    {
+      "key": "iap_nothing_to_restore",
+      "value": "No hay compras para restaurar."
+    },
+    {
+      "key": "remove_ads_offer_title",
+      "value": "Quitar anuncios"
+    },
+    {
+      "key": "remove_ads_offer_price",
+      "value": "{0} · pago único"
+    },
+    {
+      "key": "remove_ads_offer_body",
+      "value": "Sin anuncios entre partidas.\nUn solo pago. Sin suscripción.\nQueda vinculado a tu cuenta de Google Play, así que lo recuperas en un dispositivo nuevo."
+    },
+    {
+      "key": "remove_ads_offer_buy",
+      "value": "Comprar · {0}"
+    },
+    {
+      "key": "remove_ads_offer_decline",
+      "value": "Ahora no"
+    },
+    {
+      "key": "remove_ads_nudge",
+      "value": "¿Cansado de los anuncios? Quítalos"
+    },
+    {
+      "key": "remove_ads_chip",
+      "value": "Sin anuncios"
+    },
+    {
       "key": "notif_lapse_body_site",
       "value": "{0} sigue sin terminar."
     },
@@ -458,7 +522,7 @@
     },
     {
       "key": "daily_modifier_perfectionist_desc",
-      "value": "Solo los aterrizajes perfectos mantienen la cadena. Bueno ya no basta."
+      "value": "Solo los aterrizajes perfectos mantienen la cadena. Un BIEN ya no basta."
     },
     {
       "key": "daily_modifier_narrowwindow",
@@ -466,7 +530,7 @@
     },
     {
       "key": "daily_modifier_narrowwindow_desc",
-      "value": "La ventana perfecta se estrecha. La precisión vale mucho más."
+      "value": "La ventana para un Perfecto se reduce. La precisión vale mucho más."
     },
     {
       "key": "daily_modifier_doubleornothing",
@@ -506,7 +570,7 @@
     },
     {
       "key": "block_offering_stone_desc",
-      "value": "Colócala perfecta y Kukulkán despierta al instante."
+      "value": "Colócala a la perfección y Kukulkán despierta al instante."
     },
     {
       "key": "band_foundation",
@@ -534,7 +598,7 @@
     },
     {
       "key": "boon_title",
-      "value": "Kukulkán Ofrece"
+      "value": "Kukulkán te ofrece"
     },
     {
       "key": "boon_subtitle",
@@ -546,7 +610,7 @@
     },
     {
       "key": "boon_serpents_favor_desc",
-      "value": "Puntos dobles por las próximas 5 piedras."
+      "value": "Puntos dobles en las próximas 5 piedras."
     },
     {
       "key": "boon_wide_foundation",
@@ -586,7 +650,7 @@
     },
     {
       "key": "boon_intro_body",
-      "value": "Cada cierto número de piedras, Kukulkán detiene tu ascenso y ofrece tres bendiciones. Toma una: una piedra más ancha, puntos dobles, un templo enderezado."
+      "value": "Cada cierto número de piedras, Kukulkán detiene tu ascenso y te ofrece tres bendiciones. Elige una: una piedra más ancha, puntos dobles, un templo enderezado."
     },
     {
       "key": "boon_intro_note",
@@ -602,7 +666,7 @@
     },
     {
       "key": "objective_flawless_desc",
-      "value": "Apila {0} piedras sin un mal aterrizaje."
+      "value": "Apila {0} piedras sin ningún mal aterrizaje."
     },
     {
       "key": "objective_perfect_chain_desc",
@@ -626,7 +690,7 @@
     },
     {
       "key": "update_available_body",
-      "value": "Ya está lista una nueva talla del templo. Tómala ahora: puedes seguir apilando mientras llega."
+      "value": "Una nueva talla del templo está lista. Descárgala ahora: puedes seguir apilando mientras llega."
     },
     {
       "key": "update_button_update",
@@ -654,11 +718,11 @@
     },
     {
       "key": "review_prompt_title",
-      "value": "¿Ayudas a que encuentren el templo?"
+      "value": "¿Nos ayudas a que otros encuentren el templo?"
     },
     {
       "key": "review_prompt_body",
-      "value": "Una reseña en Play Store es como los nuevos apiladores encuentran este lugar. Se abre aquí mismo: no perderás tu partida."
+      "value": "Gracias a las reseñas en Play Store, nuevos apiladores encuentran este lugar. Se abre aquí mismo: no perderás tu partida."
     },
     {
       "key": "review_prompt_confirm",
@@ -710,7 +774,7 @@
     },
     {
       "key": "edge_intro_body",
-      "value": "Suelta justo al final del balanceo, cuando el borde dorado destelle, para un ¡PERFECTO! x{0}. Si te adelantas, solo es BIEN."
+      "value": "Suelta justo al final del balanceo, cuando el borde dorado destelle, para un PERFECTO x{0}. Si te adelantas, solo es BIEN."
     },
     {
       "key": "edge_intro_followup_title",
@@ -722,11 +786,11 @@
     },
     {
       "key": "edge_intro_early_title",
-      "value": "¡Muy pronto!"
+      "value": "¡Demasiado pronto!"
     },
     {
       "key": "edge_intro_early_body",
-      "value": "Solo BIEN, y se rompió tu combo. Espera a que destelle el borde para un ¡PERFECTO! x{0}."
+      "value": "Solo BIEN, y se rompió tu combo. Espera a que destelle el borde para un PERFECTO x{0}."
     },
     {
       "key": "ghost_best_label",
@@ -745,10 +809,10 @@
     { "key": "result_flavor_new_best_1", "value": "Kukulkán honra tu torre." },
     { "key": "result_flavor_new_best_2", "value": "Los ancestros hablarán de este templo." },
     { "key": "result_flavor_new_best_3", "value": "Una nueva cima para el sol." },
-    { "key": "result_flavor_first", "value": "Tu templo ha comenzado. Ahora súbelo más alto." },
+    { "key": "result_flavor_first", "value": "Tu templo ha comenzado. Ahora levántalo más alto." },
     { "key": "result_flavor_near_1", "value": "Los dioses te observaban." },
     { "key": "result_flavor_near_2", "value": "La cima está a tu alcance." },
-    { "key": "result_flavor_near_3", "value": "Un intento más podría lograrlo." },
+    { "key": "result_flavor_near_3", "value": "Un intento más y podrías lograrlo." },
     { "key": "result_flavor_solid_1", "value": "Sus piedras recuerdan qué tan alto llegó." },
     { "key": "result_flavor_solid_2", "value": "Reúne las piedras y construye de nuevo." },
     { "key": "result_flavor_solid_3", "value": "Cada caída enseña al constructor." },
@@ -759,16 +823,16 @@
     { "key": "result_best_gap", "value": "Récord {0} · faltan {1}" },
     { "key": "result_best_beaten", "value": "Récord anterior {0} · +{1}" },
     { "key": "result_daily_best", "value": "Mejor de hoy {0}" },
-    { "key": "result_daily_best_beaten", "value": "Nuevo mejor de hoy · +{0}" },
+    { "key": "result_daily_best_beaten", "value": "Nuevo récord de hoy · +{0}" },
     { "key": "result_level_score", "value": "{0} / {1}" },
-    { "key": "result_level_to_go", "value": "{0} más para reclamar este sitio" },
+    { "key": "result_level_to_go", "value": "{0} más para conquistar este sitio" },
     { "key": "result_stat_height", "value": "Altura" },
     { "key": "result_stat_perfects", "value": "Perfectos" },
     { "key": "result_stat_combo", "value": "Mejor combo" },
     { "key": "result_combo_value", "value": "x{0}" },
     { "key": "result_tip_straighten", "value": "Logra {0} Perfectos seguidos para enderezar tu torre." },
     { "key": "result_tip_combo", "value": "Solo los aterrizajes perfectos mantienen tu combo." },
-    { "key": "result_tip_edge", "value": "Suelta cuando destelle el borde de la Serpiente para un ¡PERFECTO! x3." },
+    { "key": "result_tip_edge", "value": "Suelta cuando destelle el borde de la Serpiente para un PERFECTO x3." },
     { "key": "edge_landed_bonus", "value": "Filo de la Serpiente x{0} · +{1}" },
     { "key": "edge_proj_miss", "value": "Fallo" },
     { "key": "combo_badge_caption", "value": "COMBO" },
@@ -781,7 +845,7 @@
     { "key": "player_identity_google", "value": "Sesión iniciada con Google Play" },
     { "key": "player_identity_device", "value": "Guardado solo en este dispositivo" },
     { "key": "settings_google_sign_in", "value": "Iniciar sesión con Google Play" },
-    { "key": "leaderboard_no_score_yet", "value": "Sin puntaje aún" },
+    { "key": "leaderboard_no_score_yet", "value": "Aún sin puntaje" },
     { "key": "mayan_title_0", "value": "Jade" },
     { "key": "mayan_title_1", "value": "Jaguar" },
     { "key": "mayan_title_2", "value": "Serpiente" },
@@ -796,7 +860,7 @@
     { "key": "mayan_title_11", "value": "Cacao" },
     { "key": "power_jaguar_slam_name", "value": "Zarpazo del Jaguar" },
     { "key": "power_jaguar_slam_desc", "value": "Toca el medidor lleno para devolver la piedra de arriba al centro de la de abajo." },
-    { "key": "power_intro_title", "value": "{0} está listo" },
+    { "key": "power_intro_title", "value": "{0} disponible" },
     { "key": "power_unlocked_title", "value": "Poder obtenido: {0}" },
     { "key": "power_unlocked_body", "value": "Los aterrizajes perfectos llenan su medidor. Tócalo cuando la torre lo necesite." },
     { "key": "power_quetzal_feather_name", "value": "Pluma de Quetzal" },
@@ -814,7 +878,7 @@
     { "key": "rule_jungle_wind_short", "value": "Las ráfagas empujan tus piedras" },
     { "key": "rule_rain_slick_name", "value": "Piedras Resbalosas" },
     { "key": "rule_rain_slick_desc", "value": "Con la lluvia, todo aterrizaje que no sea perfecto se desliza un poco más." },
-    { "key": "rule_rain_slick_short", "value": "Solo lo perfecto se queda quieto" },
+    { "key": "rule_rain_slick_short", "value": "Solo un Perfecto no se desliza" },
     { "key": "rule_earthquake_name", "value": "Cabracán" },
     { "key": "rule_earthquake_desc", "value": "El suelo tiembla mientras la torre crece. Mantén presionado para sujetarla." },
     { "key": "rule_earthquake_short", "value": "Mantén presionado cuando tiemble" },
@@ -827,6 +891,10 @@
     { "key": "quake_hold", "value": "¡MANTÉN PARA SUJETAR!" },
     { "key": "quake_braced", "value": "¡FIRME!" },
     { "key": "quake_survived", "value": "La tierra se calma" },
-    { "key": "cenote_warning", "value": "¡El agua sube!" }
+    { "key": "cenote_warning", "value": "¡El agua sube!" },
+    { "key": "quit_confirm_title", "value": "¿Dejar el templo?" },
+    { "key": "quit_confirm_body", "value": "Tu progreso está guardado. La torre te esperará." },
+    { "key": "quit_confirm_leave", "value": "Salir" },
+    { "key": "quit_confirm_stay", "value": "Quedarme" }
   ]
 }

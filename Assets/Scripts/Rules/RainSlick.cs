@@ -20,6 +20,7 @@ public class RainSlick : TempleRuleBehaviour
 
     private RainSlickSettings settings;
     private AmbientSpriteField rain;
+    private RainSlideFx slideFx;
 
     public static int SlidesThisRun { get; private set; }
 
@@ -31,12 +32,18 @@ public class RainSlick : TempleRuleBehaviour
         Sprite streak = art.rainStreak != null ? art.rainStreak : RulePlaceholderArt.Streak;
         rain.Build(streak, StreakCount, StreakLength, StreakColor, StreakSortingOrder);
         rain.AlignToVelocity = true;
+
+        var fxGo = new GameObject("RainSlideFx");
+        fxGo.transform.SetParent(transform, false);
+        slideFx = fxGo.AddComponent<RainSlideFx>();
+        slideFx.Build(streak);
     }
 
     protected override void OnRunStart(LevelData level)
     {
         settings = RuleActive ? level.rainSettings : null;
         SlidesThisRun = 0;
+        slideFx.HideAll();
 
         if (RuleActive)
         {
@@ -85,10 +92,12 @@ public class RainSlick : TempleRuleBehaviour
         float slide = Mathf.Min(Mathf.Abs(offset) * settings.slideFraction, settings.maxSlideOfWidth * width);
         if (slide < MinSlide) return;
 
-        if (stackManager.NudgeTopStone(Mathf.Sign(offset) * slide, settings.slideSeconds))
+        float offsetX = Mathf.Sign(offset) * slide;
+        if (stackManager.NudgeTopStone(offsetX, settings.slideSeconds))
         {
             SlidesThisRun++;
-            PlayOneShot(art.rainSlideSound, 0.9f);
+            slideFx.Play(stone, below, offsetX, settings.slideSeconds);
+            PlayOneShot(art.rainSlideSound != null ? art.rainSlideSound : RainSlideFx.PlaceholderSlide(), 1f);
             HapticFeedback.Trigger(HapticFeedback.HapticType.Light);
         }
     }

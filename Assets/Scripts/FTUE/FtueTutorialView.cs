@@ -4,30 +4,27 @@ using UnityEngine;
 using UnityEngine.UI;
 
 /// <summary>
-/// Inspector-authored face of the first-run tutorial.
+/// Inspector-authored face of the first-run tutorial's Skip control.
 ///
-/// The tutorial used to speak through UIManager's instruction label and build its Skip
-/// control in code, which meant the very first thing a new player reads could not be
-/// styled — no font choice, no framing, no placement. Drop this component on a prefab at
-/// Resources/UI/FtueTutorial and <see cref="FtueTutorial"/> uses it instead: same beats,
-/// same timing, but the type and layout are editable like every other panel.
+/// The beat lines themselves no longer live here: they speak through the
+/// <see cref="GuideLane"/>, the low strip every lesson shares, so the tutorial can't sit in
+/// the fall path. This prefab now carries the Skip button and the tutorial's pacing values.
 ///
-/// Nothing here is required. A missing message label falls back to UIManager's instruction
-/// line, a missing Skip button falls back to the code-built corner control, and if the
-/// prefab is absent entirely the tutorial behaves exactly as it did before.
+/// Nothing here is required. A missing Skip button falls back to the code-built corner
+/// control, and if the prefab is absent entirely the tutorial still runs.
 ///
 /// Menu: TamalStacker ▸ FTUE ▸ Create Tutorial Prefab generates a prefab matching the
 /// code-built layout, as a starting point to restyle.
 /// </summary>
 public class FtueTutorialView : MonoBehaviour
 {
-    [Header("Message")]
-    [Tooltip("The tutorial line itself. Copy comes from the localization table at runtime, " +
-             "so whatever is authored here is only a preview. Set the intended font here.")]
+    [Header("Legacy message (hidden)")]
+    [Tooltip("Left over from when the tutorial drew its own banner mid-screen. Hidden at " +
+             "runtime; safe to delete from the prefab. Style the Guide Lane prefab instead.")]
     [SerializeField] private TextMeshProUGUI messageText;
 
-    [Tooltip("Optional frame/banner shown and hidden with the message. Leave empty to " +
-             "toggle the label's own object instead.")]
+    [Tooltip("Left over from when the tutorial drew its own banner mid-screen. Hidden at " +
+             "runtime; safe to delete from the prefab.")]
     [SerializeField] private GameObject messagePanel;
 
     [Header("Skip")]
@@ -55,17 +52,16 @@ public class FtueTutorialView : MonoBehaviour
     /// <summary>How long a line is protected from being replaced by the next beat.</summary>
     public float MinimumDwellSeconds => minimumDwellSeconds;
 
-    /// <summary>True when this prefab can show the tutorial copy itself.</summary>
-    public bool HasMessageLabel => messageText != null;
-
     /// <summary>True when this prefab carries its own Skip control.</summary>
     public bool HasSkipButton => skipButton != null;
 
     private void Awake()
     {
-        // Hidden until the tutorial has something to say; the prefab is authored visible so
-        // it stays easy to look at while styling.
-        SetMessageVisible(false, animate: false);
+        // The old mid-screen message is never shown again; older prefabs still carry it
+        // authored visible, so switch it off before anyone sees it.
+        if (messagePanel != null) messagePanel.SetActive(false);
+        else if (messageText != null) messageText.gameObject.SetActive(false);
+
         SetSkipVisible(false);
 
         if (skipButton != null) skipButton.onClick.AddListener(HandleSkip);
@@ -79,36 +75,12 @@ public class FtueTutorialView : MonoBehaviour
     /// <summary>Registers the tutorial's skip handler. Passing null detaches it.</summary>
     public void SetSkipHandler(Action handler) => onSkip = handler;
 
-    public void ShowMessage(string message)
-    {
-        if (messageText == null) return;
-        messageText.text = message;
-        SetMessageVisible(true, animate: true);
-    }
-
-    public void HideMessage() => SetMessageVisible(false, animate: true);
-
     public void SetSkipVisible(bool visible)
     {
         if (skipButton == null) return;
 
         if (skipLabel != null && visible) skipLabel.text = LocalizationManager.Get("ftue_skip");
         skipButton.gameObject.SetActive(visible);
-    }
-
-    /// <summary>
-    /// Pops the message in/out. Not animated in Awake, where the prefab's authored-visible
-    /// state is simply switched off before anyone sees it.
-    /// </summary>
-    private void SetMessageVisible(bool visible, bool animate)
-    {
-        GameObject target = messagePanel != null ? messagePanel
-            : messageText != null ? messageText.gameObject : null;
-        if (target == null) return;
-
-        if (!animate) target.SetActive(visible);
-        else if (visible) UIPopup.Show(target);
-        else UIPopup.Hide(target);
     }
 
     private void HandleSkip() => onSkip?.Invoke();

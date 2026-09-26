@@ -746,6 +746,7 @@ MonoBehaviour:
   enableReviewPrompt: 1
   minCompletedLevelsForReview: 2
   minStarsForReview: 3
+  leadInDelaySeconds: 3
 --- !u!4 &1681292953
 Transform:
   m_ObjectHideFlags: 0

@@ -20,13 +20,10 @@ using UnityEngine;
 /// </summary>
 public class BlockIntroPresenter : MonoBehaviour
 {
-    /// <summary>
-    /// Below the middle of the screen: the block being introduced is swinging across the
-    /// top, and a banner over it would hide the very thing it is describing.
-    /// </summary>
-    private const float BannerYOffset = -180f;
-
     private const float BannerHoldSeconds = 2.6f;
+
+    // One guide-lane lesson id for every block, so a run teaches at most one of them.
+    private const string BlockLessonId = "block_variant";
 
     private static BlockIntroPresenter instance;
 
@@ -102,9 +99,10 @@ public class BlockIntroPresenter : MonoBehaviour
     {
         if (variant == null || !variant.IsSpecial) return;
         if (introducedThisSession.Contains(variant.id)) return;
-        if (!BlockCodex.MarkSeen(variant.id)) return;
+        if (BlockCodex.HasSeen(variant.id)) return;
 
-        introducedThisSession.Add(variant.id);
+        // Another lesson already had this run: leave the block unseen so a later run teaches it.
+        if (!GuideLane.CanTeach(BlockLessonId)) return;
 
         string name = LocalizationManager.Get(variant.nameKey);
         if (string.IsNullOrEmpty(name)) return;
@@ -117,7 +115,11 @@ public class BlockIntroPresenter : MonoBehaviour
         // obviously about each other.
         Color accent = variant.overrideTint ? variant.tint : RunOverlayUI.Gold;
 
-        RunBanner.Show(name, description, accent, BannerHoldSeconds, BannerYOffset);
+        // In the guide lane, under the tower: the block itself stays in plain view above it.
+        if (!GuideLane.TryTeach(BlockLessonId, name, description, accent, BannerHoldSeconds)) return;
+
+        BlockCodex.MarkSeen(variant.id);
+        introducedThisSession.Add(variant.id);
 
         GameAnalytics.Track("block_variant_introduced", new Dictionary<string, object>
         {

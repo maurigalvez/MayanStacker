@@ -449,6 +449,70 @@
       "value": "为游戏评分"
     },
     {
+      "key": "settings_remove_ads",
+      "value": "移除广告"
+    },
+    {
+      "key": "settings_remove_ads_price",
+      "value": "移除广告 · {0}"
+    },
+    {
+      "key": "settings_ads_removed",
+      "value": "广告已移除，感谢支持！"
+    },
+    {
+      "key": "settings_restore_purchases",
+      "value": "恢复购买"
+    },
+    {
+      "key": "iap_pending",
+      "value": "购买处理中，正在等待付款。"
+    },
+    {
+      "key": "iap_failed",
+      "value": "购买未完成，请重试。"
+    },
+    {
+      "key": "iap_store_unavailable",
+      "value": "暂时无法连接商店。"
+    },
+    {
+      "key": "iap_restored",
+      "value": "已恢复购买。"
+    },
+    {
+      "key": "iap_nothing_to_restore",
+      "value": "没有可恢复的购买。"
+    },
+    {
+      "key": "remove_ads_offer_title",
+      "value": "移除广告"
+    },
+    {
+      "key": "remove_ads_offer_price",
+      "value": "{0} · 一次性购买"
+    },
+    {
+      "key": "remove_ads_offer_body",
+      "value": "不再在两局之间显示广告。\n只需付费一次，不是订阅。\n与你的 Google Play 账号绑定，换新设备也能恢复。"
+    },
+    {
+      "key": "remove_ads_offer_buy",
+      "value": "购买 · {0}"
+    },
+    {
+      "key": "remove_ads_offer_decline",
+      "value": "暂不"
+    },
+    {
+      "key": "remove_ads_nudge",
+      "value": "看腻了广告？一键移除"
+    },
+    {
+      "key": "remove_ads_chip",
+      "value": "移除广告"
+    },
+    {
       "key": "notif_lapse_body_site",
       "value": "{0}尚未完成。"
     },
@@ -827,6 +891,10 @@
     { "key": "quake_hold", "value": "按住稳住！" },
     { "key": "quake_braced", "value": "稳住了！" },
     { "key": "quake_survived", "value": "大地平静了" },
-    { "key": "cenote_warning", "value": "水位在上涨！" }
+    { "key": "cenote_warning", "value": "水位在上涨！" },
+    { "key": "quit_confirm_title", "value": "离开神庙？" },
+    { "key": "quit_confirm_body", "value": "你的进度已保存。高塔会等你回来。" },
+    { "key": "quit_confirm_leave", "value": "离开" },
+    { "key": "quit_confirm_stay", "value": "留下" }
   ]
 }
