@@ -66,6 +66,7 @@ public class GameManager : MonoBehaviour, IRunRewindable
     public System.Action<int, float> OnComboChanged; // combo count, multiplier
     public System.Action OnPerfectHitStreak; // Triggered when required perfect hits are achieved
     public System.Action<int> OnConsecutivePerfectHitsChanged; // Triggered when consecutive perfect hits count changes (current count)
+    public System.Action OnOfferingEarned; // Triggered when a Perfect streak earns an Offering Stone (modes without the auto streak shift)
     public System.Action OnFtueGraceRetry; // Triggered when the FTUE forgives a first topple instead of ending the run
 
     // Properties
@@ -103,6 +104,23 @@ public class GameManager : MonoBehaviour, IRunRewindable
     /// Kukulkan's straighten is Kukulkan's Call, one of the powers.
     /// </summary>
     public bool StreakShiftActive => !PowerSettings.Current.AppliesTo(currentGameMode);
+
+    /// <summary>
+    /// True from the Perfect that completed a streak (where <see cref="StreakShiftActive"/> is
+    /// off) until the spawner turns the next stone into an Offering Stone. The shift is no
+    /// longer free there: the streak earns the offering, and only landing it Perfect summons
+    /// Kukulkan.
+    /// </summary>
+    public bool OfferingEarned => offeringEarned;
+    private bool offeringEarned;
+
+    /// <summary>Claims an earned offering for the stone being spawned. False if none is owed.</summary>
+    public bool ConsumeEarnedOffering()
+    {
+        if (!offeringEarned) return false;
+        offeringEarned = false;
+        return true;
+    }
 
     public float FragileStackFailThreshold => fragileStackFailThreshold;
 
@@ -203,6 +221,7 @@ public class GameManager : MonoBehaviour, IRunRewindable
         comboDecayActive = false;
         lastAccuracyLevel = AccuracyLevel.None;
         consecutivePerfectHits = 0; // Reset perfect hit streak
+        offeringEarned = false;
         OnConsecutivePerfectHitsChanged?.Invoke(consecutivePerfectHits); // Notify of reset
         highScoreSaved = false; // Reset save flag for new game session
         ResetRunStats();
@@ -422,14 +441,26 @@ public class GameManager : MonoBehaviour, IRunRewindable
                 OnConsecutivePerfectHitsChanged?.Invoke(consecutivePerfectHits);
             }
 
-            // Check if we've reached the required number of perfect hits. Where the power
-            // meter runs, the streak keeps counting (achievements, objectives) but summons nothing.
-            if (StreakShiftActive && consecutivePerfectHits >= perfectHitsRequired)
+            // Check if we've reached the required number of perfect hits. In the Daily the
+            // streak straightens the tower on its own; where the power meter runs it earns an
+            // Offering Stone instead, which the player still has to land Perfect.
+            if (consecutivePerfectHits >= perfectHitsRequired)
             {
-                Debug.Log($"Perfect hit streak achieved! {consecutivePerfectHits} consecutive perfect hits - straightening stack!");
-                OnPerfectHitStreak?.Invoke();
-                consecutivePerfectHits = 0; // Reset after triggering
-                OnConsecutivePerfectHitsChanged?.Invoke(consecutivePerfectHits); // Notify of reset
+                if (StreakShiftActive)
+                {
+                    Debug.Log($"Perfect hit streak achieved! {consecutivePerfectHits} consecutive perfect hits - straightening stack!");
+                    OnPerfectHitStreak?.Invoke();
+                    consecutivePerfectHits = 0; // Reset after triggering
+                    OnConsecutivePerfectHitsChanged?.Invoke(consecutivePerfectHits); // Notify of reset
+                }
+                else if (!offeringEarned)
+                {
+                    // Reset now so the offering's own Perfect can't complete a second streak.
+                    offeringEarned = true;
+                    consecutivePerfectHits = 0;
+                    OnConsecutivePerfectHitsChanged?.Invoke(consecutivePerfectHits);
+                    OnOfferingEarned?.Invoke();
+                }
             }
         }
         else
@@ -753,6 +784,7 @@ public class GameManager : MonoBehaviour, IRunRewindable
         comboDecayActive = false;
         lastAccuracyLevel = AccuracyLevel.None;
         consecutivePerfectHits = 0; // Reset perfect hit streak
+        offeringEarned = false;
         OnConsecutivePerfectHitsChanged?.Invoke(consecutivePerfectHits); // Notify of reset
         OnGameRestart?.Invoke();
         OnScoreChanged?.Invoke(currentScore);

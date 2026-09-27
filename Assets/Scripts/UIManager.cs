@@ -3240,9 +3240,9 @@ public class UIManager : MonoBehaviour
     /// <param name="consecutivePerfectHits">Current number of consecutive perfect hits</param>
     private void UpdateKukulkanWrathMeter(int consecutivePerfectHits)
     {
-        // Only where a streak straightens the tower (the Daily). Elsewhere the power
-        // medallion is the one meter Perfects fill.
-        bool shown = gameManager == null || gameManager.StreakShiftActive;
+        // Every mode: in the Daily the streak straightens the tower, elsewhere it earns an
+        // Offering Stone. Either way it's the progress toward Kukulkan.
+        bool shown = true;
         if (kukulkanWrathMeter != null && kukulkanWrathMeter.activeSelf != shown)
         {
             kukulkanWrathMeter.SetActive(shown);

@@ -582,6 +582,21 @@ public class ObjectSpawner : MonoBehaviour
     /// </summary>
     private BlockVariant RollVariant()
     {
+        if (stackManager == null)
+        {
+            stackManager = DependencyRegistry.Find<StackManager>();
+        }
+
+        // An offering earned by a Perfect streak is owed whatever the table or the mode's
+        // switch says: it's a reward, not variety. Never the last block of a level, which
+        // completes the temple anyway.
+        if (gameManager != null && !IsLastBlockInLevel() && gameManager.ConsumeEarnedOffering())
+        {
+            return varietyTable != null
+                ? varietyTable.Find(BlockVariantId.OfferingStone)
+                : BlockVariant.Preset(BlockVariantId.OfferingStone);
+        }
+
         if (varietyTable == null) return BlockVariant.Standard;
 
         // The per-mode switch runs ahead of the authored pins too: a mode with specials
@@ -589,11 +604,6 @@ public class ObjectSpawner : MonoBehaviour
         if (gameManager != null && !varietyTable.IsEnabledFor(gameManager.CurrentGameMode))
         {
             return BlockVariant.Standard;
-        }
-
-        if (stackManager == null)
-        {
-            stackManager = DependencyRegistry.Find<StackManager>();
         }
 
         int stackHeight = stackManager != null ? stackManager.GetStackCount() : 0;

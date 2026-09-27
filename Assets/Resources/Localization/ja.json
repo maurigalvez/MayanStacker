@@ -22,11 +22,11 @@
     },
     {
       "key": "combo_format",
-      "value": "{0}\n{1}連続"
+      "value": "{0} x{1}"
     },
     {
       "key": "combo_held_format",
-      "value": "{0}\n{1}連続 維持"
+      "value": "{0} x{1} 維持"
     },
     {
       "key": "mode_temple_stacker",
