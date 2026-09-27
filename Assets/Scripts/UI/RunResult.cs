@@ -38,6 +38,8 @@ public static class RunResult
         public int blocks;
         public int perfectLandings;
         public int maxCombo;
+
+        /// <summary>Perfects in a row that straighten the tower; 0 where Perfects charge a power instead.</summary>
         public int perfectHitsRequired;
 
         /// <summary>Infinite: the high score when the run began.</summary>
@@ -127,8 +129,8 @@ public static class RunResult
         if (input.edgeLanded > 0)
         {
             card.edgeLine = input.edgeCombosBroken > 0
-                ? LocalizationManager.Get("result_edge_line_broke", input.edgeLanded, input.edgeBonusPoints, input.edgeCombosBroken)
-                : LocalizationManager.Get("result_edge_line", input.edgeLanded, input.edgeBonusPoints);
+                ? LocalizationManager.GetPlural("result_edge_line_broke", input.edgeLanded, input.edgeLanded, input.edgeBonusPoints, input.edgeCombosBroken)
+                : LocalizationManager.GetPlural("result_edge_line", input.edgeLanded, input.edgeLanded, input.edgeBonusPoints);
         }
         return card;
     }
@@ -159,7 +161,7 @@ public static class RunResult
         {
             SetMood(ref card, Mood.Near, "result_head_near", Flavour("near", random));
             card.bestLine = gap > 0
-                ? LocalizationManager.Get("result_best_gap", best, gap)
+                ? LocalizationManager.GetPlural("result_best_gap", gap, best, gap)
                 : LocalizationManager.Get("result_best", best);
             return;
         }
@@ -245,7 +247,9 @@ public static class RunResult
     {
         var tips = new List<string>(4)
         {
-            LocalizationManager.Get("result_tip_straighten", Mathf.Max(1, input.perfectHitsRequired)),
+            input.perfectHitsRequired > 0
+                ? LocalizationManager.Get("result_tip_straighten", input.perfectHitsRequired)
+                : LocalizationManager.Get("result_tip_power"),
             LocalizationManager.Get("result_tip_combo"),
             LocalizationManager.Get("result_tip_align")
         };

@@ -15,7 +15,7 @@ using UnityEngine.SceneManagement;
 /// Self-bootstraps into gameplay scenes like TowerStability and builds its label on its own
 /// overlay canvas, so no scene or authored UI prefab is touched.
 /// </summary>
-public class PersonalBestGhostLine : MonoBehaviour
+public class PersonalBestGhostLine : MonoBehaviour, IRunRewindable
 {
     [Header("Line")]
     [SerializeField] private Color LineColor = new Color(0.93f, 0.90f, 0.82f, 0.4f);
@@ -99,11 +99,13 @@ public class PersonalBestGhostLine : MonoBehaviour
         BuildLabel();
         ResetRun();
         SetVisible(false);
+        RunRewind.Register(this);
     }
 
     private void OnDestroy()
     {
         if (instance == this) instance = null;
+        RunRewind.Unregister(this);
 
         if (stackManager != null)
         {
@@ -188,6 +190,48 @@ public class PersonalBestGhostLine : MonoBehaviour
         if (playFabManager != null && playFabManager.IsLoggedIn)
         {
             playFabManager.SaveCurrentProgressToCloud();
+        }
+    }
+
+    // ---- Tzolk'in Rewind ----
+
+    private struct RewindState
+    {
+        public int peakBlocks;
+        public float peakHeight;
+        public bool passed;
+    }
+
+    object IRunRewindable.CaptureRewindState() => new RewindState
+    {
+        peakBlocks = runPeakBlocks,
+        peakHeight = runPeakHeight,
+        passed = passed
+    };
+
+    /// <summary>
+    /// The rewound stones never happened, so they can't set a best: the peak goes back, and a
+    /// best passed only by them stands again as a line to beat.
+    /// </summary>
+    void IRunRewindable.RestoreRewindState(object state)
+    {
+        if (!(state is RewindState s)) return;
+
+        runPeakBlocks = s.peakBlocks;
+        runPeakHeight = s.peakHeight;
+
+        if (passed && !s.passed)
+        {
+            passed = false;
+            passFade = 0f;
+            if (passRoutine != null)
+            {
+                StopCoroutine(passRoutine);
+                passRoutine = null;
+            }
+
+            ApplyLineColor(LineColor);
+            if (label != null) label.color = WithAlpha(RunOverlayUI.Parchment, 0.7f);
         }
     }
 

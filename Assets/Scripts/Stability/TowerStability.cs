@@ -17,7 +17,7 @@ using UnityEngine.UI;
 /// Self-bootstraps into gameplay scenes like GameFeelManager and builds its bar on its own
 /// overlay canvas, so no scene or authored UI prefab is touched.
 /// </summary>
-public class TowerStability : MonoBehaviour
+public class TowerStability : MonoBehaviour, IRunRewindable
 {
     public const string IntroSeenKey = "Stability_IntroSeen";
 
@@ -161,11 +161,13 @@ public class TowerStability : MonoBehaviour
 
         BuildUI();
         ResetRun();
+        RunRewind.Register(this);
     }
 
     private void OnDestroy()
     {
         if (instance == this) instance = null;
+        RunRewind.Unregister(this);
 
         if (stackManager != null)
         {
@@ -324,6 +326,34 @@ public class TowerStability : MonoBehaviour
         GameAnalytics.Track("tremor_collapse", data);
 
         gameManager.GameOver("tremor");
+    }
+
+    // ---- Tzolk'in Rewind ----
+
+    private struct RewindState
+    {
+        public float tremor;
+        public bool trembling;
+    }
+
+    object IRunRewindable.CaptureRewindState() => new RewindState { tremor = tremor, trembling = trembling };
+
+    /// <summary>
+    /// The tremor goes back with the stones that caused it. Quietly: no warning banner or
+    /// "saved" callout, since nothing was earned or risked, only undone.
+    /// </summary>
+    void IRunRewindable.RestoreRewindState(object state)
+    {
+        if (!(state is RewindState s) || !IsLive() || collapsePending) return;
+
+        if (trembling != s.trembling)
+        {
+            trembling = s.trembling;
+            nextShakeTime = 0f;
+            OnTremblingChanged?.Invoke(trembling);
+        }
+
+        SetTremor(s.tremor);
     }
 
     private void SetTremor(float value)

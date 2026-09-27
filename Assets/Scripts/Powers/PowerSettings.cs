@@ -83,18 +83,33 @@ public class PowerSettings : ScriptableObject
     [Tooltip("Screen-edge tint while the feather is active.")]
     public Color quetzalTint = new Color(0.25f, 0.78f, 0.55f, 0.35f);
 
-    [Header("Obsidian Blade")]
-    [Tooltip("Overhang below this (world units) isn't worth a cut; the blade won't fire.")]
-    [Range(0.02f, 0.5f)]
-    public float bladeMinOverhang = 0.08f;
+    [Header("Tzolk'in Rewind")]
+    [Tooltip("Stones taken back off the top. Fewer when the tower is shorter; the foundation always stays.")]
+    [Range(1, 6)]
+    public int rewindStones = 3;
 
-    [Range(0f, 1f)] public float bladeShake = 0.45f;
-    [Range(0f, 0.3f)] public float bladeHitStop = 0.06f;
-    public Color bladeFlash = new Color(0.8f, 0.78f, 1f, 0.3f);
+    [Tooltip("Seconds each stone takes to fly back up to the hook, fading out.")]
+    [Range(0.2f, 1.5f)]
+    public float rewindStoneSeconds = 0.6f;
 
-    // Kukulkan's Call fires the ordinary Kukulkan shift through GameManager, so the straighten,
-    // slow-mo, flash and sting are identical to the earned one. It resets the Perfect streak,
-    // as the earned shift does.
+    [Tooltip("Delay between one stone leaving and the next, top stone first.")]
+    [Range(0f, 0.4f)]
+    public float rewindStagger = 0.14f;
+
+    [Tooltip("How long the screen shows the turning calendar and the time wash.")]
+    [Range(0.4f, 2.5f)]
+    public float rewindEffectSeconds = 1.2f;
+
+    [Tooltip("Tint of the time wash over the screen while the calendar turns back.")]
+    public Color rewindWash = new Color(0.85f, 0.72f, 0.45f, 0.28f);
+
+    [Range(0f, 1f)] public float rewindShake = 0.2f;
+    [Range(0f, 0.3f)] public float rewindHitStop = 0.05f;
+
+    // Kukulkan's Call fires the Kukulkan shift through GameManager, so the straighten, slow-mo,
+    // flash and sting match the offering stone and the tremor save. It is the only way a
+    // player summons Kukulkan at will: where powers run, a Perfect streak no longer does
+    // (GameManager.StreakShiftActive). The strongest power, so it unlocks last.
 
     [Header("First-time intro")]
     [Tooltip("Drops after the first full meter before the intro counts as seen without a use.")]
@@ -142,6 +157,16 @@ public class PowerSettings : ScriptableObject
             defaults[id] = def;
         }
         return def;
+    }
+
+    /// <summary>
+    /// The localized description of <paramref name="id"/>, with its number filled in: {0} is the
+    /// Quetzal Feather's drop count and the Tzolk'in Rewind's stone count.
+    /// </summary>
+    public string Describe(PowerId id)
+    {
+        int arg = id == PowerId.TzolkinRewind ? rewindStones : quetzalDrops;
+        return LocalizationManager.Get(Get(id).descriptionKey, arg);
     }
 
     private static PowerSettings current;

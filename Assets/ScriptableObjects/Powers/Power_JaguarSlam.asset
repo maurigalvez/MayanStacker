@@ -19,4 +19,4 @@ MonoBehaviour:
   accentColor: {r: 0.79, g: 0.64, b: 0.29, a: 1}
   fireSound: {fileID: 8300000, guid: b9616d05f5c6dca42a3b573a6462c2f4, type: 3}
   fireSoundVolume: 1
-  unlockedByLevel: 2
+  unlockedByLevel: 0

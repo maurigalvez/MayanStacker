@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-public class GameManager : MonoBehaviour
+public class GameManager : MonoBehaviour, IRunRewindable
 {
     [Header("Game Mode")]
     [SerializeField] private GameMode currentGameMode = GameMode.InfiniteStacker;
@@ -96,6 +96,14 @@ public class GameManager : MonoBehaviour
     public bool LastLandingHeldCombo { get; private set; }
     public int ConsecutivePerfectHits => consecutivePerfectHits;
     public int PerfectHitsRequired => perfectHitsRequired;
+
+    /// <summary>
+    /// True when a Perfect streak straightens the tower on its own. Only in modes without the
+    /// power meter (the Daily): where powers run, Perfects charge the power instead, and
+    /// Kukulkan's straighten is Kukulkan's Call, one of the powers.
+    /// </summary>
+    public bool StreakShiftActive => !PowerSettings.Current.AppliesTo(currentGameMode);
+
     public float FragileStackFailThreshold => fragileStackFailThreshold;
 
     /// <summary>
@@ -125,6 +133,7 @@ public class GameManager : MonoBehaviour
     {
         // Register with dependency registry
         DependencyRegistry.Register<GameManager>(this);
+        RunRewind.Register(this);
 
         // Don't load high score here - wait for game mode to be set
     }
@@ -413,8 +422,9 @@ public class GameManager : MonoBehaviour
                 OnConsecutivePerfectHitsChanged?.Invoke(consecutivePerfectHits);
             }
 
-            // Check if we've reached the required number of perfect hits
-            if (consecutivePerfectHits >= perfectHitsRequired)
+            // Check if we've reached the required number of perfect hits. Where the power
+            // meter runs, the streak keeps counting (achievements, objectives) but summons nothing.
+            if (StreakShiftActive && consecutivePerfectHits >= perfectHitsRequired)
             {
                 Debug.Log($"Perfect hit streak achieved! {consecutivePerfectHits} consecutive perfect hits - straightening stack!");
                 OnPerfectHitStreak?.Invoke();
@@ -569,7 +579,8 @@ public class GameManager : MonoBehaviour
 
     /// <summary>
     /// Fires the Kukulkan shift immediately, without the player having earned the perfect
-    /// streak. Used by the offering block and by the Stone Mercy boon.
+    /// streak. Used by Kukulkan's Call, the offering block, the tremor save and the Stone
+    /// Mercy boon.
     ///
     /// Goes through the same event as the earned version, so the straighten, the slow-mo,
     /// the gold flash and the audio sting all behave identically — the shift should never
@@ -658,6 +669,58 @@ public class GameManager : MonoBehaviour
         OnFtueGraceRetry?.Invoke();
         RestartGame();
         return true;
+    }
+
+    // ---- Tzolk'in Rewind ----
+
+    private sealed class RewindState
+    {
+        public int score;
+        public int highScore;
+        public int combo;
+        public int maxCombo;
+        public int perfectLandings;
+        public int consecutivePerfectHits;
+        public AccuracyLevel lastAccuracyLevel;
+    }
+
+    object IRunRewindable.CaptureRewindState() => new RewindState
+    {
+        score = currentScore,
+        highScore = highScore,
+        combo = currentCombo,
+        maxCombo = maxCombo,
+        perfectLandings = perfectLandings,
+        consecutivePerfectHits = consecutivePerfectHits,
+        lastAccuracyLevel = lastAccuracyLevel
+    };
+
+    /// <summary>
+    /// A full rewind: the points, combo, streak and result-card stats of the rewound stones
+    /// all go, so the run reads exactly as it did before they were placed.
+    /// </summary>
+    void IRunRewindable.RestoreRewindState(object state)
+    {
+        if (!(state is RewindState s)) return;
+
+        currentScore = s.score;
+        // highScore climbs live; a best that loaded late (SyncRunStartBest) must survive.
+        highScore = Mathf.Max(s.highScore, highScoreAtRunStart);
+        currentCombo = s.combo;
+        maxCombo = s.maxCombo;
+        perfectLandings = s.perfectLandings;
+        consecutivePerfectHits = s.consecutivePerfectHits;
+        lastAccuracyLevel = s.lastAccuracyLevel;
+        LastAwardedPoints = 0;
+        LastLandingHeldCombo = false;
+
+        // The restored combo gets a fresh decay window, as a landing would give it.
+        lastComboUpdateTime = Time.time;
+        comboDecayActive = currentCombo > 0;
+
+        OnScoreChanged?.Invoke(currentScore);
+        OnComboChanged?.Invoke(currentCombo, GetComboMultiplier());
+        OnConsecutivePerfectHitsChanged?.Invoke(consecutivePerfectHits);
     }
 
     /// <summary>
@@ -1000,6 +1063,8 @@ public class GameManager : MonoBehaviour
 
     private void OnDestroy()
     {
+        RunRewind.Unregister(this);
+
         // Unsubscribe from PlayFab events
         var playFabManager = DependencyRegistry.Find<PlayFabManager>();
         if (playFabManager != null)

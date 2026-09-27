@@ -154,6 +154,13 @@ public class RiskWindowView : MonoBehaviour
         if (side < 0) leftWorth = worth; else rightWorth = worth;
     }
 
+    /// <summary>Shows or hides one side's marker - a side is hidden while its edge is shut.</summary>
+    public void SetZoneVisible(int side, bool visible)
+    {
+        RectTransform zone = side < 0 ? leftZone : rightZone;
+        if (zone != null && zone.gameObject.activeSelf != visible) zone.gameObject.SetActive(visible);
+    }
+
     public void SetLabel(string text)
     {
         if (string.IsNullOrEmpty(text)) return;

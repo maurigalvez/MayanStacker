@@ -194,6 +194,7 @@ public class SpawnerHolder : MonoBehaviour
         if (stackManager != null)
         {
             stackManager.OnObjectAddedToStack += OnObjectAddedToStack;
+            stackManager.OnStackRewound += OnStackRewound;
         }
 
         // Subscribe to level manager events to apply level-specific settings
@@ -524,6 +525,9 @@ public class SpawnerHolder : MonoBehaviour
         // Object has been successfully added to the stack, now update stack height
         UpdateStackHeight();
     }
+
+    // Tzolk'in Rewind: the holder eases back down to the lower tower.
+    private void OnStackRewound(int stackCount) => UpdateStackHeight();
 
     private void OnObjectLanded(StackableObject landedObject, float landingAccuracy)
     {
@@ -971,6 +975,7 @@ public class SpawnerHolder : MonoBehaviour
         if (stackManager != null)
         {
             stackManager.OnObjectAddedToStack -= OnObjectAddedToStack;
+            stackManager.OnStackRewound -= OnStackRewound;
         }
 
         // Unsubscribe from game events

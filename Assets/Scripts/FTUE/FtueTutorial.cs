@@ -13,7 +13,8 @@ using UnityEngine.UI;
 ///   Beat 2 — names the accuracy tier they just earned and what it's worth.
 ///   Beat 3 — on the next landing, points at the Tremor meter (the cost of sloppy stones).
 ///            Skipped in modes where the meter isn't running.
-///   Beat 4 — at their first 2-combo once the Tremor line is read, teases the Kukulkan shift.
+///   Beat 4 — at their first 2-combo once the Tremor line is read, reveals the power medallion
+///            that Perfects charge (or, in a mode without powers, teases the Kukulkan shift).
 ///
 /// The Serpent's Edge risk window is deliberately NOT a beat: it stays shut for the tutorial
 /// run and introduces itself later (RiskWindow), once the tap and the meter are understood.
@@ -157,6 +158,7 @@ public class FtueTutorial : MonoBehaviour
         if (resolved || currentBeat >= 1) return;
 
         currentBeat = 1;
+        PowerRevealed = false; // a retried tutorial run hides the medallion again until beat 4
         FtueState.Tutorial = FtueState.TutorialState.InProgress;
         GameAnalytics.TutorialStep(1);
 
@@ -266,10 +268,29 @@ public class FtueTutorial : MonoBehaviour
         currentBeat = 4;
         GameAnalytics.TutorialStep(4);
 
-        int required = gameManager != null ? gameManager.PerfectHitsRequired : 4;
         // The tutorial ends when this last line has been read, not on a fixed timer.
-        Say(LocalizationManager.Get("ftue_beat_kukulkan", required), CompleteTutorial);
+        if (gameManager == null || gameManager.StreakShiftActive)
+        {
+            int required = gameManager != null ? gameManager.PerfectHitsRequired : 4;
+            Say(LocalizationManager.Get("ftue_beat_kukulkan", required), CompleteTutorial);
+            return;
+        }
+
+        // Where powers run, Perfects charge the power medallion: reveal it with this line
+        // and pulse it, the way the Tremor beat points at its meter.
+        PowerRevealed = true;
+        Say(LocalizationManager.Get("ftue_beat_power", PowerSettings.Current.perfectsToFill), CompleteTutorial,
+            onShown: () =>
+            {
+                if (PowerSystem.Instance != null) PowerSystem.Instance.Highlight(TremorHighlightSeconds);
+            });
     }
+
+    /// <summary>
+    /// True once the last beat has introduced the power medallion, so the meter can show
+    /// before the tutorial is formally over. Resets with the app.
+    /// </summary>
+    public static bool PowerRevealed { get; private set; }
 
     private void CompleteTutorial()
     {

@@ -8,7 +8,7 @@ public enum PowerId
 {
     JaguarSlam = 0,
     QuetzalFeather = 1,
-    ObsidianBlade = 2,
+    TzolkinRewind = 2, // was ObsidianBlade until 2026-09-26; value kept so saved picks still map
     KukulkansCall = 3
 }
 
@@ -49,7 +49,7 @@ public class PowerDefinition : ScriptableObject
     [Tooltip("Completing this temple (by levelNumber) for the first time unlocks the power. " +
              "0 = unlocked from the start.")]
     [Min(0)]
-    public int unlockedByLevel = 2;
+    public int unlockedByLevel = 0;
 
     /// <summary>Where each power's default icon lives under Resources.</summary>
     public static string IconResourcePath(PowerId powerId) => "UI/Powers/Power_" + powerId + "_Icon";
@@ -67,15 +67,15 @@ public class PowerDefinition : ScriptableObject
                 def.nameKey = "power_quetzal_feather_name";
                 def.descriptionKey = "power_quetzal_feather_desc";
                 def.accentColor = new Color(0.25f, 0.78f, 0.55f, 1f); // quetzal green
-                def.unlockedByLevel = 5; // Uxbenka
+                def.unlockedByLevel = 4; // Seibal
                 break;
 
-            case PowerId.ObsidianBlade:
-                def.name = "Power_ObsidianBlade";
-                def.nameKey = "power_obsidian_blade_name";
-                def.descriptionKey = "power_obsidian_blade_desc";
-                def.accentColor = new Color(0.62f, 0.56f, 0.86f, 1f); // obsidian sheen
-                def.unlockedByLevel = 8; // Muyil
+            case PowerId.TzolkinRewind:
+                def.name = "Power_TzolkinRewind";
+                def.nameKey = "power_tzolkin_rewind_name";
+                def.descriptionKey = "power_tzolkin_rewind_desc";
+                def.accentColor = new Color(0.33f, 0.88f, 0.7f, 1f); // calendar jade, the icon's arrow
+                def.unlockedByLevel = 9; // Cahal Pech
                 break;
 
             case PowerId.KukulkansCall:
@@ -83,7 +83,7 @@ public class PowerDefinition : ScriptableObject
                 def.nameKey = "power_kukulkans_call_name";
                 def.descriptionKey = "power_kukulkans_call_desc";
                 def.accentColor = new Color(0.3f, 0.82f, 0.8f, 1f); // feathered-serpent teal
-                def.unlockedByLevel = 11; // Altun Ha
+                def.unlockedByLevel = 13; // San Andrés
                 break;
 
             case PowerId.JaguarSlam:
@@ -92,7 +92,7 @@ public class PowerDefinition : ScriptableObject
                 def.nameKey = "power_jaguar_slam_name";
                 def.descriptionKey = "power_jaguar_slam_desc";
                 def.accentColor = RunOverlayUI.Gold;
-                def.unlockedByLevel = 2; // Dzibilchaltún
+                def.unlockedByLevel = 0; // from the start
                 break;
         }
 

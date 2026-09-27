@@ -116,6 +116,7 @@
       "key": "theme_sunset",
       "value": "夕焼けテーマ"
     },
+    { "key": "theme_day", "value": "昼テーマ" },
     {
       "key": "theme_night",
       "value": "夜テーマ"
@@ -134,7 +135,7 @@
     },
     {
       "key": "theme_confirm_message_format",
-      "value": "テーマを{0}に変更してもよろしいですか？"
+      "value": "{0}に変更してもよろしいですか？"
     },
     {
       "key": "achievement_hidden_title",
@@ -371,6 +372,10 @@
     {
       "key": "ftue_beat_kukulkan",
       "value": "パーフェクトを{0}回続けると、ククルカンが神殿をまっすぐに整える。"
+    },
+    {
+      "key": "ftue_beat_power",
+      "value": "パーフェクトを{0}回決めるとパワーのメーターが満タンに。光ったらタップ。"
     },
     {
       "key": "ftue_skip",
@@ -831,6 +836,7 @@
     { "key": "result_stat_combo", "value": "最大コンボ" },
     { "key": "result_combo_value", "value": "x{0}" },
     { "key": "result_tip_straighten", "value": "パーフェクトを{0}回連続で決めると塔がまっすぐになる。" },
+    { "key": "result_tip_power", "value": "パーフェクトでパワーのメーターがたまる。塔が傾いたときのために取っておこう。" },
     { "key": "result_tip_combo", "value": "コンボを保てるのはパーフェクトな着地だけ。" },
     { "key": "result_tip_edge", "value": "蛇の縁が光った瞬間に落とすとx3のパーフェクト。" },
     { "key": "edge_landed_bonus", "value": "蛇の縁 x{0} · +{1}" },
@@ -865,8 +871,8 @@
     { "key": "power_unlocked_body", "value": "パーフェクトでメーターがたまる。塔が危ういときにタップしよう。" },
     { "key": "power_quetzal_feather_name", "value": "ケツァールの羽" },
     { "key": "power_quetzal_feather_desc", "value": "満タンのメーターをタップすると、次の{0}個の石の揺れと落下がゆっくりになる。" },
-    { "key": "power_obsidian_blade_name", "value": "黒曜石の刃" },
-    { "key": "power_obsidian_blade_desc", "value": "満タンのメーターをタップすると、一番上の石が下の石からはみ出た部分を切り落とす。" },
+    { "key": "power_tzolkin_rewind_name", "value": "ツォルキンの巻き戻し" },
+    { "key": "power_tzolkin_rewind_desc", "value": "満タンのメーターをタップすると時間が巻き戻り、最後に積んだ{0}個の石とその得点が取り消される。" },
     { "key": "power_kukulkans_call_name", "value": "ククルカンの呼び声" },
     { "key": "power_kukulkans_call_desc", "value": "満タンのメーターをタップすると、今すぐククルカンの揺らぎを呼び、塔をまっすぐにする。" },
     { "key": "power_loadout_title", "value": "パワーを選ぼう" },

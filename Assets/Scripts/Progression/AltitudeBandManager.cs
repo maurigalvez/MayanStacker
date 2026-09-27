@@ -13,7 +13,7 @@ using UnityEngine.SceneManagement;
 ///
 /// With no AltitudeBandSet asset in Resources the whole system is inert.
 /// </summary>
-public class AltitudeBandManager : MonoBehaviour
+public class AltitudeBandManager : MonoBehaviour, IRunRewindable
 {
     private static AltitudeBandManager instance;
 
@@ -86,6 +86,19 @@ public class AltitudeBandManager : MonoBehaviour
         {
             stackManager.OnObjectAddedToStack += OnObjectAddedToStack;
         }
+
+        RunRewind.Register(this);
+    }
+
+    // ---- Tzolk'in Rewind ----
+
+    object IRunRewindable.CaptureRewindState() => CurrentBandIndex;
+
+    /// <summary>The sky goes back with the tower, silently; climbing again re-announces the band.</summary>
+    void IRunRewindable.RestoreRewindState(object state)
+    {
+        if (!(state is int index) || index < 0 || index == CurrentBandIndex || !BandsActive()) return;
+        ApplyBand(index, announce: false);
     }
 
     private void OnGameStart()
@@ -176,6 +189,8 @@ public class AltitudeBandManager : MonoBehaviour
 
     private void OnDestroy()
     {
+        RunRewind.Unregister(this);
+
         if (gameManager != null)
         {
             gameManager.OnGameStart -= OnGameStart;

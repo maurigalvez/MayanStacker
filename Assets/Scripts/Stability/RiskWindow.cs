@@ -27,12 +27,14 @@ using UnityEngine.SceneManagement;
 /// The window stays shut during the tutorial run, while the temple trembles (that stone must
 /// be Perfect), below <see cref="StabilitySettings.edgeMinStackHeight"/>, and whenever the
 /// Tremor meter isn't running - the tremor is the price, so no meter means no window.
+/// Each side also stays shut (its strip hidden) while an edge drop there would land dead
+/// centre anyway - a tower built under the end of the swing gets no x3 from that end.
 ///
 /// First time it opens for a player it runs a short, action-gated intro (FtueState tracks it).
 ///
 /// Self-bootstraps into gameplay scenes like TowerStability; touches no scene or authored UI.
 /// </summary>
-public class RiskWindow : MonoBehaviour
+public class RiskWindow : MonoBehaviour, IRunRewindable
 {
     /// <summary>Authored marker prefab that replaces the code-built markers when present.</summary>
     public const string ViewPrefabResourcePath = "UI/SerpentsEdge";
@@ -79,6 +81,9 @@ public class RiskWindow : MonoBehaviour
     private GameObject projectedStoneObject;
     private StackableObject projectedStone;
     private readonly int[] projectionKey = { int.MinValue, int.MinValue };
+
+    // Per side (0 = left, 1 = right): would an edge drop there land off-centre? See IsSideRisky.
+    private readonly bool[] sideRisky = new bool[2];
 
     // Run stats for the result card.
     private int pendingEdgeComboBefore;
@@ -169,11 +174,13 @@ public class RiskWindow : MonoBehaviour
 
         BuildUI();
         ResetRun();
+        RunRewind.Register(this);
     }
 
     private void OnDestroy()
     {
         if (instance == this) instance = null;
+        RunRewind.Unregister(this);
 
         if (objectSpawner != null) objectSpawner.OnObjectDropped -= OnObjectDropped;
         if (stackManager != null) stackManager.OnObjectAddedToStack -= OnObjectAddedToStack;
@@ -210,6 +217,29 @@ public class RiskWindow : MonoBehaviour
 
     private bool IsPhaseInWindow(float phase) => Mathf.Abs(phase) >= settings.edgePhaseThreshold;
 
+    private static int SideOf(float phase) => phase > 0f ? 1 : -1;
+
+    /// <summary>
+    /// A side only counts when an edge drop there would land off-centre - that's the risk the
+    /// x3 pays for. The window is fixed to the swing, not the tower, so a tower built under the
+    /// end of the swing would turn that side into a free x3 Perfect on the swing's slowest,
+    /// easiest moment. That side stays shut until the tower is back under the swing.
+    /// Judged from the whole landing band, so the side can't flicker open and shut mid-swing.
+    /// </summary>
+    private bool IsSideRisky(StackableObject stone, int side, float phase)
+    {
+        StackableObject top = stackManager != null ? stackManager.GetTopObject() : null;
+        if (stone == null || top == null || top.Collider == null) return false;
+
+        // Where the stone's centre would be with no swing (the drop is straight down).
+        float restX = stone.ColliderCenterX - spawnerHolder.GetSwingOffsetX(phase);
+        float inner = restX + side * spawnerHolder.GetSwingOffsetX(settings.edgePhaseThreshold);
+        float outer = restX + side * spawnerHolder.GetSwingOffsetX(1f);
+        float nearest = Mathf.Clamp(top.Collider.bounds.center.x, Mathf.Min(inner, outer), Mathf.Max(inner, outer));
+
+        return !stone.IsPerfectAccuracy(stone.AccuracyOn(top, nearest));
+    }
+
     // Never looser than the window itself, so a mistuned asset can't make every edge drop sweet.
     private bool IsPhaseInSweetSpot(float phase) =>
         Mathf.Abs(phase) >= Mathf.Max(settings.edgeSweetSpotThreshold, settings.edgePhaseThreshold);
@@ -218,7 +248,12 @@ public class RiskWindow : MonoBehaviour
     {
         IsAvailable = ComputeAvailable();
         float phase = spawnerHolder != null ? spawnerHolder.SwingPhase : 0f;
-        IsOpen = IsAvailable && IsPhaseInWindow(phase);
+
+        StackableObject stone = IsAvailable ? HangingStone() : null;
+        sideRisky[0] = stone != null && IsSideRisky(stone, -1, phase);
+        sideRisky[1] = stone != null && IsSideRisky(stone, 1, phase);
+
+        IsOpen = IsAvailable && IsPhaseInWindow(phase) && sideRisky[SideOf(phase) < 0 ? 0 : 1];
         IsSweet = IsOpen && IsPhaseInSweetSpot(phase);
 
         if (IsOpen && !wasOpen) PlayEntryCue();
@@ -229,7 +264,9 @@ public class RiskWindow : MonoBehaviour
         wasSweet = IsSweet;
 
         // Waits for a run whose lesson slot is still free; CanTeach is cheap enough per frame.
-        if (IsAvailable && !introActive && !FtueState.HasSeenEdgeIntro && GuideLane.CanTeach(EdgeLessonId))
+        // Not while both sides are shut - the lesson would point at rims that aren't there.
+        if (IsAvailable && (sideRisky[0] || sideRisky[1]) &&
+            !introActive && !FtueState.HasSeenEdgeIntro && GuideLane.CanTeach(EdgeLessonId))
         {
             BeginIntro();
         }
@@ -302,7 +339,9 @@ public class RiskWindow : MonoBehaviour
         if (dropped == null || !enabled) return;
 
         float phase = spawnerHolder.SwingPhase;
-        bool edge = ComputeAvailable() && IsPhaseInWindow(phase);
+        var block = dropped.GetComponent<StackableObject>();
+        bool edge = block != null && ComputeAvailable() && IsPhaseInWindow(phase)
+                    && IsSideRisky(block, SideOf(phase), phase);
         bool sweet = edge && IsPhaseInSweetSpot(phase);
 
         if (introActive)
@@ -312,9 +351,6 @@ public class RiskWindow : MonoBehaviour
         }
 
         if (!edge) return;
-
-        var block = dropped.GetComponent<StackableObject>();
-        if (block == null) return;
 
         block.MarkEdgeDrop(settings.edgeScoreMultiplier, sweet);
         pendingEdgeComboBefore = gameManager.CurrentCombo;
@@ -418,9 +454,38 @@ public class RiskWindow : MonoBehaviour
         RunEdgeCombosBroken = 0;
         pendingEdgeComboBefore = 0;
         projectionKey[0] = projectionKey[1] = int.MinValue;
+        sideRisky[0] = sideRisky[1] = false;
 
         if (TowerStability.Instance != null) TowerStability.Instance.SetEdgePreview(0f);
         if (uiRoot != null) uiRoot.SetActive(false);
+    }
+
+    // ---- Tzolk'in Rewind ----
+
+    private struct RewindState
+    {
+        public int landed;
+        public int bonusPoints;
+        public int combosBroken;
+    }
+
+    object IRunRewindable.CaptureRewindState() => new RewindState
+    {
+        landed = RunEdgeLanded,
+        bonusPoints = RunEdgeBonusPoints,
+        combosBroken = RunEdgeCombosBroken
+    };
+
+    /// <summary>The result-card receipt forgets rewound edge landings; the rim is re-projected on the lower tower.</summary>
+    void IRunRewindable.RestoreRewindState(object state)
+    {
+        if (!(state is RewindState s)) return;
+
+        RunEdgeLanded = s.landed;
+        RunEdgeBonusPoints = s.bonusPoints;
+        RunEdgeCombosBroken = s.combosBroken;
+        pendingEdgeComboBefore = 0;
+        projectionKey[0] = projectionKey[1] = int.MinValue;
     }
 
     private string FormatMultiplier()
@@ -513,6 +578,10 @@ public class RiskWindow : MonoBehaviour
 
         for (int side = -1; side <= 1; side += 2)
         {
+            bool risky = sideRisky[side < 0 ? 0 : 1];
+            view.SetZoneVisible(side, risky);
+            if (!risky) continue;
+
             // The true landing band is only ~0.12 units wide - too thin to read or to carry art -
             // so the strip is a fixed world width centred on it.
             float landing = side * (inner + outer) * 0.5f;

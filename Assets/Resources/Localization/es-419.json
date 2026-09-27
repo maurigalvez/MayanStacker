@@ -30,11 +30,11 @@
     },
     {
       "key": "mode_temple_stacker",
-      "value": "Templo Stacker"
+      "value": "Apilador del Templo"
     },
     {
       "key": "mode_infinite_stacker",
-      "value": "Stacker Infinito"
+      "value": "Apilador Infinito"
     },
     {
       "key": "mode_infinite",
@@ -62,7 +62,7 @@
     },
     {
       "key": "kukulkan_shift",
-      "value": "Cambio de Kukulk\u00e1n"
+      "value": "Llamado de Kukulkán"
     },
     {
       "key": "leaderboard_not_available",
@@ -70,7 +70,7 @@
     },
     {
       "key": "leaderboard_no_scores",
-      "value": "Aún no hay puntuaciones. ¡Sé el primero!"
+      "value": "Aún no hay puntuaciones. ¡Anota la primera!"
     },
     {
       "key": "leaderboard_unlock_required",
@@ -116,6 +116,7 @@
       "key": "theme_sunset",
       "value": "Tema Atardecer"
     },
+    { "key": "theme_day", "value": "Tema Diurno" },
     {
       "key": "theme_night",
       "value": "Tema Nocturno"
@@ -130,11 +131,11 @@
     },
     {
       "key": "theme_confirm_title_format",
-      "value": "¿Seleccionar el tema {0}?"
+      "value": "¿Seleccionar {0}?"
     },
     {
       "key": "theme_confirm_message_format",
-      "value": "¿Seguro que quieres cambiar el tema a {0}?"
+      "value": "¿Quieres cambiar al {0}?"
     },
     {
       "key": "achievement_hidden_title",
@@ -226,11 +227,11 @@
     },
     {
       "key": "daily_modifier_speedrun",
-      "value": "Carrera R\u00e1pida"
+      "value": "Contrarreloj"
     },
     {
       "key": "daily_modifier_speedrun_desc",
-      "value": "El generador se balancea m\u00e1s r\u00e1pido. Calcula bien tus tiros."
+      "value": "Kukulkán balancea las piedras más rápido. Calcula bien cuándo soltar."
     },
     {
       "key": "daily_modifier_fragilestack",
@@ -373,6 +374,10 @@
       "value": "{0} piedras perfectas seguidas invocan a Kukulkán para enderezar el templo."
     },
     {
+      "key": "ftue_beat_power",
+      "value": "{0} piedras perfectas llenan el medidor de tu poder. Tócalo cuando brille."
+    },
+    {
       "key": "ftue_skip",
       "value": "Saltar"
     },
@@ -384,6 +389,7 @@
       "key": "next_goal_near_best",
       "value": "A {0} puntos de tu récord."
     },
+    { "key": "next_goal_near_best_one", "value": "A {0} punto de tu récord." },
     {
       "key": "next_goal_achievement",
       "value": "{0} más para {1}."
@@ -392,22 +398,27 @@
       "key": "next_goal_sites_remaining",
       "value": "Quedan {0} sitios por conquistar."
     },
+    { "key": "next_goal_sites_remaining_one", "value": "Queda {0} sitio por conquistar." },
     {
       "key": "codex_sites_remaining",
       "value": "Quedan {0} sitios."
     },
+    { "key": "codex_sites_remaining_one", "value": "Queda {0} sitio." },
     {
       "key": "daily_streak_count",
       "value": "Racha de {0} días"
     },
+    { "key": "daily_streak_count_one", "value": "Racha de {0} día" },
     {
       "key": "daily_streak_at_risk",
       "value": "Racha de {0} días: sigue viva hasta la medianoche"
     },
+    { "key": "daily_streak_at_risk_one", "value": "Racha de {0} día: sigue viva hasta la medianoche" },
     {
       "key": "daily_streak_defend",
       "value": "Racha de {0} días · termina en {1}"
     },
+    { "key": "daily_streak_defend_one", "value": "Racha de {0} día · termina en {1}" },
     {
       "key": "notif_channel_name",
       "value": "Recordatorios del ritual"
@@ -506,7 +517,7 @@
     },
     {
       "key": "remove_ads_nudge",
-      "value": "¿Cansado de los anuncios? Quítalos"
+      "value": "¿Te cansan los anuncios? Quítalos"
     },
     {
       "key": "remove_ads_chip",
@@ -658,7 +669,7 @@
     },
     {
       "key": "boon_intro_continue",
-      "value": "Estoy listo"
+      "value": "¡Adelante!"
     },
     {
       "key": "objective_reach_height_desc",
@@ -821,6 +832,7 @@
     { "key": "result_flavor_early_3", "value": "Respira y vuelve a construir." },
     { "key": "result_best", "value": "Récord {0}" },
     { "key": "result_best_gap", "value": "Récord {0} · faltan {1}" },
+    { "key": "result_best_gap_one", "value": "Récord {0} · falta {1}" },
     { "key": "result_best_beaten", "value": "Récord anterior {0} · +{1}" },
     { "key": "result_daily_best", "value": "Mejor de hoy {0}" },
     { "key": "result_daily_best_beaten", "value": "Nuevo récord de hoy · +{0}" },
@@ -831,13 +843,16 @@
     { "key": "result_stat_combo", "value": "Mejor combo" },
     { "key": "result_combo_value", "value": "x{0}" },
     { "key": "result_tip_straighten", "value": "Logra {0} Perfectos seguidos para enderezar tu torre." },
+    { "key": "result_tip_power", "value": "Los Perfectos llenan el medidor de tu poder. Guárdalo para cuando la torre se incline." },
     { "key": "result_tip_combo", "value": "Solo los aterrizajes perfectos mantienen tu combo." },
     { "key": "result_tip_edge", "value": "Suelta cuando destelle el borde de la Serpiente para un PERFECTO x3." },
     { "key": "edge_landed_bonus", "value": "Filo de la Serpiente x{0} · +{1}" },
     { "key": "edge_proj_miss", "value": "Fallo" },
     { "key": "combo_badge_caption", "value": "COMBO" },
     { "key": "result_edge_line", "value": "Filo de la Serpiente: {0} aciertos · +{1}" },
+    { "key": "result_edge_line_one", "value": "Filo de la Serpiente: {0} acierto · +{1}" },
     { "key": "result_edge_line_broke", "value": "Filo de la Serpiente: {0} aciertos · +{1} · combos rotos: {2}" },
+    { "key": "result_edge_line_broke_one", "value": "Filo de la Serpiente: {0} acierto · +{1} · combos rotos: {2}" },
     { "key": "result_tip_align", "value": "Alinea cada piedra con la de abajo." },
     { "key": "player_identity_format", "value": "Jugando como {0}" },
     { "key": "player_identity_signing_in", "value": "Iniciando sesión..." },
@@ -865,10 +880,10 @@
     { "key": "power_unlocked_body", "value": "Los aterrizajes perfectos llenan su medidor. Tócalo cuando la torre lo necesite." },
     { "key": "power_quetzal_feather_name", "value": "Pluma de Quetzal" },
     { "key": "power_quetzal_feather_desc", "value": "Toca el medidor lleno para frenar el balanceo y la caída de las próximas {0} piedras." },
-    { "key": "power_obsidian_blade_name", "value": "Hoja de Obsidiana" },
-    { "key": "power_obsidian_blade_desc", "value": "Toca el medidor lleno para cortar la parte de la piedra de arriba que sobresale de la de abajo." },
+    { "key": "power_tzolkin_rewind_name", "value": "Retroceso del Tzolk'in" },
+    { "key": "power_tzolkin_rewind_desc", "value": "Toca el medidor lleno para regresar el tiempo: tus últimas {0} piedras y los puntos que sumaron se deshacen." },
     { "key": "power_kukulkans_call_name", "value": "Llamado de Kukulkán" },
-    { "key": "power_kukulkans_call_desc", "value": "Toca el medidor lleno para invocar ahora el Cambio de Kukulkán y enderezar la torre." },
+    { "key": "power_kukulkans_call_desc", "value": "Toca el medidor lleno para llamar a Kukulkán ahora y enderezar la torre." },
     { "key": "power_loadout_title", "value": "Elige un poder" },
     { "key": "power_loadout_play", "value": "JUGAR" },
     { "key": "power_loadout_back", "value": "Volver" },

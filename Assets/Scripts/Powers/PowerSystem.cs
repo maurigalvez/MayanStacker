@@ -15,7 +15,8 @@ using UnityEngine.UI;
 /// Powers (what each does lives here; look and unlock live on <see cref="PowerDefinition"/>):
 ///  - Jaguar Slam: knocks the top stone back onto the centre of the one below.
 ///  - Quetzal Feather: slow motion — swing and fall — for the next few drops.
-///  - Obsidian Blade: cuts off the part of the top stone hanging past the one below.
+///  - Tzolk'in Rewind: turns time back — the last few stones and everything they earned or
+///    cost (score, combo, tremor) are undone (see <see cref="RunRewind"/>, <see cref="RewindFx"/>).
 ///  - Kukulkan's Call: fires the Kukulkan shift on demand.
 ///
 /// Rules (all in <see cref="PowerSettings"/>):
@@ -66,6 +67,8 @@ public class PowerSystem : MonoBehaviour
     private bool unlocked; // cached per run: read from PlayerPrefs, not every frame
     private PowerId equipped;
     private bool slamming;
+    private bool rewinding; // rewound stones still flying back up
+    private RewindFx rewindFx;
 
     // Quetzal Feather
     private int quetzalDropsLeft;
@@ -163,8 +166,14 @@ public class PowerSystem : MonoBehaviour
     {
         if (settings == null || gameManager == null) return false;
         if (!settings.AppliesTo(gameManager.CurrentGameMode)) return false;
-        if (settings.suppressDuringTutorial && FtueState.NeedsTutorial) return false;
+        if (settings.suppressDuringTutorial && FtueState.NeedsTutorial && !FtueTutorial.PowerRevealed) return false;
         return unlocked;
+    }
+
+    /// <summary>Pulses the medallion for <paramref name="seconds"/>, e.g. while a lesson points at it.</summary>
+    public void Highlight(float seconds)
+    {
+        highlightUntil = Mathf.Max(highlightUntil, Time.unscaledTime + seconds);
     }
 
     /// <summary>The meter is counting landings right now.</summary>
@@ -207,9 +216,10 @@ public class PowerSystem : MonoBehaviour
                 // Works on the drops to come, so a stone in the air is fine.
                 return !QuetzalActive;
 
-            case PowerId.ObsidianBlade:
-                return height >= 2 && !stoneInAir
-                       && stackManager.GetTopOverhang() >= settings.bladeMinOverhang;
+            case PowerId.TzolkinRewind:
+                // Needs a stone above the foundation, and the run as it stood before it.
+                return height >= 2 && !stoneInAir && !rewinding
+                       && RunRewind.Has(height - RewindCount(height));
 
             case PowerId.KukulkansCall:
                 return height >= 2 && !stoneInAir;
@@ -255,6 +265,7 @@ public class PowerSystem : MonoBehaviour
         }
 
         if (!wasReady && IsReady) OnMeterFilled();
+        else if (perfect && !wasReady && soundManager != null) soundManager.PlayChargeCue();
     }
 
     private void OnMeterFilled()
@@ -289,7 +300,7 @@ public class PowerSystem : MonoBehaviour
         switch (id)
         {
             case PowerId.QuetzalFeather: fired = FireQuetzalFeather(def); break;
-            case PowerId.ObsidianBlade: fired = FireObsidianBlade(def, data); break;
+            case PowerId.TzolkinRewind: fired = FireTzolkinRewind(def, data); break;
             case PowerId.KukulkansCall: fired = FireKukulkansCall(def); break;
             case PowerId.JaguarSlam:
             default: fired = FireJaguarSlam(def); break;
@@ -299,7 +310,8 @@ public class PowerSystem : MonoBehaviour
 
         charge = Mathf.Max(0f, charge - 1f);
 
-        // No score of its own and no Perfect: every stone keeps the landing it earned.
+        // No score of its own and no Perfect: every stone keeps the landing it earned (the
+        // rewind takes stones away with theirs, but awards nothing either).
         // Named in the lane, right above the button that fired it.
         GuideLane.Say(LocalizationManager.Get(def.nameKey), null, def.accentColor, 0.9f);
 
@@ -356,23 +368,70 @@ public class PowerSystem : MonoBehaviour
         return true;
     }
 
-    private bool FireObsidianBlade(PowerDefinition def, Dictionary<string, object> data)
+    /// <summary>Stones a rewind from <paramref name="height"/> takes: up to the setting, never the foundation.</summary>
+    private int RewindCount(int height) => Mathf.Clamp(settings.rewindStones, 0, Mathf.Max(0, height - 1));
+
+    /// <summary>
+    /// Turns time back: the top stones leave the tower and the run returns to the moment before
+    /// the first of them was dropped — score, combo, streak, tremor, objective progress, the
+    /// Infinite peak and the Serpent's Edge receipt (every <see cref="IRunRewindable"/>).
+    /// The stone on the hook is held until the rewound ones have flown back up to it.
+    /// </summary>
+    private bool FireTzolkinRewind(PowerDefinition def, Dictionary<string, object> data)
     {
-        if (!stackManager.SliceTopOverhang(settings.bladeMinOverhang, out float removed)) return false;
+        int height = stackManager.GetStackCount();
+        int count = RewindCount(height);
+        if (count <= 0 || !RunRewind.Has(height - count)) return false;
 
-        data["cut_width"] = removed;
+        int scoreBefore = gameManager.CurrentScore;
 
-        if (cameraController != null) cameraController.Shake(settings.bladeShake);
-        GameFeelManager.HitStop(settings.bladeHitStop);
-        GameFeelManager.Flash(settings.bladeFlash, 0.2f);
+        List<StackableObject> stones = stackManager.DetachTopStones(count, 1);
+        if (stones.Count == 0) return false;
+
+        // Stones first, then state: restorers read the lowered stack (LevelManager's height bar).
+        RunRewind.Restore(stackManager.GetStackCount());
+
+        data["stones"] = stones.Count;
+        data["points_undone"] = scoreBefore - gameManager.CurrentScore;
+
+        float stonesSeconds = RewindFx.StonesDuration(settings, stones.Count);
+        if (objectSpawner != null) objectSpawner.HoldDrops(stonesSeconds);
+        StartCoroutine(RewindingFor(stonesSeconds));
+
+        var holder = DependencyRegistry.Find<SpawnerHolder>();
+        Vector3 hook = holder != null
+            ? holder.transform.position
+            : stackManager.GetTopObject().transform.position + Vector3.up * 6f;
+
+        if (rewindFx != null)
+        {
+            rewindFx.Play(stones, hook, def.accentColor, def.icon, def.fireSound, def.fireSoundVolume, soundManager);
+        }
+        else
+        {
+            foreach (StackableObject stone in stones) if (stone != null) Destroy(stone.gameObject);
+        }
+
+        if (cameraController != null) cameraController.Shake(settings.rewindShake);
+        GameFeelManager.HitStop(settings.rewindHitStop);
+        Color flash = def.accentColor;
+        flash.a = 0.3f;
+        GameFeelManager.Flash(flash, 0.3f);
         HapticFeedback.Trigger(HapticFeedback.HapticType.Heavy);
-        PlayFireSound(def);
         return true;
     }
 
+    private IEnumerator RewindingFor(float seconds)
+    {
+        rewinding = true;
+        yield return new WaitForSecondsRealtime(seconds);
+        rewinding = false;
+    }
+
     /// <summary>
-    /// The ordinary Kukulkan shift, on demand: same straighten, slow-mo, flash and sting as the
-    /// earned one, so it never looks like a different thing depending on how it was triggered.
+    /// The Kukulkan shift, on demand: same straighten, slow-mo, flash and sting as the offering
+    /// stone and the tremor save, so it never looks like a different thing depending on how it
+    /// was triggered.
     /// </summary>
     private bool FireKukulkansCall(PowerDefinition def)
     {
@@ -421,6 +480,14 @@ public class PowerSystem : MonoBehaviour
 
     private void OnObjectDropped(GameObject dropped)
     {
+        // The run as it stands before this stone lands: what a Tzolk'in Rewind returns to.
+        // Deep enough for every stored charge to be spent back to back.
+        if (equipped == PowerId.TzolkinRewind && stackManager != null && IsLive())
+        {
+            RunRewind.Capture(stackManager.GetStackCount(),
+                settings.rewindStones * Mathf.Max(1, settings.maxStoredCharges));
+        }
+
         if (quetzalDropsLeft > 0 && dropped != null)
         {
             var rb = dropped.GetComponent<Rigidbody2D>();
@@ -481,8 +548,7 @@ public class PowerSystem : MonoBehaviour
 
         if (!GuideLane.TryTeach(PowerLessonId,
                 LocalizationManager.Get("power_intro_title", LocalizationManager.Get(def.nameKey)),
-                // {0} is the Quetzal Feather's drop count; the other descriptions have no slot.
-                LocalizationManager.Get(def.descriptionKey, settings.quetzalDrops),
+                settings.Describe(def.id),
                 def.accentColor,
                 3.4f))
         {
@@ -557,7 +623,10 @@ public class PowerSystem : MonoBehaviour
         charge = 0f;
         armedAt = 0f;
         slamming = false;
+        rewinding = false;
         EndQuetzal();
+        RunRewind.Clear();
+        if (rewindFx != null) rewindFx.StopScreen();
 
         unlocked = PowerUnlocks.HasEquippedPower;
         equipped = PowerUnlocks.Equipped;
@@ -575,6 +644,7 @@ public class PowerSystem : MonoBehaviour
         introActive = false;
         highlightUntil = 0f;
         EndQuetzal();
+        RunRewind.Clear();
     }
 
     private Dictionary<string, object> RunEventData()
@@ -648,6 +718,10 @@ public class PowerSystem : MonoBehaviour
         uiRoot.SetActive(false);
 
         BuildTint();
+
+        // Under the medallion like the tint, so the button stays readable through the rewind.
+        rewindFx = gameObject.AddComponent<RewindFx>();
+        rewindFx.Init(settings, settings.canvasSortingOrder - 25);
     }
 
     /// <summary>A full-screen edge vignette on its own non-interactive canvas, under the HUD's taps.</summary>

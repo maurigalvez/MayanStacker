@@ -7,7 +7,7 @@ using UnityEditor;
 /// <summary>
 /// Manages level progression, level data, and player progress in Stacker Levels mode
 /// </summary>
-public class LevelManager : MonoBehaviour, ILevelManager
+public class LevelManager : MonoBehaviour, ILevelManager, IRunRewindable
 {
     [Header("Demo Settings")]
     [SerializeField] private bool isDemoVersion = false;
@@ -59,6 +59,7 @@ public class LevelManager : MonoBehaviour, ILevelManager
         // Register with dependency registry
         DependencyRegistry.Register<LevelManager>(this);
         DependencyRegistry.Register<ILevelManager>(this as ILevelManager);
+        RunRewind.Register(this);
 
         // Load saved progress
         LoadProgress();
@@ -279,6 +280,35 @@ public class LevelManager : MonoBehaviour, ILevelManager
                 if (gameManager != null) gameManager.GameOver("objective_flawless");
             }
         }
+    }
+
+    // ---- Tzolk'in Rewind ----
+
+    private struct RewindState
+    {
+        public bool poorLanding;
+        public int perfectChain;
+        public int bestPerfectChain;
+    }
+
+    object IRunRewindable.CaptureRewindState() => new RewindState
+    {
+        poorLanding = poorLandingThisAttempt,
+        perfectChain = currentPerfectChain,
+        bestPerfectChain = bestPerfectChain
+    };
+
+    /// <summary>Objective progress goes back with the stones, and the height bar drops to the rewound tower.</summary>
+    void IRunRewindable.RestoreRewindState(object state)
+    {
+        if (!(state is RewindState s) || isLevelComplete) return;
+
+        poorLandingThisAttempt = s.poorLanding;
+        currentPerfectChain = s.perfectChain;
+        bestPerfectChain = s.bestPerfectChain;
+
+        var stackManager = DependencyRegistry.Find<StackManager>();
+        if (stackManager != null) OnStackHeightUpdated?.Invoke(stackManager.GetStackCount());
     }
 
     /// <summary>
@@ -685,6 +715,7 @@ public class LevelManager : MonoBehaviour, ILevelManager
         // Unregister from dependency registry
         DependencyRegistry.Unregister<LevelManager>(this);
         DependencyRegistry.Unregister<ILevelManager>(this as ILevelManager);
+        RunRewind.Unregister(this);
 
         // Unsubscribe from events
         var gameManager = DependencyRegistry.Find<GameManager>();

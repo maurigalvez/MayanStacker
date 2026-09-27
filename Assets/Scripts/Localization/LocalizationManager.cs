@@ -221,6 +221,23 @@ public class LocalizationManager : MonoBehaviour
     }
 
     /// <summary>
+    /// Get a count-dependent string. When <paramref name="count"/> is 1 and the current
+    /// locale has a "<key>_one" variant, that singular form is used; otherwise the base
+    /// key, which holds the plural. Locales without grammatical number (ja, zh) simply
+    /// omit the "_one" keys. No English fallback for "_one", or a ja player would get
+    /// English text whenever the count is 1.
+    /// </summary>
+    public static string GetPlural(string key, int count, params object[] args)
+    {
+        string singular = key + "_one";
+        bool useSingular = count == 1
+            && instance != null
+            && instance.locales.TryGetValue(instance.currentLocale, out var currentDict)
+            && currentDict.ContainsKey(singular);
+        return Get(useSingular ? singular : key, args);
+    }
+
+    /// <summary>
     /// Get localized achievement title. Returns original if no overlay exists.
     /// </summary>
     public static string GetAchievementTitle(string achievementId, string fallback)

@@ -900,7 +900,7 @@ public class MainMenuManager : MonoBehaviour
 
         if (FtueState.ShouldPromoteReturningPlayerFeatures && DailyStreak.IsAtRisk)
         {
-            return LocalizationManager.Get("daily_streak_defend", DailyStreak.Current, clock);
+            return LocalizationManager.GetPlural("daily_streak_defend", DailyStreak.Current, DailyStreak.Current, clock);
         }
 
         return LocalizationManager.Get("daily_challenge_subtitle");

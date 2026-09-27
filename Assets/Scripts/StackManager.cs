@@ -63,6 +63,7 @@ public class StackManager : MonoBehaviour
     public System.Action<StackableObject> OnObjectAddedToStack;
     public System.Action<StackableObject> OnObjectRemovedFromStack;
     public System.Action OnStackStraightened; // Fired when stack straightening animation completes
+    public System.Action<int> OnStackRewound; // Tzolk'in Rewind took stones off the top (new stack count)
 
     // Singleton pattern for easy access
     private static StackManager instance;
@@ -695,8 +696,8 @@ public class StackManager : MonoBehaviour
         sortedObjects.Sort((a, b) => a.transform.position.y.CompareTo(b.transform.position.y));
 
         // The bottom block's collider centre. Aligning by collider centre rather than transform
-        // keeps a stone the Obsidian Blade trimmed (its collider is offset) in line; for every
-        // other stone the two are the same.
+        // keeps a stone whose collider is offset from its pivot in line; for every other stone
+        // the two are the same.
         float firstBlockCentreX = sortedObjects.Count > 0 && sortedObjects[0] != null
             ? sortedObjects[0].ColliderCenterX
             : 0f;
@@ -892,76 +893,43 @@ public class StackManager : MonoBehaviour
     }
 
     /// <summary>
-    /// How far the top stone sticks out past the stone below it, in world units.
-    /// 0 when it sits inside the stone below (a narrow stone on a wide one).
+    /// Tzolk'in Rewind: takes up to <paramref name="count"/> stones off the top of the tower,
+    /// never leaving fewer than <paramref name="keepAtLeast"/>. The stones leave the stack and
+    /// the physics world at once (no body, no contacts, no fall checks), so the tower below is
+    /// untouched and the camera and spawner follow the lower top straight away; the caller
+    /// owns the returned objects from here on, to animate and destroy. Top stone first.
     /// </summary>
-    public float GetTopOverhang()
+    public List<StackableObject> DetachTopStones(int count, int keepAtLeast)
     {
-        if (!TryGetTopPair(out StackableObject top, out StackableObject below)) return 0f;
-        if (!TryGetSpan(top, out float topMin, out float topMax)) return 0f;
-        if (!TryGetSpan(below, out float belowMin, out float belowMax)) return 0f;
+        var detached = new List<StackableObject>();
+        int available = Mathf.Min(count, stackObjects.Count - Mathf.Max(0, keepAtLeast));
 
-        return Mathf.Max(0f, topMax - belowMax) + Mathf.Max(0f, belowMin - topMin);
-    }
+        for (int i = 0; i < available; i++)
+        {
+            StackableObject stone = stackObjects[stackObjects.Count - 1];
+            RemoveObjectFromStack(stone);
+            if (stone == null) continue;
 
-    /// <summary>
-    /// Obsidian Blade: cuts the part of the top stone that hangs past the stone below it.
-    ///
-    /// The stone keeps only the width that rests on its support — collider and sprite both,
-    /// cropped (not squashed) where the sprite allows it — and the cut piece is thrown off as
-    /// a collider-less fragment that tumbles away, so the slice reads on video and the piece
-    /// can never land on the tower. The stone is narrower from here on, which is the price:
-    /// the next landing is judged against the narrower width.
-    /// </summary>
-    /// <returns>False when there is nothing worth cutting.</returns>
-    public bool SliceTopOverhang(float minOverhang, out float removedWidth)
-    {
-        removedWidth = 0f;
-        if (!TryGetTopPair(out StackableObject top, out StackableObject below)) return false;
+            Rigidbody2D rb = stone.GetComponent<Rigidbody2D>();
+            if (rb != null)
+            {
+                rb.linearVelocity = Vector2.zero;
+                rb.angularVelocity = 0f;
+                rb.simulated = false;
+            }
+            stone.enabled = false; // no distance culling mid-animation
 
-        var box = top.Collider as BoxCollider2D;
-        SpriteRenderer sr = top.SpriteRenderer;
-        if (box == null || sr == null || sr.sprite == null) return false;
-        if (!TryGetSpan(top, out float topMin, out float topMax)) return false;
-        if (!TryGetSpan(below, out float belowMin, out float belowMax)) return false;
+            detached.Add(stone);
+        }
 
-        float keepMin = Mathf.Max(topMin, belowMin);
-        float keepMax = Mathf.Min(topMax, belowMax);
-        float topWidth = topMax - topMin;
-        float keptWorld = keepMax - keepMin;
-        removedWidth = topWidth - Mathf.Max(0f, keptWorld);
+        if (detached.Count > 0)
+        {
+            stackCacheDirty = true;
+            UpdateStackCache();
+            OnStackRewound?.Invoke(stackObjects.Count);
+        }
 
-        // Nothing past the edge, or the stone barely rests on its support at all.
-        if (removedWidth < minOverhang || keptWorld < topWidth * 0.15f) return false;
-
-        // Settle the stone first so the cut is straight and the maths stays in one axis.
-        top.transform.rotation = Quaternion.identity;
-        Rigidbody2D rb = top.GetComponent<Rigidbody2D>();
-        rb.linearVelocity = Vector2.zero;
-        rb.angularVelocity = 0f;
-
-        bool cutRight = topMax > belowMax;
-        float cutMin = cutRight ? keepMax : topMin;
-        float cutMax = cutRight ? topMax : keepMin;
-
-        SpawnSliceFragment(sr, topMin, topWidth, cutMin, cutMax, cutRight);
-
-        // The kept part of the stone, as a 0..1 range of its own width.
-        float keepFrom = (keepMin - topMin) / topWidth;
-        float keepTo = (keepMax - topMin) / topWidth;
-
-        // Collider: shrink and shift in local space.
-        float worldPerLocal = Mathf.Abs(box.transform.lossyScale.x) > 0.0001f ? box.transform.lossyScale.x : 1f;
-        float keptCentreWorld = (keepMin + keepMax) * 0.5f;
-        float currentCentreWorld = (topMin + topMax) * 0.5f;
-        box.size = new Vector2(keptWorld / worldPerLocal, box.size.y);
-        box.offset = new Vector2(box.offset.x + (keptCentreWorld - currentCentreWorld) / worldPerLocal, box.offset.y);
-
-        CropSprite(sr, keepFrom, keepTo, keptCentreWorld);
-
-        landingTimes[top] = Time.time;
-        stackCacheDirty = true;
-        return true;
+        return detached;
     }
 
     private bool TryGetTopPair(out StackableObject top, out StackableObject below)
@@ -973,126 +941,6 @@ public class StackManager : MonoBehaviour
         top = stackObjects[stackObjects.Count - 1];
         below = stackObjects[stackObjects.Count - 2];
         return top != null && below != null && top.GetComponent<Rigidbody2D>() != null;
-    }
-
-    private static bool TryGetSpan(StackableObject stone, out float min, out float max)
-    {
-        min = max = 0f;
-        if (stone == null || stone.Collider == null) return false;
-        Bounds b = stone.Collider.bounds;
-        min = b.min.x;
-        max = b.max.x;
-        return max > min;
-    }
-
-    /// <summary>
-    /// Replaces the stone's sprite with the kept columns of the same texture, so the art is
-    /// cut rather than squeezed. A sprite whose texture rect can't be read (tightly packed in
-    /// an atlas) falls back to scaling the renderer to the kept width.
-    /// </summary>
-    private static void CropSprite(SpriteRenderer sr, float keepFrom, float keepTo, float keptCentreWorld)
-    {
-        Sprite sprite = sr.sprite;
-        Transform t = sr.transform;
-
-        if (TryCropRect(sprite, keepFrom, keepTo, out Rect rect))
-        {
-            Sprite cropped = Sprite.Create(sprite.texture, rect, new Vector2(0.5f, 0.5f),
-                sprite.pixelsPerUnit, 0, SpriteMeshType.FullRect);
-            cropped.name = sprite.name + "_Sliced";
-            sr.sprite = cropped;
-        }
-        else
-        {
-            Vector3 scale = t.localScale;
-            t.localScale = new Vector3(scale.x * (keepTo - keepFrom), scale.y, scale.z);
-        }
-
-        // Centre the art over the kept part, whatever the original pivot was.
-        CentreRendererOn(sr, keptCentreWorld);
-    }
-
-    private static void CentreRendererOn(SpriteRenderer sr, float worldX)
-    {
-        Transform t = sr.transform;
-        Vector3 p = t.position;
-        t.position = new Vector3(p.x + (worldX - sr.bounds.center.x), p.y, p.z);
-    }
-
-    private static bool TryCropRect(Sprite sprite, float from, float to, out Rect rect)
-    {
-        rect = default;
-        try
-        {
-            if (sprite.packed && sprite.packingMode == SpritePackingMode.Tight) return false;
-            if (sprite.packed && sprite.packingRotation != SpritePackingRotation.None) return false;
-
-            Rect source = sprite.textureRect;
-            rect = new Rect(source.x + source.width * from, source.y, source.width * (to - from), source.height);
-            return rect.width >= 1f;
-        }
-        catch (System.Exception)
-        {
-            return false;
-        }
-    }
-
-    /// <summary>The cut piece: a copy of the cut columns that tumbles off and fades.</summary>
-    private void SpawnSliceFragment(SpriteRenderer source, float topMin, float topWidth,
-        float cutMin, float cutMax, bool cutRight)
-    {
-        var go = new GameObject("ObsidianSliceFragment");
-        go.transform.position = source.transform.position;
-        go.transform.localScale = source.transform.lossyScale;
-
-        var sr = go.AddComponent<SpriteRenderer>();
-        sr.sortingLayerID = source.sortingLayerID;
-        sr.sortingOrder = source.sortingOrder + 1;
-        sr.color = source.color;
-        sr.sprite = source.sprite;
-
-        float from = (cutMin - topMin) / topWidth;
-        float to = (cutMax - topMin) / topWidth;
-        Sprite owned = null;
-        if (TryCropRect(source.sprite, from, to, out Rect rect))
-        {
-            sr.sprite = owned = Sprite.Create(source.sprite.texture, rect, new Vector2(0.5f, 0.5f),
-                source.sprite.pixelsPerUnit, 0, SpriteMeshType.FullRect);
-        }
-        else
-        {
-            Vector3 s = go.transform.localScale;
-            go.transform.localScale = new Vector3(s.x * (to - from), s.y, s.z);
-        }
-
-        CentreRendererOn(sr, (cutMin + cutMax) * 0.5f);
-
-        // No collider: it can never land on, or knock, the tower.
-        var rb = go.AddComponent<Rigidbody2D>();
-        rb.gravityScale = 2.2f;
-        float side = cutRight ? 1f : -1f;
-        rb.linearVelocity = new Vector2(side * 3.2f, 2.4f);
-        rb.angularVelocity = -side * 260f;
-
-        StartCoroutine(FadeAndDestroy(sr, owned, 1.1f));
-    }
-
-    private static IEnumerator FadeAndDestroy(SpriteRenderer sr, Sprite owned, float seconds)
-    {
-        float t = 0f;
-        Color start = sr.color;
-        while (t < seconds && sr != null)
-        {
-            t += Time.deltaTime;
-            Color c = start;
-            c.a = start.a * (1f - Mathf.Clamp01(t / seconds));
-            sr.color = c;
-            yield return null;
-        }
-
-        // The cropped sprite was made at runtime; don't leak it.
-        if (owned != null) Destroy(owned);
-        if (sr != null) Destroy(sr.gameObject);
     }
 
     private bool MoveTopStone(StackableObject top, float offsetX, Quaternion endRotation,

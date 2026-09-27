@@ -403,6 +403,9 @@ public class GameSoundManager : MonoBehaviour
     {
         if (perfectStreakChargeSound == null || gameManager == null) return;
 
+        // Where Perfects charge a power, the power meter plays this cue (PlayChargeCue).
+        if (!gameManager.StreakShiftActive) return;
+
         int required = gameManager.PerfectHitsRequired;
         // Only while genuinely building toward the shift (1 .. required-1). The shift hit
         // resets the counter to 0 and plays the Kukulkan sting instead.
@@ -410,6 +413,16 @@ public class GameSoundManager : MonoBehaviour
         {
             PlaySound(perfectStreakChargeSound, landingSoundVolume);
         }
+    }
+
+    /// <summary>
+    /// The same rising charge cue, for a Perfect that charged the power meter without
+    /// filling it. Called by PowerSystem.
+    /// </summary>
+    public void PlayChargeCue()
+    {
+        if (perfectStreakChargeSound == null) return;
+        PlaySound(perfectStreakChargeSound, landingSoundVolume);
     }
 
 

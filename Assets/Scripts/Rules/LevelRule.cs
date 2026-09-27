@@ -148,15 +148,23 @@ public class RisingCenoteSettings
 [System.Serializable]
 public class EclipseSettings
 {
-    [Tooltip("Stones at the top of the tower that stay lit.")]
-    [Range(1f, 6f)]
-    public float litStones = 2.5f;
+    [Tooltip("The first totality starts when the stack reaches this height.")]
+    [Min(1)]
+    public int firstAtHeight = 4;
 
-    [Tooltip("Stones over which the light fades to dark.")]
-    [Range(0.5f, 4f)]
-    public float fadeStones = 1.5f;
+    [Tooltip("Then again every N stones. Never on or just before the temple's final stone.")]
+    [Min(2)]
+    public int everyNStones = 6;
 
-    [Tooltip("How dark the unlit tower gets (0 = no eclipse, 1 = black).")]
+    [Tooltip("Realtime seconds the moon takes to slide over the sun (the warning).")]
+    [Range(0.3f, 3f)]
+    public float warningSeconds = 1.0f;
+
+    [Tooltip("Seconds of totality: the screen goes dark except the swinging and top stones.")]
+    [Range(0.5f, 6f)]
+    public float totalitySeconds = 2.5f;
+
+    [Tooltip("How dark totality gets (0 = no eclipse, 1 = black).")]
     [Range(0f, 1f)]
     public float darkness = 0.9f;
 

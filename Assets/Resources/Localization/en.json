@@ -116,6 +116,7 @@
       "key": "theme_sunset",
       "value": "Sunset Theme"
     },
+    { "key": "theme_day", "value": "Day Theme" },
     {
       "key": "theme_night",
       "value": "Night Theme"
@@ -130,11 +131,11 @@
     },
     {
       "key": "theme_confirm_title_format",
-      "value": "Select {0} Theme?"
+      "value": "Select {0}?"
     },
     {
       "key": "theme_confirm_message_format",
-      "value": "Are you sure you want to change the theme to {0}?"
+      "value": "Are you sure you want to switch to the {0}?"
     },
     {
       "key": "achievement_hidden_title",
@@ -373,6 +374,10 @@
       "value": "{0} perfect stones in a row summon Kukulkan to straighten the temple."
     },
     {
+      "key": "ftue_beat_power",
+      "value": "{0} perfect stones fill your power's meter. Tap it when it glows."
+    },
+    {
       "key": "ftue_skip",
       "value": "Skip"
     },
@@ -384,6 +389,7 @@
       "key": "next_goal_near_best",
       "value": "{0} points from your best."
     },
+    { "key": "next_goal_near_best_one", "value": "{0} point from your best." },
     {
       "key": "next_goal_achievement",
       "value": "{0} more for {1}."
@@ -392,10 +398,12 @@
       "key": "next_goal_sites_remaining",
       "value": "{0} sites still unclaimed."
     },
+    { "key": "next_goal_sites_remaining_one", "value": "{0} site still unclaimed." },
     {
       "key": "codex_sites_remaining",
       "value": "{0} sites remain."
     },
+    { "key": "codex_sites_remaining_one", "value": "{0} site remains." },
     {
       "key": "daily_streak_count",
       "value": "{0}-day streak"
@@ -831,6 +839,7 @@
     { "key": "result_stat_combo", "value": "Best combo" },
     { "key": "result_combo_value", "value": "x{0}" },
     { "key": "result_tip_straighten", "value": "Land {0} Perfects in a row to straighten your tower." },
+    { "key": "result_tip_power", "value": "Perfect landings fill your power's meter. Save it for when the tower leans." },
     { "key": "result_tip_combo", "value": "Only Perfect landings keep your combo alive." },
     { "key": "result_tip_edge", "value": "Release as the Serpent's Edge rim flashes for a x3 Perfect." },
     { "key": "edge_landed_bonus", "value": "Serpent's Edge x{0} · +{1}" },
@@ -865,8 +874,8 @@
     { "key": "power_unlocked_body", "value": "Perfect landings fill its meter. Tap it when the tower needs it." },
     { "key": "power_quetzal_feather_name", "value": "Quetzal Feather" },
     { "key": "power_quetzal_feather_desc", "value": "Tap the full meter to slow the swing and the fall for the next {0} stones." },
-    { "key": "power_obsidian_blade_name", "value": "Obsidian Blade" },
-    { "key": "power_obsidian_blade_desc", "value": "Tap the full meter to cut off the part of the top stone hanging past the one below." },
+    { "key": "power_tzolkin_rewind_name", "value": "Tzolk'in Rewind" },
+    { "key": "power_tzolkin_rewind_desc", "value": "Tap the full meter to turn time back: your last {0} stones, and the points they scored, are undone." },
     { "key": "power_kukulkans_call_name", "value": "Kukulkan's Call" },
     { "key": "power_kukulkans_call_desc", "value": "Tap the full meter to call Kukulkan's Shift now and straighten the tower." },
     { "key": "power_loadout_title", "value": "Choose a power" },

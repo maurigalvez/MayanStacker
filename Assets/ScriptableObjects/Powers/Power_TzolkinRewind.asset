@@ -10,13 +10,13 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 385cd7128fc9a4f4980d4cb3218b28dd, type: 3}
-  m_Name: Power_ObsidianBlade
+  m_Name: Power_TzolkinRewind
   m_EditorClassIdentifier: Assembly-CSharp::PowerDefinition
   id: 2
-  nameKey: power_obsidian_blade_name
-  descriptionKey: power_obsidian_blade_desc
+  nameKey: power_tzolkin_rewind_name
+  descriptionKey: power_tzolkin_rewind_desc
   icon: {fileID: -4573976613820918227, guid: 946e12e42a4a6d34cbf2a029915ecfd1, type: 3}
-  accentColor: {r: 0.62, g: 0.56, b: 0.86, a: 1}
-  fireSound: {fileID: 8300000, guid: 2fced6e382edb5e4395bbb51219d3dcf, type: 3}
+  accentColor: {r: 0.33, g: 0.88, b: 0.7, a: 1}
+  fireSound: {fileID: 8300000, guid: c1efa119c1c01824ea1ccae9d4401f7a, type: 3}
   fireSoundVolume: 1
-  unlockedByLevel: 8
+  unlockedByLevel: 9

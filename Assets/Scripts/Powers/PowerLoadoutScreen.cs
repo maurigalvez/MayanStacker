@@ -131,9 +131,7 @@ public class PowerLoadoutScreen : MonoBehaviour
     private void Select(PowerId id)
     {
         selected = id;
-        PowerDefinition def = settings.Get(id);
-        // {0} is the Quetzal Feather's drop count; the other descriptions have no slot.
-        view.SetSelected(id, LocalizationManager.Get(def.descriptionKey, settings.quetzalDrops));
+        view.SetSelected(id, settings.Describe(id));
     }
 
     private void OnPlayClicked()

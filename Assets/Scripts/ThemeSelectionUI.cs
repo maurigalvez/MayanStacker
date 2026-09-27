@@ -267,8 +267,9 @@ public class ThemeSelectionUI : MonoBehaviour
         // Store pending selection
         pendingThemeSelection = theme;
 
-        // Set confirmation text
-        string themeName = theme.ToString();
+        // Set confirmation text. The format strings take the full localized theme name
+        // ("Sunset Theme", "Tema Atardecer"), never the enum name, which is English.
+        string themeName = LocalizationManager.Get(ThemeNameKey(theme));
         if (confirmationTitle != null)
             confirmationTitle.text = LocalizationManager.Get("theme_confirm_title_format", themeName);
 
@@ -278,6 +279,16 @@ public class ThemeSelectionUI : MonoBehaviour
         // Show panel
         UIPopup.Show(confirmationPanel);
         soundManager?.PlayPanelOpen();
+    }
+
+    private static string ThemeNameKey(GameTheme theme)
+    {
+        switch (theme)
+        {
+            case GameTheme.Sunset: return "theme_sunset";
+            case GameTheme.Night: return "theme_night";
+            default: return "theme_day";
+        }
     }
 
     /// <summary>

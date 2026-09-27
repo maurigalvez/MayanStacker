@@ -129,9 +129,21 @@ public class ObjectSpawner : MonoBehaviour
         waitingForLanding = false;
     }
 
+    /// <summary>
+    /// Refuses drops for <paramref name="seconds"/> (unscaled). The Tzolk'in Rewind holds the
+    /// stone on the hook while the rewound stones are still flying back up to it.
+    /// </summary>
+    public void HoldDrops(float seconds)
+    {
+        dropsHeldUntil = Mathf.Max(dropsHeldUntil, Time.unscaledTime + seconds);
+    }
+
+    private float dropsHeldUntil;
+
     public void DropCurrentObject()
     {
         if (currentObject == null || waitingForLanding) return;
+        if (Time.unscaledTime < dropsHeldUntil) return;
 
         // A block that hasn't finished arriving can't be dropped. Unscaled, so the hit-stop
         // that lands on the same frame as the spawn doesn't stretch the wait.

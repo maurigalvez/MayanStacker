@@ -280,6 +280,7 @@ public class UIManager : MonoBehaviour
         {
             stackManager.OnObjectAddedToStack += OnObjectAddedToStack;
             stackManager.OnStackStraightened += OnStackStraightened;
+            stackManager.OnStackRewound += OnStackRewound;
         }
 
         // Subscribe to level events
@@ -648,7 +649,7 @@ public class UIManager : MonoBehaviour
             blocks = stackManager != null ? stackManager.GetStackCount() : 0,
             perfectLandings = gameManager.PerfectLandings,
             maxCombo = gameManager.MaxCombo,
-            perfectHitsRequired = gameManager.PerfectHitsRequired,
+            perfectHitsRequired = gameManager.StreakShiftActive ? gameManager.PerfectHitsRequired : 0,
             bestBefore = gameManager.HighScoreAtRunStart,
             levelRequired = levelManager != null && levelManager.CurrentLevel != null
                 ? levelManager.CurrentLevel.requiredStackHeight : 0,
@@ -688,8 +689,8 @@ public class UIManager : MonoBehaviour
         }
 
         dailyStreakText.gameObject.SetActive(true);
-        dailyStreakText.text = LocalizationManager.Get(
-            completed ? "daily_streak_count" : "daily_streak_at_risk", streak);
+        dailyStreakText.text = LocalizationManager.GetPlural(
+            completed ? "daily_streak_count" : "daily_streak_at_risk", streak, streak);
         dailyStreakText.color = completed ? dailyCompleteColor : dailyBrokenColor;
     }
 
@@ -721,7 +722,7 @@ public class UIManager : MonoBehaviour
             int gap = best - score;
             if (gap > 0 && best > 0 && gap <= Mathf.Max(50, best / 5))
             {
-                return LocalizationManager.Get("next_goal_near_best", gap);
+                return LocalizationManager.GetPlural("next_goal_near_best", gap, gap);
             }
         }
 
@@ -735,7 +736,7 @@ public class UIManager : MonoBehaviour
             int remaining = levelManager.GetRemainingLevelCount();
             if (remaining > 0 && remaining < levelManager.TotalLevels)
             {
-                return LocalizationManager.Get("next_goal_sites_remaining", remaining);
+                return LocalizationManager.GetPlural("next_goal_sites_remaining", remaining, remaining);
             }
         }
 
@@ -1485,6 +1486,9 @@ public class UIManager : MonoBehaviour
             SetTextAnimated(stackHeightText, height.ToString());
         }
     }
+
+    // Tzolk'in Rewind: the height readout drops with the tower. No landing popup.
+    private void OnStackRewound(int stackCount) => UpdateStackHeight();
 
     private void OnObjectAddedToStack(StackableObject stackableObject)
     {
@@ -2241,6 +2245,9 @@ public class UIManager : MonoBehaviour
     {
         UpdateGameModeDisplay(newMode);
 
+        // The mode decides whether the Kukulkan medallion belongs on screen at all.
+        if (gameManager != null) UpdateKukulkanWrathMeter(gameManager.ConsecutivePerfectHits);
+
         if (newMode == GameMode.StackerLevels)
         {
             InitializeLevelUI();
@@ -2703,7 +2710,7 @@ public class UIManager : MonoBehaviour
             int remaining = levelManager.GetRemainingLevelCount();
             if (remaining > 0)
             {
-                message += "\n" + LocalizationManager.Get("codex_sites_remaining", remaining);
+                message += "\n" + LocalizationManager.GetPlural("codex_sites_remaining", remaining, remaining);
             }
         }
 
@@ -2989,6 +2996,7 @@ public class UIManager : MonoBehaviour
         {
             stackManager.OnObjectAddedToStack -= OnObjectAddedToStack;
             stackManager.OnStackStraightened -= OnStackStraightened;
+            stackManager.OnStackRewound -= OnStackRewound;
         }
 
         if (levelManager != null)
@@ -3213,12 +3221,6 @@ public class UIManager : MonoBehaviour
     /// </summary>
     private void InitializeKukulkanWrathMeter()
     {
-        // Always show the meter
-        if (kukulkanWrathMeter != null)
-        {
-            kukulkanWrathMeter.SetActive(true);
-        }
-
         // Initialize fill to empty
         if (kukulkanWrathFillImage != null)
         {
@@ -3238,11 +3240,14 @@ public class UIManager : MonoBehaviour
     /// <param name="consecutivePerfectHits">Current number of consecutive perfect hits</param>
     private void UpdateKukulkanWrathMeter(int consecutivePerfectHits)
     {
-        // Ensure meter is visible
-        if (kukulkanWrathMeter != null)
+        // Only where a streak straightens the tower (the Daily). Elsewhere the power
+        // medallion is the one meter Perfects fill.
+        bool shown = gameManager == null || gameManager.StreakShiftActive;
+        if (kukulkanWrathMeter != null && kukulkanWrathMeter.activeSelf != shown)
         {
-            kukulkanWrathMeter.SetActive(true);
+            kukulkanWrathMeter.SetActive(shown);
         }
+        if (!shown) return;
 
         if (kukulkanWrathFillImage == null || gameManager == null) return;
 

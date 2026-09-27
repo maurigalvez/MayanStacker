@@ -116,6 +116,7 @@
       "key": "theme_sunset",
       "value": "日落主題"
     },
+    { "key": "theme_day", "value": "白天主題" },
     {
       "key": "theme_night",
       "value": "夜晚主題"
@@ -134,7 +135,7 @@
     },
     {
       "key": "theme_confirm_message_format",
-      "value": "確定要將主題更換為{0}嗎？"
+      "value": "確定要更換為{0}嗎？"
     },
     {
       "key": "achievement_hidden_title",
@@ -371,6 +372,10 @@
     {
       "key": "ftue_beat_kukulkan",
       "value": "連續{0}次完美落石，將喚醒庫庫爾坎扶正神廟。"
+    },
+    {
+      "key": "ftue_beat_power",
+      "value": "{0}次完美落石會填滿能力的能量槽。發光時點擊它。"
     },
     {
       "key": "ftue_skip",
@@ -831,6 +836,7 @@
     { "key": "result_stat_combo", "value": "最高連擊" },
     { "key": "result_combo_value", "value": "x{0}" },
     { "key": "result_tip_straighten", "value": "連續{0}次完美落塊可以扶正高塔。" },
+    { "key": "result_tip_power", "value": "完美落塊會填充能力的能量槽。留到高塔傾斜時再用。" },
     { "key": "result_tip_combo", "value": "只有完美落塊才能保持連擊。" },
     { "key": "result_tip_edge", "value": "蛇之鋒邊緣閃光時鬆手，獲得 x3 完美。" },
     { "key": "edge_landed_bonus", "value": "蛇之鋒 x{0} · +{1}" },
@@ -865,8 +871,8 @@
     { "key": "power_unlocked_body", "value": "完美落石會充滿能量槽。塔需要時點擊它。" },
     { "key": "power_quetzal_feather_name", "value": "格查爾之羽" },
     { "key": "power_quetzal_feather_desc", "value": "點擊已滿的能量槽，讓接下來{0}塊石塊的擺動和下落變慢。" },
-    { "key": "power_obsidian_blade_name", "value": "黑曜石之刃" },
-    { "key": "power_obsidian_blade_desc", "value": "點擊已滿的能量槽，切掉最上面石塊超出下方石塊的部分。" },
+    { "key": "power_tzolkin_rewind_name", "value": "卓爾金曆回溯" },
+    { "key": "power_tzolkin_rewind_desc", "value": "點擊已滿的能量槽讓時間倒流：撤回最後放下的{0}塊石頭及其得分。" },
     { "key": "power_kukulkans_call_name", "value": "庫庫爾坎的召喚" },
     { "key": "power_kukulkans_call_desc", "value": "點擊已滿的能量槽，立即召喚庫庫爾坎之變，讓塔恢復筆直。" },
     { "key": "power_loadout_title", "value": "選擇一種能力" },
