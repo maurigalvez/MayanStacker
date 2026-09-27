@@ -584,6 +584,13 @@ public class ObjectSpawner : MonoBehaviour
     {
         if (varietyTable == null) return BlockVariant.Standard;
 
+        // The per-mode switch runs ahead of the authored pins too: a mode with specials
+        // off gets standard blocks only, whatever a temple's block sequence says.
+        if (gameManager != null && !varietyTable.IsEnabledFor(gameManager.CurrentGameMode))
+        {
+            return BlockVariant.Standard;
+        }
+
         if (stackManager == null)
         {
             stackManager = DependencyRegistry.Find<StackManager>();

@@ -33,6 +33,16 @@ public class BlockVarietyTable : ScriptableObject
     [Tooltip("Turn off to spawn nothing but standard blocks, as the game did originally.")]
     public bool enableVariants = true;
 
+    [Header("Per-mode switches")]
+    [Tooltip("Special blocks in Infinite Stacker. Off since 2026-09-27: on top of environment effects, blocks the player has no control over made runs harder than intended.")]
+    public bool enableInInfinite = false;
+
+    [Tooltip("Special blocks in Temple Stacker, rolled and authored alike. Off since 2026-09-27 for the same reason; the temples' authored block sequences are kept so this can be switched back on.")]
+    public bool enableInLevels = false;
+
+    [Tooltip("Special blocks in the Daily Challenge.")]
+    public bool enableInDaily = true;
+
     [Header("Guard rails")]
     [Tooltip("No special blocks until the stack is at least this tall - the opening of a run should be readable.")]
     [Min(0)]
@@ -52,6 +62,23 @@ public class BlockVarietyTable : ScriptableObject
 
     [Tooltip("The special blocks and how likely each is.")]
     public List<WeightedVariant> variants = new List<WeightedVariant>();
+
+    /// <summary>
+    /// Whether special blocks, rolled or authored, may appear in this mode at all.
+    /// Folds in <see cref="enableVariants"/>, so callers need only this one check.
+    /// </summary>
+    public bool IsEnabledFor(GameMode mode)
+    {
+        if (!enableVariants) return false;
+
+        switch (mode)
+        {
+            case GameMode.InfiniteStacker: return enableInInfinite;
+            case GameMode.StackerLevels: return enableInLevels;
+            case GameMode.DailyChallenge: return enableInDaily;
+            default: return true;
+        }
+    }
 
     // How many ordinary blocks have been spawned since the last special.
     private int blocksSinceSpecial = int.MaxValue;
