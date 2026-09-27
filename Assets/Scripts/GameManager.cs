@@ -303,15 +303,25 @@ public class GameManager : MonoBehaviour, IRunRewindable
     /// </summary>
     /// <param name="basePoints">Base points before multiplier</param>
     /// <param name="accuracy">Landing accuracy (0-1)</param>
+    /// <param name="comboNeutral">A Serpent's Edge landing: paid at the current combo multiplier,
+    /// but it neither grows nor breaks the combo and doesn't count as a Perfect anywhere.</param>
     /// <returns>Actual points awarded after multiplier</returns>
-    public int AddScoreWithCombo(int basePoints, float accuracy)
+    public int AddScoreWithCombo(int basePoints, float accuracy, bool comboNeutral = false)
     {
         if (!isGameActive || isGameOver) return 0;
 
-        // Update combo based on accuracy
-        UpdateCombo(accuracy);
-
-        int finalPoints = PointsFor(basePoints, accuracy, currentCombo);
+        int finalPoints;
+        if (comboNeutral)
+        {
+            HoldComboForEdge();
+            finalPoints = PointsFor(basePoints, true, currentCombo);
+        }
+        else
+        {
+            // Update combo based on accuracy
+            UpdateCombo(accuracy);
+            finalPoints = PointsFor(basePoints, accuracy >= RunModifierService.PerfectThreshold, currentCombo);
+        }
         LastAwardedPoints = finalPoints;
 
         // Boons expire per scored block rather than on a timer, so putting the phone down
@@ -366,17 +376,23 @@ public class GameManager : MonoBehaviour, IRunRewindable
     {
         // A Perfect grows the combo before its multiplier is read.
         bool isPerfectHit = accuracy >= RunModifierService.PerfectThreshold;
-        return PointsFor(basePoints, accuracy, isPerfectHit ? currentCombo + 1 : currentCombo);
+        return PointsFor(basePoints, isPerfectHit, isPerfectHit ? currentCombo + 1 : currentCombo);
     }
 
+    /// <summary>
+    /// Points a Serpent's Edge landing would award right now: the current combo multiplier,
+    /// not the next one, because an edge landing doesn't grow the combo.
+    /// </summary>
+    public int PreviewEdgePoints(int basePoints) => PointsFor(basePoints, true, currentCombo);
+
+    /// <param name="applyCombo">True for a Perfect or a Serpent's Edge landing. The Perfect
+    /// window can be tightened by a run modifier, so callers read it from RunModifierService
+    /// rather than hard-coding it (baseline is the original 0.9).</param>
     /// <param name="comboAfterLanding">The combo count once this landing has updated it.</param>
-    private int PointsFor(int basePoints, float accuracy, int comboAfterLanding)
+    private int PointsFor(int basePoints, bool applyCombo, int comboAfterLanding)
     {
-        // The combo multiplier only applies for perfect hits. The Perfect window itself can be
-        // tightened by a run modifier, so it's read from RunModifierService rather than
-        // hard-coded (baseline is the original 0.9).
-        bool isPerfectHit = accuracy >= RunModifierService.PerfectThreshold;
-        float multiplier = isPerfectHit ? GetComboMultiplier(comboAfterLanding) : 1f;
+        // The combo multiplier only applies for perfect hits and edge landings.
+        float multiplier = applyCombo ? GetComboMultiplier(comboAfterLanding) : 1f;
 
         // Run-wide multipliers stack on top of the combo: the modifier's flat bonus, and
         // whatever boon the player chose mid-run. Both are 1.0 when nothing is active.
@@ -402,6 +418,20 @@ public class GameManager : MonoBehaviour, IRunRewindable
             highScore = currentScore;
             // DON'T invoke OnHighScoreChanged here - only invoke when loading saved scores
         }
+    }
+
+    /// <summary>
+    /// A Serpent's Edge landing leaves the combo, the Perfect streak and the Perfect count as
+    /// they were. It only refreshes the decay timer so the combo isn't lost to the clock while
+    /// the player is off taking the risk.
+    /// </summary>
+    private void HoldComboForEdge()
+    {
+        LastLandingHeldCombo = false;
+        if (currentCombo <= 0) return;
+
+        lastComboUpdateTime = Time.time;
+        comboDecayActive = true;
     }
 
     /// <summary>

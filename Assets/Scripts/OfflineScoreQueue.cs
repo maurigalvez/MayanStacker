@@ -37,6 +37,8 @@ public static class OfflineScoreQueue
     /// <param name="score">Score value to sync</param>
     public static void QueueScore(string leaderboardName, int score)
     {
+        if (Application.isEditor) return; // Editor scores never reach the leaderboards
+
         if (string.IsNullOrEmpty(leaderboardName))
         {
             Debug.LogWarning("OfflineScoreQueue: Cannot queue score with empty leaderboard name");

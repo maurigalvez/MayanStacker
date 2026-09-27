@@ -7,8 +7,9 @@ using UnityEngine.UI;
 /// Generates Assets/Resources/UI/GuideLane.prefab — the editable face of the
 /// <see cref="GuideLane"/>, the low strip every lesson in a run speaks through.
 ///
-/// Built from the same hierarchy the lane falls back to in code
-/// (<see cref="GuideLaneView.BuildDefault"/>), then dressed in the house style through
+/// Required: the lane has no code-built fallback, so without this prefab no lessons show.
+///
+/// Built from <see cref="GuideLaneView.BuildDefault"/>, then dressed in the house style through
 /// <see cref="UIHouseStyle"/>: the stone slab, and the title and body type of the App Update
 /// prompt. The slab is kept see-through and the type sized for a caption, not a modal —
 /// this sits over live gameplay.
@@ -55,7 +56,7 @@ public static class GuideLanePrefabSetup
             "Keep the strip low and narrow: it sits under the top of the tower and above the " +
             "power button, and its ends stay clear of the Tremor meter. The copy shown is only " +
             "a preview.\n\n" +
-            "Delete the prefab to go back to the code-built strip.", "OK");
+            "Keep this prefab: it is the only source of the strip, and without it no lessons show.", "OK");
     }
 
     private static GameObject BuildHierarchy()

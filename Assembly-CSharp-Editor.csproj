@@ -51,6 +51,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Assets\Scripts\Editor\LanguageSelectPrefabSetup.cs" />
+    <Compile Include="Assets\Scripts\Editor\PowerShowcasePrefabSetup.cs" />
     <Compile Include="Assets\Scripts\Editor\CJKFontFallbackSetup.cs" />
     <Compile Include="Assets\Scripts\Editor\RemoveAdsOfferPrefabSetup.cs" />
     <Compile Include="Assets\Scripts\Editor\PlayerIdentityUISetup.cs" />
@@ -66,12 +67,14 @@
     <Compile Include="Assets\Scripts\Editor\RemoveAdsSettingsSetup.cs" />
     <Compile Include="Assets\Scripts\Editor\GameOverUISetup.cs" />
     <Compile Include="Assets\Scripts\Editor\QuitConfirmPrefabSetup.cs" />
+    <Compile Include="Assets\Scripts\Editor\BraceButtonPrefabSetup.cs" />
     <Compile Include="Assets\Scripts\Editor\PowersSetup.cs" />
     <Compile Include="Assets\Scripts\Editor\UnityPurchasingDefine.cs" />
     <Compile Include="Assets\Scripts\Editor\LocaleFontSetup.cs" />
     <Compile Include="Assets\Scripts\Editor\ReviewPromptPrefabSetup.cs" />
     <Compile Include="Assets\Scripts\Editor\PlayAppUpdateDefine.cs" />
     <Compile Include="Assets\Scripts\Editor\RemoveAdsPlacementsSetup.cs" />
+    <Compile Include="Assets\Scripts\Editor\TempleUnlocksWindow.cs" />
     <Compile Include="Assets\Scripts\Editor\LevelRegressionCli.cs" />
     <Compile Include="Assets\Scripts\Editor\NotificationsAndReviewSetup.cs" />
     <Compile Include="Assets\Scripts\Editor\TowerStabilityUISetup.cs" />

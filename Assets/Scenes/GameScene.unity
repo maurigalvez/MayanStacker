@@ -210,6 +210,7 @@ MonoBehaviour:
   spawnDelay: 1
   dropArmDelay: 0.3
   unarmedAlpha: 0.35
+  dropBufferWindow: 0.12
   objectSize: {x: 4, y: 2}
   objectColors:
   - {r: 1, g: 1, b: 1, a: 1}
@@ -7160,6 +7161,10 @@ PrefabInstance:
       propertyPath: m_AnchorMin.y
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 2051652316032471799, guid: 60441e2117e89ce48a769a889c2ee4ca, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 2085761947791283949, guid: 60441e2117e89ce48a769a889c2ee4ca, type: 3}
       propertyPath: m_text
       value: x2
@@ -7256,6 +7261,10 @@ PrefabInstance:
       propertyPath: m_AnchoredPosition.y
       value: 213
       objectReference: {fileID: 0}
+    - target: {fileID: 4438472621394727790, guid: 60441e2117e89ce48a769a889c2ee4ca, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 5021293610153466336, guid: 60441e2117e89ce48a769a889c2ee4ca, type: 3}
       propertyPath: m_isOrthographic
       value: 1
@@ -7299,6 +7308,10 @@ PrefabInstance:
     - target: {fileID: 5973067631738715147, guid: 60441e2117e89ce48a769a889c2ee4ca, type: 3}
       propertyPath: m_ActiveFontFeatures.Array.size
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6096844278998342937, guid: 60441e2117e89ce48a769a889c2ee4ca, type: 3}
+      propertyPath: m_Type
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6378988830954856852, guid: 60441e2117e89ce48a769a889c2ee4ca, type: 3}
       propertyPath: m_isOrthographic

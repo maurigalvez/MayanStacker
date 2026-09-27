@@ -73,6 +73,7 @@ public class StackableObject : MonoBehaviour
     private bool isEdgeDrop = false;
     private float edgeScoreMultiplier = 1f;
     private bool isEdgeSweetSpot = false;
+    private bool scoredAsEdge = false;
     private float physicalLandingAccuracy = 0f;
 
     // Events
@@ -286,13 +287,15 @@ public class StackableObject : MonoBehaviour
         if (gameManager != null)
         {
             // Use new combo-aware scoring method
-            gameManager.AddScoreWithCombo(baseScore, landingAccuracy);
+            // A Serpent's Edge landing pays its points but leaves the combo alone.
+            gameManager.AddScoreWithCombo(baseScore, landingAccuracy, scoredAsEdge);
         }
 
         // An offering stone landed cleanly summons Kukulkan on the spot. Checked before the
         // failure cases below purely for readability - a perfect landing can't also be poor.
+        // An edge landing isn't a Perfect, so it doesn't accept the offering.
         if (gameManager != null && Variant.grantsKukulkanShiftOnPerfect
-            && landingAccuracy >= PerfectCutoff)
+            && landingAccuracy >= PerfectCutoff && !scoredAsEdge)
         {
             Debug.Log("[BlockVariant] Offering accepted - Kukulkan stirs.");
             gameManager.TriggerKukulkanShift();
@@ -362,11 +365,14 @@ public class StackableObject : MonoBehaviour
         physicalLandingAccuracy = landingAccuracy;
 
         // A sweet-spot edge drop is judged on its timing, not on where it lands - it always
-        // lands off-centre. Upgrading the accuracy here keeps score, combo, tremor tier and the
-        // PERFECT! popup in agreement. It still has to land on the stone to count.
+        // lands off-centre. Upgrading the accuracy here gives it the top score tier and keeps it
+        // clear of the poor-landing failures and slides. It is NOT a Perfect: combo, streak,
+        // power meter and the landing label all check ScoredAsEdge and stay neutral. It still
+        // has to land on the stone to count.
         if (IsEdgeSweetSpot && landingAccuracy > 0f)
         {
             landingAccuracy = 1f;
+            scoredAsEdge = true;
         }
     }
 
@@ -682,6 +688,7 @@ public class StackableObject : MonoBehaviour
         landedOnStackable = false;
         landingAccuracy = 0f;
         physicalLandingAccuracy = 0f;
+        scoredAsEdge = false;
 
         // Reset physics
         if (rb != null)
@@ -742,19 +749,27 @@ public class StackableObject : MonoBehaviour
     /// <summary>Score multiplier the edge drop earned; 1 when it wasn't one.</summary>
     public float EdgeScoreMultiplier => isEdgeDrop ? edgeScoreMultiplier : 1f;
 
-    /// <summary>True when this edge drop was released in the sweet spot and so lands as a Perfect.</summary>
+    /// <summary>True when this edge drop was released in the sweet spot.</summary>
     public bool IsEdgeSweetSpot => isEdgeDrop && isEdgeSweetSpot;
 
     /// <summary>
+    /// True once a sweet-spot edge drop has landed on the stack and been scored as a Serpent's
+    /// Edge landing: top score tier and the current combo multiplier, but not a Perfect - it
+    /// neither grows nor breaks the combo, Perfect streak, power meter or Perfect chain.
+    /// </summary>
+    public bool ScoredAsEdge => scoredAsEdge;
+
+    /// <summary>
     /// How centred the stone physically landed. Differs from <see cref="LandingAccuracy"/> only
-    /// for a sweet-spot edge drop, which is scored as a Perfect wherever it lands.
+    /// for a sweet-spot edge drop, which gets the top score tier wherever it lands.
     /// </summary>
     public float PhysicalLandingAccuracy => physicalLandingAccuracy;
 
     /// <summary>
     /// Marks a just-dropped stone as a Serpent's Edge risk. Only valid between the drop and
     /// the landing, since that's when the score is worked out. A <paramref name="sweetSpot"/>
-    /// release lands as a Perfect: the edge is a timing test, not a free off-centre Good.
+    /// release scores the top tier wherever it lands (the edge is a timing test, not a free
+    /// off-centre Good) without counting as a Perfect - see <see cref="ScoredAsEdge"/>.
     /// </summary>
     public void MarkEdgeDrop(float scoreMultiplier, bool sweetSpot)
     {

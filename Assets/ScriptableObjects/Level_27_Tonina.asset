@@ -42,7 +42,7 @@ MonoBehaviour:
   cenoteSettings:
     startDelaySeconds: 4
     stonesPerSecond: 0.24
-    maxLagStones: 5
+    maxLagStones: 2.5
     warningStones: 1.5
   quakeSettings:
     firstAtHeight: 6
@@ -50,5 +50,5 @@ MonoBehaviour:
     warningSeconds: 1.2
     quakeSeconds: 2.8
     joltsPerSecond: 3.5
-    joltSpeed: 1.7
-    bracedFactor: 0.18
+    slidePerJolt: 0.1
+    headShake: 0.35

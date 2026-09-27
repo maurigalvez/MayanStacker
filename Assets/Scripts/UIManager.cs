@@ -1494,14 +1494,14 @@ public class UIManager : MonoBehaviour
                 : CalculatePointsFromAccuracy(stackableObject.LandingAccuracy);
 
             ShowLandingAccuracyAndPoints(stackableObject.LandingAccuracy, actualPoints, stackableObject.transform.position,
-                stackableObject.IsEdgeDrop ? stackableObject.EdgeScoreMultiplier : 0f);
+                stackableObject.ScoredAsEdge);
         }
     }
 
-    /// <param name="edgeMultiplier">Serpent's Edge multiplier for this landing, or 0 when it
-    /// wasn't an edge drop. Shown as a gold line on the accuracy label rather than a banner,
-    /// so it rides with the popup instead of covering it.</param>
-    private void ShowLandingAccuracyAndPoints(float accuracy, int points, Vector3 worldPosition, float edgeMultiplier = 0f)
+    /// <param name="edgeLanding">True for a Serpent's Edge landing. It isn't a Perfect, so the
+    /// label reads "Serpent's Edge" in gold instead of PERFECT! and shows no combo count - the
+    /// points popup carries the reward.</param>
+    private void ShowLandingAccuracyAndPoints(float accuracy, int points, Vector3 worldPosition, bool edgeLanding = false)
     {
         if (landingAccuracyText == null) return;
 
@@ -1522,7 +1522,19 @@ public class UIManager : MonoBehaviour
         // Each tier also gets its own animation profile so Perfect visibly punches
         // harder than Good/Poor (not just a color swap).
         string baseText = "";
-        if (accuracy >= 0.9f)
+        if (edgeLanding)
+        {
+            // Just the name: the points popup already shows exactly what the rim promised, so a
+            // multiplier or partial bonus here would only read as a second, different number.
+            // Punches like a Perfect, but it isn't one.
+            baseText = LocalizationManager.Get("edge_landed");
+            landingAccuracyText.color = RunOverlayUI.Gold;
+            curPeakScale = perfectPeakScale;
+            curSettleScale = perfectSettleScale;
+            curAppearDuration = perfectAppearDuration;
+            curPunchRotation = perfectPunchRotation;
+        }
+        else if (accuracy >= 0.9f)
         {
             baseText = LocalizationManager.Get("accuracy_perfect");
             landingAccuracyText.color = perfectAccuracyColor;
@@ -1553,7 +1565,12 @@ public class UIManager : MonoBehaviour
         // Add combo count if active. A non-Perfect landing that kept the combo says "held"
         // so the count carrying into the next Perfect doesn't read as a missed reset.
         bool comboHeld = gameManager != null && gameManager.LastLandingHeldCombo;
-        if (currentCombo > 0 && comboHeld)
+        // An edge landing shows no count: the combo didn't move.
+        if (edgeLanding)
+        {
+            landingAccuracyText.text = baseText;
+        }
+        else if (currentCombo > 0 && comboHeld)
         {
             landingAccuracyText.text = LocalizationManager.Get("combo_held_format", baseText, currentCombo);
         }
@@ -1564,14 +1581,6 @@ public class UIManager : MonoBehaviour
         else
         {
             landingAccuracyText.text = baseText;
-        }
-
-        if (edgeMultiplier > 0f)
-        {
-            // Just the name: the points popup already shows exactly what the rim promised, so a
-            // multiplier or partial bonus here would only read as a second, different number.
-            string edgeLine = LocalizationManager.Get("edge_landed");
-            landingAccuracyText.text += "\n<color=#" + ColorUtility.ToHtmlStringRGB(RunOverlayUI.Gold) + ">" + edgeLine + "</color>";
         }
 
         // Position the accuracy label at the center of the screen

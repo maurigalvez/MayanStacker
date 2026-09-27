@@ -112,14 +112,16 @@ public class EarthquakeSettings
     [Range(1f, 8f)]
     public float joltsPerSecond = 3.2f;
 
-    [Tooltip("Sideways speed a jolt gives the top stone when not braced, in world units/s. " +
-             "Lower stones get less, in proportion to their height.")]
-    [Range(0f, 4f)]
-    public float joltSpeed = 1.5f;
+    [Tooltip("World units the top stone slides out on each jolt the player doesn't brace. " +
+             "Lower stones slide less, in proportion to their height; each stone keeps its own " +
+             "(seeded) way for the whole quake. Braced jolts slide nothing. A stone is about 1.9 wide.")]
+    [Range(0f, 0.3f)]
+    public float slidePerJolt = 0.09f;
 
-    [Tooltip("Share of the jolt that still lands while the player holds to brace.")]
+    [Tooltip("World units the swinging head wobbles sideways while the ground shakes, " +
+             "so dropping during a quake costs aim.")]
     [Range(0f, 1f)]
-    public float bracedFactor = 0.15f;
+    public float headShake = 0.3f;
 }
 
 /// <summary>Per-level tuning for <see cref="LevelRule.RisingCenote"/>. Estimates; tune on device.</summary>
@@ -137,7 +139,7 @@ public class RisingCenoteSettings
     [Tooltip("The water never falls further than this many stones below the top, so a fast " +
              "builder still sees it coming instead of leaving it off-screen.")]
     [Range(2f, 12f)]
-    public float maxLagStones = 5f;
+    public float maxLagStones = 2.5f;
 
     [Tooltip("Within this many stones of the top the water turns to warning colours.")]
     [Range(0.5f, 4f)]
@@ -160,13 +162,21 @@ public class EclipseSettings
     [Range(0.3f, 3f)]
     public float warningSeconds = 1.0f;
 
-    [Tooltip("Seconds of totality: the screen goes dark except the swinging and top stones.")]
+    [Tooltip("Seconds of totality: the top of the tower fades away.")]
     [Range(0.5f, 6f)]
     public float totalitySeconds = 2.5f;
 
-    [Tooltip("How dark totality gets (0 = no eclipse, 1 = black).")]
+    [Tooltip("How many stones at the top fade away. Stones landing during totality fade too.")]
+    [Range(1, 4)]
+    public int hiddenTopStones = 1;
+
+    [Tooltip("Opacity of the faded top stones at totality (lower = harder; 0 = gone).")]
     [Range(0f, 1f)]
-    public float darkness = 0.9f;
+    public float ghostAlpha = 0.2f;
+
+    [Tooltip("How dark the sky (behind the stones) gets during the eclipse. Marks its duration.")]
+    [Range(0f, 0.9f)]
+    public float totalityDim = 0.65f;
 
     [Tooltip("Dim over the lit sky and the swing, so the whole scene reads as an eclipse.")]
     [Range(0f, 0.6f)]

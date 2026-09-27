@@ -61,6 +61,7 @@
     <Compile Include="Assets\Scripts\UI\Motion\UIPopup.cs" />
     <Compile Include="Assets\Scripts\UI\RunResultCard.cs" />
     <Compile Include="Assets\Scripts\Powers\PowerSettings.cs" />
+    <Compile Include="Assets\Scripts\Powers\PowerShowcaseView.cs" />
     <Compile Include="Assets\Scripts\Rules\RainSlideFx.cs" />
     <Compile Include="Assets\Scripts\LeaderboardManager.cs" />
     <Compile Include="Assets\Scripts\UI\RemoveAdsOfferView.cs" />
@@ -135,6 +136,7 @@
     <Compile Include="Assets\Scripts\GameFeel\GameFeelManager.cs" />
     <Compile Include="Assets\GooglePlayPlugins\com.google.play.integrity\Samples\IntegrityTestApp\Scripts\RequestIntegrityTokenAction.cs" />
     <Compile Include="Assets\Scripts\UI\Motion\UIEase.cs" />
+    <Compile Include="Assets\Scripts\Rules\BraceButtonView.cs" />
     <Compile Include="Assets\Scripts\FTUE\LanguageSelectScreen.cs" />
     <Compile Include="Assets\Scripts\UI\Motion\UIMotionRunner.cs" />
     <Compile Include="Assets\Scripts\ReviewManagerHelper.cs" />
@@ -189,6 +191,7 @@
     <Compile Include="Assets\Scripts\SettingsManager.cs" />
     <Compile Include="Assets\GooglePlayPlugins\com.google.play.review\Samples\ReviewDemo\Scripts\ReviewDemo.cs" />
     <Compile Include="Assets\Scripts\Achievements\AchievementProgressData.cs" />
+    <Compile Include="Assets\Scripts\Testing\DebugTempleUnlocks.cs" />
     <Compile Include="Assets\Scripts\Localization\LocalizationManager.cs" />
     <Compile Include="Assets\Scripts\FTUE\FtueTutorial.cs" />
     <Compile Include="Assets\Scripts\Testing\LevelRegressionRunner.cs" />
@@ -218,6 +221,7 @@
     <Compile Include="Assets\Scripts\UI\RunOverlayUI.cs" />
     <Compile Include="Assets\Scripts\PlayFabManager.cs" />
     <Compile Include="Assets\Scripts\SceneLoader.cs" />
+    <Compile Include="Assets\Scripts\Rules\CenoteWater.cs" />
     <Compile Include="Assets\Scripts\Boons\BoonSystem.cs" />
     <Compile Include="Assets\Scripts\Analytics\GameAnalytics.cs" />
     <Compile Include="Assets\Scripts\UI\RemoveAdsNudgeView.cs" />

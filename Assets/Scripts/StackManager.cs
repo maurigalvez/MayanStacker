@@ -882,7 +882,7 @@ public class StackManager : MonoBehaviour
 
         // Aligned by collider centre, which is what landing accuracy measures.
         float offsetX = below.ColliderCenterX - top.ColliderCenterX;
-        return MoveTopStone(top, offsetX, below.transform.rotation, duration, hop, onImpact);
+        return MoveStone(top, offsetX, below.transform.rotation, duration, hop, onImpact);
     }
 
     /// <summary>
@@ -892,7 +892,18 @@ public class StackManager : MonoBehaviour
     public bool NudgeTopStone(float offsetX, float duration, System.Action onDone = null)
     {
         if (!TryGetTopPair(out StackableObject top, out StackableObject _)) return false;
-        return MoveTopStone(top, offsetX, top.transform.rotation, duration, 0f, onDone);
+        return MoveStone(top, offsetX, top.transform.rotation, duration, 0f, onDone);
+    }
+
+    /// <summary>
+    /// Cabracán: slides any stone in the stack <paramref name="offsetX"/> world units sideways,
+    /// the same careful kinematic way as the slam. Stones above aren't carried along, so
+    /// stones sliding different ways shear the tower apart.
+    /// </summary>
+    public bool ShoveStone(StackableObject stone, float offsetX, float duration)
+    {
+        if (stone == null) return false;
+        return MoveStone(stone, offsetX, stone.transform.rotation, duration, 0f, null);
     }
 
     /// <summary>
@@ -946,7 +957,7 @@ public class StackManager : MonoBehaviour
         return top != null && below != null && top.GetComponent<Rigidbody2D>() != null;
     }
 
-    private bool MoveTopStone(StackableObject top, float offsetX, Quaternion endRotation,
+    private bool MoveStone(StackableObject top, float offsetX, Quaternion endRotation,
         float duration, float hop, System.Action onDone)
     {
         Rigidbody2D rb = top.GetComponent<Rigidbody2D>();

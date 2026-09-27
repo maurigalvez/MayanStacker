@@ -10,8 +10,8 @@ using UnityEngine.UI;
 /// The strip lives low on the screen, under the top of the tower and above the power
 /// button, so a lesson never covers the swinging stone, its fall, or where it lands.
 ///
-/// Nothing here is required beyond a title label. Without the prefab (Resources/UI/GuideLane)
-/// the lane builds this same hierarchy in code through <see cref="BuildDefault"/>.
+/// Nothing here is required beyond a title label. The prefab (Resources/UI/GuideLane) is the
+/// only source of the strip; nothing is built in code at runtime, so style it there.
 ///
 /// Menu: TamalStacker ▸ UI ▸ Create Guide Lane Prefab generates a house-styled prefab.
 /// </summary>
@@ -85,10 +85,10 @@ public class GuideLaneView : MonoBehaviour
         if (canvasGroup != null) canvasGroup.alpha = alpha;
     }
 
+#if UNITY_EDITOR
     /// <summary>
-    /// Builds the default lane hierarchy on <paramref name="root"/>, which must already carry
-    /// a Canvas. Used by the runtime fallback and as the starting point of the prefab
-    /// generator, so the two can't drift apart.
+    /// Builds the starting lane hierarchy on <paramref name="root"/>, which must already carry
+    /// a Canvas. Editor-only: the prefab generator's starting point, never a runtime fallback.
     /// </summary>
     public static GuideLaneView BuildDefault(GameObject root, out Image strip)
     {
@@ -124,6 +124,7 @@ public class GuideLaneView : MonoBehaviour
         view.canvasGroup = group;
         return view;
     }
+#endif
 
     /// <summary>Editor hook: lets the prefab generator restyle the labels it was given.</summary>
     public TextMeshProUGUI TitleLabel => titleText;

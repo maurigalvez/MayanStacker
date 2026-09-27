@@ -1316,6 +1316,12 @@ public class PlayFabManager : MonoBehaviour
     /// </summary>
     public void SubmitScore(string leaderboardName, int score)
     {
+#if UNITY_EDITOR
+        // Editor runs (playtests, the regression bot, debug unlocks) never reach the boards,
+        // and aren't queued either, so nothing syncs later.
+        Debug.Log($"[PlayFabManager] Editor: score {score} for '{leaderboardName}' not submitted.");
+        return;
+#else
         if (!isLoggedIn)
         {
             Debug.LogWarning("Cannot submit score - not logged into PlayFab. Queueing for later sync.");
@@ -1371,6 +1377,7 @@ public class PlayFabManager : MonoBehaviour
             }
             SubmitScoreInternal(leaderboardName, score, null);
         }
+#endif
     }
 
     /// <summary>
@@ -2201,6 +2208,8 @@ public class PlayFabManager : MonoBehaviour
     /// </summary>
     private void BackfillBestScores(PlayerProgressData data, bool force)
     {
+        if (Application.isEditor) return; // Editor never writes leaderboard stats (see SubmitScore)
+
         string doneKey = $"ScoresBackfilled_{playFabId}_S{LeaderboardSeason.Current}";
         if (!force && PlayerPrefs.GetInt(doneKey, 0) == 1) return;
         if (NetworkUtility.IsOffline()) return;

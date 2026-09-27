@@ -785,11 +785,11 @@
     },
     {
       "key": "edge_intro_body",
-      "value": "Solte enquanto a pedra estiver sobre a borda dourada e ela piscar para um PERFEITO x{0}. Fora da borda é uma queda normal."
+      "value": "Solte enquanto a pedra estiver sobre a borda dourada e ela piscar para ganhar x{0} pontos. Não soma nem quebra seu combo. Fora da borda é uma queda normal."
     },
     {
       "key": "edge_intro_followup_title",
-      "value": "PERFEITO x{0}!"
+      "value": "x{0} pontos!"
     },
     {
       "key": "edge_intro_followup_body",
@@ -845,7 +845,7 @@
     { "key": "result_tip_straighten", "value": "Acerte {0} Perfeitos seguidos para endireitar sua torre." },
     { "key": "result_tip_power", "value": "Perfeitos enchem o medidor do seu poder. Guarde-o para quando a torre se inclinar." },
     { "key": "result_tip_combo", "value": "Só pousos perfeitos mantêm seu combo." },
-    { "key": "result_tip_edge", "value": "Solte quando a borda da Serpente piscar para um PERFEITO x3." },
+    { "key": "result_tip_edge", "value": "Solte quando a borda da Serpente piscar para ganhar x3 pontos." },
     { "key": "edge_proj_miss", "value": "Erro" },
     { "key": "result_edge_line", "value": "Fio da Serpente: {0} acertos · +{1}" },
     { "key": "result_edge_line_one", "value": "Fio da Serpente: {0} acerto · +{1}" },
@@ -893,16 +893,17 @@
     { "key": "rule_rain_slick_desc", "value": "Na chuva, todo pouso que não for perfeito escorrega um pouco mais." },
     { "key": "rule_rain_slick_short", "value": "Só um Perfeito não escorrega" },
     { "key": "rule_earthquake_name", "value": "Cabracán" },
-    { "key": "rule_earthquake_desc", "value": "O chão treme conforme a torre cresce. Toque e segure para firmá-la." },
-    { "key": "rule_earthquake_short", "value": "Segure quando tremer" },
+    { "key": "rule_earthquake_desc", "value": "O chão treme conforme a torre cresce. Segure FIRMAR e as pedras não saem do lugar; se soltar, elas deslizam. Não dá para soltar pedras enquanto firma." },
+    { "key": "rule_earthquake_short", "value": "Segure FIRMAR quando tremer" },
     { "key": "rule_rising_cenote_name", "value": "Cenote Subindo" },
     { "key": "rule_rising_cenote_desc", "value": "O poço sagrado está subindo. Continue construindo antes que a água chegue ao topo." },
     { "key": "rule_rising_cenote_short", "value": "Fique acima da água" },
     { "key": "rule_eclipse_name", "value": "Eclipse" },
-    { "key": "rule_eclipse_desc", "value": "O sol se escondeu. Só o topo da torre está iluminado." },
-    { "key": "rule_eclipse_short", "value": "Só o topo tem luz" },
+    { "key": "rule_eclipse_desc", "value": "O sol se escondeu. O topo da torre desaparece. Lembre-se de onde ele estava." },
+    { "key": "rule_eclipse_short", "value": "O topo desaparece" },
     { "key": "quake_hold", "value": "SEGURE PARA FIRMAR!" },
     { "key": "quake_braced", "value": "FIRME!" },
+    { "key": "quake_brace_button", "value": "FIRMAR" },
     { "key": "quake_survived", "value": "O chão se acalmou" },
     { "key": "cenote_warning", "value": "A água está subindo!" },
     { "key": "quit_confirm_title", "value": "Sair do templo?" },

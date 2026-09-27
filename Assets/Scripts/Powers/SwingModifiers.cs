@@ -3,7 +3,7 @@
 ///
 /// Kept out of SpawnerHolder's own tuning so a power or temple rule can bend the swing for a
 /// few drops and hand it back untouched: Quetzal Feather slows it, Jungle Wind pushes its
-/// centre to one side. Both reset to neutral at the start and end of every run.
+/// centre to one side, Cabracán shakes it. All reset to neutral at the start and end of every run.
 /// </summary>
 public static class SwingModifiers
 {
@@ -13,9 +13,13 @@ public static class SwingModifiers
     /// <summary>World units the swing's centre is pushed sideways. 0 = unchanged.</summary>
     public static float LateralOffset { get; set; }
 
+    /// <summary>World units of Cabracán's head wobble, added on top of the wind. 0 = still.</summary>
+    public static float ShakeOffset { get; set; }
+
     public static void ResetAll()
     {
         SpeedScale = 1f;
         LateralOffset = 0f;
+        ShakeOffset = 0f;
     }
 }

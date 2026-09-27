@@ -43,5 +43,5 @@ MonoBehaviour:
   cenoteSettings:
     startDelaySeconds: 4
     stonesPerSecond: 0.19
-    maxLagStones: 5
+    maxLagStones: 2.5
     warningStones: 1.5

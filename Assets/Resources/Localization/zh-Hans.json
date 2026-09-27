@@ -779,11 +779,11 @@
     },
     {
       "key": "edge_intro_body",
-      "value": "石块在金色边缘上方闪光时松手，即可获得 x{0} 完美。错过边缘就是普通落下。"
+      "value": "石块在金色边缘上方闪光时松手，即可获得 x{0} 分数。不会增加也不会中断连击。错过边缘就是普通落下。"
     },
     {
       "key": "edge_intro_followup_title",
-      "value": "x{0} 完美！"
+      "value": "x{0} 分数！"
     },
     {
       "key": "edge_intro_followup_body",
@@ -838,7 +838,7 @@
     { "key": "result_tip_straighten", "value": "连续{0}次完美落块可以扶正高塔。" },
     { "key": "result_tip_power", "value": "完美落块会填充能力的能量槽。留到高塔倾斜时再用。" },
     { "key": "result_tip_combo", "value": "只有完美落块才能保持连击。" },
-    { "key": "result_tip_edge", "value": "蛇之锋边缘闪光时松手，获得 x3 完美。" },
+    { "key": "result_tip_edge", "value": "蛇之锋边缘闪光时松手，获得 x3 分数。" },
     { "key": "edge_proj_miss", "value": "落空" },
     { "key": "result_edge_line", "value": "蛇之锋：成功{0}次 · +{1}" },
     { "key": "result_edge_line_broke", "value": "蛇之锋：成功{0}次 · +{1} · 连击中断：{2}" },
@@ -884,16 +884,17 @@
     { "key": "rule_rain_slick_desc", "value": "雨中，任何非完美的落点都会再向外滑一点。" },
     { "key": "rule_rain_slick_short", "value": "只有完美才能站稳" },
     { "key": "rule_earthquake_name", "value": "Cabracán" },
-    { "key": "rule_earthquake_desc", "value": "塔越高，大地越会震动。按住屏幕稳住塔。" },
-    { "key": "rule_earthquake_short", "value": "震动时按住稳住" },
+    { "key": "rule_earthquake_desc", "value": "塔越高，大地越会震动。按住“稳住”，石块就不会动；松开，石块会滑开。稳住时不能放下石块。" },
+    { "key": "rule_earthquake_short", "value": "震动时按住“稳住”" },
     { "key": "rule_rising_cenote_name", "value": "上涨的天然井" },
     { "key": "rule_rising_cenote_desc", "value": "圣井的水位正在上涨。在水淹到塔顶之前继续建造。" },
     { "key": "rule_rising_cenote_short", "value": "保持在水面之上" },
     { "key": "rule_eclipse_name", "value": "日食" },
-    { "key": "rule_eclipse_desc", "value": "太阳被遮住了。只有塔顶还亮着。" },
-    { "key": "rule_eclipse_short", "value": "只有塔顶有光" },
+    { "key": "rule_eclipse_desc", "value": "太阳被遮住了。塔顶会渐渐消失。记住它的位置。" },
+    { "key": "rule_eclipse_short", "value": "塔顶会消失" },
     { "key": "quake_hold", "value": "按住稳住！" },
     { "key": "quake_braced", "value": "稳住了！" },
+    { "key": "quake_brace_button", "value": "稳住" },
     { "key": "quake_survived", "value": "大地平静了" },
     { "key": "cenote_warning", "value": "水位在上涨！" },
     { "key": "quit_confirm_title", "value": "离开神庙？" },

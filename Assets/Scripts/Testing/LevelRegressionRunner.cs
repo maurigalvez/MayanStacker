@@ -516,8 +516,8 @@ public class LevelRegressionRunner : MonoBehaviour
             if (spawner == null || game == null) return;
             if (ui != null && ui.IsPaused) return;
 
-            // Cabracán: the full-screen hold surface is only active while a quake is on.
-            // A real player's taps land on it then, so no drops; hold to brace instead.
+            // Cabracán: the BRACE button is only up while a quake is on. The bot braces for
+            // the whole quake, and bracing blocks drops (brace OR drop), so it doesn't drop.
             if (frame % 3 == 0) UpdateBrace();
             if (holdSurface != null) return;
 
@@ -527,7 +527,8 @@ public class LevelRegressionRunner : MonoBehaviour
 
         private void UpdateBrace()
         {
-            GameObject surface = GameObject.Find("HoldSurface");
+            BraceButtonView view = Object.FindFirstObjectByType<BraceButtonView>(); // active only
+            GameObject surface = view != null ? view.HoldTarget : null;
             if (surface != null && holdSurface == null)
             {
                 holdSurface = surface;

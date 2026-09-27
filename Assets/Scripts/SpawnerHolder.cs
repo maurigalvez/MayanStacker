@@ -623,8 +623,8 @@ public class SpawnerHolder : MonoBehaviour
 
         // Calculate final spawner position
 
-        // Jungle Wind leans the whole swing; zero everywhere else.
-        swingOffset.x += SwingModifiers.LateralOffset;
+        // Jungle Wind leans the whole swing and Cabracán shakes it; zero everywhere else.
+        swingOffset.x += SwingModifiers.LateralOffset + SwingModifiers.ShakeOffset;
 
         Vector3 finalSpawnerPosition = holderCenterPosition + spawnerOffset + swingOffset;
 

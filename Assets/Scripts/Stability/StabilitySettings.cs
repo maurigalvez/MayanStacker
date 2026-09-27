@@ -95,6 +95,13 @@ public class StabilitySettings : ScriptableObject
     [Range(0.05f, 0.89f)]
     public float edgeSweetSpotAccuracy = 0.75f;
 
+    [Tooltip("Realtime seconds a release still counts as an edge drop after the stone has " +
+             "left the band. The rim, rattle and haptic reach the player late (screen, touch " +
+             "and audio latency), and on fast temples the stone crosses the band in ~100 ms, " +
+             "so a tap made on the cue would otherwise miss. 0 = judge the release position only.")]
+    [Range(0f, 0.3f)]
+    public float edgeGraceSeconds = 0.12f;
+
     [Tooltip("Base-score multiplier for a stone released in the window. Stacks with combo, " +
              "block variant, boon and modifier multipliers.")]
     public float edgeScoreMultiplier = 3f;

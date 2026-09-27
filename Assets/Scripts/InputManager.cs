@@ -27,6 +27,12 @@ public class InputManager : MonoBehaviour
     private PointerEventData uiPointerData;
     private readonly List<RaycastResult> uiRaycastResults = new List<RaycastResult>();
 
+    /// <summary>
+    /// Set by a temple rule to hold drops back, e.g. while Cabracán's BRACE button is held
+    /// (brace OR drop). The rule clears it when it ends.
+    /// </summary>
+    public static bool DropsBlockedByRule { get; set; }
+
     // Events
     public System.Action<Vector2> OnScreenTapped;
     public System.Action OnDropInput;
@@ -110,6 +116,9 @@ public class InputManager : MonoBehaviour
 
         // Block input if we just resumed from pause
         if (isInputBlocked)
+            return;
+
+        if (DropsBlockedByRule)
             return;
 
         // Get the current screen position - use TapPosition action or current pointer position

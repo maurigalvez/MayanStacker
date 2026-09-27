@@ -39,5 +39,6 @@ MonoBehaviour:
   eclipseSettings:
     litStones: 3
     fadeStones: 1.5
-    darkness: 0.85
+    ghostAlpha: 0.25
+    totalityDim: 0.65
     skyDim: 0.2

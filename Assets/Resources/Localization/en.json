@@ -782,11 +782,11 @@
     },
     {
       "key": "edge_intro_body",
-      "value": "Release while the stone is over the gold rim and it flashes for a x{0} Perfect. Miss the rim and it is a normal drop."
+      "value": "Release while the stone is over the gold rim and it flashes for x{0} points. It will not add to your combo or break it. Miss the rim and it is a normal drop."
     },
     {
       "key": "edge_intro_followup_title",
-      "value": "x{0} Perfect!"
+      "value": "x{0} points!"
     },
     {
       "key": "edge_intro_followup_body",
@@ -841,7 +841,7 @@
     { "key": "result_tip_straighten", "value": "Land {0} Perfects in a row to straighten your tower." },
     { "key": "result_tip_power", "value": "Perfect landings fill your power's meter. Save it for when the tower leans." },
     { "key": "result_tip_combo", "value": "Only Perfect landings keep your combo alive." },
-    { "key": "result_tip_edge", "value": "Release as the Serpent's Edge rim flashes for a x3 Perfect." },
+    { "key": "result_tip_edge", "value": "Release as the Serpent's Edge rim flashes for x3 points." },
     { "key": "edge_proj_miss", "value": "Miss" },
     { "key": "result_edge_line", "value": "Serpent's Edge: {0} landed · +{1}" },
     { "key": "result_edge_line_broke", "value": "Serpent's Edge: {0} landed · +{1} · combos broken: {2}" },
@@ -887,16 +887,17 @@
     { "key": "rule_rain_slick_desc", "value": "In the rain, any landing that isn't Perfect slides a little further out." },
     { "key": "rule_rain_slick_short", "value": "Only Perfect stays put" },
     { "key": "rule_earthquake_name", "value": "Cabracán" },
-    { "key": "rule_earthquake_desc", "value": "The ground shakes as the tower grows. Press and hold to brace it." },
-    { "key": "rule_earthquake_short", "value": "Hold to brace when it shakes" },
+    { "key": "rule_earthquake_desc", "value": "The ground shakes as the tower grows. Hold BRACE and the stones stay put; let go and they slide loose. You can't drop while bracing." },
+    { "key": "rule_earthquake_short", "value": "Hold BRACE when it shakes" },
     { "key": "rule_rising_cenote_name", "value": "Rising Cenote" },
     { "key": "rule_rising_cenote_desc", "value": "The sacred well is rising. Keep building before the water reaches the top." },
     { "key": "rule_rising_cenote_short", "value": "Stay above the water" },
     { "key": "rule_eclipse_name", "value": "Eclipse" },
-    { "key": "rule_eclipse_desc", "value": "The sun is hidden. Only the top of the tower is lit." },
-    { "key": "rule_eclipse_short", "value": "Only the top is lit" },
+    { "key": "rule_eclipse_desc", "value": "The sun is hidden. The top of the tower fades away. Remember where it was." },
+    { "key": "rule_eclipse_short", "value": "The top fades away" },
     { "key": "quake_hold", "value": "HOLD TO BRACE!" },
     { "key": "quake_braced", "value": "BRACED!" },
+    { "key": "quake_brace_button", "value": "BRACE" },
     { "key": "quake_survived", "value": "The ground is still" },
     { "key": "cenote_warning", "value": "The water is rising!" },
     { "key": "quit_confirm_title", "value": "Leave the Temple?" },

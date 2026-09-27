@@ -29,7 +29,7 @@ using UnityEngine;
 /// </summary>
 public class GuideLane : MonoBehaviour
 {
-    /// <summary>Authored prefab that replaces the code-built strip when present.</summary>
+    /// <summary>The authored strip. Required: there is no code-built fallback.</summary>
     public const string PrefabResourcePath = "UI/GuideLane";
 
     /// <summary>Above the HUD and the run banner (400), below the tutorial's Skip (4900).</summary>
@@ -93,7 +93,7 @@ public class GuideLane : MonoBehaviour
         if (FtueState.NeedsTutorial) return false;
 
         GuideLane lane = Ensure();
-        if (lane == null) return false;
+        if (lane == null || !lane.HasView) return false;
         return lane.slotRunKey != RunKey || lane.slotLessonId == lessonId;
     }
 
@@ -136,7 +136,7 @@ public class GuideLane : MonoBehaviour
         if (string.IsNullOrEmpty(title)) return 0;
 
         GuideLane lane = Ensure();
-        if (lane == null) return 0;
+        if (lane == null || !lane.HasView) return 0;
 
         float hold = holdSeconds > 0f ? holdSeconds : 0f;
         return lane.Enqueue(title, body, accent, hold, lesson: false);
@@ -173,29 +173,37 @@ public class GuideLane : MonoBehaviour
         instance = this;
     }
 
+    /// <summary>
+    /// The strip is only ever the authored prefab — nothing is built in code at runtime. When
+    /// the prefab is missing or broken the lane stays silent and refuses every lesson, so
+    /// callers leave them unseen and they are taught once the prefab is back.
+    /// </summary>
     private void Build()
     {
         var prefab = Resources.Load<GameObject>(PrefabResourcePath);
-        if (prefab != null)
+        if (prefab == null)
         {
-            // The prefab carries its own Canvas; this host only owns its lifetime.
-            GameObject authored = Instantiate(prefab, transform, false);
-            view = authored.GetComponent<GuideLaneView>();
-            if (view != null && view.IsUsable)
-            {
-                view.SetAlpha(0f);
-                return;
-            }
-
-            Debug.LogWarning($"[GuideLane] Resources/{PrefabResourcePath} has no usable GuideLaneView " +
-                             "- using the code-built strip instead.");
-            Destroy(authored);
+            Debug.LogWarning($"[GuideLane] Resources/{PrefabResourcePath}.prefab is missing, so no lessons " +
+                             "will show. Create it with TamalStacker ▸ UI ▸ Create Guide Lane Prefab.");
+            return;
         }
 
-        RunOverlayUI.CreateCanvas(gameObject, SortingOrder, interactive: false);
-        view = GuideLaneView.BuildDefault(gameObject, out _);
-        view.SetAlpha(0f);
+        // The prefab carries its own Canvas; this host only owns its lifetime.
+        GameObject authored = Instantiate(prefab, transform, false);
+        view = authored.GetComponent<GuideLaneView>();
+        if (view != null && view.IsUsable)
+        {
+            view.SetAlpha(0f);
+            return;
+        }
+
+        Debug.LogWarning($"[GuideLane] Resources/{PrefabResourcePath} has no GuideLaneView with a title " +
+                         "label, so no lessons will show.");
+        view = null;
+        Destroy(authored);
     }
+
+    private bool HasView => view != null;
 
     private void Start()
     {
@@ -284,6 +292,8 @@ public class GuideLane : MonoBehaviour
     /// </summary>
     private void Update()
     {
+        if (!HasView) return;
+
         float now = Time.unscaledTime;
 
         // A timed line that has been read makes way.

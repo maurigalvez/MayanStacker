@@ -83,6 +83,7 @@ public class PowerSystem : MonoBehaviour
 
     private GameObject uiRoot;
     private PowerMeterView view;
+    private PowerShowcaseView showcase;
     private Image tint;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
@@ -249,6 +250,9 @@ public class PowerSystem : MonoBehaviour
         // The foundation lands on the ground and has nothing to be centred on.
         if (stackManager.GetStackCount() <= 1) return;
 
+        // A Serpent's Edge landing pays in points only: it neither charges nor drains the meter.
+        if (block.ScoredAsEdge) return;
+
         bool perfect = block.LandingAccuracy >= gameManager.PerfectThreshold;
         bool wasReady = IsReady;
 
@@ -312,8 +316,8 @@ public class PowerSystem : MonoBehaviour
 
         // No score of its own and no Perfect: every stone keeps the landing it earned (the
         // rewind takes stones away with theirs, but awards nothing either).
-        // Named in the lane, right above the button that fired it.
-        GuideLane.Say(LocalizationManager.Get(def.nameKey), null, def.accentColor, 0.9f);
+        // Named by its own showcase, not the Guide Lane: that strip is for lessons.
+        if (showcase != null) showcase.Play(LocalizationManager.Get(def.nameKey), def.icon, def.accentColor);
 
         GameAnalytics.Track("power_used", data);
         OnPowerUsed?.Invoke(id);
@@ -582,6 +586,7 @@ public class PowerSystem : MonoBehaviour
     private void OnLevelCompleted(int stars, int score, bool showCodexPopup)
     {
         EndQuetzal();
+        if (showcase != null) showcase.Stop();
 
         if (stars <= 0 || levelManager == null || levelManager.CurrentLevel == null) return;
 
@@ -627,6 +632,7 @@ public class PowerSystem : MonoBehaviour
         EndQuetzal();
         RunRewind.Clear();
         if (rewindFx != null) rewindFx.StopScreen();
+        if (showcase != null) showcase.Stop();
 
         unlocked = PowerUnlocks.HasEquippedPower;
         equipped = PowerUnlocks.Equipped;
@@ -645,6 +651,7 @@ public class PowerSystem : MonoBehaviour
         highlightUntil = 0f;
         EndQuetzal();
         RunRewind.Clear();
+        if (showcase != null) showcase.Stop();
     }
 
     private Dictionary<string, object> RunEventData()
@@ -722,6 +729,34 @@ public class PowerSystem : MonoBehaviour
         // Under the medallion like the tint, so the button stays readable through the rewind.
         rewindFx = gameObject.AddComponent<RewindFx>();
         rewindFx.Init(settings, settings.canvasSortingOrder - 25);
+
+        BuildShowcase();
+    }
+
+    /// <summary>
+    /// The pop-up that names a power as it fires. Authored prefab only: without it powers
+    /// still work, they just fire unannounced.
+    /// </summary>
+    private void BuildShowcase()
+    {
+        var prefab = Resources.Load<GameObject>(PowerShowcaseView.PrefabResourcePath);
+        if (prefab == null)
+        {
+            Debug.LogWarning($"[PowerSystem] Resources/{PowerShowcaseView.PrefabResourcePath}.prefab is missing, so " +
+                             "powers fire without their showcase. Create it with TamalStacker ▸ Powers ▸ " +
+                             "Create Power Showcase Prefab.");
+            return;
+        }
+
+        GameObject instantiated = Instantiate(prefab, transform, false);
+        showcase = instantiated.GetComponent<PowerShowcaseView>();
+        if (showcase != null && showcase.IsUsable) return;
+
+        Debug.LogWarning($"[PowerSystem] Resources/{PowerShowcaseView.PrefabResourcePath} has no usable " +
+                         "PowerShowcaseView (needs Canvas, Stage and Name), so powers fire without their showcase.");
+        instantiated.SetActive(false);
+        Destroy(instantiated);
+        showcase = null;
     }
 
     /// <summary>A full-screen edge vignette on its own non-interactive canvas, under the HUD's taps.</summary>

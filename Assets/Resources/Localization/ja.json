@@ -779,11 +779,11 @@
     },
     {
       "key": "edge_intro_body",
-      "value": "石が金の縁の上で光っている間に落とすと、x{0}のパーフェクト。縁を外すと普通の落下。"
+      "value": "石が金の縁の上で光っている間に落とすと、ポイントx{0}。コンボは増えも途切れもしない。縁を外すと普通の落下。"
     },
     {
       "key": "edge_intro_followup_title",
-      "value": "x{0}のパーフェクト！"
+      "value": "ポイントx{0}！"
     },
     {
       "key": "edge_intro_followup_body",
@@ -838,7 +838,7 @@
     { "key": "result_tip_straighten", "value": "パーフェクトを{0}回連続で決めると塔がまっすぐになる。" },
     { "key": "result_tip_power", "value": "パーフェクトでパワーのメーターがたまる。塔が傾いたときのために取っておこう。" },
     { "key": "result_tip_combo", "value": "コンボを保てるのはパーフェクトな着地だけ。" },
-    { "key": "result_tip_edge", "value": "蛇の縁が光った瞬間に落とすとx3のパーフェクト。" },
+    { "key": "result_tip_edge", "value": "蛇の縁が光った瞬間に落とすとポイントx3。" },
     { "key": "edge_proj_miss", "value": "落下" },
     { "key": "result_edge_line", "value": "蛇の縁：{0}回成功 · +{1}" },
     { "key": "result_edge_line_broke", "value": "蛇の縁：{0}回成功 · +{1} · コンボ途切れ：{2}" },
@@ -884,16 +884,17 @@
     { "key": "rule_rain_slick_desc", "value": "雨の中では、パーフェクト以外の着地は少し外側へ滑る。" },
     { "key": "rule_rain_slick_short", "value": "パーフェクト以外は滑る" },
     { "key": "rule_earthquake_name", "value": "Cabracán" },
-    { "key": "rule_earthquake_desc", "value": "塔が高くなると大地が揺れる。長押しで塔を支えよう。" },
-    { "key": "rule_earthquake_short", "value": "揺れたら長押しで支えよう" },
+    { "key": "rule_earthquake_desc", "value": "塔が高くなると大地が揺れる。「支える」を長押しすると石は動かない。離すと石がずれていく。支えている間は石を落とせない。" },
+    { "key": "rule_earthquake_short", "value": "揺れたら「支える」を長押し" },
     { "key": "rule_rising_cenote_name", "value": "満ちるセノーテ" },
     { "key": "rule_rising_cenote_desc", "value": "聖なる泉の水位が上がっていく。水が頂上に届く前に積み上げよう。" },
     { "key": "rule_rising_cenote_short", "value": "水より上に積もう" },
     { "key": "rule_eclipse_name", "value": "日食" },
-    { "key": "rule_eclipse_desc", "value": "太陽が隠れた。塔の頂上だけが照らされる。" },
-    { "key": "rule_eclipse_short", "value": "頂上だけが明るい" },
+    { "key": "rule_eclipse_desc", "value": "太陽が隠れた。塔の頂上が消えていく。その位置を覚えておこう。" },
+    { "key": "rule_eclipse_short", "value": "頂上が消える" },
     { "key": "quake_hold", "value": "長押しで支えろ！" },
     { "key": "quake_braced", "value": "耐えた！" },
+    { "key": "quake_brace_button", "value": "支える" },
     { "key": "quake_survived", "value": "大地が静まった" },
     { "key": "cenote_warning", "value": "水位が上がっている！" },
     { "key": "quit_confirm_title", "value": "神殿を離れますか？" },

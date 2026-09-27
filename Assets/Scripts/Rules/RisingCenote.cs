@@ -29,6 +29,7 @@ public class RisingCenote : TempleRuleBehaviour
     private RisingCenoteSettings settings;
     private SpriteRenderer body;
     private SpriteRenderer surface;
+    private CenoteWater vectorWater;
     private Camera cam;
 
     private bool rising;
@@ -40,6 +41,16 @@ public class RisingCenote : TempleRuleBehaviour
     protected override void Build()
     {
         cam = Camera.main;
+
+        // No water art wired: draw flat vector water in code.
+        if (art.cenoteWater == null)
+        {
+            var go = new GameObject("CenoteWater");
+            go.transform.SetParent(transform, false);
+            vectorWater = go.AddComponent<CenoteWater>();
+            vectorWater.Build(WaterSortingOrder);
+            return;
+        }
 
         body = CreateRenderer("CenoteWater", art.cenoteWater != null ? art.cenoteWater : WhiteSprite, WaterSortingOrder);
         if (art.cenoteWater != null) body.drawMode = SpriteDrawMode.Tiled;
@@ -166,7 +177,17 @@ public class RisingCenote : TempleRuleBehaviour
         float gap = stone > 0f ? (top - waterY) / stone : 99f;
         float danger = settings != null ? Mathf.Clamp01(1f - (gap - FloodMarginStones) / Mathf.Max(0.1f, settings.warningStones)) : 0f;
         float pulse = danger > 0f ? 0.5f + 0.5f * Mathf.Sin(Time.unscaledTime * 9f) : 0f;
-        Color c = Color.Lerp(WaterColor, WarningColor, danger * (0.5f + 0.5f * pulse));
+        float tint = danger * (0.5f + 0.5f * pulse);
+
+        if (vectorWater != null)
+        {
+            vectorWater.SetShown(visibleAlpha > 0f);
+            if (visibleAlpha > 0f)
+                vectorWater.Draw(centreX, halfWidth, waterY, bottom, stone, tint, WarningColor, visibleAlpha);
+            return;
+        }
+
+        Color c = Color.Lerp(WaterColor, WarningColor, tint);
 
         SizeRenderer(body, centreX, bottom + height * 0.5f, width, height);
         SizeRenderer(surface, centreX, waterY + Mathf.Sin(Time.time * 2.2f) * 0.04f, width, SurfaceHeightWorld);
@@ -202,6 +223,7 @@ public class RisingCenote : TempleRuleBehaviour
 
     private void SetVisible(float a)
     {
+        if (vectorWater != null) vectorWater.SetShown(a > 0f);
         if (body == null) return;
         body.gameObject.SetActive(a > 0f);
         surface.gameObject.SetActive(a > 0f);

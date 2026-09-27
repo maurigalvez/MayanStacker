@@ -1,21 +1,26 @@
 using UnityEngine;
 
 /// <summary>
-/// Temple rule <see cref="LevelRule.Eclipse"/>: at set heights the moon slides over the sun and
-/// the scene goes dark for a few seconds (totality). Only the swinging stone and the top stone
-/// stay lit, so the player drops by the stones alone, without the rest of the tower to read.
+/// Temple rule <see cref="LevelRule.Eclipse"/>: at set heights the moon slides over the sun for a
+/// few seconds (totality) and the top of the tower fades away
+/// (<see cref="EclipseSettings.hiddenTopStones"/> stones, down to
+/// <see cref="EclipseSettings.ghostAlpha"/>). Stones that land during totality fade too, so the
+/// player drops onto a target they have to remember; the swinging stone stays solid and warm-lit,
+/// and the rest of the tower stays solid as a reference.
 ///
 /// Sequence: a stone lands at a trigger height → warning (the sun in the corner darkens, the
-/// scene dims) → totality (<see cref="EclipseSettings.totalitySeconds"/>) → the light returns.
-/// Drops stay allowed throughout. A light sky dim stays on for the whole temple so the rule reads.
+/// top starts to fade) → totality (<see cref="EclipseSettings.totalitySeconds"/>) → the light
+/// returns. Drops stay allowed throughout. A light sky dim stays on for the whole temple.
 ///
-/// The old design (a permanent dark band below the lit top) was invisible: the camera only
-/// shows ~2.5 stones below the top, and the band started further down than that.
+/// History: a permanent dark band below the top was invisible (the camera only shows ~2.5 stones
+/// below the top); a near-black shade over everything but the top read as neither "dark" nor
+/// "ghosted"; fading everything but the top added nothing, since the top is all a drop needs.
 /// </summary>
 public class Eclipse : TempleRuleBehaviour
 {
     private const int ShadeSortingOrder = 15; // above stones (4-5), water (11-12), leaves (12)
     private const int SunSortingOrder = 16;
+    private const int NightShadeSortingOrder = 3; // over sky/mountains/clouds/ground (-1..3), under stones (4-5)
     private const int LitStoneBoost = 20;     // lifts lit stones above the shade
     private const float FadeInSeconds = 1.4f;
     private const float LightReturnSeconds = 0.6f;
@@ -31,6 +36,7 @@ public class Eclipse : TempleRuleBehaviour
 
     private EclipseSettings settings;
     private SpriteRenderer shade;
+    private SpriteRenderer nightShade;
     private SpriteRenderer sun;
     private Camera cam;
 
@@ -45,10 +51,21 @@ public class Eclipse : TempleRuleBehaviour
     private Color[] litColors = new Color[0];
     private int[] litOrders = new int[0];
 
+    // The top stones, faded during the eclipse. Only alpha is touched, so tints other
+    // systems put on the stones survive.
+    private struct GhostStone
+    {
+        public StackableObject stone;
+        public SpriteRenderer[] renderers;
+        public float[] alphas;
+    }
+    private readonly System.Collections.Generic.List<GhostStone> ghosts = new System.Collections.Generic.List<GhostStone>();
+
     protected override void Build()
     {
         cam = Camera.main;
         shade = Create("EclipseShade", WhiteSprite, ShadeSortingOrder);
+        nightShade = Create("EclipseNightShade", WhiteSprite, NightShadeSortingOrder);
         sun = Create("EclipseSun", art.eclipseSun != null ? art.eclipseSun : RulePlaceholderArt.EclipsedSun, SunSortingOrder);
         SetActive(false);
     }
@@ -67,6 +84,7 @@ public class Eclipse : TempleRuleBehaviour
     {
         settings = RuleActive ? level.eclipseSettings : null;
         RestoreLitStones();
+        RestoreGhosts();
         phase = Phase.Idle;
         presence = 0f;
         totality = 0f;
@@ -140,6 +158,9 @@ public class Eclipse : TempleRuleBehaviour
         // Keep the swinging stone lit through totality, including each new one.
         if (phase == Phase.Totality || phase == Phase.Warning) LightStones();
 
+        if (phase == Phase.Idle) RestoreGhosts();
+        else GhostTower(Mathf.Lerp(1f, settings.ghostAlpha, totality));
+
         Layout();
     }
 
@@ -161,22 +182,13 @@ public class Eclipse : TempleRuleBehaviour
         FadeOutLoop();
     }
 
-    /// <summary>Lifts the swinging and top stones above the shade, tinted like corona light.</summary>
+    /// <summary>Lifts the swinging stone above the shade, tinted like corona light.</summary>
     private void LightStones()
     {
-        StackableObject top = stackManager != null ? stackManager.GetTopObject() : null;
-        GameObject topGo = top != null ? top.gameObject : null;
-
-        bool swingLit = swingingStone == null || Contains(swingingStone);
-        bool topLit = topGo == null || Contains(topGo);
-        if (swingLit && topLit) return;
+        if (swingingStone == null || Contains(swingingStone)) return;
 
         RestoreLitStones();
-        var list = new System.Collections.Generic.List<SpriteRenderer>();
-        if (swingingStone != null) list.AddRange(swingingStone.GetComponentsInChildren<SpriteRenderer>());
-        if (topGo != null && topGo != swingingStone) list.AddRange(topGo.GetComponentsInChildren<SpriteRenderer>());
-
-        litRenderers = list.ToArray();
+        litRenderers = swingingStone.GetComponentsInChildren<SpriteRenderer>();
         litColors = new Color[litRenderers.Length];
         litOrders = new int[litRenderers.Length];
         for (int i = 0; i < litRenderers.Length; i++)
@@ -185,7 +197,8 @@ public class Eclipse : TempleRuleBehaviour
             litColors[i] = sr.color;
             litOrders[i] = sr.sortingOrder;
             sr.sortingOrder += LitStoneBoost;
-            sr.color = sr.color * LitTint;
+            Color c = sr.color;
+            sr.color = new Color(c.r * LitTint.r, c.g * LitTint.g, c.b * LitTint.b, c.a);
         }
     }
 
@@ -203,9 +216,86 @@ public class Eclipse : TempleRuleBehaviour
             SpriteRenderer sr = litRenderers[i];
             if (sr == null) continue;
             sr.sortingOrder = litOrders[i];
-            sr.color = litColors[i];
+            // RGB only: alpha belongs to the spawner's arm fade and the ghosting, so restoring a
+            // snapshot taken mid-fade would leave the held stone near-invisible.
+            Color saved = litColors[i];
+            sr.color = new Color(saved.r, saved.g, saved.b, sr.color.a);
         }
         litRenderers = new SpriteRenderer[0];
+    }
+
+    /// <summary>
+    /// Fades the top <see cref="EclipseSettings.hiddenTopStones"/> stones to
+    /// <paramref name="alphaScale"/>. A faded stone stays faded until the light returns, so stones
+    /// landing during totality stack up as ghosts instead of revealing the one below.
+    /// </summary>
+    private void GhostTower(float alphaScale)
+    {
+        if (stackManager == null) return;
+        var stack = stackManager.StackObjects;
+
+        // A stone that left the tower (fell, Rewind) gets its opacity back.
+        for (int i = ghosts.Count - 1; i >= 0; i--)
+        {
+            GhostStone g = ghosts[i];
+            if (g.stone == null || !stackManager.IsInStack(g.stone))
+            {
+                RestoreGhost(g);
+                ghosts.RemoveAt(i);
+            }
+        }
+
+        for (int i = Mathf.Max(0, stack.Count - Mathf.Max(1, settings.hiddenTopStones)); i < stack.Count; i++)
+        {
+            StackableObject stone = stack[i];
+            if (stone != null && !IsGhosted(stone)) ghosts.Add(MakeGhost(stone));
+        }
+
+        for (int i = 0; i < ghosts.Count; i++)
+        {
+            GhostStone g = ghosts[i];
+            for (int j = 0; j < g.renderers.Length; j++)
+            {
+                SpriteRenderer sr = g.renderers[j];
+                if (sr == null) continue;
+                Color c = sr.color;
+                c.a = g.alphas[j] * alphaScale;
+                sr.color = c;
+            }
+        }
+    }
+
+    private bool IsGhosted(StackableObject stone)
+    {
+        for (int i = 0; i < ghosts.Count; i++)
+            if (ghosts[i].stone == stone) return true;
+        return false;
+    }
+
+    private static GhostStone MakeGhost(StackableObject stone)
+    {
+        SpriteRenderer[] renderers = stone.GetComponentsInChildren<SpriteRenderer>();
+        var alphas = new float[renderers.Length];
+        for (int i = 0; i < renderers.Length; i++) alphas[i] = renderers[i].color.a;
+        return new GhostStone { stone = stone, renderers = renderers, alphas = alphas };
+    }
+
+    private static void RestoreGhost(GhostStone g)
+    {
+        for (int j = 0; j < g.renderers.Length; j++)
+        {
+            SpriteRenderer sr = g.renderers[j];
+            if (sr == null) continue;
+            Color c = sr.color;
+            c.a = g.alphas[j];
+            sr.color = c;
+        }
+    }
+
+    private void RestoreGhosts()
+    {
+        for (int i = 0; i < ghosts.Count; i++) RestoreGhost(ghosts[i]);
+        ghosts.Clear();
     }
 
     private void Layout()
@@ -220,14 +310,11 @@ public class Eclipse : TempleRuleBehaviour
             c = cam.transform.position;
         }
 
-        Vector2 size = shade.sprite.bounds.size;
-        shade.transform.position = new Vector3(c.x, c.y, 0f);
-        shade.transform.localScale = new Vector3(halfW * 2f / size.x, halfH * 2f / size.y, 1f);
-
-        float alpha = Mathf.Max(settings.skyDim * presence, settings.darkness * totality);
-        Color sc = ShadeColor;
-        sc.a = alpha;
-        shade.color = sc;
+        // Front shade: the light, temple-long mood dim over everything. Night shade: behind the
+        // stones, it darkens the sky for exactly as long as the eclipse lasts, so its start, length
+        // and end read at a glance without hiding the tower.
+        FitToView(shade, c, halfW, halfH, settings.skyDim * presence);
+        FitToView(nightShade, c, halfW, halfH, settings.totalityDim * totality);
 
         // The eclipsed sun hangs in the upper corner; it swells a little at totality.
         Vector2 sunSize = sun.sprite != null ? (Vector2)sun.sprite.bounds.size : Vector2.one;
@@ -239,10 +326,21 @@ public class Eclipse : TempleRuleBehaviour
         if (presence <= 0f && targetPresence <= 0f && phase == Phase.Idle) SetActive(false);
     }
 
+    private static void FitToView(SpriteRenderer sr, Vector3 center, float halfW, float halfH, float alpha)
+    {
+        Vector2 size = sr.sprite.bounds.size;
+        sr.transform.position = new Vector3(center.x, center.y, 0f);
+        sr.transform.localScale = new Vector3(halfW * 2f / size.x, halfH * 2f / size.y, 1f);
+        Color sc = ShadeColor;
+        sc.a = alpha;
+        sr.color = sc;
+    }
+
     private void SetActive(bool on)
     {
         if (shade == null) return;
         shade.gameObject.SetActive(on);
+        nightShade.gameObject.SetActive(on);
         sun.gameObject.SetActive(on);
     }
 }

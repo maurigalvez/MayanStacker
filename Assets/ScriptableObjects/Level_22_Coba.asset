@@ -42,7 +42,8 @@ MonoBehaviour:
   eclipseSettings:
     litStones: 2.5
     fadeStones: 1.5
-    darkness: 0.9
+    ghostAlpha: 0.2
+    totalityDim: 0.65
     skyDim: 0.25
   quakeSettings:
     firstAtHeight: 6
@@ -50,5 +51,5 @@ MonoBehaviour:
     warningSeconds: 1.3
     quakeSeconds: 2.4
     joltsPerSecond: 3.2
-    joltSpeed: 1.5
-    bracedFactor: 0.15
+    slidePerJolt: 0.09
+    headShake: 0.3

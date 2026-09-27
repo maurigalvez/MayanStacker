@@ -14,9 +14,12 @@ using UnityEngine.SceneManagement;
 /// The edge is a timing test. The band is narrow - from
 /// <see cref="StabilitySettings.edgeBandOuterAccuracy"/> to
 /// <see cref="StabilitySettings.edgeSweetSpotAccuracy"/> - and a stone released over it lands
-/// as a Perfect wherever it lands on the stone, so the combo grows and multiplies the x3.
+/// in the top score tier wherever it lands on the stone, at the current combo multiplier. It
+/// is not a Perfect: it neither grows nor breaks the combo, the Perfect streak or the power meter.
 /// Released anywhere else it's an ordinary drop - no edge, no x3 - so the rim's number is
-/// exactly what an edge drop pays, never a fraction of it.
+/// exactly what an edge drop pays, never a fraction of it. A release up to
+/// <see cref="StabilitySettings.edgeGraceSeconds"/> after the stone leaves a lit rim still
+/// counts: the cue reaches the player late, and the rim that flashed must pay.
 ///
 /// What the player sees and hears:
 ///  - golden strips on the top stone's rim exactly as wide as the band, flashing while
@@ -52,7 +55,7 @@ public class RiskWindow : MonoBehaviour, IRunRewindable
     /// <summary>True when releasing right now would be an edge drop.</summary>
     public bool IsOpen { get; private set; }
 
-    /// <summary>True when releasing right now would be a sweet-spot edge drop (lands as a Perfect).</summary>
+    /// <summary>True when releasing right now would be a sweet-spot edge drop (scored as a Serpent's Edge landing).</summary>
     public bool IsSweet { get; private set; }
 
     /// <summary>Raised for every stone released in the window, right after it is marked.</summary>
@@ -88,6 +91,11 @@ public class RiskWindow : MonoBehaviour, IRunRewindable
 
     // The side the stone is over right now (-1 left, 1 right), 0 while the window is shut.
     private int openSide;
+
+    // The last rim the player saw lit, for the release grace (see StabilitySettings.edgeGraceSeconds):
+    // which stone and when.
+    private StackableObject lastLitStone;
+    private float lastLitTime = float.NegativeInfinity;
 
     // Run stats for the result card.
     private int pendingEdgeComboBefore;
@@ -298,6 +306,12 @@ public class RiskWindow : MonoBehaviour, IRunRewindable
         IsSweet = IsOpen && sweet;
         openSide = IsOpen ? side : 0;
 
+        if (IsOpen)
+        {
+            lastLitStone = stone;
+            lastLitTime = Time.unscaledTime;
+        }
+
         // The band is the sweet spot, so entering it is the timing cue: the rim flashes
         // (UpdateUI) and the rattle and haptic tick fire together.
         if (IsOpen && !wasOpen) PlayEntryCue();
@@ -378,14 +392,27 @@ public class RiskWindow : MonoBehaviour, IRunRewindable
         // still describes the stone that was just released.
         if (dropped == null || !enabled) return;
 
-        float phase = spawnerHolder.SwingPhase;
         var block = dropped.GetComponent<StackableObject>();
         StackableObject top = block != null && ComputeAvailable() ? TopStone() : null;
 
-        bool sweet = false;
-        int side = top != null ? EdgeSideAt(block, top, block.ColliderCenterX, out sweet) : 0;
-        bool edge = side != 0 && IsSideReachable(block, top, side, phase);
-        sweet &= edge;
+        // Reachability is taken from the last Update - the rims the player was looking at.
+        // Re-deriving it here would read SwingPhase after SpawnerHolder's drop handler has
+        // already randomised it.
+        int side = top != null ? EdgeSideAt(block, top, block.ColliderCenterX, out _) : 0;
+        bool edge = side != 0 && sideReachable[Slot(side)];
+
+        // Grace: the cue reaches the player late, so a release just after the stone left a lit
+        // rim still pays what that rim showed. Same stone only - the rim was lit for it.
+        bool graced = false;
+        if (!edge && top != null && block == lastLitStone &&
+            Time.unscaledTime - lastLitTime <= settings.edgeGraceSeconds)
+        {
+            edge = true;
+            graced = true;
+        }
+
+        // The whole band is the sweet spot, so every edge drop - graced or not - scores as an edge landing.
+        bool sweet = edge;
 
         if (introActive)
         {
@@ -405,6 +432,7 @@ public class RiskWindow : MonoBehaviour, IRunRewindable
         data["tremor_before"] = TowerStability.Instance != null ? TowerStability.Instance.Tremor : 0f;
         data["sweet_spot"] = sweet;
         data["release_accuracy"] = block.AccuracyOn(top, block.ColliderCenterX);
+        data["graced"] = graced;
         GameAnalytics.Track("edge_drop", data);
     }
 
@@ -438,9 +466,9 @@ public class RiskWindow : MonoBehaviour, IRunRewindable
         // landing yet, its warning simply replaces the banner a moment later.
         if (stability == null || !stability.IsTrembling)
         {
-            // Only a Perfect (the sweet spot) earns the full xN; anything else scored a Good or
-            // worse and broke the combo, so the follow-up teaches the timing instead of cheering.
-            bool perfect = block.LandingAccuracy >= gameManager.PerfectThreshold;
+            // Only a scored edge landing (the sweet spot) earns the xN; anything else was an
+            // ordinary landing, so the follow-up teaches the timing instead of cheering.
+            bool perfect = block.ScoredAsEdge;
             GuideLane.TryTeach(EdgeLessonId,
                 LocalizationManager.Get(perfect ? "edge_intro_followup_title" : "edge_intro_early_title", FormatMultiplier()),
                 LocalizationManager.Get(perfect ? "edge_intro_followup_body" : "edge_intro_early_body", FormatMultiplier()),
@@ -498,6 +526,8 @@ public class RiskWindow : MonoBehaviour, IRunRewindable
         projectionKey[0] = projectionKey[1] = int.MinValue;
         sideReachable[0] = sideReachable[1] = false;
         openSide = 0;
+        lastLitStone = null;
+        lastLitTime = float.NegativeInfinity;
 
         if (TowerStability.Instance != null) TowerStability.Instance.SetEdgePreview(0f);
         if (uiRoot != null) uiRoot.SetActive(false);
@@ -642,9 +672,9 @@ public class RiskWindow : MonoBehaviour, IRunRewindable
     }
 
     /// <summary>
-    /// Works out what a sweet-spot edge drop on <paramref name="side"/> would score - it lands
-    /// as a Perfect, so with the combo and run multipliers - and hands the view its caption and
-    /// colour. That's the prize the player is timing for; missing the sweet spot scores the real
+    /// Works out what a sweet-spot edge drop on <paramref name="side"/> would score - the top
+    /// tier at the current combo multiplier (it doesn't grow the combo) and the run multipliers -
+    /// and hands the view its caption and colour. That's the prize the player is timing for; missing the sweet spot scores the real
     /// (off-centre) landing instead, which the intro explains rather than a second number here.
     /// The caption string is only rebuilt when the value behind it changes.
     /// </summary>
@@ -652,7 +682,7 @@ public class RiskWindow : MonoBehaviour, IRunRewindable
     {
         // Off the stone entirely is a miss - the sweet spot only upgrades a landing on it.
         bool miss = stone.AccuracyOn(top, landingX) <= 0f;
-        int points = miss ? 0 : gameManager.PreviewPoints(stone.PreviewBaseScore(1f, settings.edgeScoreMultiplier), 1f);
+        int points = miss ? 0 : gameManager.PreviewEdgePoints(stone.PreviewBaseScore(1f, settings.edgeScoreMultiplier));
 
         RiskWindowView.Worth worth =
             miss || points < safePoints ? RiskWindowView.Worth.Worse

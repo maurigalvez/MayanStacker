@@ -257,7 +257,11 @@ public class LevelManager : MonoBehaviour, ILevelManager, IRunRewindable
 
         float accuracy = stackableObject.LandingAccuracy;
 
-        if (accuracy >= perfectCutoff)
+        // A Serpent's Edge landing is neither a Perfect nor a miss: the chain carries over.
+        if (stackableObject.ScoredAsEdge)
+        {
+        }
+        else if (accuracy >= perfectCutoff)
         {
             currentPerfectChain++;
             if (currentPerfectChain > bestPerfectChain) bestPerfectChain = currentPerfectChain;
@@ -453,6 +457,15 @@ public class LevelManager : MonoBehaviour, ILevelManager, IRunRewindable
     /// </summary>
     private void SaveLevelProgress(int levelNumber, int stars, int score)
     {
+#if UNITY_EDITOR
+        // A temple opened only by the editor's test override leaves real progress alone.
+        if (DebugTempleUnlocks.IsForced(levelNumber) && !IsLevelUnlockedByProgress(levelNumber))
+        {
+            Debug.Log($"[DebugTempleUnlocks] Level {levelNumber} was opened by the test override; progress not saved.");
+            return;
+        }
+#endif
+
         // Update stars in-memory and PlayerPrefs
         if (!levelStars.ContainsKey(levelNumber) || stars > levelStars[levelNumber])
         {
@@ -581,6 +594,15 @@ public class LevelManager : MonoBehaviour, ILevelManager, IRunRewindable
     /// Check if a level is unlocked (for sequential progression)
     /// </summary>
     public bool IsLevelUnlocked(int levelNumber)
+    {
+#if UNITY_EDITOR
+        if (DebugTempleUnlocks.IsForced(levelNumber)) return true;
+#endif
+        return IsLevelUnlockedByProgress(levelNumber);
+    }
+
+    /// <summary>Unlock from real progress only, ignoring the editor's test override.</summary>
+    private bool IsLevelUnlockedByProgress(int levelNumber)
     {
         // First level is always unlocked
         if (levelNumber == 1) return true;

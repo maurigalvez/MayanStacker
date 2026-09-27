@@ -785,11 +785,11 @@
     },
     {
       "key": "edge_intro_body",
-      "value": "Suelta mientras la piedra esté sobre el borde dorado y destelle para un PERFECTO x{0}. Fuera del borde es una caída normal."
+      "value": "Suelta mientras la piedra esté sobre el borde dorado y destelle para ganar x{0} puntos. No suma ni rompe tu combo. Fuera del borde es una caída normal."
     },
     {
       "key": "edge_intro_followup_title",
-      "value": "¡PERFECTO! x{0}"
+      "value": "¡x{0} puntos!"
     },
     {
       "key": "edge_intro_followup_body",
@@ -845,7 +845,7 @@
     { "key": "result_tip_straighten", "value": "Logra {0} Perfectos seguidos para enderezar tu torre." },
     { "key": "result_tip_power", "value": "Los Perfectos llenan el medidor de tu poder. Guárdalo para cuando la torre se incline." },
     { "key": "result_tip_combo", "value": "Solo los aterrizajes perfectos mantienen tu combo." },
-    { "key": "result_tip_edge", "value": "Suelta cuando destelle el borde de la Serpiente para un PERFECTO x3." },
+    { "key": "result_tip_edge", "value": "Suelta cuando destelle el borde de la Serpiente para ganar x3 puntos." },
     { "key": "edge_proj_miss", "value": "Fallo" },
     { "key": "result_edge_line", "value": "Filo de la Serpiente: {0} aciertos · +{1}" },
     { "key": "result_edge_line_one", "value": "Filo de la Serpiente: {0} acierto · +{1}" },
@@ -893,16 +893,17 @@
     { "key": "rule_rain_slick_desc", "value": "Con la lluvia, todo aterrizaje que no sea perfecto se desliza un poco más." },
     { "key": "rule_rain_slick_short", "value": "Solo un Perfecto no se desliza" },
     { "key": "rule_earthquake_name", "value": "Cabracán" },
-    { "key": "rule_earthquake_desc", "value": "El suelo tiembla mientras la torre crece. Mantén presionado para sujetarla." },
-    { "key": "rule_earthquake_short", "value": "Mantén presionado cuando tiemble" },
+    { "key": "rule_earthquake_desc", "value": "El suelo tiembla mientras la torre crece. Mantén SUJETAR y las piedras no se mueven; si sueltas, se deslizan. No puedes soltar piedras mientras sujetas." },
+    { "key": "rule_earthquake_short", "value": "Mantén SUJETAR cuando tiemble" },
     { "key": "rule_rising_cenote_name", "value": "Cenote Creciente" },
     { "key": "rule_rising_cenote_desc", "value": "El pozo sagrado está subiendo. Sigue construyendo antes de que el agua llegue a la cima." },
     { "key": "rule_rising_cenote_short", "value": "Mantente sobre el agua" },
     { "key": "rule_eclipse_name", "value": "Eclipse" },
-    { "key": "rule_eclipse_desc", "value": "El sol se ha ocultado. Solo la cima de la torre tiene luz." },
-    { "key": "rule_eclipse_short", "value": "Solo la cima tiene luz" },
+    { "key": "rule_eclipse_desc", "value": "El sol se ha ocultado. La cima de la torre se desvanece. Recuerda dónde estaba." },
+    { "key": "rule_eclipse_short", "value": "La cima se desvanece" },
     { "key": "quake_hold", "value": "¡MANTÉN PARA SUJETAR!" },
     { "key": "quake_braced", "value": "¡FIRME!" },
+    { "key": "quake_brace_button", "value": "SUJETAR" },
     { "key": "quake_survived", "value": "La tierra se calma" },
     { "key": "cenote_warning", "value": "¡El agua sube!" },
     { "key": "quit_confirm_title", "value": "¿Dejar el templo?" },

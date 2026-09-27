@@ -1,31 +1,33 @@
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
-using UnityEngine.EventSystems;
-using UnityEngine.UI;
 
 /// <summary>
 /// Temple rule <see cref="LevelRule.Earthquake"/>: at set heights the ground shakes, and the
-/// player presses and holds anywhere to brace the tower.
+/// player holds the BRACE button to keep the tower still.
 ///
-/// Sequence: the stone lands → a HOLD prompt and a rumble (<see cref="EarthquakeSettings.warningSeconds"/>)
-/// → the shaking, a jolt at a time, each one knocking the stones sideways (the top most, the
-/// base least). Holding cuts every jolt to <see cref="EarthquakeSettings.bracedFactor"/>; letting
-/// go takes the full jolt. Stones a Kukulkan shift locked are never jolted, so building
-/// straight before the quake still pays.
+/// Sequence: the stone lands → the BRACE button (<see cref="BraceButtonView"/>; restyle and move
+/// it with the Resources/UI/BraceButton prefab) appears with a rumble, its ring filling over
+/// <see cref="EarthquakeSettings.warningSeconds"/> → the shaking, a jolt at a time, while the
+/// ring drains to show how long is left to hold.
 ///
-/// While the quake runs, a full-screen hold surface sits over the playfield. It is a raycast
-/// target, so InputManager — which never drops a stone for a press over UI — can't drop one,
-/// and the press that braces can never also release the swinging stone. It stands aside while
-/// the game is paused so the pause menu keeps working.
+/// Brace OR drop: while BRACE is held nothing drops (<see cref="InputManager.DropsBlockedByRule"/>),
+/// and every jolt only shakes the camera. Let go and a tap anywhere else drops as usual, but
+/// each jolt slides the stones out, each one its own way for the whole quake, the top most and
+/// the base least, so a straight tower comes apart. The swinging head also wobbles for the whole quake
+/// (<see cref="SwingModifiers.ShakeOffset"/>), so building through it costs aim.
+/// Stones a Kukulkan shift locked never slide, so building straight before the quake still pays.
 ///
-/// The jolt pattern is fixed (alternating, no randomness), so every player faces the same quake.
+/// Each quake gives every stone a direction, left or right, seeded by temple, quake number and
+/// the stone's height in the stack, so every
+/// player faces the same quake.
 /// </summary>
 public class Earthquake : TempleRuleBehaviour
 {
     private const int CanvasSortingOrder = 3005; // above the HUD, below the power button
-    private const float StartDelaySeconds = 0f; // next frame: the HOLD surface must be up before the next stone arms
-    private const float EndHoldSeconds = 0.35f;    // surface stays up briefly so a held finger can lift
+    private const float StartDelaySeconds = 0f;
+    private const float EndHoldSeconds = 0.35f;    // button stays up briefly so a held finger can lift
+    private const float SlideSeconds = 0.09f;      // one jolt's slide; well under the jolt interval
 
     private static readonly Color PromptColor = RunOverlayUI.Gold;
     private static readonly Color BracedColor = new Color(0.35f, 0.85f, 0.65f, 1f);
@@ -38,8 +40,8 @@ public class Earthquake : TempleRuleBehaviour
     private Phase phase = Phase.Idle;
     private float phaseTimer;
     private float nextJoltAt;
-    private int joltIndex;
     private int quakesThisRun;
+    private int slideSeed;
     private float bracedTime;
     private float shakeTime;
     private bool wasBraced;
@@ -47,10 +49,8 @@ public class Earthquake : TempleRuleBehaviour
     // UI
     private GameObject uiRoot;
     private CanvasGroup group;
-    private HoldSurface surface;
+    private BraceButtonView brace;
     private TextMeshProUGUI prompt;
-    private RectTransform iconRect;
-    private Image icon;
 
     protected override void Build()
     {
@@ -59,28 +59,48 @@ public class Earthquake : TempleRuleBehaviour
         RunOverlayUI.CreateCanvas(uiRoot, CanvasSortingOrder, interactive: true);
         group = uiRoot.AddComponent<CanvasGroup>();
 
-        // The hold surface: invisible, full screen, takes every press.
-        RectTransform surfaceRect = RunOverlayUI.CreateChild("HoldSurface", uiRoot.transform);
-        RunOverlayUI.Stretch(surfaceRect);
-        var surfaceImage = surfaceRect.gameObject.AddComponent<Image>();
-        surfaceImage.color = new Color(0f, 0f, 0f, 0.001f);
-        surfaceImage.raycastTarget = true;
-        surface = surfaceRect.gameObject.AddComponent<HoldSurface>();
+        // The BRACE button: the authored prefab when there's a usable one, else the code layout.
+        brace = BuildBraceFromPrefab() ?? BraceButtonView.BuildDefault(uiRoot.transform);
+        brace.Init(art.quakeHoldIcon);
 
-        // Prompt below centre (the swing band is up top).
-        iconRect = RunOverlayUI.CreateChild("HoldIcon", uiRoot.transform);
-        RunOverlayUI.Place(iconRect, new Vector2(0.5f, 0.5f), new Vector2(0f, -120f), new Vector2(170f, 170f));
-        icon = iconRect.gameObject.AddComponent<Image>();
-        icon.sprite = art.quakeHoldIcon;
-        icon.preserveAspect = true;
-        icon.raycastTarget = false;
-        icon.enabled = art.quakeHoldIcon != null;
-
-        prompt = RunOverlayUI.CreateLabel("Prompt", uiRoot.transform, string.Empty, 84f, PromptColor);
-        RunOverlayUI.Place(prompt.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0f, -280f), new Vector2(1000f, 140f));
+        // Headline below centre (the swing band is up top).
+        prompt = RunOverlayUI.CreateLabel("Prompt", uiRoot.transform, string.Empty, 72f, PromptColor);
+        RunOverlayUI.Place(prompt.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0f, -280f), new Vector2(1000f, 120f));
         prompt.fontStyle = FontStyles.Bold;
 
         uiRoot.SetActive(false);
+    }
+
+    /// <summary>
+    /// Instantiates Resources/UI/BraceButton under the quake canvas, if there is a usable one.
+    /// Null means the code-built button is used instead.
+    /// </summary>
+    private BraceButtonView BuildBraceFromPrefab()
+    {
+        var prefab = Resources.Load<GameObject>(BraceButtonView.PrefabResourcePath);
+        if (prefab == null) return null;
+
+        GameObject instance = Instantiate(prefab, uiRoot.transform, false);
+
+        // The prefab's root is usually its own canvas, whose size and scale were driven in
+        // the editor. Nested, nothing drives them, so fill the quake canvas explicitly or the
+        // button's anchors would measure from a stale rect.
+        if (instance.transform is RectTransform rootRect)
+        {
+            RunOverlayUI.Stretch(rootRect);
+            rootRect.localScale = Vector3.one;
+            rootRect.anchoredPosition3D = Vector3.zero;
+        }
+
+        BraceButtonView view = instance.GetComponentInChildren<BraceButtonView>(true);
+        if (view != null && view.IsUsable) return view;
+
+        Debug.LogWarning($"[Earthquake] Resources/{BraceButtonView.PrefabResourcePath} has no usable " +
+                         "BraceButtonView (needs a Hold Target) - using the code-built button instead.");
+        // Hide first: Destroy is deferred, and a half-built button shouldn't flash for a frame.
+        instance.SetActive(false);
+        Destroy(instance);
+        return null;
     }
 
     protected override void OnRunStart(LevelData level)
@@ -94,6 +114,12 @@ public class Earthquake : TempleRuleBehaviour
     {
         if (phase == Phase.Idle) return;
         EndQuake();
+    }
+
+    protected override void OnDestroy()
+    {
+        base.OnDestroy();
+        if (phase != Phase.Idle) EndQuake();
     }
 
     protected override void OnStoneLanded(StackableObject stone)
@@ -120,7 +146,11 @@ public class Earthquake : TempleRuleBehaviour
         bool paused = uiManager != null && uiManager.IsPaused;
         // The pause menu must stay reachable: stand aside, and freeze the quake with the game.
         if (uiRoot.activeSelf == paused && phase != Phase.Pending) uiRoot.SetActive(!paused);
-        if (paused) return;
+        if (paused)
+        {
+            InputManager.DropsBlockedByRule = false;
+            return;
+        }
 
         if (!RunLive)
         {
@@ -130,7 +160,7 @@ public class Earthquake : TempleRuleBehaviour
 
         float dt = Time.deltaTime;
         phaseTimer -= dt;
-        bool braced = surface != null && surface.IsHeld;
+        bool braced = brace != null && brace.IsHeld && phase != Phase.Pending;
 
         switch (phase)
         {
@@ -159,6 +189,12 @@ public class Earthquake : TempleRuleBehaviour
                 break;
         }
 
+        if (phase == Phase.Idle) return; // EndQuake ran this frame
+
+        // Brace OR drop: a held brace keeps a second finger from releasing the stone.
+        InputManager.DropsBlockedByRule = braced;
+        SwingModifiers.ShakeOffset = HeadShake();
+
         if (braced && !wasBraced && (phase == Phase.Warning || phase == Phase.Shaking))
         {
             PlayOneShot(art.quakeBraceSound, 0.9f);
@@ -166,7 +202,7 @@ public class Earthquake : TempleRuleBehaviour
         }
         wasBraced = braced;
 
-        UpdatePrompt(braced);
+        UpdateUI(braced);
     }
 
     private void BeginWarning()
@@ -176,11 +212,14 @@ public class Earthquake : TempleRuleBehaviour
         quakesThisRun++;
         bracedTime = 0f;
         shakeTime = 0f;
-        joltIndex = 0;
+
+        // Same temple, same quake number → same slides for every player.
+        int levelNumber = Level != null ? Level.levelNumber : 0;
+        slideSeed = levelNumber * 7919 + quakesThisRun * 104729;
 
         group.alpha = 1f;
         uiRoot.SetActive(true);
-        surface.ResetHold();
+        brace.ResetHold();
 
         SetLoop(art.quakeRumbleLoop, 0.55f);
         HapticFeedback.Trigger(HapticFeedback.HapticType.Medium);
@@ -213,44 +252,70 @@ public class Earthquake : TempleRuleBehaviour
     {
         phase = Phase.Idle;
         if (uiRoot != null) uiRoot.SetActive(false);
-        if (surface != null) surface.ResetHold();
+        if (brace != null) brace.ResetHold();
         wasBraced = false;
+        InputManager.DropsBlockedByRule = false;
+        SwingModifiers.ShakeOffset = 0f;
         FadeOutLoop();
     }
 
     /// <summary>
-    /// One jolt: every unlocked stone gets a sideways kick, alternating direction, scaled by
-    /// how high it sits (the base barely moves, the top swings) and by whether the player braces.
+    /// One jolt. Braced: only the camera shakes. Not braced: every unlocked stone slides a
+    /// step out its own direction (fixed for the quake), scaled by how high it sits.
     /// </summary>
     private void Jolt(bool braced)
     {
-        if (stackManager == null) return;
+        if (cameraController != null) cameraController.Shake(braced ? 0.12f : 0.4f);
+        HapticFeedback.Trigger(braced ? HapticFeedback.HapticType.Light : HapticFeedback.HapticType.Heavy);
+        PlayOneShot(art.quakeJoltSound, braced ? 0.5f : 1f);
 
-        float direction = (joltIndex % 2 == 0) ? 1f : -1f;
-        joltIndex++;
+        if (braced || stackManager == null) return;
 
-        float factor = braced ? settings.bracedFactor : 1f;
         IReadOnlyList<StackableObject> stones = stackManager.StackObjects;
         int count = stones.Count;
 
-        for (int i = 0; i < count; i++)
+        for (int i = 1; i < count; i++) // the foundation never moves
         {
             StackableObject stone = stones[i];
             if (stone == null || stackManager.IsStabilized(stone)) continue;
 
             Rigidbody2D rb = stone.GetComponent<Rigidbody2D>();
-            if (rb == null || rb.bodyType != RigidbodyType2D.Dynamic) continue;
+            if (rb == null || rb.bodyType != RigidbodyType2D.Dynamic) continue; // mid-move or detached
 
             float heightShare = count > 1 ? (float)i / (count - 1) : 1f;
-            rb.linearVelocity += new Vector2(direction * settings.joltSpeed * factor * heightShare, 0f);
-        }
+            float strength = 0.6f + 0.4f * Hash01(slideSeed + 1, i);
+            float direction = Hash01(slideSeed, i) < 0.5f ? -1f : 1f; // same for this stone all quake
 
-        if (cameraController != null) cameraController.Shake(braced ? 0.12f : 0.4f);
-        HapticFeedback.Trigger(braced ? HapticFeedback.HapticType.Light : HapticFeedback.HapticType.Heavy);
-        PlayOneShot(art.quakeJoltSound, braced ? 0.5f : 1f);
+            stackManager.ShoveStone(stone, direction * settings.slidePerJolt * strength * heightShare, SlideSeconds);
+        }
     }
 
-    private void UpdatePrompt(bool braced)
+    /// <summary>The head's sideways wobble: builds through the warning, full while shaking, fades out.</summary>
+    private float HeadShake()
+    {
+        float strength;
+        switch (phase)
+        {
+            case Phase.Warning:
+                strength = 0.35f * (1f - Mathf.Clamp01(phaseTimer / Mathf.Max(0.01f, settings.warningSeconds)));
+                break;
+            case Phase.Shaking:
+                strength = 1f;
+                break;
+            case Phase.Ending:
+                strength = Mathf.Clamp01(phaseTimer / EndHoldSeconds);
+                break;
+            default:
+                return 0f;
+        }
+
+        // Two unrelated frequencies, so the wobble can't be timed like the swing.
+        float t = Time.time;
+        float wave = 0.65f * Mathf.Sin(t * 23f) + 0.35f * Mathf.Sin(t * 37f + 1.3f);
+        return wave * settings.headShake * strength;
+    }
+
+    private void UpdateUI(bool braced)
     {
         if (prompt == null) return;
 
@@ -258,13 +323,45 @@ public class Earthquake : TempleRuleBehaviour
         prompt.text = LocalizationManager.Get(braced ? "quake_braced" : "quake_hold");
         prompt.color = braced ? BracedColor : PromptColor;
 
+        // The ring is the timer: it fills while the quake winds up, then drains while it shakes.
+        float fill;
+        float? secondsLeft;
+        switch (phase)
+        {
+            case Phase.Warning:
+                fill = 1f - Mathf.Clamp01(phaseTimer / Mathf.Max(0.01f, settings.warningSeconds));
+                secondsLeft = settings.quakeSeconds;
+                break;
+            case Phase.Shaking:
+                fill = Mathf.Clamp01(phaseTimer / Mathf.Max(0.01f, settings.quakeSeconds));
+                secondsLeft = Mathf.Max(0f, phaseTimer);
+                break;
+            default:
+                fill = 0f;
+                secondsLeft = null;
+                break;
+        }
+        brace.Render(fill, secondsLeft, braced, shaking);
+
         float wave = 0.5f + 0.5f * Mathf.Sin(Time.unscaledTime * (shaking ? 14f : 8f));
-        float scale = braced ? 0.92f : 1f + 0.08f * wave;
-        prompt.rectTransform.localScale = Vector3.one * scale;
-        if (iconRect != null) iconRect.localScale = Vector3.one * (braced ? 0.85f : 1f + 0.1f * wave);
-        if (icon != null) icon.color = braced ? BracedColor : Color.white;
+        prompt.rectTransform.localScale = Vector3.one * (braced ? 0.92f : 1f + 0.08f * wave);
 
         if (phase == Phase.Ending) group.alpha = Mathf.Clamp01(phaseTimer / EndHoldSeconds);
+    }
+
+    /// <summary>Stable 0..1 value for (seed, index). No allocation, same on every device.</summary>
+    private static float Hash01(int seed, int index)
+    {
+        unchecked
+        {
+            uint h = (uint)seed * 0x9E3779B1u ^ (uint)index * 0x85EBCA77u;
+            h ^= h >> 15;
+            h *= 0x2C1B3C6Du;
+            h ^= h >> 12;
+            h *= 0x297A2D39u;
+            h ^= h >> 15;
+            return (h & 0xFFFFFF) / 16777216f;
+        }
     }
 
     private Dictionary<string, object> EventData()
@@ -275,21 +372,5 @@ public class Earthquake : TempleRuleBehaviour
             { "height", stackManager != null ? stackManager.GetStackCount() : 0 },
             { "quake", quakesThisRun }
         };
-    }
-
-    /// <summary>Full-screen press-and-hold target. Counts pointers so multi-touch can't flicker it.</summary>
-    private class HoldSurface : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
-    {
-        private readonly HashSet<int> pressed = new HashSet<int>();
-
-        public bool IsHeld => pressed.Count > 0;
-
-        public void OnPointerDown(PointerEventData eventData) => pressed.Add(eventData.pointerId);
-
-        public void OnPointerUp(PointerEventData eventData) => pressed.Remove(eventData.pointerId);
-
-        public void ResetHold() => pressed.Clear();
-
-        private void OnDisable() => pressed.Clear();
     }
 }

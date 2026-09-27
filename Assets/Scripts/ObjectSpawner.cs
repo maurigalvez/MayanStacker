@@ -220,17 +220,26 @@ public class ObjectSpawner : MonoBehaviour
         SpriteRenderer sr = stackable != null ? stackable.SpriteRenderer : null;
         if (sr == null) yield break;
 
-        Color target = sr.color;
+        // Only alpha is animated; RGB is read live each frame so tints other systems apply
+        // meanwhile (e.g. the Eclipse corona light) aren't overwritten.
+        float targetAlpha = sr.color.a;
         float start = Time.unscaledTime;
 
         while (sr != null && Time.unscaledTime < armedAtUnscaledTime)
         {
             float k = Mathf.Clamp01((Time.unscaledTime - start) / dropArmDelay);
-            sr.color = new Color(target.r, target.g, target.b, Mathf.Lerp(unarmedAlpha * target.a, target.a, k));
+            Color c = sr.color;
+            c.a = Mathf.Lerp(unarmedAlpha * targetAlpha, targetAlpha, k);
+            sr.color = c;
             yield return null;
         }
 
-        if (sr != null) sr.color = target;
+        if (sr != null)
+        {
+            Color c = sr.color;
+            c.a = targetAlpha;
+            sr.color = c;
+        }
     }
 
     private GameObject CreateStackableObject()
