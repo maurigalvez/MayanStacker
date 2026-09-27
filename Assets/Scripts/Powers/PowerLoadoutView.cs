@@ -69,7 +69,23 @@ public class PowerLoadoutView : MonoBehaviour
     [SerializeField] private Color unselectedRingColor = new Color(0.33f, 0.27f, 0.2f, 1f);
     [SerializeField] private float unselectedScale = 0.9f;
 
+    [Header("Scroll hints")]
+    [Tooltip("Shown while there are more cards off the left edge. Hint only, not tappable. Built in code (gold chevron) when empty.")]
+    [SerializeField] private RectTransform leftArrow;
+    [Tooltip("Shown while there are more cards off the right edge. Hint only, not tappable. Built in code (gold chevron) when empty.")]
+    [SerializeField] private RectTransform rightArrow;
+    [Tooltip("How far the arrows drift outward and back, in pixels, so they read as \"swipe\".")]
+    [SerializeField] private float arrowBob = 10f;
+
     private readonly List<PowerLoadoutCard> cards = new List<PowerLoadoutCard>();
+
+    private CanvasGroup leftArrowGroup;
+    private CanvasGroup rightArrowGroup;
+    private float leftArrowBaseX;
+    private float rightArrowBaseX;
+
+    // The strip the cards scroll in; made at runtime around the card row if the prefab has none.
+    private ScrollRect cardsScroll;
 
     public bool IsUsable => cardTemplate != null && cardTemplate.button != null && playButton != null;
 
@@ -88,6 +104,9 @@ public class PowerLoadoutView : MonoBehaviour
         if (backdropButton != null) backdropButton.onClick.AddListener(() => onBack());
 
         Transform parent = cardsContainer != null ? (Transform)cardsContainer : cardTemplate.transform.parent;
+        cardsScroll = parent.GetComponentInParent<ScrollRect>(true);
+        if (cardsScroll == null) cardsScroll = MakeScrollable((RectTransform)parent);
+        SetUpArrows();
         cardTemplate.gameObject.SetActive(false);
 
         foreach (PowerDefinition def in powers)
@@ -128,6 +147,222 @@ public class PowerLoadoutView : MonoBehaviour
         if (descriptionText != null) descriptionText.text = description;
     }
 
+    /// <summary>Scrolls the card strip so <paramref name="id"/>'s card sits as close to the middle as it can.</summary>
+    public void ScrollTo(PowerId id)
+    {
+        if (cardsScroll == null || cardsScroll.content == null) return;
+
+        RectTransform content = cardsScroll.content;
+        LayoutRebuilder.ForceRebuildLayoutImmediate(content);
+
+        float overflow = content.rect.width - cardsScroll.viewport.rect.width;
+        if (overflow <= 0f) return; // everything fits; the strip stays centred
+
+        foreach (PowerLoadoutCard c in cards)
+        {
+            if (c.id != id) continue;
+            // Card centre measured from the content's left edge, minus half a viewport = scroll offset.
+            float cardCentre = ((RectTransform)c.transform).anchoredPosition.x;
+            float offset = cardCentre - cardsScroll.viewport.rect.width * 0.5f;
+            cardsScroll.horizontalNormalizedPosition = Mathf.Clamp01(offset / overflow);
+            return;
+        }
+    }
+
+    /// <summary>
+    /// Readies the scroll hints. A prefab's own arrows win; otherwise gold chevrons are laid
+    /// over the strip's edges. Both start hidden, and LateUpdate shows each one only while
+    /// there are cards off that edge, so with everything fitting neither ever appears.
+    /// </summary>
+    private void SetUpArrows()
+    {
+        if ((leftArrow == null || rightArrow == null) && cardsScroll != null)
+        {
+            RectTransform lane = BuildArrowLane((RectTransform)cardsScroll.transform);
+            if (leftArrow == null) leftArrow = (RectTransform)lane.Find("LeftArrow");
+            if (rightArrow == null) rightArrow = (RectTransform)lane.Find("RightArrow");
+        }
+
+        leftArrowGroup = PrepareArrow(leftArrow, out leftArrowBaseX);
+        rightArrowGroup = PrepareArrow(rightArrow, out rightArrowBaseX);
+    }
+
+    private static CanvasGroup PrepareArrow(RectTransform arrow, out float baseX)
+    {
+        baseX = 0f;
+        if (arrow == null) return null;
+
+        baseX = arrow.anchoredPosition.x;
+        var group = arrow.GetComponent<CanvasGroup>();
+        if (group == null) group = arrow.gameObject.AddComponent<CanvasGroup>();
+        // A hint, never a target: drags that start on it still reach the strip.
+        group.blocksRaycasts = false;
+        group.interactable = false;
+        group.alpha = 0f;
+        return group;
+    }
+
+    private void LateUpdate()
+    {
+        if (cardsScroll == null || cardsScroll.content == null || cardsScroll.viewport == null) return;
+
+        float overflow = cardsScroll.content.rect.width - cardsScroll.viewport.rect.width;
+        bool canScroll = overflow > 1f;
+        float position = cardsScroll.horizontalNormalizedPosition;
+
+        // Unscaled so the hint never freezes if the screen opens while time is paused.
+        float step = Time.unscaledDeltaTime * 8f;
+        float drift = (Mathf.Sin(Time.unscaledTime * 4f) * 0.5f + 0.5f) * arrowBob;
+
+        UpdateArrow(leftArrow, leftArrowGroup, canScroll && position > 0.01f, leftArrowBaseX - drift, step);
+        UpdateArrow(rightArrow, rightArrowGroup, canScroll && position < 0.99f, rightArrowBaseX + drift, step);
+    }
+
+    private static void UpdateArrow(RectTransform arrow, CanvasGroup group, bool show, float x, float step)
+    {
+        if (arrow == null || group == null) return;
+
+        group.alpha = Mathf.MoveTowards(group.alpha, show ? 1f : 0f, step);
+        Vector2 pos = arrow.anchoredPosition;
+        pos.x = x;
+        arrow.anchoredPosition = pos;
+    }
+
+    /// <summary>
+    /// A rect matching <paramref name="strip"/> with a chevron at each end, laid on top of it.
+    /// Its own sibling rather than a child of the strip, so the strip's mask can't clip it and
+    /// its layout group can't move it.
+    /// </summary>
+    private static RectTransform BuildArrowLane(RectTransform strip)
+    {
+        RectTransform lane = RunOverlayUI.CreateChild("ScrollHints", strip.parent);
+        lane.SetSiblingIndex(strip.GetSiblingIndex() + 1);
+        lane.anchorMin = strip.anchorMin;
+        lane.anchorMax = strip.anchorMax;
+        lane.pivot = strip.pivot;
+        lane.anchoredPosition = strip.anchoredPosition;
+        lane.sizeDelta = strip.sizeDelta;
+
+        BuildArrow("LeftArrow", lane, left: true);
+        BuildArrow("RightArrow", lane, left: false);
+        return lane;
+    }
+
+    private static void BuildArrow(string name, RectTransform lane, bool left)
+    {
+        const float size = 72f;
+        const float inset = 6f;
+
+        RectTransform arrow = RunOverlayUI.CreateChild(name, lane);
+        Vector2 anchor = new Vector2(left ? 0f : 1f, 0.5f);
+        arrow.anchorMin = anchor;
+        arrow.anchorMax = anchor;
+        // Pivot on the inner side: the left arrow is mirrored with scale.x = -1, which flips
+        // its pivot too, so both end up hugging their own edge.
+        arrow.pivot = new Vector2(1f, 0.5f);
+        arrow.localScale = new Vector3(left ? -1f : 1f, 1f, 1f);
+        arrow.anchoredPosition = new Vector2(left ? inset : -inset, 0f);
+        arrow.sizeDelta = new Vector2(size, size);
+
+        var image = arrow.gameObject.AddComponent<Image>();
+        image.sprite = ChevronSprite();
+        image.color = RunOverlayUI.Gold;
+        image.raycastTarget = false;
+
+        // Reads over a light card as well as over the dark panel.
+        var shadow = arrow.gameObject.AddComponent<Shadow>();
+        shadow.effectColor = new Color(0f, 0f, 0f, 0.65f);
+        shadow.effectDistance = new Vector2(3f, -3f);
+    }
+
+    private static Sprite chevronSprite;
+
+    /// <summary>A soft-edged right-pointing chevron, drawn once in code (the UI kit has no arrow).</summary>
+    private static Sprite ChevronSprite()
+    {
+        if (chevronSprite != null) return chevronSprite;
+
+        const int size = 64;
+        const float halfThickness = 5.5f;
+        var tex = new Texture2D(size, size, TextureFormat.RGBA32, false);
+        tex.wrapMode = TextureWrapMode.Clamp;
+
+        Vector2 top = new Vector2(22f, 54f);
+        Vector2 tip = new Vector2(44f, 32f);
+        Vector2 bottom = new Vector2(22f, 10f);
+        var pixels = new Color32[size * size];
+        for (int y = 0; y < size; y++)
+        {
+            for (int x = 0; x < size; x++)
+            {
+                Vector2 p = new Vector2(x + 0.5f, y + 0.5f);
+                float d = Mathf.Min(DistanceToSegment(p, top, tip), DistanceToSegment(p, tip, bottom));
+                float a = Mathf.Clamp01(halfThickness + 0.5f - d);
+                pixels[y * size + x] = new Color32(255, 255, 255, (byte)(a * 255f));
+            }
+        }
+        tex.SetPixels32(pixels);
+        tex.Apply(false, true);
+
+        chevronSprite = Sprite.Create(tex, new Rect(0, 0, size, size), new Vector2(0.5f, 0.5f), 100f);
+        chevronSprite.name = "LoadoutChevron";
+        return chevronSprite;
+    }
+
+    private static float DistanceToSegment(Vector2 p, Vector2 a, Vector2 b)
+    {
+        Vector2 ab = b - a;
+        float t = Mathf.Clamp01(Vector2.Dot(p - a, ab) / ab.sqrMagnitude);
+        return Vector2.Distance(p, a + ab * t);
+    }
+
+    /// <summary>
+    /// Turns the card row into a horizontal scroll strip: a masked viewport takes the row's
+    /// place, and the row becomes content that grows to fit every card at its preferred width.
+    /// While the cards fit, the strip stays centred and doesn't move.
+    /// </summary>
+    private static ScrollRect MakeScrollable(RectTransform row)
+    {
+        RectTransform viewport = RunOverlayUI.CreateChild("CardsViewport", row.parent);
+        viewport.SetSiblingIndex(row.GetSiblingIndex());
+        viewport.anchorMin = row.anchorMin;
+        viewport.anchorMax = row.anchorMax;
+        viewport.pivot = row.pivot;
+        viewport.anchoredPosition = row.anchoredPosition;
+        viewport.sizeDelta = row.sizeDelta;
+        viewport.gameObject.AddComponent<RectMask2D>();
+        // Invisible hit area so drags in the gaps between cards still scroll.
+        viewport.gameObject.AddComponent<Image>().color = Color.clear;
+
+        row.SetParent(viewport, false);
+        row.anchorMin = new Vector2(0.5f, 0f);
+        row.anchorMax = new Vector2(0.5f, 1f);
+        row.pivot = new Vector2(0.5f, 0.5f);
+        row.anchoredPosition = Vector2.zero;
+        row.sizeDelta = Vector2.zero;
+
+        // Cards keep their preferred width instead of squeezing toward minWidth.
+        var layout = row.GetComponent<HorizontalLayoutGroup>();
+        if (layout != null)
+        {
+            layout.childControlWidth = true;
+            layout.childForceExpandWidth = false;
+        }
+        var fitter = row.GetComponent<ContentSizeFitter>();
+        if (fitter == null) fitter = row.gameObject.AddComponent<ContentSizeFitter>();
+        fitter.horizontalFit = ContentSizeFitter.FitMode.PreferredSize;
+        fitter.verticalFit = ContentSizeFitter.FitMode.Unconstrained;
+
+        var scroll = viewport.gameObject.AddComponent<ScrollRect>();
+        scroll.viewport = viewport;
+        scroll.content = row;
+        scroll.horizontal = true;
+        scroll.vertical = false;
+        scroll.movementType = ScrollRect.MovementType.Elastic;
+        scroll.inertia = true;
+        return scroll;
+    }
+
     // ---- Default layout ----
 
     /// <summary>
@@ -148,7 +383,7 @@ public class PowerLoadoutView : MonoBehaviour
         view.backdropButton.transition = Selectable.Transition.None;
         backdrop.gameObject.AddComponent<NoPressScale>();
 
-        // Stretches across the screen with a margin, so four cards still fit a narrow phone.
+        // Stretches across the screen with a margin; cards that don't fit scroll sideways.
         RectTransform panel = RunOverlayUI.CreateChild("Panel", host.transform);
         panel.anchorMin = new Vector2(0f, 0.5f);
         panel.anchorMax = new Vector2(1f, 0.5f);
@@ -169,7 +404,7 @@ public class PowerLoadoutView : MonoBehaviour
         var row = container.gameObject.AddComponent<HorizontalLayoutGroup>();
         row.spacing = 20f;
         row.childAlignment = TextAnchor.MiddleCenter;
-        row.childControlWidth = true;   // cards shrink toward minWidth when space runs out
+        row.childControlWidth = true;   // cards get their preferred width; Populate makes the row scroll
         row.childControlHeight = false;
         row.childForceExpandWidth = false;
         row.childForceExpandHeight = false;
