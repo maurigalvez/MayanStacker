@@ -771,7 +771,7 @@
     },
     {
       "key": "edge_landed",
-      "value": "蛇之锋 x{0}"
+      "value": "蛇之锋"
     },
     {
       "key": "edge_intro_title",
@@ -779,7 +779,7 @@
     },
     {
       "key": "edge_intro_body",
-      "value": "在摆动的最末端、金色边缘闪光时松手，即可获得 x{0} 完美。松手太早只算不错。"
+      "value": "石块在金色边缘上方闪光时松手，即可获得 x{0} 完美。错过边缘就是普通落下。"
     },
     {
       "key": "edge_intro_followup_title",
@@ -791,7 +791,7 @@
     },
     {
       "key": "edge_intro_early_title",
-      "value": "太早了！"
+      "value": "错过闪光！"
     },
     {
       "key": "edge_intro_early_body",
@@ -839,9 +839,7 @@
     { "key": "result_tip_power", "value": "完美落块会填充能力的能量槽。留到高塔倾斜时再用。" },
     { "key": "result_tip_combo", "value": "只有完美落块才能保持连击。" },
     { "key": "result_tip_edge", "value": "蛇之锋边缘闪光时松手，获得 x3 完美。" },
-    { "key": "edge_landed_bonus", "value": "蛇之锋 x{0} · +{1}" },
     { "key": "edge_proj_miss", "value": "落空" },
-    { "key": "combo_badge_caption", "value": "连击" },
     { "key": "result_edge_line", "value": "蛇之锋：成功{0}次 · +{1}" },
     { "key": "result_edge_line_broke", "value": "蛇之锋：成功{0}次 · +{1} · 连击中断：{2}" },
     { "key": "result_tip_align", "value": "让每块石头与下面那块对齐。" },

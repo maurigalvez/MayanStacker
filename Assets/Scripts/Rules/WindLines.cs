@@ -24,11 +24,13 @@ public class WindLines : MonoBehaviour
     private const float DriftAtFullGust = 5.5f; // world units/s the path itself travels
     private const int BurstCount = 4;
 
-    private static readonly Color StreakColor = new Color(0.96f, 0.93f, 0.84f, 0.62f); // parchment, not pure white
+    private static readonly Color StreakColor = new Color(0.96f, 0.93f, 0.84f, 0.85f); // parchment, not pure white; near-opaque over its outline
 
     private class Streak
     {
         public LineRenderer line;
+        public LineRenderer outline;   // wider dark stroke under the line, see EffectOutline
+        public readonly Gradient outlineGradient = new Gradient();
         public readonly Vector2[] path = new Vector2[PathPoints];      // local, flowing toward +x
         public readonly float[] lengthAt = new float[PathPoints];
         public readonly Vector3[] draw = new Vector3[DrawPoints];
@@ -49,6 +51,11 @@ public class WindLines : MonoBehaviour
         new GradientColorKey(StreakColor, 0f), new GradientColorKey(StreakColor, 1f)
     };
     private static readonly GradientAlphaKey[] alphaKeys = new GradientAlphaKey[3];
+    private static readonly GradientColorKey[] outlineColorKeys =
+    {
+        new GradientColorKey(EffectOutline.Color, 0f), new GradientColorKey(EffectOutline.Color, 1f)
+    };
+    private static readonly GradientAlphaKey[] outlineAlphaKeys = new GradientAlphaKey[3];
 
     private readonly Streak[] pool = new Streak[PoolSize];
     private Material material;
@@ -69,6 +76,12 @@ public class WindLines : MonoBehaviour
             new Keyframe(0.62f, 1f),
             new Keyframe(1f, 0.18f));
 
+        // The same taper held open at the thin ends, so the dark edge doesn't pinch to nothing there.
+        var outlineWidth = new AnimationCurve(
+            new Keyframe(0f, 0.25f, 0f, 2.4f),
+            new Keyframe(0.62f, 1f),
+            new Keyframe(1f, 0.4f));
+
         for (int i = 0; i < PoolSize; i++)
         {
             var go = new GameObject("WindLine");
@@ -85,8 +98,29 @@ public class WindLines : MonoBehaviour
             lr.textureMode = LineTextureMode.Stretch;
             lr.alignment = LineAlignment.View;
             lr.enabled = false;
-            pool[i] = new Streak { line = lr };
+
+            var outlineGo = new GameObject("WindLineOutline");
+            outlineGo.transform.SetParent(transform, false);
+            var ol = outlineGo.AddComponent<LineRenderer>();
+            ol.useWorldSpace = true;
+            ol.positionCount = DrawPoints;
+            ol.numCapVertices = 2;
+            ol.numCornerVertices = 2;
+            ol.material = material;
+            ol.widthCurve = outlineWidth;
+            ol.sortingOrder = sortingOrder - 1;
+            ol.textureMode = LineTextureMode.Stretch;
+            ol.alignment = LineAlignment.View;
+            ol.enabled = false;
+
+            pool[i] = new Streak { line = lr, outline = ol };
         }
+    }
+
+    private static void SetEnabled(Streak s, bool on)
+    {
+        s.line.enabled = on;
+        s.outline.enabled = on;
     }
 
     /// <summary>A row of long, curled streaks across the view — the wind has turned.</summary>
@@ -146,7 +180,7 @@ public class WindLines : MonoBehaviour
             if (s.age >= s.life)
             {
                 s.alive = false;
-                s.line.enabled = false;
+                SetEnabled(s, false);
                 continue;
             }
 
@@ -181,8 +215,9 @@ public class WindLines : MonoBehaviour
         s.tailShare = isLong ? 0.5f : Random.Range(0.35f, 0.5f);
         s.drift = DriftAtFullGust * Random.Range(0.8f, 1.15f);
         s.line.widthMultiplier = MaxWidth * (isLong ? 1.15f : Random.Range(0.75f, 1f));
+        s.outline.widthMultiplier = s.line.widthMultiplier + 2f * EffectOutline.Pad;
         s.alive = true;
-        s.line.enabled = false;
+        SetEnabled(s, false);
     }
 
     /// <summary>
@@ -237,7 +272,7 @@ public class WindLines : MonoBehaviour
         float to = Mathf.Clamp(head, 0f, s.totalLength);
         if (to - from < 0.02f)
         {
-            s.line.enabled = false;
+            SetEnabled(s, false);
             return;
         }
 
@@ -260,7 +295,15 @@ public class WindLines : MonoBehaviour
         s.gradient.SetKeys(colorKeys, alphaKeys);
         s.line.colorGradient = s.gradient;
         s.line.SetPositions(s.draw);
-        s.line.enabled = true;
+
+        float edge = EffectOutline.Color.a / StreakColor.a; // outline alpha follows the fill's fade
+        outlineAlphaKeys[0] = new GradientAlphaKey(0f, 0f);
+        outlineAlphaKeys[1] = new GradientAlphaKey(Mathf.Clamp01(alpha * 0.85f * edge), 0.45f);
+        outlineAlphaKeys[2] = new GradientAlphaKey(Mathf.Clamp01(alpha * edge), 1f);
+        s.outlineGradient.SetKeys(outlineColorKeys, outlineAlphaKeys);
+        s.outline.colorGradient = s.outlineGradient;
+        s.outline.SetPositions(s.draw);
+        SetEnabled(s, true);
     }
 
     private void GetView(out Vector2 min, out Vector2 max)

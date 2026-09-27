@@ -468,6 +468,9 @@ public class StackManager : MonoBehaviour
     /// </summary>
     public IReadOnlyList<StackableObject> StackObjects => stackObjects;
 
+    /// <summary>True when <paramref name="obj"/> is currently part of the tower.</summary>
+    public bool IsInStack(StackableObject obj) => obj != null && stackObjects.Contains(obj);
+
     /// <summary>True when a Kukulkan shift has locked <paramref name="obj"/> in place.</summary>
     public bool IsStabilized(StackableObject obj) => obj != null && stabilizedBlocks.Contains(obj);
 

@@ -53,6 +53,7 @@ public class StackableObject : MonoBehaviour
     [SerializeField] private int goodScore = 50;
     [SerializeField] private int poorScore = 10;
     [SerializeField] private float rotationUnlockDelay = 0.15f; // Delay before unlocking rotation after landing (allows block to settle)
+    [SerializeField] private float slipWatchDuration = 2f; // How long after landing a stone that slides down beside the top stone ends the run
 
     // Components
     private Rigidbody2D rb;
@@ -192,7 +193,15 @@ public class StackableObject : MonoBehaviour
         if (!hasLanded)
         {
             // Check if we landed on another stackable object or the ground
-            if (collision.gameObject.CompareTag("Stackable") || collision.gameObject.CompareTag("Ground"))
+            if (collision.gameObject.CompareTag("Stackable"))
+            {
+                // Brushing a stone that is still falling isn't a landing - keep falling and
+                // land on whatever this stone comes to rest on.
+                var other = collision.gameObject.GetComponent<StackableObject>();
+                if (other != null && !other.HasLanded) return;
+                LandOnObject(collision);
+            }
+            else if (collision.gameObject.CompareTag("Ground"))
             {
                 LandOnObject(collision);
             }
@@ -225,10 +234,27 @@ public class StackableObject : MonoBehaviour
             transform.rotation = Quaternion.identity;
         }
 
+        // The stone this one has to end up sitting on. Captured before it joins the stack.
+        StackableObject topStone = stackManager != null ? stackManager.GetTopObject() : null;
+
         // Calculate landing accuracy based on how centered we are
         if (landedOnStackable)
         {
             StackableObject otherObject = collision.gameObject.GetComponent<StackableObject>();
+
+            // Coming down on a lower stone's exposed ledge, beside the top stone, isn't
+            // stacking - it's a miss, same as reaching the ground.
+            if (otherObject != null && topStone != null && otherObject != topStone
+                && stackManager.IsInStack(otherObject))
+            {
+                Debug.Log("Game Over: Stone landed beside the top stone instead of on it!");
+                if (gameManager != null)
+                {
+                    gameManager.GameOver("missed_stack");
+                    return;
+                }
+            }
+
             if (otherObject != null)
             {
                 CalculateLandingAccuracy(otherObject);
@@ -293,6 +319,13 @@ public class StackableObject : MonoBehaviour
         // Unlock rotation after a short delay - allows block to settle before it can tilt/fall
         // This maintains the danger element while ensuring accurate scoring
         StartCoroutine(UnlockRotationAfterDelay());
+
+        // A stone that clips the top stone's corner counts as landed on it, then can slide
+        // off onto the ledge below and rest level beside it. Watch it while it settles.
+        if (landedOnStackable && topStone != null)
+        {
+            StartCoroutine(WatchForSlipBeside(topStone));
+        }
 
         // Add this object to the stack
         if (stackManager == null)
@@ -579,6 +612,38 @@ public class StackableObject : MonoBehaviour
         if (rb != null && hasLanded)
         {
             rb.constraints = RigidbodyConstraints2D.None;
+        }
+    }
+
+    /// <summary>
+    /// Ends the run if, while settling, this stone drops to sit beside <paramref name="below"/>
+    /// rather than on it. Sitting on it keeps this stone's bottom near the top of
+    /// <paramref name="below"/>; beside it, the bottoms line up. Halfway up <paramref name="below"/>
+    /// splits the two with room for the tilt the stack allows.
+    /// </summary>
+    private IEnumerator WatchForSlipBeside(StackableObject below)
+    {
+        var wait = new WaitForFixedUpdate();
+        float watchUntil = Time.time + slipWatchDuration;
+
+        while (Time.time < watchUntil)
+        {
+            yield return wait;
+
+            var stackManager = DependencyRegistry.Find<StackManager>();
+            var gameManager = DependencyRegistry.Find<GameManager>();
+            if (stackManager == null || gameManager == null || gameManager.IsGameOver) yield break;
+
+            // Rewind took one of the pair off the tower; there's nothing left to judge.
+            if (below == null || !stackManager.IsInStack(this)
+                || !stackManager.IsInStack(below)) yield break;
+
+            if (col.bounds.min.y < below.Collider.bounds.center.y)
+            {
+                Debug.Log("Game Over: Stone slipped off and settled beside the top stone!");
+                gameManager.GameOver("missed_stack");
+                yield break;
+            }
         }
     }
 

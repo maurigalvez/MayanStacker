@@ -518,7 +518,7 @@
     },
     {
       "key": "remove_ads_chip",
-      "value": "No Ads"
+      "value": "REMOVE ADS"
     },
     {
       "key": "notif_lapse_body_site",
@@ -774,7 +774,7 @@
     },
     {
       "key": "edge_landed",
-      "value": "Serpent's Edge x{0}"
+      "value": "Serpent's Edge"
     },
     {
       "key": "edge_intro_title",
@@ -782,7 +782,7 @@
     },
     {
       "key": "edge_intro_body",
-      "value": "Release at the very end of the swing, as the gold rim flashes, for a x{0} Perfect. Too early is only a Good."
+      "value": "Release while the stone is over the gold rim and it flashes for a x{0} Perfect. Miss the rim and it is a normal drop."
     },
     {
       "key": "edge_intro_followup_title",
@@ -794,7 +794,7 @@
     },
     {
       "key": "edge_intro_early_title",
-      "value": "Too early!"
+      "value": "Missed the flash!"
     },
     {
       "key": "edge_intro_early_body",
@@ -842,9 +842,7 @@
     { "key": "result_tip_power", "value": "Perfect landings fill your power's meter. Save it for when the tower leans." },
     { "key": "result_tip_combo", "value": "Only Perfect landings keep your combo alive." },
     { "key": "result_tip_edge", "value": "Release as the Serpent's Edge rim flashes for a x3 Perfect." },
-    { "key": "edge_landed_bonus", "value": "Serpent's Edge x{0} · +{1}" },
     { "key": "edge_proj_miss", "value": "Miss" },
-    { "key": "combo_badge_caption", "value": "COMBO" },
     { "key": "result_edge_line", "value": "Serpent's Edge: {0} landed · +{1}" },
     { "key": "result_edge_line_broke", "value": "Serpent's Edge: {0} landed · +{1} · combos broken: {2}" },
     { "key": "result_tip_align", "value": "Line each stone up with the one below." },

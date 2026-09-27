@@ -515,7 +515,7 @@
     },
     {
       "key": "remove_ads_chip",
-      "value": "広告なし"
+      "value": "広告を削除"
     },
     {
       "key": "notif_lapse_body_site",
@@ -771,7 +771,7 @@
     },
     {
       "key": "edge_landed",
-      "value": "蛇の縁 x{0}"
+      "value": "蛇の縁"
     },
     {
       "key": "edge_intro_title",
@@ -779,7 +779,7 @@
     },
     {
       "key": "edge_intro_body",
-      "value": "振り子の端で金の縁が光った瞬間に落とすと、x{0}のパーフェクト。早すぎるとグッド止まり。"
+      "value": "石が金の縁の上で光っている間に落とすと、x{0}のパーフェクト。縁を外すと普通の落下。"
     },
     {
       "key": "edge_intro_followup_title",
@@ -791,7 +791,7 @@
     },
     {
       "key": "edge_intro_early_title",
-      "value": "早すぎ！"
+      "value": "光を逃した！"
     },
     {
       "key": "edge_intro_early_body",
@@ -839,9 +839,7 @@
     { "key": "result_tip_power", "value": "パーフェクトでパワーのメーターがたまる。塔が傾いたときのために取っておこう。" },
     { "key": "result_tip_combo", "value": "コンボを保てるのはパーフェクトな着地だけ。" },
     { "key": "result_tip_edge", "value": "蛇の縁が光った瞬間に落とすとx3のパーフェクト。" },
-    { "key": "edge_landed_bonus", "value": "蛇の縁 x{0} · +{1}" },
     { "key": "edge_proj_miss", "value": "落下" },
-    { "key": "combo_badge_caption", "value": "コンボ" },
     { "key": "result_edge_line", "value": "蛇の縁：{0}回成功 · +{1}" },
     { "key": "result_edge_line_broke", "value": "蛇の縁：{0}回成功 · +{1} · コンボ途切れ：{2}" },
     { "key": "result_tip_align", "value": "下の石にぴったり合わせよう。" },

@@ -11,7 +11,7 @@ using UnityEngine.UI;
 ///   • TamalStacker ▸ UI ▸ Create Remove Ads Nudge Prefab — generates
 ///     Assets/Resources/UI/RemoveAdsNudge.prefab, the post-ad strip on the result card
 ///     (<see cref="RemoveAdsNudgeView"/>): stone slab, icon on the left, one line of text.
-///   • TamalStacker ▸ Monetization ▸ Add Remove Ads Menu Chip — adds the "No Ads" chip
+///   • TamalStacker ▸ Monetization ▸ Add Remove Ads Menu Chip — adds the "REMOVE ADS" chip
 ///     (<see cref="RemoveAdsMenuChip"/>) to the Main Menu panel inside the Main Menu Canvas
 ///     prefab, top-right. It edits the prefab asset, not the scene, so it works with the
 ///     MainMenu scene open or closed.
@@ -175,7 +175,7 @@ public static class RemoveAdsPlacementsSetup
         var asset = AssetDatabase.LoadAssetAtPath<GameObject>(MainMenuPrefabPath);
         EditorGUIUtility.PingObject(asset);
         EditorUtility.DisplayDialog(title,
-            "Added the No Ads chip to the Main Menu panel in " + MainMenuPrefabPath + " (top-right, under the " +
+            "Added the REMOVE ADS chip to the Main Menu panel in " + MainMenuPrefabPath + " (top-right, under the " +
             "player strip).\n\nIt stays hidden in play until the FTUE ad grace period is over and Google Play has " +
             "returned a price, and disappears once Remove Ads is owned. Open the prefab to move it if it overlaps " +
             "anything.", "OK");
@@ -212,8 +212,8 @@ public static class RemoveAdsPlacementsSetup
         image.preserveAspect = true;
         image.raycastTarget = true;
 
-        // ── Label ── "No Ads", localized by LocalizedText.
-        var label = RunOverlayUI.CreateLabel("Label", chip, "No Ads", 30f, RunOverlayUI.Gold);
+        // ── Label ── "REMOVE ADS", localized by LocalizedText.
+        var label = RunOverlayUI.CreateLabel("Label", chip, "REMOVE ADS", 30f, RunOverlayUI.Gold);
         UIHouseStyle.ApplyLabel(label, UIHouseStyle.Title);
         label.enableAutoSizing = true;
         label.fontSizeMin = 20f;

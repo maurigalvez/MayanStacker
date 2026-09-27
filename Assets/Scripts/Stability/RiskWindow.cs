@@ -5,21 +5,23 @@ using UnityEngine.SceneManagement;
 /// <summary>
 /// The Serpent's Edge: a risk choice on every drop.
 ///
-/// Release the stone while it is near either end of Kukulkan's swing and it scores
+/// Release the stone over either edge band of the top stone - one band each side, a set
+/// accuracy off its centre, so it follows the tower wherever it drifts - and it scores
 /// <see cref="StabilitySettings.edgeScoreMultiplier"/> times its base points - but it adds
 /// <see cref="StabilitySettings.edgeStrain"/> tremor on top of whatever its landing earned, and
 /// forfeits a Perfect's relief.
 ///
-/// The edge is a timing test. Released in the sweet spot (the very end of the swing,
-/// <see cref="StabilitySettings.edgeSweetSpotThreshold"/>) the stone lands as a Perfect wherever
-/// it lands on the stone, so the combo grows and multiplies the x3. Released anywhere else in the
-/// window it scores its real off-centre landing - usually a Good, which breaks the combo. A
-/// careless edge tap is never a cheap high score, and Good-breaks-combo stays intact.
+/// The edge is a timing test. The band is narrow - from
+/// <see cref="StabilitySettings.edgeBandOuterAccuracy"/> to
+/// <see cref="StabilitySettings.edgeSweetSpotAccuracy"/> - and a stone released over it lands
+/// as a Perfect wherever it lands on the stone, so the combo grows and multiplies the x3.
+/// Released anywhere else it's an ordinary drop - no edge, no x3 - so the rim's number is
+/// exactly what an edge drop pays, never a fraction of it.
 ///
 /// What the player sees and hears:
-///  - golden strips on the top stone's rim where an edge drop would land, the live side lit
-///    while releasing counts and flashing during the sweet spot - on the tower, because that is
-///    where the player looks to aim. Each shows what a sweet-spot drop there would score;
+///  - golden strips on the top stone's rim exactly as wide as the band, flashing while
+///    releasing counts - on the tower, because that is where the player looks to aim. Each
+///    shows what an edge drop there scores;
 ///  - a rattle and a light haptic tick each time the stone swings into the window;
 ///  - a pulsing ghost segment on the Tremor meter showing what the drop will cost;
 ///  - a short callout and a meter pulse when an edge stone lands.
@@ -27,8 +29,8 @@ using UnityEngine.SceneManagement;
 /// The window stays shut during the tutorial run, while the temple trembles (that stone must
 /// be Perfect), below <see cref="StabilitySettings.edgeMinStackHeight"/>, and whenever the
 /// Tremor meter isn't running - the tremor is the price, so no meter means no window.
-/// Each side also stays shut (its strip hidden) while an edge drop there would land dead
-/// centre anyway - a tower built under the end of the swing gets no x3 from that end.
+/// Each side also stays shut (its strip hidden) while the swing can't carry the stone over its
+/// sweet spot - a tower drifted far to one side loses the far side until it drifts back.
 ///
 /// First time it opens for a player it runs a short, action-gated intro (FtueState tracks it).
 ///
@@ -65,7 +67,6 @@ public class RiskWindow : MonoBehaviour, IRunRewindable
     private Camera mainCamera;
 
     private bool wasOpen;
-    private bool wasSweet;
     private float lastCueTime = float.NegativeInfinity;
     private static AudioClip placeholderRattle;
 
@@ -82,8 +83,11 @@ public class RiskWindow : MonoBehaviour, IRunRewindable
     private StackableObject projectedStone;
     private readonly int[] projectionKey = { int.MinValue, int.MinValue };
 
-    // Per side (0 = left, 1 = right): would an edge drop there land off-centre? See IsSideRisky.
-    private readonly bool[] sideRisky = new bool[2];
+    // Per side (0 = left, 1 = right): can the swing reach that side's sweet spot? See IsSideReachable.
+    private readonly bool[] sideReachable = new bool[2];
+
+    // The side the stone is over right now (-1 left, 1 right), 0 while the window is shut.
+    private int openSide;
 
     // Run stats for the result card.
     private int pendingEdgeComboBefore;
@@ -215,34 +219,68 @@ public class RiskWindow : MonoBehaviour, IRunRewindable
             && objectSpawner.IsCurrentObjectArmed;
     }
 
-    private bool IsPhaseInWindow(float phase) => Mathf.Abs(phase) >= settings.edgePhaseThreshold;
+    // The band's accuracy cutoffs, kept in order so a mistuned asset can't invert the band or
+    // put the sweet spot outside it.
+    private float BandOuterAccuracy => settings.edgeBandOuterAccuracy;
+    private float SweetSpotAccuracy => Mathf.Max(settings.edgeSweetSpotAccuracy, BandOuterAccuracy);
 
-    private static int SideOf(float phase) => phase > 0f ? 1 : -1;
+    private static int Slot(int side) => side < 0 ? 0 : 1;
 
-    /// <summary>
-    /// A side only counts when an edge drop there would land off-centre - that's the risk the
-    /// x3 pays for. The window is fixed to the swing, not the tower, so a tower built under the
-    /// end of the swing would turn that side into a free x3 Perfect on the swing's slowest,
-    /// easiest moment. That side stays shut until the tower is back under the swing.
-    /// Judged from the whole landing band, so the side can't flicker open and shut mid-swing.
-    /// </summary>
-    private bool IsSideRisky(StackableObject stone, int side, float phase)
+    private StackableObject TopStone()
     {
         StackableObject top = stackManager != null ? stackManager.GetTopObject() : null;
-        if (stone == null || top == null || top.Collider == null) return false;
-
-        // Where the stone's centre would be with no swing (the drop is straight down).
-        float restX = stone.ColliderCenterX - spawnerHolder.GetSwingOffsetX(phase);
-        float inner = restX + side * spawnerHolder.GetSwingOffsetX(settings.edgePhaseThreshold);
-        float outer = restX + side * spawnerHolder.GetSwingOffsetX(1f);
-        float nearest = Mathf.Clamp(top.Collider.bounds.center.x, Mathf.Min(inner, outer), Mathf.Max(inner, outer));
-
-        return !stone.IsPerfectAccuracy(stone.AccuracyOn(top, nearest));
+        return top != null && top.Collider != null ? top : null;
     }
 
-    // Never looser than the window itself, so a mistuned asset can't make every edge drop sweet.
-    private bool IsPhaseInSweetSpot(float phase) =>
-        Mathf.Abs(phase) >= Mathf.Max(settings.edgeSweetSpotThreshold, settings.edgePhaseThreshold);
+    /// <summary>
+    /// Which side's band a stone centred at <paramref name="x"/> would land in (-1 left, 1
+    /// right, 0 neither). The whole band is the sweet spot - every edge drop pays the rim's
+    /// number - so <paramref name="sweet"/> is true whenever a side is returned. The band is
+    /// measured from the top stone, so it follows the tower wherever it drifts. The drop is
+    /// straight down, so the stone's x at release is its landing x. A landing that would be a
+    /// Perfect anyway never counts, whatever the asset's tuning.
+    /// </summary>
+    private int EdgeSideAt(StackableObject stone, StackableObject top, float x, out bool sweet)
+    {
+        sweet = false;
+        float accuracy = stone.AccuracyOn(top, x);
+        if (stone.IsPerfectAccuracy(accuracy)) return 0;
+        if (accuracy > SweetSpotAccuracy || accuracy < BandOuterAccuracy) return 0;
+
+        sweet = true;
+        return x >= top.Collider.bounds.center.x ? 1 : -1;
+    }
+
+    /// <summary>
+    /// World distance from the top stone's centre at which <paramref name="stone"/> lands with
+    /// <paramref name="accuracy"/>. Accuracy falls off linearly with distance, so one probe
+    /// gives the slope without duplicating StackableObject's width maths.
+    /// </summary>
+    private static float OffsetForAccuracy(StackableObject stone, StackableObject top, float accuracy)
+    {
+        const float probe = 0.5f;
+        float probeAccuracy = stone.AccuracyOn(top, top.Collider.bounds.center.x + probe);
+        float maxDistance = probeAccuracy < 1f ? probe / (1f - probeAccuracy) : probe;
+        return (1f - accuracy) * maxDistance;
+    }
+
+    /// <summary>
+    /// A side is only offered while the swing can carry the stone over its sweet spot. The
+    /// band follows the tower, but the swing doesn't, so a tower that drifts far enough
+    /// sideways puts one side out of reach - that side hides until the tower comes back.
+    /// </summary>
+    private bool IsSideReachable(StackableObject stone, StackableObject top, int side, float phase)
+    {
+        // Where the stone's centre would be with no swing, and how far the swing carries it.
+        float restX = stone.ColliderCenterX - spawnerHolder.GetSwingOffsetX(phase);
+        float reach = Mathf.Abs(spawnerHolder.GetSwingOffsetX(1f));
+
+        float topX = top.Collider.bounds.center.x;
+        float a = topX + side * OffsetForAccuracy(stone, top, SweetSpotAccuracy);
+        float b = topX + side * OffsetForAccuracy(stone, top, BandOuterAccuracy);
+
+        return Mathf.Max(a, b) >= restX - reach && Mathf.Min(a, b) <= restX + reach;
+    }
 
     private void Update()
     {
@@ -250,22 +288,24 @@ public class RiskWindow : MonoBehaviour, IRunRewindable
         float phase = spawnerHolder != null ? spawnerHolder.SwingPhase : 0f;
 
         StackableObject stone = IsAvailable ? HangingStone() : null;
-        sideRisky[0] = stone != null && IsSideRisky(stone, -1, phase);
-        sideRisky[1] = stone != null && IsSideRisky(stone, 1, phase);
+        StackableObject top = stone != null ? TopStone() : null;
+        sideReachable[0] = top != null && IsSideReachable(stone, top, -1, phase);
+        sideReachable[1] = top != null && IsSideReachable(stone, top, 1, phase);
 
-        IsOpen = IsAvailable && IsPhaseInWindow(phase) && sideRisky[SideOf(phase) < 0 ? 0 : 1];
-        IsSweet = IsOpen && IsPhaseInSweetSpot(phase);
+        bool sweet = false;
+        int side = top != null ? EdgeSideAt(stone, top, stone.ColliderCenterX, out sweet) : 0;
+        IsOpen = side != 0 && sideReachable[Slot(side)];
+        IsSweet = IsOpen && sweet;
+        openSide = IsOpen ? side : 0;
 
+        // The band is the sweet spot, so entering it is the timing cue: the rim flashes
+        // (UpdateUI) and the rattle and haptic tick fire together.
         if (IsOpen && !wasOpen) PlayEntryCue();
         wasOpen = IsOpen;
 
-        // The timing cue: the rim flashes (UpdateUI) and the phone ticks as the stone turns.
-        if (IsSweet && !wasSweet && settings.edgeSweetSpotHaptic) HapticFeedback.Trigger(HapticFeedback.HapticType.Light);
-        wasSweet = IsSweet;
-
         // Waits for a run whose lesson slot is still free; CanTeach is cheap enough per frame.
         // Not while both sides are shut - the lesson would point at rims that aren't there.
-        if (IsAvailable && (sideRisky[0] || sideRisky[1]) &&
+        if (IsAvailable && (sideReachable[0] || sideReachable[1]) &&
             !introActive && !FtueState.HasSeenEdgeIntro && GuideLane.CanTeach(EdgeLessonId))
         {
             BeginIntro();
@@ -274,7 +314,7 @@ public class RiskWindow : MonoBehaviour, IRunRewindable
         TowerStability stability = TowerStability.Instance;
         if (stability != null) stability.SetEdgePreview(IsOpen ? settings.edgeStrain : 0f);
 
-        UpdateUI(phase);
+        UpdateUI(stone, top);
     }
 
     /// <summary>
@@ -340,9 +380,12 @@ public class RiskWindow : MonoBehaviour, IRunRewindable
 
         float phase = spawnerHolder.SwingPhase;
         var block = dropped.GetComponent<StackableObject>();
-        bool edge = block != null && ComputeAvailable() && IsPhaseInWindow(phase)
-                    && IsSideRisky(block, SideOf(phase), phase);
-        bool sweet = edge && IsPhaseInSweetSpot(phase);
+        StackableObject top = block != null && ComputeAvailable() ? TopStone() : null;
+
+        bool sweet = false;
+        int side = top != null ? EdgeSideAt(block, top, block.ColliderCenterX, out sweet) : 0;
+        bool edge = side != 0 && IsSideReachable(block, top, side, phase);
+        sweet &= edge;
 
         if (introActive)
         {
@@ -361,7 +404,7 @@ public class RiskWindow : MonoBehaviour, IRunRewindable
         var data = RunEventData();
         data["tremor_before"] = TowerStability.Instance != null ? TowerStability.Instance.Tremor : 0f;
         data["sweet_spot"] = sweet;
-        data["phase"] = Mathf.Abs(phase);
+        data["release_accuracy"] = block.AccuracyOn(top, block.ColliderCenterX);
         GameAnalytics.Track("edge_drop", data);
     }
 
@@ -447,14 +490,14 @@ public class RiskWindow : MonoBehaviour, IRunRewindable
         IsOpen = false;
         IsSweet = false;
         wasOpen = false;
-        wasSweet = false;
 
         RunEdgeLanded = 0;
         RunEdgeBonusPoints = 0;
         RunEdgeCombosBroken = 0;
         pendingEdgeComboBefore = 0;
         projectionKey[0] = projectionKey[1] = int.MinValue;
-        sideRisky[0] = sideRisky[1] = false;
+        sideReachable[0] = sideReachable[1] = false;
+        openSide = 0;
 
         if (TowerStability.Instance != null) TowerStability.Instance.SetEdgePreview(0f);
         if (uiRoot != null) uiRoot.SetActive(false);
@@ -539,7 +582,7 @@ public class RiskWindow : MonoBehaviour, IRunRewindable
         uiRoot.SetActive(false);
     }
 
-    private void UpdateUI(float phase)
+    private void UpdateUI(StackableObject stone, StackableObject top)
     {
         if (uiRoot == null || view == null) return;
 
@@ -552,46 +595,36 @@ public class RiskWindow : MonoBehaviour, IRunRewindable
             if (mainCamera == null) return;
         }
 
-        // The strips sit on the top stone's rim, directly under where an edge drop lands (the
-        // drop is straight down), so they show the real landing spot - even when that is
-        // past the edge of a drifted tower.
-        StackableObject top = stackManager.GetTopObject();
-        if (top == null)
+        // The strips sit on the top stone's rim over each side's band, exactly as wide as it,
+        // so they move with the tower and never promise the value outside it.
+        if (stone == null || top == null)
         {
             uiRoot.SetActive(false);
             return;
         }
 
-        Vector3 basePosition = spawnerHolder.SpawnerBasePosition;
-        basePosition.y = (top.Collider != null ? top.Collider.bounds.max.y : top.transform.position.y)
-                         + settings.edgeZoneSurfaceOffset;
-
-        float inner = spawnerHolder.GetSwingOffsetX(settings.edgePhaseThreshold);
-        float outer = spawnerHolder.GetSwingOffsetX(1f);
-        int openSide = IsOpen ? (phase > 0f ? 1 : -1) : 0;
+        float topX = top.Collider.bounds.center.x;
+        float rimY = top.Collider.bounds.max.y + settings.edgeZoneSurfaceOffset;
+        float innerOffset = OffsetForAccuracy(stone, top, SweetSpotAccuracy);
+        float outerOffset = OffsetForAccuracy(stone, top, BandOuterAccuracy);
+        float bandOffset = (innerOffset + outerOffset) * 0.5f;
+        float halfWidth = Mathf.Abs(outerOffset - innerOffset) * 0.5f;
         float emphasis = introActive ? 1f : 0f;
-
-        StackableObject stone = HangingStone();
-        // Where the stone's centre would be with no swing, so each side's landing x is exact.
-        float stoneRestX = stone != null ? stone.ColliderCenterX - spawnerHolder.GetSwingOffsetX(phase) : 0f;
-        int safePoints = stone != null ? gameManager.PreviewPoints(stone.PreviewBaseScore(1f, 1f), 1f) : 0;
+        int safePoints = gameManager.PreviewPoints(stone.PreviewBaseScore(1f, 1f), 1f);
 
         for (int side = -1; side <= 1; side += 2)
         {
-            bool risky = sideRisky[side < 0 ? 0 : 1];
-            view.SetZoneVisible(side, risky);
-            if (!risky) continue;
+            bool reachable = sideReachable[Slot(side)];
+            view.SetZoneVisible(side, reachable);
+            if (!reachable) continue;
 
-            // The true landing band is only ~0.12 units wide - too thin to read or to carry art -
-            // so the strip is a fixed world width centred on it.
-            float landing = side * (inner + outer) * 0.5f;
-            float halfWidth = settings.edgeZoneWorldWidth * 0.5f;
-            Vector2 a = WorldToCanvas(basePosition + new Vector3(landing - halfWidth, 0f, 0f));
-            Vector2 b = WorldToCanvas(basePosition + new Vector3(landing + halfWidth, 0f, 0f));
+            float landing = topX + side * bandOffset;
+            Vector2 a = WorldToCanvas(new Vector3(landing - halfWidth, rimY, top.transform.position.z));
+            Vector2 b = WorldToCanvas(new Vector3(landing + halfWidth, rimY, top.transform.position.z));
 
-            if (stone != null) UpdateProjection(side, stone, top, stoneRestX + landing, safePoints);
+            UpdateProjection(side, stone, top, landing, safePoints);
 
-            float width = Mathf.Max(Mathf.Abs(b.x - a.x), settings.edgeZoneMinWidth);
+            float width = Mathf.Abs(b.x - a.x);
             view.SetZone(side, (a + b) * 0.5f, width, settings.edgeZoneHeight, openSide == side,
                          openSide == side && IsSweet, emphasis);
         }

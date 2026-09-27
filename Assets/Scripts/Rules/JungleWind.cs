@@ -17,7 +17,7 @@ public class JungleWind : TempleRuleBehaviour
     private const float LeafSize = 0.45f;
     private const float LeafSpeedAtFullGust = 7f;
     private const int LeafSortingOrder = 12; // in front of the stones, behind the UI
-    private const int LineSortingOrder = 11; // just under the leaves
+    private const int LineSortingOrder = 10; // under the leaves and their outlines (11)
 
     private static AudioClip placeholderGust;
 

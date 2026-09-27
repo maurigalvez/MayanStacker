@@ -87,6 +87,7 @@ public class PowerLoadoutScreen : MonoBehaviour
 
         view.Populate(defs, OnCardClicked, OnPlayClicked, OnBackClicked);
         Select(selected);
+        view.ScrollTo(selected);
         UIPopup.PopIn(view.PopupTarget);
 
         GameAnalytics.Track("power_loadout_shown", new Dictionary<string, object>

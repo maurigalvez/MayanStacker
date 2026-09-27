@@ -2,7 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 
 /// <summary>
-/// The small "No Ads" chip on the main menu: the always-findable way into the Remove Ads
+/// The small "REMOVE ADS" chip on the main menu: the always-findable way into the Remove Ads
 /// offer, next to the louder moment after an ad (<see cref="RemoveAdsNudgeView"/>). Tapping it
 /// opens the same offer card as Settings.
 ///

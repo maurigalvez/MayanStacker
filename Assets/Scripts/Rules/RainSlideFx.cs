@@ -33,6 +33,7 @@ public class RainSlideFx : MonoBehaviour
     private struct Droplet
     {
         public SpriteRenderer sr;
+        public SpriteRenderer outline;
         public Vector2 velocity;
         public float age;
     }
@@ -44,6 +45,7 @@ public class RainSlideFx : MonoBehaviour
     private float sheenAge = float.MaxValue;
 
     private SpriteRenderer trail;
+    private SpriteRenderer trailOutline;
     private float trailAge = float.MaxValue;
     private float trailStartX, trailY, trailOffset, trailGrowSeconds;
 
@@ -52,10 +54,11 @@ public class RainSlideFx : MonoBehaviour
         for (int i = 0; i < DropletCount; i++)
         {
             var sr = CreateRenderer("Droplet", streak, transform);
-            droplets.Add(new Droplet { sr = sr, age = float.MaxValue });
+            droplets.Add(new Droplet { sr = sr, outline = EffectOutline.AddBehind(sr), age = float.MaxValue });
         }
 
         trail = CreateRenderer("SkidMark", streak, transform);
+        trailOutline = EffectOutline.AddBehind(trail);
 
         sheen = CreateRenderer("WetSheen", null, transform);
     }
@@ -97,7 +100,7 @@ public class RainSlideFx : MonoBehaviour
         trailOffset = offsetX + dir * b.extents.x * 0.6f;
         trailGrowSeconds = Mathf.Max(0.05f, seconds);
         trail.sortingLayerID = layer;
-        trail.sortingOrder = order + 2;
+        trail.sortingOrder = order + 3; // its outline takes order + 2
         trail.transform.rotation = Quaternion.Euler(0f, 0f, 90f);
         trail.enabled = true;
         trailAge = 0f;
@@ -115,7 +118,7 @@ public class RainSlideFx : MonoBehaviour
             float angle = Mathf.Lerp(20f, 70f, Mathf.Repeat(t * 3.7f, 1f)) * Mathf.Deg2Rad;
             float side = back ? -dir * 0.6f : dir;
             var v = new Vector2(Mathf.Cos(angle) * speed * side, Mathf.Sin(angle) * speed);
-            SpawnDroplet(new Vector2(x, seamY), v, layer, order + 3);
+            SpawnDroplet(new Vector2(x, seamY), v, layer, order + 5); // outlines at order + 4
         }
     }
 
@@ -127,10 +130,12 @@ public class RainSlideFx : MonoBehaviour
             Droplet d = droplets[i];
             d.age = float.MaxValue;
             d.sr.enabled = false;
+            d.outline.enabled = false;
             droplets[i] = d;
         }
         trailAge = float.MaxValue;
         trail.enabled = false;
+        trailOutline.enabled = false;
         sheenAge = float.MaxValue;
         ParkSheen();
     }
@@ -148,6 +153,7 @@ public class RainSlideFx : MonoBehaviour
             if (d.age >= DropletLife)
             {
                 d.sr.enabled = false;
+                d.outline.enabled = false;
                 droplets[i] = d;
                 continue;
             }
@@ -159,6 +165,7 @@ public class RainSlideFx : MonoBehaviour
             Color c = DropletColor;
             c.a *= 1f - d.age / DropletLife;
             d.sr.color = c;
+            EffectOutline.Sync(d.sr, d.outline, 1f - d.age / DropletLife);
             droplets[i] = d;
         }
 
@@ -170,6 +177,7 @@ public class RainSlideFx : MonoBehaviour
         else if (trail.enabled)
         {
             trail.enabled = false;
+            trailOutline.enabled = false;
         }
 
         if (sheenAge < SheenSeconds && sheen != null)
@@ -201,6 +209,7 @@ public class RainSlideFx : MonoBehaviour
         Color c = TrailColor;
         c.a *= fade;
         trail.color = c;
+        EffectOutline.Sync(trail, trailOutline, fade);
     }
 
     private void SpawnDroplet(Vector2 at, Vector2 velocity, int layer, int order)
@@ -217,6 +226,7 @@ public class RainSlideFx : MonoBehaviour
         d.sr.transform.position = new Vector3(at.x, at.y, 0f);
         d.sr.transform.localScale = new Vector3(DropletSize.x / StreakWidth(d.sr.sprite), DropletSize.y / StreakHeight(d.sr.sprite), 1f);
         d.sr.enabled = true;
+        EffectOutline.Sync(d.sr, d.outline, 1f);
         droplets[index] = d;
     }
 

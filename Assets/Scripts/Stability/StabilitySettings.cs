@@ -79,21 +79,25 @@ public class StabilitySettings : ScriptableObject
              "paid for in tremor. Needs the tremor meter, so it is off whenever stability is.")]
     public bool enableEdge = true;
 
-    [Tooltip("How far out the swing must be (0 centre, 1 end) for a drop to count. 0.92 is " +
-             "roughly the outer quarter of each swing's time.")]
-    [Range(0.5f, 0.99f)]
-    public float edgePhaseThreshold = 0.92f;
+    [Tooltip("The band's outer end: landings less accurate than this are past the edge and " +
+             "don't count (1 dead centre, 0 just off the stone). Accuracy scales with the " +
+             "stones' widths, so the band sits the same way on every stone. 0.675 is 1.3 units " +
+             "off-centre for two 4-wide stones - kept inside the base swing's reach (~1.55) so " +
+             "a slightly drifted tower still reaches both sides.")]
+    [Range(0.05f, 0.85f)]
+    public float edgeBandOuterAccuracy = 0.675f;
+
+    [Tooltip("The band's inner end - the whole band is the sweet spot. A drop that would land " +
+             "between the outer accuracy and this lands as a Perfect (combo grows and applies) " +
+             "and pays exactly the rim's number; anywhere else is an ordinary drop with no x3. " +
+             "0.75 is 1.0 units off-centre for two 4-wide stones. Lower it towards the outer " +
+             "accuracy to make the timing harder.")]
+    [Range(0.05f, 0.89f)]
+    public float edgeSweetSpotAccuracy = 0.75f;
 
     [Tooltip("Base-score multiplier for a stone released in the window. Stacks with combo, " +
              "block variant, boon and modifier multipliers.")]
     public float edgeScoreMultiplier = 3f;
-
-    [Tooltip("The sweet spot: an edge drop released at least this far out lands as a Perfect " +
-             "(combo grows and applies) wherever on the stack it lands. The rest of the window " +
-             "scores by the real landing, so a sloppy edge tap is a Good and breaks the combo. " +
-             "0.98 is about half the window's time; raise it to make the timing harder.")]
-    [Range(0.9f, 0.999f)]
-    public float edgeSweetSpotThreshold = 0.98f;
 
     [Tooltip("Tremor added by an edge landing on top of its accuracy tier. A Perfect edge " +
              "landing gets no Perfect relief - the risk is never free.")]
@@ -126,23 +130,15 @@ public class StabilitySettings : ScriptableObject
              "doesn't turn it into a buzz.")]
     public float edgeCueCooldown = 0.5f;
 
-    [Tooltip("Light haptic tick the moment the stone reaches the sweet spot - the timing " +
-             "cue, alongside the rim flash.")]
-    public bool edgeSweetSpotHaptic = true;
-
     [Header("Serpent's Edge UI (1080x1920 reference)")]
     [Tooltip("World-units offset of the edge strips from the top stone's upper surface - the " +
              "player watches the tower while aiming, so the cue sits on its rim.")]
     public float edgeZoneSurfaceOffset = 0f;
 
-    [Tooltip("Width of each strip in world units, centred on where an edge drop lands. " +
-             "Stones are 4 wide, so 1.2 covers about the outer third of the rim.")]
-    public float edgeZoneWorldWidth = 1.2f;
-
-    [Tooltip("Strip height when it has no sprite. With a sprite the height follows the art's " +
-             "proportions instead.")]
+    [Tooltip("Strip height. Each strip is exactly as wide as the edge band, so art is " +
+             "stretched to this height rather than kept at its own proportions, which would " +
+             "make it a hairline on a band only a few tenths of a unit wide.")]
     public float edgeZoneHeight = 22f;
-    public float edgeZoneMinWidth = 60f;
     public int edgeCanvasSortingOrder = 2990;
 
     [Header("Meter UI (1080x1920 reference)")]

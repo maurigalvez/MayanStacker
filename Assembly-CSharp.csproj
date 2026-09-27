@@ -91,6 +91,7 @@
     <Compile Include="Assets\Scripts\ObjectSpawnerAnimator.cs" />
     <Compile Include="Assets\GooglePlayPlugins\com.google.play.appupdate\Samples\AppUpdateDemo\Scripts\UpdateDownloader.cs" />
     <Compile Include="Assets\Scripts\ThemeMainMenuBackground.cs" />
+    <Compile Include="Assets\Scripts\Rules\EffectOutline.cs" />
     <Compile Include="Assets\Scripts\UIManager.cs" />
     <Compile Include="Assets\Scripts\Achievements\AchievementDefinition.cs" />
     <Compile Include="Assets\Scripts\Rules\Eclipse.cs" />

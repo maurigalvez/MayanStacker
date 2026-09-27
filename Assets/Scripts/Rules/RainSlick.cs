@@ -13,7 +13,7 @@ public class RainSlick : TempleRuleBehaviour
     private const int StreakCount = 40;
     private const float StreakLength = 0.7f;
     private const int StreakSortingOrder = 12;
-    private static readonly Color StreakColor = new Color(0.78f, 0.86f, 0.9f, 0.45f);
+    private static readonly Color StreakColor = new Color(0.78f, 0.86f, 0.9f, 0.8f); // near-opaque over its EffectOutline, so the middle stays pale
     private const float MinSlide = 0.02f;
 
     public override LevelRule Rule => LevelRule.RainSlick;

@@ -10,6 +10,7 @@ using UnityEngine;
 public class AmbientSpriteField : MonoBehaviour
 {
     private SpriteRenderer[] items;
+    private SpriteRenderer[] outlines; // dark edge behind each item, see EffectOutline
     private Vector2[] offsets;   // per-item speed jitter (x) and spin (y)
     private float[] phases;
     private Camera cam;
@@ -33,6 +34,7 @@ public class AmbientSpriteField : MonoBehaviour
         cam = Camera.main;
         tint = color;
         items = new SpriteRenderer[count];
+        outlines = new SpriteRenderer[count];
         offsets = new Vector2[count];
         phases = new float[count];
 
@@ -50,6 +52,7 @@ public class AmbientSpriteField : MonoBehaviour
             go.transform.localScale = new Vector3(s, s, 1f);
 
             items[i] = sr;
+            outlines[i] = EffectOutline.AddBehind(sr);
             offsets[i] = new Vector2(Random.Range(0.75f, 1.25f), Random.Range(-240f, 240f));
             phases[i] = Random.value * 10f;
         }
@@ -128,6 +131,8 @@ public class AmbientSpriteField : MonoBehaviour
             float share = (i + 1f) / items.Length;
             float a = Mathf.Clamp01((alpha - share) * items.Length + 1f);
             items[i].color = new Color(tint.r, tint.g, tint.b, tint.a * a);
+            Color edge = EffectOutline.Color;
+            outlines[i].color = new Color(edge.r, edge.g, edge.b, edge.a * a);
         }
     }
 

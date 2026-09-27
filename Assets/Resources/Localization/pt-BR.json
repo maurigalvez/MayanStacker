@@ -521,7 +521,7 @@
     },
     {
       "key": "remove_ads_chip",
-      "value": "Sem anúncios"
+      "value": "REMOVER ANÚNCIOS"
     },
     {
       "key": "notif_lapse_body_site",
@@ -777,7 +777,7 @@
     },
     {
       "key": "edge_landed",
-      "value": "Fio da Serpente x{0}"
+      "value": "Fio da Serpente"
     },
     {
       "key": "edge_intro_title",
@@ -785,7 +785,7 @@
     },
     {
       "key": "edge_intro_body",
-      "value": "Solte bem no fim do balanço, quando a borda dourada piscar, para um PERFEITO x{0}. Cedo demais é só BOM."
+      "value": "Solte enquanto a pedra estiver sobre a borda dourada e ela piscar para um PERFEITO x{0}. Fora da borda é uma queda normal."
     },
     {
       "key": "edge_intro_followup_title",
@@ -797,7 +797,7 @@
     },
     {
       "key": "edge_intro_early_title",
-      "value": "Cedo demais!"
+      "value": "Fora do brilho!"
     },
     {
       "key": "edge_intro_early_body",
@@ -846,9 +846,7 @@
     { "key": "result_tip_power", "value": "Perfeitos enchem o medidor do seu poder. Guarde-o para quando a torre se inclinar." },
     { "key": "result_tip_combo", "value": "Só pousos perfeitos mantêm seu combo." },
     { "key": "result_tip_edge", "value": "Solte quando a borda da Serpente piscar para um PERFEITO x3." },
-    { "key": "edge_landed_bonus", "value": "Fio da Serpente x{0} · +{1}" },
     { "key": "edge_proj_miss", "value": "Erro" },
-    { "key": "combo_badge_caption", "value": "COMBO" },
     { "key": "result_edge_line", "value": "Fio da Serpente: {0} acertos · +{1}" },
     { "key": "result_edge_line_one", "value": "Fio da Serpente: {0} acerto · +{1}" },
     { "key": "result_edge_line_broke", "value": "Fio da Serpente: {0} acertos · +{1} · combos quebrados: {2}" },

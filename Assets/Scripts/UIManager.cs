@@ -109,12 +109,9 @@ public class UIManager : MonoBehaviour
 
     [Header("Combo UI")]
     [SerializeField] private GameObject comboDisplay;
+    [Tooltip("Legacy \"xN\" badge text, kept only so it stays hidden: the combo HUD is the fill " +
+             "bar alone, and the multiplier is already in the points popup's total.")]
     [SerializeField] private TextMeshProUGUI multiplierText;
-    [Tooltip("Small word under the multiplier (\"COMBO\") so the badge says what the xN is. " +
-             "Built under the multiplier text at runtime when left empty.")]
-    [SerializeField] private TextMeshProUGUI comboCaptionText;
-    [Tooltip("Caption size as a fraction of the multiplier text's font size.")]
-    [SerializeField] private float comboCaptionSizeRatio = 0.34f;
     [SerializeField] private Image comboTimerBar; // Circular radial fill timer
 
     [Header("Kukulkan's Shift UI")]
@@ -180,15 +177,6 @@ public class UIManager : MonoBehaviour
     [SerializeField] private Color poorAccuracyColor = Color.red;
 
     [Header("Combo Settings")]
-    [SerializeField]
-    private Color[] comboMultiplierColors = new Color[]
-    {
-        Color.white,                           // 1x - no combo
-        new Color(0.5f, 1f, 0.5f),            // 2x - light green
-        new Color(0f, 1f, 0f),                // 3x - green
-        new Color(1f, 0.84f, 0f),             // 4x - gold
-        new Color(1f, 0.5f, 0f)               // 5x - orange
-    };
     [SerializeField] private float comboScalePulse = 1.3f;
     [SerializeField] private float comboScalePulseDuration = 0.2f;
     [SerializeField] private float comboPopInOvershoot = 1.5f;
@@ -1580,12 +1568,9 @@ public class UIManager : MonoBehaviour
 
         if (edgeMultiplier > 0f)
         {
-            // Name what the edge itself added, so the player can weigh it against a safe Perfect.
-            string multiplierText = edgeMultiplier.ToString("0.#", System.Globalization.CultureInfo.InvariantCulture);
-            int edgeBonus = RiskWindow.EdgeBonus(points, edgeMultiplier);
-            string edgeLine = edgeBonus > 0
-                ? LocalizationManager.Get("edge_landed_bonus", multiplierText, edgeBonus)
-                : LocalizationManager.Get("edge_landed", multiplierText);
+            // Just the name: the points popup already shows exactly what the rim promised, so a
+            // multiplier or partial bonus here would only read as a second, different number.
+            string edgeLine = LocalizationManager.Get("edge_landed");
             landingAccuracyText.text += "\n<color=#" + ColorUtility.ToHtmlStringRGB(RunOverlayUI.Gold) + ">" + edgeLine + "</color>";
         }
 
@@ -1866,28 +1851,8 @@ public class UIManager : MonoBehaviour
             comboDisplay.SetActive(false);
         }
 
-        EnsureComboCaption();
-    }
-
-    /// <summary>
-    /// The badge's multiplier alone ("x5") doesn't say what it multiplies, so a small caption
-    /// sits under it. Built as a child of the multiplier text so it pulses and hides with it.
-    /// </summary>
-    private void EnsureComboCaption()
-    {
-        if (comboCaptionText != null || multiplierText == null) return;
-
-        comboCaptionText = RunOverlayUI.CreateLabel("ComboCaption", multiplierText.transform, "",
-            Mathf.Max(12f, multiplierText.fontSize * comboCaptionSizeRatio), multiplierText.color);
-        comboCaptionText.font = multiplierText.font;
-        comboCaptionText.textWrappingMode = TextWrappingModes.NoWrap;
-        comboCaptionText.overflowMode = TextOverflowModes.Overflow;
-
-        RectTransform rt = comboCaptionText.rectTransform;
-        rt.anchorMin = rt.anchorMax = new Vector2(0.5f, 0f);
-        rt.pivot = new Vector2(0.5f, 1f);
-        rt.anchoredPosition = Vector2.zero;
-        rt.sizeDelta = new Vector2(multiplierText.rectTransform.rect.width, comboCaptionText.fontSize * 1.2f);
+        if (multiplierText != null)
+            multiplierText.gameObject.SetActive(false);
     }
 
     /// <summary>
@@ -1916,32 +1881,10 @@ public class UIManager : MonoBehaviour
         }
         bool justAppeared = shouldShow && !wasShowing;
 
-        // Update multiplier text with color coding (only show when multiplier > 1)
-        if (multiplierText != null && multiplier > 1f)
-        {
-            // Format multiplier: show one decimal place if needed, otherwise show as integer
-            // "x5" (not "5x") so every multiplier in the game reads the same way: the rim's "x3",
-            // "Breaks x5" and this badge.
-            string multiplierDisplay = (multiplier % 1 == 0) ? $"x{multiplier:F0}" : $"x{multiplier:F1}";
-            multiplierText.text = multiplierDisplay;
-
-            // Color code based on multiplier level (use floor for color index)
-            int colorIndex = Mathf.Clamp(Mathf.FloorToInt(multiplier) - 1, 0, comboMultiplierColors.Length - 1);
-            multiplierText.color = comboMultiplierColors[colorIndex];
-
-            EnsureComboCaption();
-            if (comboCaptionText != null)
-            {
-                comboCaptionText.text = LocalizationManager.Get("combo_badge_caption");
-                comboCaptionText.color = multiplierText.color;
-            }
-
-            multiplierText.gameObject.SetActive(true);
-        }
-        else if (multiplierText != null)
-        {
+        // No "xN" label on the HUD: players shouldn't have to read a multiplier mid-run. The
+        // fill bar alone says a combo is alive; the multiplier is already in the popup's total.
+        if (multiplierText != null)
             multiplierText.gameObject.SetActive(false);
-        }
 
         // Trigger pulse animation when combo increases (only when multiplier > 1)
         if (combo > 0 && multiplier > 1f)

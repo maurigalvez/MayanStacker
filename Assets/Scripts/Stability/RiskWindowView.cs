@@ -182,10 +182,11 @@ public class RiskWindowView : MonoBehaviour
         Image image = side < 0 ? leftImage : rightImage;
         TextMeshProUGUI label = side < 0 ? leftLabel : rightLabel;
 
-        // Art keeps its own proportions and colours; the plain placeholder bar is tinted gold.
+        // Art keeps its own colours; the plain placeholder bar is tinted gold. Both are exactly
+        // as wide as the edge band - the strip must never promise its value past the band - so
+        // art is stretched to the given height rather than keeping its proportions.
         Sprite sprite = image != null ? image.sprite : null;
         bool hasArt = sprite != null && sprite.rect.width > 0f;
-        if (hasArt) height = width * sprite.rect.height / sprite.rect.width;
 
         zone.anchorMin = zone.anchorMax = new Vector2(0.5f, 0.5f);
         zone.pivot = new Vector2(0.5f, 0.5f);
@@ -204,12 +205,12 @@ public class RiskWindowView : MonoBehaviour
         // The sweet spot is a hard flash rather than a blend: it lasts a fraction of a second
         // and is the moment to tap, so it must read instantly. No breathe, which would blur it.
         float grow = sweet ? sweetScale : Mathf.Lerp(1f, activeScale, k);
-        float zoneScale = 1f;
+        // Growth and the breathe are vertical only, so the strip's width stays the band's.
+        float zoneScale = grow;
         if (hasArt)
         {
-            // Uniform scale so the carving doesn't stretch, plus a soft breathe while live.
             zoneScale = active && !sweet ? grow * (1f + artActivePulse * Mathf.Sin(Time.unscaledTime * artActivePulseSpeed)) : grow;
-            zone.localScale = new Vector3(zoneScale, zoneScale, 1f);
+            zone.localScale = new Vector3(1f, zoneScale, 1f);
             image.color = (sweet ? sweetColor : Color.Lerp(artIdleColor, artActiveColor, k)) * zoneTint;
         }
         else
@@ -261,7 +262,7 @@ public class RiskWindowView : MonoBehaviour
                 labelScale = waitLabelScale;
             }
             // The label is a child of the zone: divide out the zone's scale so only labelScale applies.
-            label.rectTransform.localScale = Vector3.one * (labelScale / zoneScale);
+            label.rectTransform.localScale = new Vector3(labelScale, labelScale / zoneScale, 1f);
         }
     }
 
