@@ -50,30 +50,31 @@
     <Analyzer Include="D:\Repositories\TamalStacker\Library\PackageCache\com.unity.pipeline@62c08c808737\Runtime\Analyzers\IlInterpreterAnalyzer.dll" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Assets\Scripts\Editor\CJKFontFallbackSetup.cs" />
-    <Compile Include="Assets\Scripts\Editor\DailyChallengeUISetup.cs" />
-    <Compile Include="Assets\Scripts\Editor\RunBannerPrefabSetup.cs" />
-    <Compile Include="Assets\Scripts\Editor\UIHouseStyle.cs" />
-    <Compile Include="Assets\Scripts\Editor\SettingsLayoutSetup.cs" />
-    <Compile Include="Assets\Scripts\Editor\RemoveAdsSettingsSetup.cs" />
-    <Compile Include="Assets\Scripts\Editor\QuitConfirmPrefabSetup.cs" />
-    <Compile Include="Assets\Scripts\Editor\PowersSetup.cs" />
-    <Compile Include="Assets\Scripts\Editor\UnityPurchasingDefine.cs" />
-    <Compile Include="Assets\Scripts\Editor\LocaleFontSetup.cs" />
-    <Compile Include="Assets\Scripts\Editor\ReviewPromptPrefabSetup.cs" />
-    <Compile Include="Assets\Scripts\Editor\TowerStabilityUISetup.cs" />
     <Compile Include="Assets\Scripts\Editor\LanguageSelectPrefabSetup.cs" />
+    <Compile Include="Assets\Scripts\Editor\CJKFontFallbackSetup.cs" />
     <Compile Include="Assets\Scripts\Editor\RemoveAdsOfferPrefabSetup.cs" />
     <Compile Include="Assets\Scripts\Editor\PlayerIdentityUISetup.cs" />
+    <Compile Include="Assets\Scripts\Editor\DailyChallengeUISetup.cs" />
+    <Compile Include="Assets\Scripts\Editor\RunBannerPrefabSetup.cs" />
     <Compile Include="Assets\Scripts\Editor\BoonUISetup.cs" />
     <Compile Include="Assets\Scripts\Editor\GuideLanePrefabSetup.cs" />
     <Compile Include="Assets\Scripts\Editor\FtueTutorialPrefabSetup.cs" />
     <Compile Include="Assets\Scripts\Editor\R8OptimizeGradle.cs" />
     <Compile Include="Assets\Scripts\Editor\AppUpdatePromptPrefabSetup.cs" />
+    <Compile Include="Assets\Scripts\Editor\UIHouseStyle.cs" />
+    <Compile Include="Assets\Scripts\Editor\SettingsLayoutSetup.cs" />
+    <Compile Include="Assets\Scripts\Editor\RemoveAdsSettingsSetup.cs" />
     <Compile Include="Assets\Scripts\Editor\GameOverUISetup.cs" />
+    <Compile Include="Assets\Scripts\Editor\QuitConfirmPrefabSetup.cs" />
+    <Compile Include="Assets\Scripts\Editor\PowersSetup.cs" />
+    <Compile Include="Assets\Scripts\Editor\UnityPurchasingDefine.cs" />
+    <Compile Include="Assets\Scripts\Editor\LocaleFontSetup.cs" />
+    <Compile Include="Assets\Scripts\Editor\ReviewPromptPrefabSetup.cs" />
     <Compile Include="Assets\Scripts\Editor\PlayAppUpdateDefine.cs" />
     <Compile Include="Assets\Scripts\Editor\RemoveAdsPlacementsSetup.cs" />
+    <Compile Include="Assets\Scripts\Editor\LevelRegressionCli.cs" />
     <Compile Include="Assets\Scripts\Editor\NotificationsAndReviewSetup.cs" />
+    <Compile Include="Assets\Scripts\Editor\TowerStabilityUISetup.cs" />
     <Compile Include="Assets\Scripts\Editor\TempleRulesSetup.cs" />
     <Compile Include="Assets\Scripts\Editor\RunContentSetup.cs" />
     <Compile Include="Assets\Scripts\Editor\FtueUISetup.cs" />
@@ -767,10 +768,6 @@
       <HintPath>Library\PackageCache\com.unity.pipeline@62c08c808737\Runtime\Plugins\CodeAnalysis\UnityPipeline.System.Runtime.CompilerServices.Unsafe.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="System.Runtime.CompilerServices.Unsafe">
-      <HintPath>Library\PackageCache\com.unity.collections@aea9d3bd5e19\Unity.Collections.Tests\System.Runtime.CompilerServices.Unsafe\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
     <Reference Include="Google.JarResolver">
       <HintPath>Assets\ExternalDependencyManager\Editor\1.2.186\Google.JarResolver.dll</HintPath>
       <Private>False</Private>
@@ -797,6 +794,10 @@
     </Reference>
     <Reference Include="Microsoft.Identity.Client">
       <HintPath>Assets\PlayFabSdk\ExampleTestProject\Assets\PlayFabEditorExtensions\Editor\Resources\Microsoft.Identity.Client.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="System.Runtime.CompilerServices.Unsafe">
+      <HintPath>Library\PackageCache\com.unity.collections@aea9d3bd5e19\Unity.Collections.Tests\System.Runtime.CompilerServices.Unsafe\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Unity.Analytics.StandardEvents">
@@ -1331,6 +1332,10 @@
       <HintPath>Library\ScriptAssemblies\Unity.Purchasing.SecurityStub.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="Unity.Purchasing.WebshopService">
+      <HintPath>Library\ScriptAssemblies\Unity.Purchasing.WebshopService.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="Unity.2D.Common.Path.Editor">
       <HintPath>Library\ScriptAssemblies\Unity.2D.Common.Path.Editor.dll</HintPath>
       <Private>False</Private>
@@ -1435,12 +1440,16 @@
       <HintPath>Library\ScriptAssemblies\UnityEngine.Advertisements.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="Unity.Pipeline.Editor">
+      <HintPath>Library\ScriptAssemblies\Unity.Pipeline.Editor.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="Unity.Rider.Editor">
       <HintPath>Library\ScriptAssemblies\Unity.Rider.Editor.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Unity.Pipeline.Editor">
-      <HintPath>Library\ScriptAssemblies\Unity.Pipeline.Editor.dll</HintPath>
+    <Reference Include="Unity.Analytics.DataPrivacy">
+      <HintPath>Library\ScriptAssemblies\Unity.Analytics.DataPrivacy.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Unity.AI.Navigation.Editor.ConversionSystem">
@@ -1449,10 +1458,6 @@
     </Reference>
     <Reference Include="Unity.2D.Aseprite.Editor">
       <HintPath>Library\ScriptAssemblies\Unity.2D.Aseprite.Editor.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Unity.Analytics.DataPrivacy">
-      <HintPath>Library\ScriptAssemblies\Unity.Analytics.DataPrivacy.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Unity.RenderPipelines.ShaderGraph.ShaderGraphLibrary">
@@ -1483,6 +1488,10 @@
       <HintPath>Library\ScriptAssemblies\Unity.VisualStudio.Editor.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="Unity.2D.Tilemap.Editor">
+      <HintPath>Library\ScriptAssemblies\Unity.2D.Tilemap.Editor.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="UnityEditor.XR.LegacyInputHelpers">
       <HintPath>Library\ScriptAssemblies\UnityEditor.XR.LegacyInputHelpers.dll</HintPath>
       <Private>False</Private>
@@ -1493,10 +1502,6 @@
     </Reference>
     <Reference Include="Unity.RenderPipelines.GPUDriven.Runtime">
       <HintPath>Library\ScriptAssemblies\Unity.RenderPipelines.GPUDriven.Runtime.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Unity.2D.Tilemap.Editor">
-      <HintPath>Library\ScriptAssemblies\Unity.2D.Tilemap.Editor.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Unity.VisualScripting.State.Editor">
@@ -1547,12 +1552,12 @@
       <HintPath>Library\ScriptAssemblies\Unity.Purchasing.Codeless.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Unity.RenderPipelines.Core.Editor">
-      <HintPath>Library\ScriptAssemblies\Unity.RenderPipelines.Core.Editor.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
     <Reference Include="Unity.Purchasing.PaymentProviderService">
       <HintPath>Library\ScriptAssemblies\Unity.Purchasing.PaymentProviderService.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.RenderPipelines.Core.Editor">
+      <HintPath>Library\ScriptAssemblies\Unity.RenderPipelines.Core.Editor.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="UnityEditor.UI.Analytics">
@@ -1737,10 +1742,6 @@
     </Reference>
     <Reference Include="Unity.Services.Analytics">
       <HintPath>Library\ScriptAssemblies\Unity.Services.Analytics.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Unity.Purchasing.WebshopService">
-      <HintPath>Library\ScriptAssemblies\Unity.Purchasing.WebshopService.dll</HintPath>
       <Private>False</Private>
     </Reference>
   </ItemGroup>

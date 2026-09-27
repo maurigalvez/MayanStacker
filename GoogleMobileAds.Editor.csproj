@@ -51,15 +51,15 @@
   <ItemGroup>
     <Compile Include="Assets\GoogleMobileAds\Editor\GradleProcessor.cs" />
     <Compile Include="Assets\GoogleMobileAds\Editor\GoogleMobileAdsSettings.cs" />
+    <Compile Include="Assets\GoogleMobileAds\Editor\PListProcessor.cs" />
     <Compile Include="Assets\GoogleMobileAds\Editor\ManifestProcessor.cs" />
     <Compile Include="Assets\GoogleMobileAds\Editor\AndroidBuildPreProcessor.cs" />
-    <Compile Include="Assets\GoogleMobileAds\Editor\EditorPathUtils.cs" />
-    <Compile Include="Assets\GoogleMobileAds\Editor\PListProcessor.cs" />
     <Compile Include="Assets\GoogleMobileAds\Editor\EditorLocalization.cs" />
     <Compile Include="Assets\GoogleMobileAds\Editor\GoogleMobileAdsSettingsEditor.cs" />
     <Compile Include="Assets\GoogleMobileAds\Editor\EditorLocalizationData.cs" />
     <Compile Include="Assets\GoogleMobileAds\Editor\BuildPreProcessor.cs" />
     <Compile Include="Assets\GoogleMobileAds\Editor\Utils.cs" />
+    <Compile Include="Assets\GoogleMobileAds\Editor\EditorPathUtils.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\GoogleMobileAds\Editor\GoogleMobileAdsSKAdNetworkItems.xml" />
@@ -744,10 +744,6 @@
       <HintPath>Library\PackageCache\com.unity.pipeline@62c08c808737\Runtime\Plugins\CodeAnalysis\UnityPipeline.System.Runtime.CompilerServices.Unsafe.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="System.Runtime.CompilerServices.Unsafe">
-      <HintPath>Library\PackageCache\com.unity.collections@aea9d3bd5e19\Unity.Collections.Tests\System.Runtime.CompilerServices.Unsafe\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
     <Reference Include="Google.JarResolver">
       <HintPath>Assets\ExternalDependencyManager\Editor\1.2.186\Google.JarResolver.dll</HintPath>
       <Private>False</Private>
@@ -764,10 +760,6 @@
       <HintPath>Library\PackageCache\com.unity.nuget.newtonsoft-json@4dfd81071c64\Runtime\Newtonsoft.Json.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="AiEditorToolsSdk">
-      <HintPath>Library\PackageCache\com.unity.ai.toolkit@339b745a421a\Modules\Sdk\Editor\AiEditorToolsSdk.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
     <Reference Include="Unity.VisualScripting.TextureAssets">
       <HintPath>Library\PackageCache\com.unity.visualscripting@191c0d7e3b69\Editor\VisualScripting.Core\EditorAssetResources\Unity.VisualScripting.TextureAssets.dll</HintPath>
       <Private>False</Private>
@@ -778,6 +770,10 @@
     </Reference>
     <Reference Include="Microsoft.Identity.Client">
       <HintPath>Assets\PlayFabSdk\ExampleTestProject\Assets\PlayFabEditorExtensions\Editor\Resources\Microsoft.Identity.Client.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="System.Runtime.CompilerServices.Unsafe">
+      <HintPath>Library\PackageCache\com.unity.collections@aea9d3bd5e19\Unity.Collections.Tests\System.Runtime.CompilerServices.Unsafe\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Unity.Analytics.StandardEvents">
