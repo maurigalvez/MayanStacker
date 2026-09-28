@@ -145,6 +145,14 @@ public class ObjectSpawner : MonoBehaviour
         if (currentObject == null || waitingForLanding) return;
         if (Time.unscaledTime < dropsHeldUntil) return;
 
+        // Brace OR drop (Cabracán): checked here too, not only in InputManager, so a tap
+        // buffered before the brace went down can't fire from Update while it's held.
+        if (InputManager.DropsBlockedByRule)
+        {
+            dropQueued = false;
+            return;
+        }
+
         // A block that hasn't finished arriving can't be dropped. Unscaled, so the hit-stop
         // that lands on the same frame as the spawn doesn't stretch the wait.
         if (!IsCurrentObjectArmed)

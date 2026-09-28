@@ -25,8 +25,8 @@ public class BraceButtonView : MonoBehaviour
 
     // Bottom-left, above the power medallion (125,125 / 160): off the tower, in thumb reach.
     public static readonly Vector2 DefaultAnchor = new Vector2(0f, 0f);
-    public static readonly Vector2 DefaultPosition = new Vector2(135f, 345f);
-    public static readonly Vector2 DefaultSize = new Vector2(210f, 210f);
+    public static readonly Vector2 DefaultPosition = new Vector2(170f, 380f); // nudged so the bigger disc + word clear the medallion and screen edge
+    public static readonly Vector2 DefaultSize = new Vector2(263f, 263f); // 25% up from 210: a bigger, easier hold
 
     private static readonly Color RingTrackColor = new Color(0.33f, 0.27f, 0.2f, 1f);
 
@@ -50,8 +50,9 @@ public class BraceButtonView : MonoBehaviour
              "middle of its parent so the disc doesn't look half empty.")]
     [SerializeField] private bool centreSecondsWithoutIcon = true;
 
-    [Tooltip("The button's word. Optional; its text is replaced from localization " +
-             "(quake_brace_button) at runtime.")]
+    [Tooltip("The button's word, and the quake's only instruction. Optional; its text is replaced " +
+             "from localization at runtime (quake_brace_button, quake_braced while held). Pressing " +
+             "it braces too.")]
     [SerializeField] private TextMeshProUGUI label;
 
     [Tooltip("Pulses while waiting to be held and squashes while held. Defaults to this object.")]
@@ -76,13 +77,14 @@ public class BraceButtonView : MonoBehaviour
     [SerializeField] private float heldScale = 0.92f;
 
     private HoldTracker hold;
+    private HoldTracker labelHold;
 
     public bool IsUsable => holdTarget != null;
 
     /// <summary>The pressed object; the regression bot drives it with pointer events.</summary>
     public GameObject HoldTarget => holdTarget != null ? holdTarget.gameObject : null;
 
-    public bool IsHeld => hold != null && hold.IsHeld;
+    public bool IsHeld => (hold != null && hold.IsHeld) || (labelHold != null && labelHold.IsHeld);
 
     /// <summary>Wires the hold tracking and fills in the default icon. Call once, after building.</summary>
     public void Init(Sprite ruleIcon)
@@ -111,12 +113,21 @@ public class BraceButtonView : MonoBehaviour
 
         if (ring != null) ring.raycastTarget = false;
         if (secondsLabel != null) secondsLabel.raycastTarget = false;
-        if (label != null) label.raycastTarget = false;
+
+        // The word is part of the button: pressing it braces too, and (being a raycast target)
+        // it can never let the press through to drop a stone, even where it sits off the disc.
+        if (label != null)
+        {
+            label.raycastTarget = true;
+            labelHold = label.GetComponent<HoldTracker>();
+            if (labelHold == null) labelHold = label.gameObject.AddComponent<HoldTracker>();
+        }
     }
 
     public void ResetHold()
     {
         if (hold != null) hold.ResetHold();
+        if (labelHold != null) labelHold.ResetHold();
     }
 
     /// <param name="ringFill">0..1 for the timer ring.</param>
@@ -136,7 +147,8 @@ public class BraceButtonView : MonoBehaviour
 
         if (label != null)
         {
-            label.text = LocalizationManager.Get("quake_brace_button");
+            // The button carries the only instruction: "HOLD TO BRACE", then "BRACED!" while held.
+            label.text = LocalizationManager.Get(braced ? "quake_braced" : "quake_brace_button");
             label.color = accent;
         }
 
@@ -192,20 +204,20 @@ public class BraceButtonView : MonoBehaviour
         }
 
         RectTransform iconRect = RunOverlayUI.CreateChild("Icon", root);
-        RunOverlayUI.Place(iconRect, new Vector2(0.5f, 0.5f), new Vector2(0f, 22f), new Vector2(96f, 96f));
+        RunOverlayUI.Place(iconRect, new Vector2(0.5f, 0.5f), new Vector2(0f, 27.5f), new Vector2(120f, 120f));
         var icon = iconRect.gameObject.AddComponent<Image>();
         icon.preserveAspect = true;
         icon.raycastTarget = false;
         view.icon = icon;
 
-        TextMeshProUGUI seconds = RunOverlayUI.CreateLabel("Seconds", root, "2.4", 44f, RunOverlayUI.Parchment);
-        RunOverlayUI.Place(seconds.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0f, -44f), new Vector2(180f, 60f));
+        TextMeshProUGUI seconds = RunOverlayUI.CreateLabel("Seconds", root, "2.4", 55f, RunOverlayUI.Parchment);
+        RunOverlayUI.Place(seconds.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0f, -55f), new Vector2(225f, 75f));
         seconds.fontStyle = FontStyles.Bold;
         view.secondsLabel = seconds;
 
         // The word sits under the disc, so the button says what it does before it's pressed.
-        TextMeshProUGUI word = RunOverlayUI.CreateLabel("Label", root, "BRACE", 40f, RunOverlayUI.Gold);
-        RunOverlayUI.Place(word.rectTransform, new Vector2(0.5f, 0f), new Vector2(0f, -8f), new Vector2(260f, 56f));
+        TextMeshProUGUI word = RunOverlayUI.CreateLabel("Label", root, "HOLD TO BRACE", 40f, RunOverlayUI.Gold);
+        RunOverlayUI.Place(word.rectTransform, new Vector2(0.5f, 0f), new Vector2(0f, -8f), new Vector2(330f, 56f));
         word.fontStyle = FontStyles.Bold;
         view.label = word;
 

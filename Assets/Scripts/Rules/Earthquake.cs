@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using TMPro;
 using UnityEngine;
 
 /// <summary>
@@ -9,9 +8,11 @@ using UnityEngine;
 /// Sequence: the stone lands → the BRACE button (<see cref="BraceButtonView"/>; restyle and move
 /// it with the Resources/UI/BraceButton prefab) appears with a rumble, its ring filling over
 /// <see cref="EarthquakeSettings.warningSeconds"/> → the shaking, a jolt at a time, while the
-/// ring drains to show how long is left to hold.
+/// ring drains to show how long is left to hold. The button's own word ("HOLD TO BRACE") is the
+/// only instruction; there is no separate headline.
 ///
-/// Brace OR drop: while BRACE is held nothing drops (<see cref="InputManager.DropsBlockedByRule"/>),
+/// Brace OR drop: while BRACE is held nothing drops (<see cref="InputManager.DropsBlockedByRule"/>,
+/// also enforced in <see cref="ObjectSpawner.DropCurrentObject"/> so a buffered tap can't slip through),
 /// and every jolt only shakes the camera. Let go and a tap anywhere else drops as usual, but
 /// each jolt slides the stones out, each one its own way for the whole quake, the top most and
 /// the base least, so a straight tower comes apart. The swinging head also wobbles for the whole quake
@@ -29,7 +30,6 @@ public class Earthquake : TempleRuleBehaviour
     private const float EndHoldSeconds = 0.35f;    // button stays up briefly so a held finger can lift
     private const float SlideSeconds = 0.09f;      // one jolt's slide; well under the jolt interval
 
-    private static readonly Color PromptColor = RunOverlayUI.Gold;
     private static readonly Color BracedColor = new Color(0.35f, 0.85f, 0.65f, 1f);
 
     public override LevelRule Rule => LevelRule.Earthquake;
@@ -50,7 +50,6 @@ public class Earthquake : TempleRuleBehaviour
     private GameObject uiRoot;
     private CanvasGroup group;
     private BraceButtonView brace;
-    private TextMeshProUGUI prompt;
 
     protected override void Build()
     {
@@ -62,11 +61,6 @@ public class Earthquake : TempleRuleBehaviour
         // The BRACE button: the authored prefab when there's a usable one, else the code layout.
         brace = BuildBraceFromPrefab() ?? BraceButtonView.BuildDefault(uiRoot.transform);
         brace.Init(art.quakeHoldIcon);
-
-        // Headline below centre (the swing band is up top).
-        prompt = RunOverlayUI.CreateLabel("Prompt", uiRoot.transform, string.Empty, 72f, PromptColor);
-        RunOverlayUI.Place(prompt.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0f, -280f), new Vector2(1000f, 120f));
-        prompt.fontStyle = FontStyles.Bold;
 
         uiRoot.SetActive(false);
     }
@@ -317,11 +311,9 @@ public class Earthquake : TempleRuleBehaviour
 
     private void UpdateUI(bool braced)
     {
-        if (prompt == null) return;
+        if (brace == null) return;
 
         bool shaking = phase == Phase.Shaking;
-        prompt.text = LocalizationManager.Get(braced ? "quake_braced" : "quake_hold");
-        prompt.color = braced ? BracedColor : PromptColor;
 
         // The ring is the timer: it fills while the quake winds up, then drains while it shakes.
         float fill;
@@ -342,9 +334,6 @@ public class Earthquake : TempleRuleBehaviour
                 break;
         }
         brace.Render(fill, secondsLeft, braced, shaking);
-
-        float wave = 0.5f + 0.5f * Mathf.Sin(Time.unscaledTime * (shaking ? 14f : 8f));
-        prompt.rectTransform.localScale = Vector3.one * (braced ? 0.92f : 1f + 0.08f * wave);
 
         if (phase == Phase.Ending) group.alpha = Mathf.Clamp01(phaseTimer / EndHoldSeconds);
     }

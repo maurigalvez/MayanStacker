@@ -39,6 +39,8 @@ public class ButtonFallInAnimation : MonoBehaviour
     private Vector3 logoBaseScale;
     private Coroutine playCoroutine;
     private Coroutine hoverCoroutine;
+    private bool introStarted;
+    private bool introDone;
 
     private void Awake()
     {
@@ -67,12 +69,57 @@ public class ButtonFallInAnimation : MonoBehaviour
             Play();
     }
 
+    // Unity kills every coroutine when the menu is deactivated, so the idle hover
+    // has to be restarted by hand when the player comes back to this screen.
+    private void OnEnable()
+    {
+        if (introDone && logo != null && hoverCoroutine == null)
+            hoverCoroutine = StartCoroutine(HoverLogo());
+    }
+
+    private void OnDisable()
+    {
+        playCoroutine = null;
+        hoverCoroutine = null;
+
+        // Hidden mid-intro: snap everything to its resting spot so it doesn't come back half-fallen.
+        if (!introStarted) return;
+        SnapToRest();
+        introDone = true;
+    }
+
     public void Play()
     {
         if (playCoroutine != null)
             StopCoroutine(playCoroutine);
 
+        if (hoverCoroutine != null)
+        {
+            StopCoroutine(hoverCoroutine);
+            hoverCoroutine = null;
+        }
+
+        introStarted = true;
+        introDone = false;
         playCoroutine = StartCoroutine(PlaySequence());
+    }
+
+    private void SnapToRest()
+    {
+        if (buttons != null && initialPositions != null)
+        {
+            for (int i = 0; i < buttons.Length; i++)
+            {
+                if (buttons[i] != null)
+                    buttons[i].anchoredPosition = initialPositions[i];
+            }
+        }
+
+        if (logo != null)
+        {
+            logo.anchoredPosition = logoInitialPosition;
+            logo.localScale = logoBaseScale;
+        }
     }
 
     public void Stop()
@@ -90,18 +137,9 @@ public class ButtonFallInAnimation : MonoBehaviour
         }
 
         StopAllCoroutines();
-
-        if (buttons != null && initialPositions != null)
-        {
-            for (int i = 0; i < buttons.Length; i++)
-            {
-                if (buttons[i] != null)
-                    buttons[i].anchoredPosition = initialPositions[i];
-            }
-        }
-
-        if (logo != null)
-            logo.anchoredPosition = logoInitialPosition;
+        introStarted = false;
+        introDone = false;
+        SnapToRest();
     }
 
     private IEnumerator PlaySequence()
@@ -167,6 +205,7 @@ public class ButtonFallInAnimation : MonoBehaviour
             yield return ShakeButtons();
 
         // Phase 5: Logo hover idle (runs forever)
+        introDone = true;
         if (logo != null)
             hoverCoroutine = StartCoroutine(HoverLogo());
 
