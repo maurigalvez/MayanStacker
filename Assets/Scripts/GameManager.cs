@@ -101,9 +101,12 @@ public class GameManager : MonoBehaviour, IRunRewindable
     /// <summary>
     /// True when a Perfect streak straightens the tower on its own. Only in modes without the
     /// power meter (the Daily): where powers run, Perfects charge the power instead, and
-    /// Kukulkan's straighten is Kukulkan's Call, one of the powers.
+    /// Kukulkan's straighten is Kukulkan's Call, one of the powers. A Daily ritual that grants
+    /// a power counts as a power mode, so it earns the Offering Stone like the other modes.
     /// </summary>
-    public bool StreakShiftActive => !PowerSettings.Current.AppliesTo(currentGameMode);
+    public bool StreakShiftActive =>
+        !PowerSettings.Current.AppliesTo(currentGameMode)
+        && !(PowerSettings.Current.enablePowers && DailyPowerGrant.AppliesTo(currentGameMode));
 
     /// <summary>
     /// True from the Perfect that completed a streak (where <see cref="StreakShiftActive"/> is
@@ -176,7 +179,18 @@ public class GameManager : MonoBehaviour, IRunRewindable
             // Only auto-start if game mode is already initialized (meaning this is not a scene load scenario)
             // When SceneLoader loads a scene, it will initialize game mode and start the game, so we don't start here
             // This prevents duplicate StartGame() calls
-            if (gameModeInitialized)
+            // The Daily is gated: SceneLoader starts it only after the config fetch and the
+            // "Begin the Ritual" tap. sceneLoaded runs before Start, so the mode is already
+            // initialized here - starting now would let the player drop before the briefing.
+            // Briefed on the main menu, the run already started inside sceneLoaded, before the
+            // spawner's Start subscribed to OnGameStart - start again here like the other modes.
+            var dailyMgr = DependencyRegistry.Find<DailyChallengeManager>();
+            bool dailyBriefingPending = dailyMgr != null && !dailyMgr.ConfigAlreadyBriefed;
+            if (gameModeInitialized && currentGameMode == GameMode.DailyChallenge && dailyBriefingPending)
+            {
+                Debug.Log("Daily Challenge waits for its briefing; not auto-starting in Start().");
+            }
+            else if (gameModeInitialized)
             {
                 Debug.Log("Game mode already initialized in Start(), starting game...");
                 StartGame();

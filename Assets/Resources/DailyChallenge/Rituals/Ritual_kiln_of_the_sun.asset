@@ -1,0 +1,65 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a5422361a08809b4dad6bafddee1fe01, type: 3}
+  m_Name: Ritual_kiln_of_the_sun
+  m_EditorClassIdentifier: Assembly-CSharp::DailyRitual
+  id: kiln_of_the_sun
+  nameKey: ritual_kiln_of_the_sun_name
+  taglineKey: ritual_kiln_of_the_sun_tagline
+  difficulty: 3
+  stonesToPlace: 30
+  modifiers: 0900000003000000
+  tuning:
+    shrinkPerStone: 0
+    minWidthScale: 0
+    hotStoneSwings: 2
+    featherGravity: 0
+    swingSpeedMultiplier: 0
+  grantsPower: 0
+  grantedPower: 0
+  rule: 0
+  secondRule: 0
+  windSettings:
+    swingPush: 0.7
+    fallPush: 1.6
+    stonesPerGust: 3
+    gustRampSeconds: 1.4
+    firstAtHeight: 2
+    leadSeconds: 0.7
+    steadyDirection: 0
+  rainSettings:
+    slideFraction: 0.42
+    maxSlideOfWidth: 0.168
+    slideSeconds: 0.28
+    poorSlides: 1
+  quakeSettings:
+    firstAtHeight: 6
+    everyNStones: 8
+    warningSeconds: 1.3
+    quakeSeconds: 2.4
+    joltsPerSecond: 3.2
+    slidePerJolt: 0.09
+    headShake: 0.3
+  cenoteSettings:
+    startDelaySeconds: 4
+    stonesPerSecond: 0.2
+    maxLagStones: 2.5
+    warningStones: 1.5
+  eclipseSettings:
+    firstAtHeight: 4
+    everyNStones: 6
+    warningSeconds: 1
+    totalitySeconds: 2.5
+    hiddenTopStones: 1
+    ghostAlpha: 0.2
+    totalityDim: 0.65
+    skyDim: 0.25

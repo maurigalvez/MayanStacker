@@ -73,7 +73,7 @@ public class PowerSystem : MonoBehaviour
     // Quetzal Feather
     private int quetzalDropsLeft;
     private readonly List<Rigidbody2D> featherStones = new List<Rigidbody2D>();
-    private readonly List<float> featherGravity = new List<float>();
+    private readonly List<float> featherGravity = new List<float>(); // factor applied to each stone
     private float tintAlpha;
     private float quetzalShown; // eased remaining fraction the medallion ring shows
 
@@ -166,10 +166,23 @@ public class PowerSystem : MonoBehaviour
     private bool AppliesToPlayer()
     {
         if (settings == null || gameManager == null) return false;
-        if (!settings.AppliesTo(gameManager.CurrentGameMode)) return false;
+
+        // A Daily ritual that grants a power runs the meter for everyone, owned or not.
+        bool ritualGrant = settings.enablePowers && DailyPowerGrant.AppliesTo(gameManager.CurrentGameMode);
+        if (!ritualGrant && !settings.AppliesTo(gameManager.CurrentGameMode)) return false;
         if (settings.suppressDuringTutorial && FtueState.NeedsTutorial && !FtueTutorial.PowerRevealed) return false;
-        return unlocked;
+        return ritualGrant || unlocked;
     }
+
+    /// <summary>Gift of the Gods is running: each full meter grants the next seeded power.</summary>
+    private bool GiftMode => gameManager != null && DailyPowerGrant.RandomOnFill
+                             && DailyPowerGrant.AppliesTo(gameManager.CurrentGameMode);
+
+    // Full meters granted so far this run under Gift of the Gods (the next gift's index).
+    private int giftIndex;
+
+    // Gift of the Gods keeps its next power hidden until the meter fills.
+    private bool giftRevealed;
 
     /// <summary>Pulses the medallion for <paramref name="seconds"/>, e.g. while a lesson points at it.</summary>
     public void Highlight(float seconds)
@@ -279,6 +292,8 @@ public class PowerSystem : MonoBehaviour
 
         GameAnalytics.Track("power_meter_full", RunEventData());
 
+        if (GiftMode) RevealGift();
+
         if (!introActive && !PowerUnlocks.HasSeenIntro(equipped) && GuideLane.CanTeach(PowerLessonId)) BeginIntro();
     }
 
@@ -323,6 +338,38 @@ public class PowerSystem : MonoBehaviour
         OnPowerUsed?.Invoke(id);
 
         if (introActive) CompleteIntro("used");
+
+        // Gift of the Gods: the spent gift is gone; the next full meter brings a new one.
+        if (GiftMode && !IsReady)
+        {
+            giftIndex++;
+            equipped = DailyPowerGrant.Gift(giftIndex);
+            giftRevealed = false;
+            RefreshContent();
+        }
+    }
+
+    /// <summary>
+    /// The meter just filled under Gift of the Gods: show which power the gods sent, on the
+    /// medallion and in a banner, so the reveal is the moment (and the clip).
+    /// </summary>
+    private void RevealGift()
+    {
+        equipped = DailyPowerGrant.Gift(giftIndex);
+        giftRevealed = true;
+        RefreshContent();
+
+        PowerDefinition def = settings.Get(equipped);
+        RunBanner.Show(
+            LocalizationManager.Get("daily_gift_granted", LocalizationManager.Get(def.nameKey)),
+            settings.Describe(equipped),
+            def.accentColor,
+            2.2f);
+
+        var data = RunEventData();
+        data["power"] = equipped.ToString();
+        data["gift"] = giftIndex;
+        GameAnalytics.Track("daily_gift_granted", data);
     }
 
     private bool FireJaguarSlam(PowerDefinition def)
@@ -486,7 +533,8 @@ public class PowerSystem : MonoBehaviour
     {
         // The run as it stands before this stone lands: what a Tzolk'in Rewind returns to.
         // Deep enough for every stored charge to be spent back to back.
-        if (equipped == PowerId.TzolkinRewind && stackManager != null && IsLive())
+        // Under Gift of the Gods the Rewind can arrive at any fill, so the run is always recorded.
+        if ((equipped == PowerId.TzolkinRewind || GiftMode) && stackManager != null && IsLive())
         {
             RunRewind.Capture(stackManager.GetStackCount(),
                 settings.rewindStones * Mathf.Max(1, settings.maxStoredCharges));
@@ -498,8 +546,11 @@ public class PowerSystem : MonoBehaviour
             if (rb != null)
             {
                 featherStones.Add(rb);
-                featherGravity.Add(rb.gravityScale);
-                rb.gravityScale *= settings.quetzalFallScale;
+                // The factor, not the old value: Feather Fall (a Daily modifier) scales the same
+                // stone, and dividing back out undoes each in any order.
+                float factor = Mathf.Max(0.01f, settings.quetzalFallScale);
+                featherGravity.Add(factor);
+                rb.gravityScale *= factor;
             }
 
             quetzalDropsLeft--;
@@ -520,7 +571,7 @@ public class PowerSystem : MonoBehaviour
         int i = featherStones.IndexOf(rb);
         if (i < 0) return;
 
-        rb.gravityScale = featherGravity[i];
+        rb.gravityScale /= featherGravity[i];
         featherStones.RemoveAt(i);
         featherGravity.RemoveAt(i);
     }
@@ -532,7 +583,7 @@ public class PowerSystem : MonoBehaviour
 
         for (int i = 0; i < featherStones.Count; i++)
         {
-            if (featherStones[i] != null) featherStones[i].gravityScale = featherGravity[i];
+            if (featherStones[i] != null) featherStones[i].gravityScale /= featherGravity[i];
         }
         featherStones.Clear();
         featherGravity.Clear();
@@ -634,8 +685,20 @@ public class PowerSystem : MonoBehaviour
         if (rewindFx != null) rewindFx.StopScreen();
         if (showcase != null) showcase.Stop();
 
-        unlocked = PowerUnlocks.HasEquippedPower;
-        equipped = PowerUnlocks.Equipped;
+        giftIndex = 0;
+        giftRevealed = false;
+
+        if (gameManager != null && DailyPowerGrant.AppliesTo(gameManager.CurrentGameMode))
+        {
+            // The ritual decides the power, the same for every player.
+            unlocked = true;
+            equipped = DailyPowerGrant.RandomOnFill ? DailyPowerGrant.Gift(0) : DailyPowerGrant.Fixed;
+        }
+        else
+        {
+            unlocked = PowerUnlocks.HasEquippedPower;
+            equipped = PowerUnlocks.Equipped;
+        }
 
         // An unfinished intro starts over next run rather than silently counting as seen.
         introActive = false;
@@ -709,6 +772,15 @@ public class PowerSystem : MonoBehaviour
     private void RefreshContent()
     {
         if (view == null || settings == null) return;
+
+        // An unrevealed gift shows the mystery face when one is authored; without it the
+        // medallion simply shows the coming power.
+        if (GiftMode && !giftRevealed && settings.giftMysteryIcon != null)
+        {
+            view.SetContent(LocalizationManager.Get("daily_modifier_giftofthegods"),
+                settings.giftMysteryIcon, settings.giftMysteryColor);
+            return;
+        }
 
         PowerDefinition def = settings.Get(equipped);
         view.SetContent(LocalizationManager.Get(def.nameKey), def.icon, def.accentColor);

@@ -30,5 +30,23 @@ public enum RunModifier
     NarrowWindow,
 
     /// <summary>Everything scores double, but one Poor landing ends the run.</summary>
-    DoubleOrNothing
+    DoubleOrNothing,
+
+    // Added with the named Daily rituals (2026-09-29). Rituals store modifiers by value, so
+    // append only — never reorder or reuse a number.
+
+    /// <summary>
+    /// The power meter runs, and every time it fills it grants a random power. The order is
+    /// seeded by the day, so every player gets the same gifts in the same order.
+    /// </summary>
+    GiftOfTheGods,
+
+    /// <summary>Each stone is a little narrower than the last, down to a floor: the tower tapers into a spire.</summary>
+    ShrinkingOfferings,
+
+    /// <summary>The swinging stone drops by itself after a few seconds.</summary>
+    HotStone,
+
+    /// <summary>Low gravity: stones drift down slowly.</summary>
+    FeatherFall
 }

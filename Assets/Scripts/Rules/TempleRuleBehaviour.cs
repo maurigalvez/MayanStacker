@@ -4,9 +4,9 @@ using UnityEngine;
 /// Shared plumbing for one temple rule: the references every rule needs, the run lifecycle,
 /// and whether the current attempt runs this rule at all.
 ///
-/// A rule only ever runs in temple levels whose <see cref="LevelData"/> names it (first or
-/// second rule), so Infinite and the Daily stay exactly as they were. Subclasses override the
-/// hooks they care about; everything else is inert.
+/// A rule only ever runs when the run's rule level (<see cref="TempleRuleContext"/>: the temple's
+/// asset, or the Daily ritual's) names it as first or second rule, so Infinite stays exactly
+/// as it was. Subclasses override the hooks they care about; everything else is inert.
 ///
 /// Created by <see cref="TempleRules"/>, never placed in a scene.
 /// </summary>
@@ -28,7 +28,8 @@ public abstract class TempleRuleBehaviour : MonoBehaviour
     /// <summary>True while this attempt runs the rule (set at run start).</summary>
     protected bool RuleActive { get; private set; }
 
-    protected LevelData Level => levelManager != null ? levelManager.CurrentLevel : null;
+    protected LevelData Level =>
+        gameManager != null ? TempleRuleContext.For(gameManager.CurrentGameMode, levelManager) : null;
 
     /// <summary>The run is live: started, not over, not won.</summary>
     protected bool RunLive =>
@@ -92,7 +93,8 @@ public abstract class TempleRuleBehaviour : MonoBehaviour
     {
         LevelData level = Level;
         RuleActive = gameManager != null
-                     && gameManager.CurrentGameMode == GameMode.StackerLevels
+                     && (gameManager.CurrentGameMode == GameMode.StackerLevels
+                         || gameManager.CurrentGameMode == GameMode.DailyChallenge)
                      && level != null
                      && level.HasRule(Rule);
 

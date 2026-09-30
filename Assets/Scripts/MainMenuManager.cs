@@ -90,6 +90,9 @@ public class MainMenuManager : MonoBehaviour
     private bool isFirstShow = true;
     private GameObject previousPanel = null; // Track previous panel for navigation
     private int currentSelectedLevelIndex = -1; // Track currently selected/focused level (0-based)
+
+    // Rule effect on the selected temple (one at a time, instances reused)
+    private readonly MapRulePreview mapRulePreview = new MapRulePreview();
     private bool isTickingDailySubtitle = false; // Guards the daily-subtitle countdown coroutine
 
     /// <summary>
@@ -175,10 +178,40 @@ public class MainMenuManager : MonoBehaviour
         // Perform app startup integrity check
         PerformStartupIntegrityCheck();
 
+        // Next Level on the result card comes back here: open that temple's pre-play screen
+        // over the map straight away.
+        if (TryOpenPendingPrePlay()) return;
+
         // A brand-new player shouldn't have to choose between three modes they can't yet
         // tell apart. Skip the menu entirely and put them in the first temple; the menu
         // earns its complexity on the second launch.
         TryRouteFirstLaunchIntoFirstTemple();
+    }
+
+    /// <summary>
+    /// Opens the level map with the temple the result card's Next Level asked for selected,
+    /// and its pre-play screen on top. Back leaves the player on the map with it selected.
+    /// </summary>
+    private bool TryOpenPendingPrePlay()
+    {
+        int levelIndex = SceneLoader.TakePendingPrePlayLevel();
+        if (levelIndex < 0 || levelManager == null || levelIndex >= levelManager.TotalLevels) return false;
+        if (!levelManager.IsLevelUnlocked(levelIndex + 1)) return false;
+
+        ShowLevelSelection();
+        SelectLevelOnMap(levelIndex, center: false);
+        // After ShowLevelSelection's own centring on the next playable temple, which may differ
+        // (Next Level from a replayed old temple).
+        StartCoroutine(CenterOnLevelAfter(levelIndex, 0.25f));
+
+        OpenPrePlay(levelIndex);
+        return true;
+    }
+
+    private System.Collections.IEnumerator CenterOnLevelAfter(int levelIndex, float seconds)
+    {
+        yield return new WaitForSecondsRealtime(seconds);
+        CenterMapOnLevel(levelIndex);
     }
 
     /// <summary>
@@ -422,6 +455,9 @@ public class MainMenuManager : MonoBehaviour
             }
         }
 
+        // The selected temple plays its rule effect on the map
+        ShowMapRuleFx(currentSelectedLevelIndex);
+
         // Update "Go to Next Level" button visibility/interactability
         if (goToNextLevelButton != null)
         {
@@ -476,6 +512,9 @@ public class MainMenuManager : MonoBehaviour
     /// </summary>
     private void ClearLevelButtons()
     {
+        // Puts a shaken temple back before its button goes
+        mapRulePreview.Hide();
+
         foreach (var button in spawnedLevelButtons)
         {
             if (button != null)
@@ -903,6 +942,15 @@ public class MainMenuManager : MonoBehaviour
             return LocalizationManager.GetPlural("daily_streak_defend", DailyStreak.Current, DailyStreak.Current, clock);
         }
 
+        // Name today's ritual, so the button says what's waiting. Read from the local calendar;
+        // a PlayFab override (an event) isn't known here and shows in the briefing instead.
+        DailyRitualCalendar calendar = DailyRitualCalendar.Current;
+        DailyRitual today = calendar != null ? calendar.ForDay(DailyChallengeManager.CurrentDayNumberUtc()) : null;
+        if (today != null && !string.IsNullOrEmpty(today.nameKey))
+        {
+            return LocalizationManager.Get("daily_menu_today", LocalizationManager.Get(today.nameKey));
+        }
+
         return LocalizationManager.Get("daily_challenge_subtitle");
     }
 
@@ -1046,7 +1094,7 @@ public class MainMenuManager : MonoBehaviour
         soundManager?.PlayInfiniteModeSelect();
         Debug.Log("Infinite Mode selected");
         // Pick a power first when there's a choice; its PLAY button loads the run.
-        PowerLoadoutScreen.ShowOrContinue(GameMode.InfiniteStacker,
+        PowerLoadoutScreen.ShowOrContinue(GameMode.InfiniteStacker, null,
             () => SceneLoader.LoadGameScene(gameSceneName, GameMode.InfiniteStacker));
     }
 
@@ -1060,8 +1108,37 @@ public class MainMenuManager : MonoBehaviour
     {
         soundManager?.PlayInfiniteModeSelect();
         Debug.Log("Daily Challenge selected");
+        if (resolvingDailyBriefing || RitualBriefingView.IsOpen) return;
+
+        // Brief the player here, before the game scene loads: resolve today's ritual (server
+        // time + Title Data, same as the run will), show the Ritual Briefing, and only PLAY
+        // loads the scene - which then starts at once with the config handed over.
+        resolvingDailyBriefing = true;
+        if (dailyChallengeButton != null) dailyChallengeButton.interactable = false;
+
+        DailyChallengeManager.ResolveTodaysConfig(cfg =>
+        {
+            resolvingDailyBriefing = false;
+            if (this == null) return;
+            if (dailyChallengeButton != null) dailyChallengeButton.interactable = true;
+
+            bool shown = RitualBriefingView.TryShow(cfg, () =>
+            {
+                DailyChallengeManager.HandOffBriefedConfig(cfg);
+                LoadDailyScene();
+            }, null);
+
+            // No briefing prefab: the old flow, where the game scene briefs the player itself.
+            if (!shown) LoadDailyScene();
+        });
+    }
+
+    private bool resolvingDailyBriefing;
+
+    private void LoadDailyScene()
+    {
         // Powers are off in the Daily by default, so this normally loads straight away.
-        PowerLoadoutScreen.ShowOrContinue(GameMode.DailyChallenge,
+        PowerLoadoutScreen.ShowOrContinue(GameMode.DailyChallenge, null,
             () => SceneLoader.LoadGameScene(gameSceneName, GameMode.DailyChallenge));
     }
 
@@ -1070,14 +1147,60 @@ public class MainMenuManager : MonoBehaviour
         soundManager?.PlayLevelButtonClick();
         Debug.Log($"Level {levelIndex + 1} selected");
 
-        // Update selected level index before loading
-        currentSelectedLevelIndex = levelIndex;
+        // Select it on the map before the pre-play screen opens, so backing out leaves this
+        // temple selected with its rule effect playing.
+        SelectLevelOnMap(levelIndex, center: false);
 
-        // Update level label
-        UpdateSelectedLevelLabel();
+        OpenPrePlay(levelIndex);
+    }
 
-        PowerLoadoutScreen.ShowOrContinue(GameMode.StackerLevels,
+    /// <summary>Opens the pre-play screen for <paramref name="levelIndex"/>; its PLAY loads the temple.</summary>
+    private void OpenPrePlay(int levelIndex)
+    {
+        PowerLoadoutScreen.ShowOrContinue(GameMode.StackerLevels, LevelAt(levelIndex),
             () => SceneLoader.LoadGameScene(gameSceneName, GameMode.StackerLevels, levelIndex));
+    }
+
+    private LevelData LevelAt(int levelIndex)
+    {
+        if (levelManager == null) return null;
+        List<LevelData> levels = levelManager.GetAllLevels();
+        return levelIndex >= 0 && levelIndex < levels.Count ? levels[levelIndex] : null;
+    }
+
+    /// <summary>
+    /// Makes <paramref name="levelIndex"/> the selected temple on the map: moves the pulse,
+    /// the label and the rule effect to it, and optionally re-centres the map on it.
+    /// </summary>
+    private void SelectLevelOnMap(int levelIndex, bool center)
+    {
+        if (levelIndex < 0 || levelIndex >= spawnedLevelButtons.Count) return;
+
+        if (currentSelectedLevelIndex != levelIndex
+            && currentSelectedLevelIndex >= 0 && currentSelectedLevelIndex < spawnedLevelButtons.Count)
+        {
+            spawnedLevelButtons[currentSelectedLevelIndex].StopPulseAnimation();
+        }
+
+        bool changed = currentSelectedLevelIndex != levelIndex;
+        currentSelectedLevelIndex = levelIndex;
+        if (changed) spawnedLevelButtons[levelIndex].StartPulseAnimation();
+        ShowMapRuleFx(levelIndex);
+
+        if (center) CenterMapOnLevel(levelIndex);
+        UpdateSelectedLevelLabel();
+        UpdateNavigationButtons();
+    }
+
+    /// <summary>Plays the selected temple's rule effect on the map (nothing for a temple without a rule).</summary>
+    private void ShowMapRuleFx(int levelIndex)
+    {
+        if (levelIndex < 0 || levelIndex >= spawnedLevelButtons.Count || spawnedLevelButtons[levelIndex] == null)
+        {
+            mapRulePreview.Hide();
+            return;
+        }
+        mapRulePreview.Show((RectTransform)spawnedLevelButtons[levelIndex].transform, LevelAt(levelIndex));
     }
 
     private void OnGoToNextLevelClicked()
@@ -1088,8 +1211,7 @@ public class MainMenuManager : MonoBehaviour
         {
             soundManager?.PlayLevelButtonClick();
             Debug.Log($"Going to next playable level: {nextLevelIndex + 1}");
-            PowerLoadoutScreen.ShowOrContinue(GameMode.StackerLevels,
-                () => SceneLoader.LoadGameScene(gameSceneName, GameMode.StackerLevels, nextLevelIndex));
+            OpenPrePlay(nextLevelIndex);
         }
         else
         {
@@ -1115,23 +1237,8 @@ public class MainMenuManager : MonoBehaviour
         {
             soundManager?.PlayLevelButtonClick();
 
-            // Stop pulse animation on current level
-            if (currentSelectedLevelIndex >= 0 && currentSelectedLevelIndex < spawnedLevelButtons.Count)
-            {
-                spawnedLevelButtons[currentSelectedLevelIndex].StopPulseAnimation();
-            }
-
-            // Update selected level
-            currentSelectedLevelIndex = previousIndex;
-
-            // Start pulse animation on new level
-            spawnedLevelButtons[previousIndex].StartPulseAnimation();
-
-            // Center map on the new level
-            CenterMapOnLevel(previousIndex);
-
-            // Update level label
-            UpdateSelectedLevelLabel();
+            // Pulse, rule effect and label move to it, and the map re-centres
+            SelectLevelOnMap(previousIndex, center: true);
 
             Debug.Log($"Navigated to previous unlocked level: {previousIndex + 1}");
         }
@@ -1159,23 +1266,8 @@ public class MainMenuManager : MonoBehaviour
         {
             soundManager?.PlayLevelButtonClick();
 
-            // Stop pulse animation on current level
-            if (currentSelectedLevelIndex >= 0 && currentSelectedLevelIndex < spawnedLevelButtons.Count)
-            {
-                spawnedLevelButtons[currentSelectedLevelIndex].StopPulseAnimation();
-            }
-
-            // Update selected level
-            currentSelectedLevelIndex = nextIndex;
-
-            // Start pulse animation on new level
-            spawnedLevelButtons[nextIndex].StartPulseAnimation();
-
-            // Center map on the new level
-            CenterMapOnLevel(nextIndex);
-
-            // Update level label
-            UpdateSelectedLevelLabel();
+            // Pulse, rule effect and label move to it, and the map re-centres
+            SelectLevelOnMap(nextIndex, center: true);
 
             Debug.Log($"Navigated to next unlocked level: {nextIndex + 1}");
         }

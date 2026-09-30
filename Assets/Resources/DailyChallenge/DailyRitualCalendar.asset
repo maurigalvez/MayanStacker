@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 54f5d88c57b1deb48bc10265e3a60cbc, type: 3}
+  m_Name: DailyRitualCalendar
+  m_EditorClassIdentifier: Assembly-CSharp::DailyRitualCalendar
+  rituals:
+  - {fileID: 11400000, guid: 811ff52b55a5d5a4e93401684fb2f883, type: 2}
+  - {fileID: 11400000, guid: 116d5c24b020eff4184782630d034873, type: 2}
+  - {fileID: 11400000, guid: fb69922633d43f94a8038c93352eebaa, type: 2}
+  - {fileID: 11400000, guid: 4654e9702266ea9499afa615b1feb1d6, type: 2}
+  - {fileID: 11400000, guid: 6e64c88de0ea80242abc700b9512e5dc, type: 2}
+  - {fileID: 11400000, guid: c55a2b864ce35b64fb8d2a23c03a49c7, type: 2}
+  - {fileID: 11400000, guid: 3e202c4ed143d3f42b1830724fb5b6d1, type: 2}
+  - {fileID: 11400000, guid: dda013574e2036d439990af49596978d, type: 2}
+  - {fileID: 11400000, guid: affb8de54ba98084d9d54ae7062eb23e, type: 2}
+  - {fileID: 11400000, guid: 46a37cae7d6ec4c44b8c95fe85d679df, type: 2}
+  - {fileID: 11400000, guid: b4fa466b07b6d8b4887731ae049f669a, type: 2}
+  - {fileID: 11400000, guid: f1e12a10f51333a42a4a771df67a1ca9, type: 2}
+  - {fileID: 11400000, guid: 0e97619e513fea6489edd9c84289b88c, type: 2}
+  - {fileID: 11400000, guid: 6c94cb86b4d74784cb589617edfe736f, type: 2}

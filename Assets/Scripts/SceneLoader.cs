@@ -16,6 +16,31 @@ public static class SceneLoader
     private static int? pendingLevelIndex = null;
 
     /// <summary>
+    /// A temple (0-based index) whose pre-play screen the main menu opens as soon as it loads.
+    /// Set by the result card's Next Level; the menu reads and clears it with
+    /// <see cref="TakePendingPrePlayLevel"/>.
+    /// </summary>
+    private static int? pendingPrePlayLevel;
+
+    /// <summary>
+    /// Loads the main menu and opens <paramref name="levelIndex"/>'s pre-play screen there
+    /// (rule icons + power cards), so the player sees what the next temple does before PLAY.
+    /// </summary>
+    public static void LoadMainMenuIntoPrePlay(int levelIndex)
+    {
+        pendingPrePlayLevel = levelIndex;
+        LoadMainMenu();
+    }
+
+    /// <summary>The temple the menu should open the pre-play screen for, once; -1 when none.</summary>
+    public static int TakePendingPrePlayLevel()
+    {
+        int level = pendingPrePlayLevel ?? -1;
+        pendingPrePlayLevel = null;
+        return level;
+    }
+
+    /// <summary>
     /// Load the main menu scene
     /// </summary>
     public static void LoadMainMenu()
@@ -118,10 +143,23 @@ public static class SceneLoader
                         gameManager.StartGame();
                     };
 
-                    // Gate the run behind the briefing screen so the player reads today's modifier.
-                    // If no UIManager/briefing is available, fail open and start immediately.
+                    // The main menu already showed the Ritual Briefing and the player tapped
+                    // PLAY: start straight away, like a temple or Infinite.
+                    if (dailyMgr.ConfigAlreadyBriefed)
+                    {
+                        beginRun();
+                        return;
+                    }
+
+                    // Reached without the menu's briefing (e.g. the day rolled over on the way
+                    // in): brief here instead. Without its prefab, the scene's older briefing
+                    // panel; with neither, fail open and start immediately.
                     var uiManager = DependencyRegistry.Find<UIManager>();
-                    if (uiManager != null)
+                    if (RitualBriefingView.TryShow(cfg, beginRun, uiManager, SceneLoader.LoadMainMenu))
+                    {
+                        // PLAY starts the run.
+                    }
+                    else if (uiManager != null)
                     {
                         uiManager.ShowDailyBriefing(cfg, beginRun);
                     }

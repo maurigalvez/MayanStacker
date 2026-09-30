@@ -309,7 +309,10 @@ public class ObjectSpawner : MonoBehaviour
         // variant the two are identical and behaviour is unchanged.
         // A Wide Foundation boon widens the block on top of whatever the variant did.
         // Read the multiplier before ticking it down, so a 3-block boon widens 3 blocks.
-        float widthMultiplier = variant.widthMultiplier * ActiveBoons.WidthMultiplier;
+        // Shrinking Offerings (a Daily modifier) narrows each stone by the height it spawns at.
+        int stackCount = stackManager != null ? stackManager.GetStackCount() : 0;
+        float widthMultiplier = variant.widthMultiplier * ActiveBoons.WidthMultiplier
+                                * RunModifierService.WidthScaleAt(stackCount + 1);
         ActiveBoons.RegisterBlockSpawned();
 
         Vector2 blockSize = new Vector2(objectSize.x * widthMultiplier, objectSize.y);

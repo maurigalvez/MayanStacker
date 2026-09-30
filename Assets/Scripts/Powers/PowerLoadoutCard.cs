@@ -4,8 +4,8 @@ using UnityEngine.UI;
 
 /// <summary>
 /// One power's card on the loadout screen. Lives on the card template inside
-/// <see cref="PowerLoadoutView"/>'s prefab and is cloned once per unlocked power, so styling
-/// the template styles every card.
+/// <see cref="PowerLoadoutView"/>'s prefab and is cloned once per power (locked ones too, so the
+/// player sees what's coming and which level unlocks it), so styling the template styles every card.
 ///
 /// Only <see cref="button"/> is required; every other part is optional and simply skipped
 /// when left empty. Selected/unselected colours live on the view, not here.
@@ -30,6 +30,13 @@ public class PowerLoadoutCard : MonoBehaviour
     [Tooltip("Shown only on the selected card (e.g. a glow or a check). Optional.")]
     public GameObject selectedMarker;
 
+    [Tooltip("Shown only while the power is locked (e.g. a lock badge). Optional.")]
+    public GameObject lockedMarker;
+
+    [Tooltip("\"Beat level N\" on a locked card, filled from localization. Optional.")]
+    public TextMeshProUGUI lockText;
+
     [System.NonSerialized] public PowerId id;
     [System.NonSerialized] public Color accent;
+    [System.NonSerialized] public bool locked;
 }

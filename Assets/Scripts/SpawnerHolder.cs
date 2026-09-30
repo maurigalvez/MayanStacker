@@ -1102,6 +1102,12 @@ public class SpawnerHolder : MonoBehaviour
     /// </summary>
     public float SwingPhase => Mathf.Sin(swingTime);
 
+    /// <summary>
+    /// How fast <see cref="SwingPhase"/> advances, in radians per scaled second: π of it is one
+    /// end-to-end pass. Includes level/altitude scaling and the Quetzal Feather's slow swing.
+    /// </summary>
+    public float SwingRate => swingSpeed * SwingModifiers.SpeedScale;
+
     /// <summary>Horizontal world offset from <see cref="SpawnerBasePosition"/> at a given <see cref="SwingPhase"/>.</summary>
     public float GetSwingOffsetX(float phase)
     {

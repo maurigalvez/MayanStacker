@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aee2476caa0147bca6f99f03029775be, type: 3}
+  m_Name: TempleRuleIcons
+  m_EditorClassIdentifier: 
+  earthquake: {fileID: 4342118570622505338, guid: 70a2b5ca108c87a48804ecdae3346c48, type: 3}
+  rainSlick: {fileID: -6011438865015714561, guid: 70a2b5ca108c87a48804ecdae3346c48, type: 3}
+  eclipse: {fileID: 913441580713667348, guid: 70a2b5ca108c87a48804ecdae3346c48, type: 3}
+  jungleWind: {fileID: 8977978839707420893, guid: 70a2b5ca108c87a48804ecdae3346c48, type: 3}
+  risingCenote: {fileID: 8114239639152454472, guid: 70a2b5ca108c87a48804ecdae3346c48, type: 3}
+  powerLocked: {fileID: -6418508979323692636, guid: 70a2b5ca108c87a48804ecdae3346c48, type: 3}

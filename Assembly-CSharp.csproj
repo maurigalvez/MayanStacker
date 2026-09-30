@@ -51,22 +51,27 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Assets\Scripts\GameController.cs" />
+    <Compile Include="Assets\Scripts\RunModifiers\RunModifierTuning.cs" />
     <Compile Include="Assets\Scripts\DailyChallenge\DailyChallengeFallbackSettings.cs" />
     <Compile Include="Assets\Scripts\Rules\JungleWind.cs" />
     <Compile Include="Assets\Scripts\Rules\TempleRuleArt.cs" />
     <Compile Include="Assets\Scripts\Rules\RainSlick.cs" />
     <Compile Include="Assets\Scripts\FTUE\FtueState.cs" />
     <Compile Include="Assets\Scripts\AdManager.cs" />
+    <Compile Include="Assets\Scripts\Rules\TempleRuleIcons.cs" />
     <Compile Include="Assets\Scripts\OfflineScoreQueue.cs" />
+    <Compile Include="Assets\Scripts\DailyChallenge\RitualBriefingView.cs" />
     <Compile Include="Assets\Scripts\UI\Motion\UIPopup.cs" />
     <Compile Include="Assets\Scripts\UI\RunResultCard.cs" />
     <Compile Include="Assets\Scripts\Powers\PowerSettings.cs" />
     <Compile Include="Assets\Scripts\Powers\PowerShowcaseView.cs" />
+    <Compile Include="Assets\Scripts\DailyChallenge\DailyRitualCalendar.cs" />
     <Compile Include="Assets\Scripts\Rules\RainSlideFx.cs" />
     <Compile Include="Assets\Scripts\LeaderboardManager.cs" />
     <Compile Include="Assets\Scripts\UI\RemoveAdsOfferView.cs" />
     <Compile Include="Assets\Scripts\Utilities\ScrollView_PinchScale.cs" />
     <Compile Include="Assets\Scripts\Powers\RewindFx.cs" />
+    <Compile Include="Assets\Scripts\Powers\DailyPowerGrant.cs" />
     <Compile Include="Assets\Scripts\Rules\TempleRules.cs" />
     <Compile Include="Assets\Scripts\DailyChallenge\DailyChallengeManager.cs" />
     <Compile Include="Assets\Scripts\Achievements\AchievementTracker.cs" />
@@ -103,12 +108,14 @@
     <Compile Include="Assets\Scripts\RunModifiers\RunModifierDefinition.cs" />
     <Compile Include="Assets\Scripts\DependencyRegistry\IGameDataManager.cs" />
     <Compile Include="Assets\Scripts\GameMode.cs" />
+    <Compile Include="Assets\Scripts\DailyChallenge\RitualOmenRow.cs" />
     <Compile Include="Assets\Scripts\Achievements\AchievementTestingUtility.cs" />
     <Compile Include="Assets\Scripts\Rules\CapstonePayoff.cs" />
     <Compile Include="Assets\Scripts\Progression\InfiniteBest.cs" />
     <Compile Include="Assets\Scripts\Boons\ActiveBoons.cs" />
     <Compile Include="Assets\Scripts\UI\ReviewPromptView.cs" />
     <Compile Include="Assets\Scripts\Blocks\BlockVarietyTable.cs" />
+    <Compile Include="Assets\Scripts\RunModifiers\HotStoneTimerView.cs" />
     <Compile Include="Assets\Scripts\UI\Motion\NoPressScale.cs" />
     <Compile Include="Assets\Scripts\UI\Motion\UIPressScaleAutoAttach.cs" />
     <Compile Include="Assets\Scripts\Progression\LeaderboardSeason.cs" />
@@ -143,14 +150,17 @@
     <Compile Include="Assets\Scripts\ObjectSpawner.cs" />
     <Compile Include="Assets\Scripts\Rules\RulePlaceholderArt.cs" />
     <Compile Include="Assets\Scripts\UI\Motion\UIPressScale.cs" />
+    <Compile Include="Assets\Scripts\Rules\TempleRuleContext.cs" />
     <Compile Include="Assets\Scripts\ReadingTime.cs" />
     <Compile Include="Assets\Scripts\UI\RunBanner.cs" />
     <Compile Include="Assets\Scripts\Rules\AmbientSpriteField.cs" />
     <Compile Include="Assets\Scripts\LeaderboardEntry.cs" />
+    <Compile Include="Assets\Scripts\Rules\MapRuleFx.cs" />
     <Compile Include="Assets\Scripts\CodexManager.cs" />
     <Compile Include="Assets\Scripts\GameFeel\HapticFeedback.cs" />
     <Compile Include="Assets\Scripts\Progression\PersonalBestGhostLine.cs" />
     <Compile Include="Assets\Scripts\Rules\Earthquake.cs" />
+    <Compile Include="Assets\Scripts\Rules\TempleRuleIconSet.cs" />
     <Compile Include="Assets\Scripts\Progression\AltitudeBandManager.cs" />
     <Compile Include="Assets\Scripts\ThemeManager.cs" />
     <Compile Include="Assets\Scripts\Powers\RunRewind.cs" />
@@ -185,6 +195,7 @@
     <Compile Include="Assets\Scripts\Boons\BoonIntroView.cs" />
     <Compile Include="Assets\Scripts\Rules\RisingCenote.cs" />
     <Compile Include="Assets\Scripts\Achievements\AchievementNotificationUI.cs" />
+    <Compile Include="Assets\Scripts\DailyChallenge\DailyRitual.cs" />
     <Compile Include="Assets\Scripts\CodexEntryUI.cs" />
     <Compile Include="Assets\Scripts\Blocks\BlockIntroPresenter.cs" />
     <Compile Include="Assets\Scripts\Utilities\ScalePulseAnimation.cs" />
@@ -192,6 +203,7 @@
     <Compile Include="Assets\GooglePlayPlugins\com.google.play.review\Samples\ReviewDemo\Scripts\ReviewDemo.cs" />
     <Compile Include="Assets\Scripts\Achievements\AchievementProgressData.cs" />
     <Compile Include="Assets\Scripts\Testing\DebugTempleUnlocks.cs" />
+    <Compile Include="Assets\Scripts\Rules\MapRulePreview.cs" />
     <Compile Include="Assets\Scripts\Localization\LocalizationManager.cs" />
     <Compile Include="Assets\Scripts\FTUE\FtueTutorial.cs" />
     <Compile Include="Assets\Scripts\Testing\LevelRegressionRunner.cs" />
@@ -209,6 +221,7 @@
     <Compile Include="Assets\Scripts\EnvironmentSpawner.cs" />
     <Compile Include="Assets\Scripts\LevelManager.cs" />
     <Compile Include="Assets\Scripts\UI\RunResult.cs" />
+    <Compile Include="Assets\Scripts\Rules\TempleRuleBriefEntry.cs" />
     <Compile Include="Assets\Scripts\UI\GuideLaneView.cs" />
     <Compile Include="Assets\Scripts\StackOverviewUI.cs" />
     <Compile Include="Assets\Scripts\Utilities\PositionPingPongAnimation.cs" />
@@ -228,6 +241,7 @@
     <Compile Include="Assets\Scripts\ThemeUITint.cs" />
     <Compile Include="Assets\Scripts\Rules\LevelRule.cs" />
     <Compile Include="Assets\Scripts\LeaderboardPanel.cs" />
+    <Compile Include="Assets\Scripts\RunModifiers\RunModifierEffects.cs" />
     <Compile Include="Assets\Scripts\IntegritySettings.cs" />
     <Compile Include="Assets\Scripts\CameraController.cs" />
     <Compile Include="Assets\Scripts\Blocks\BlockCodex.cs" />

@@ -818,8 +818,7 @@ public class UIManager : MonoBehaviour
 
         if (dailyMgr != null && dailyMgr.HasConfig && dailyModifierNameText != null)
         {
-            string modifierName = LocalizationManager.Get(
-                DailyChallengeManager.GetModifierDisplayNameKey(dailyMgr.CurrentConfig.modifier));
+            string modifierName = DailyChallengeManager.DisplayNameFor(dailyMgr.CurrentConfig);
             string modifierLine = LocalizationManager.Get("daily_result_modifier", modifierName);
 
             if (completed)
@@ -914,15 +913,15 @@ public class UIManager : MonoBehaviour
         // Hide the in-game HUD behind the briefing overlay.
         if (gameUI != null) gameUI.SetActive(false);
 
-        string modifierName = LocalizationManager.Get(
-            DailyChallengeManager.GetModifierDisplayNameKey(config.modifier));
+        string modifierName = DailyChallengeManager.DisplayNameFor(config);
 
         if (dailyBriefingModifierNameText != null)
             dailyBriefingModifierNameText.text = modifierName;
 
         if (dailyBriefingDescriptionText != null)
-            dailyBriefingDescriptionText.text = LocalizationManager.Get(
-                DailyChallengeManager.GetModifierDescriptionKey(config.modifier));
+            dailyBriefingDescriptionText.text = config.HasRitual
+                ? LocalizationManager.Get(config.ritual.taglineKey)
+                : LocalizationManager.Get(DailyChallengeManager.GetModifierDescriptionKey(config.modifier));
 
         if (dailyBriefingTargetText != null)
             dailyBriefingTargetText.text = LocalizationManager.Get("daily_briefing_target", config.blockCount);
@@ -940,6 +939,25 @@ public class UIManager : MonoBehaviour
 
         // Header countdown runs only while the briefing is up; OnDailyBriefingBegin stops it.
         StartBriefingCountdown();
+    }
+
+    /// <summary>
+    /// The Ritual Briefing popup (<see cref="RitualBriefingView"/>) is taking over the pre-run
+    /// gate: hide the HUD and the in-scene briefing panel behind it, and keep InitializeUI from
+    /// revealing the HUD if it runs later.
+    /// </summary>
+    public void BeginExternalDailyBriefing()
+    {
+        dailyBriefingRequested = true;
+        if (gameUI != null) gameUI.SetActive(false);
+        if (dailyBriefingPanel != null) dailyBriefingPanel.SetActive(false);
+    }
+
+    /// <summary>The external briefing closed with PLAY: bring the HUD back.</summary>
+    public void EndExternalDailyBriefing()
+    {
+        dailyBriefingRequested = false;
+        if (gameUI != null) gameUI.SetActive(true);
     }
 
     private void StartBriefingCountdown()
@@ -1231,8 +1249,7 @@ public class UIManager : MonoBehaviour
             string modifierName = "";
             if (dailyMgr != null && dailyMgr.HasConfig)
             {
-                modifierName = LocalizationManager.Get(
-                    DailyChallengeManager.GetModifierDisplayNameKey(dailyMgr.CurrentConfig.modifier));
+                modifierName = DailyChallengeManager.DisplayNameFor(dailyMgr.CurrentConfig);
             }
             titleText = LocalizationManager.Get("daily_title_format", modifierName);
         }
@@ -2575,21 +2592,13 @@ public class UIManager : MonoBehaviour
     {
         if (levelManager != null)
         {
-            // Hide level complete panel, then move on once it has scaled away
+            // Back to the menu, which opens the next temple's pre-play screen (its rule and
+            // the power pick) before it starts. Hide the card first, then load.
+            int nextIndex = levelManager.CurrentLevelIndex + 1;
             UIPopup.Hide(levelCompletePanel, () =>
             {
-                // Show game UI again
-                if (gameUI != null)
-                    gameUI.SetActive(true);
-
-                // Load next level
-                levelManager.NextLevel();
-
-                // Restart the game
-                if (gameManager != null)
-                {
-                    gameManager.RestartGame();
-                }
+                if (nextIndex < levelManager.TotalLevels) SceneLoader.LoadMainMenuIntoPrePlay(nextIndex);
+                else SceneLoader.LoadMainMenu();
             });
         }
     }

@@ -111,6 +111,14 @@ public class PowerSettings : ScriptableObject
     // player summons Kukulkan at will: where powers run, a Perfect streak no longer does
     // (GameManager.StreakShiftActive). The strongest power, so it unlocks last.
 
+    [Header("Gift of the Gods (Daily modifier)")]
+    [Tooltip("Medallion icon while the next gift is still hidden (the meter is charging). " +
+             "Empty = the medallion shows the coming power instead.")]
+    public Sprite giftMysteryIcon;
+
+    [Tooltip("Accent colour for the hidden gift.")]
+    public Color giftMysteryColor = new Color(0.95f, 0.78f, 0.3f, 1f);
+
     [Header("First-time intro")]
     [Tooltip("Drops after the first full meter before the intro counts as seen without a use.")]
     [Min(1)]

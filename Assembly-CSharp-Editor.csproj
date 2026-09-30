@@ -57,10 +57,13 @@
     <Compile Include="Assets\Scripts\Editor\PlayerIdentityUISetup.cs" />
     <Compile Include="Assets\Scripts\Editor\DailyChallengeUISetup.cs" />
     <Compile Include="Assets\Scripts\Editor\RunBannerPrefabSetup.cs" />
+    <Compile Include="Assets\Scripts\Editor\DailyUIBuilder.cs" />
+    <Compile Include="Assets\Scripts\Editor\RitualBriefingPrefabSetup.cs" />
     <Compile Include="Assets\Scripts\Editor\BoonUISetup.cs" />
     <Compile Include="Assets\Scripts\Editor\GuideLanePrefabSetup.cs" />
     <Compile Include="Assets\Scripts\Editor\FtueTutorialPrefabSetup.cs" />
     <Compile Include="Assets\Scripts\Editor\R8OptimizeGradle.cs" />
+    <Compile Include="Assets\Scripts\Editor\DailyRitualSetup.cs" />
     <Compile Include="Assets\Scripts\Editor\AppUpdatePromptPrefabSetup.cs" />
     <Compile Include="Assets\Scripts\Editor\UIHouseStyle.cs" />
     <Compile Include="Assets\Scripts\Editor\SettingsLayoutSetup.cs" />
@@ -68,6 +71,7 @@
     <Compile Include="Assets\Scripts\Editor\GameOverUISetup.cs" />
     <Compile Include="Assets\Scripts\Editor\QuitConfirmPrefabSetup.cs" />
     <Compile Include="Assets\Scripts\Editor\BraceButtonPrefabSetup.cs" />
+    <Compile Include="Assets\Scripts\Editor\TempleRulePreviewSetup.cs" />
     <Compile Include="Assets\Scripts\Editor\PowersSetup.cs" />
     <Compile Include="Assets\Scripts\Editor\UnityPurchasingDefine.cs" />
     <Compile Include="Assets\Scripts\Editor\LocaleFontSetup.cs" />
@@ -75,6 +79,7 @@
     <Compile Include="Assets\Scripts\Editor\PlayAppUpdateDefine.cs" />
     <Compile Include="Assets\Scripts\Editor\RemoveAdsPlacementsSetup.cs" />
     <Compile Include="Assets\Scripts\Editor\TempleUnlocksWindow.cs" />
+    <Compile Include="Assets\Scripts\Editor\HotStoneTimerPrefabSetup.cs" />
     <Compile Include="Assets\Scripts\Editor\LevelRegressionCli.cs" />
     <Compile Include="Assets\Scripts\Editor\NotificationsAndReviewSetup.cs" />
     <Compile Include="Assets\Scripts\Editor\TowerStabilityUISetup.cs" />

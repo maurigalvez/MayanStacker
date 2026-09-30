@@ -3,14 +3,18 @@ using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// The pick-a-power screen, shown in the main menu between tapping a Play entry point
-/// (Infinite, a temple, "next temple") and the run loading: pick a power, then PLAY.
+/// The pre-play screen, shown in the main menu between tapping a Play entry point
+/// (Infinite, a temple, "next temple", or Next Level on the result card, which comes back to
+/// the menu for it) and the run loading: see the temple's rule, pick a power, then PLAY.
 ///
-/// The pick is saved through <see cref="PowerUnlocks.Equip"/>, so Retry and Next Level from
-/// the result card keep it without asking again — changing it means going back to the menu.
+/// Every power has a card, locked ones included (dimmed, "Beat level N"), so the player
+/// always sees what's coming. A temple with a rule shows its icon(s) above the cards.
 ///
-/// <see cref="ShowOrContinue"/> skips the screen entirely when there is nothing to choose:
-/// fewer than two powers owned, powers off for the mode, or the tutorial still running.
+/// The pick is saved through <see cref="PowerUnlocks.Equip"/>, so Retry from the result card
+/// keeps it without asking again.
+///
+/// <see cref="ShowOrContinue"/> skips the screen only when powers are off for the mode
+/// (the Daily) or the tutorial is still running.
 ///
 /// This class is the behaviour; the look is <see cref="PowerLoadoutView"/>, taken from the
 /// prefab at Resources/UI/PowerLoadoutScreen when there is one and built in code otherwise,
@@ -31,14 +35,13 @@ public class PowerLoadoutScreen : MonoBehaviour
     public static bool IsShowing => instance != null;
 
     /// <summary>
-    /// Shows the picker when the player has a choice to make for <paramref name="mode"/>,
-    /// otherwise runs <paramref name="play"/> straight away. <paramref name="back"/> runs
-    /// (after the screen closes) if the player backs out instead.
+    /// Shows the pre-play screen for <paramref name="mode"/> (and <paramref name="level"/>, whose
+    /// rules it names; null for Infinite), otherwise runs <paramref name="play"/> straight away.
+    /// <paramref name="back"/> runs (after the screen closes) if the player backs out instead.
     /// </summary>
-    public static void ShowOrContinue(GameMode mode, Action play, Action back = null)
+    public static void ShowOrContinue(GameMode mode, LevelData level, Action play, Action back = null)
     {
-        var unlocked = new List<PowerId>();
-        if (!ShouldShow(mode, unlocked))
+        if (!ShouldShow(mode))
         {
             play?.Invoke();
             return;
@@ -51,17 +54,14 @@ public class PowerLoadoutScreen : MonoBehaviour
         instance.mode = mode;
         instance.onPlay = play;
         instance.onBack = back;
-        instance.Build(unlocked);
+        instance.Build(mode == GameMode.StackerLevels ? level : null);
     }
 
-    private static bool ShouldShow(GameMode mode, List<PowerId> unlocked)
+    private static bool ShouldShow(GameMode mode)
     {
         PowerSettings settings = PowerSettings.Current;
         if (settings == null || !settings.AppliesTo(mode)) return false;
-        if (settings.suppressDuringTutorial && FtueState.NeedsTutorial) return false;
-
-        PowerUnlocks.GetUnlocked(unlocked);
-        return unlocked.Count >= 2;
+        return !(settings.suppressDuringTutorial && FtueState.NeedsTutorial);
     }
 
     private void OnDestroy()
@@ -69,10 +69,23 @@ public class PowerLoadoutScreen : MonoBehaviour
         if (instance == this) instance = null;
     }
 
-    private void Build(List<PowerId> unlocked)
+    private void Build(LevelData level)
     {
         settings = PowerSettings.Current;
         selected = PowerUnlocks.Equipped;
+
+        var defs = new List<PowerDefinition>();
+        var locked = new HashSet<PowerId>();
+        int owned = 0;
+        foreach (PowerId id in (PowerId[])Enum.GetValues(typeof(PowerId)))
+        {
+            defs.Add(settings.Get(id));
+            if (PowerUnlocks.IsUnlocked(id)) owned++;
+            else locked.Add(id);
+        }
+
+        var rules = new List<LevelRule>(2);
+        TempleRuleIcons.RulesOf(level, rules);
 
         view = BuildFromPrefab();
         if (view == null)
@@ -82,10 +95,7 @@ public class PowerLoadoutScreen : MonoBehaviour
             view = PowerLoadoutView.BuildDefault(host);
         }
 
-        var defs = new List<PowerDefinition>();
-        foreach (PowerId id in unlocked) defs.Add(settings.Get(id));
-
-        view.Populate(defs, OnCardClicked, OnPlayClicked, OnBackClicked);
+        view.Populate(defs, locked, rules, OnCardClicked, OnPlayClicked, OnBackClicked);
         Select(selected);
         view.ScrollTo(selected);
         UIPopup.PopIn(view.PopupTarget);
@@ -93,7 +103,9 @@ public class PowerLoadoutScreen : MonoBehaviour
         GameAnalytics.Track("power_loadout_shown", new Dictionary<string, object>
         {
             { "mode", mode.ToString() },
-            { "owned", unlocked.Count }
+            { "owned", owned },
+            { "level", level != null ? level.levelNumber : 0 },
+            { "rules", rules.Count }
         });
     }
 

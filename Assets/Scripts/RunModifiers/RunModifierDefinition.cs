@@ -58,6 +58,25 @@ public struct RunModifierDefinition
     /// </summary>
     public float comboMultiplierCap;
 
+    /// <summary>Share of the base width each stone loses per stone already stacked. 0 = no shrink.</summary>
+    public float widthShrinkPerStone;
+
+    /// <summary>The narrowest a shrinking stone gets, as a share of the base width.</summary>
+    public float minWidthScale;
+
+    /// <summary>
+    /// Swings (end-to-end passes) after arming before the swinging stone drops by itself.
+    /// 0 = never. Counted in swings, not seconds, so the fuse follows the swing speed: at the
+    /// slow early swing one pass takes ~2s, and a seconds fuse gave a single look at the centre.
+    /// </summary>
+    public float autoDropSwings;
+
+    /// <summary>Multiplier on a falling stone's gravity. 1 = untouched.</summary>
+    public float gravityScale;
+
+    /// <summary>When true, each full power meter grants a random (day-seeded) power.</summary>
+    public bool randomPowerOnFill;
+
     public string nameKey;
     public string descriptionKey;
 
@@ -119,6 +138,33 @@ public struct RunModifierDefinition
                 def.descriptionKey = "daily_modifier_doubleornothing_desc";
                 break;
 
+            case RunModifier.GiftOfTheGods:
+                def.randomPowerOnFill = true;
+                def.nameKey = "daily_modifier_giftofthegods";
+                def.descriptionKey = "daily_modifier_giftofthegods_desc";
+                break;
+
+            case RunModifier.ShrinkingOfferings:
+                // About 2.5% per stone: a 30-stone ritual reaches the floor near stone 22,
+                // so the last stretch is threaded at 45% width. Estimate; tune on device.
+                def.widthShrinkPerStone = 0.025f;
+                def.minWidthScale = 0.45f;
+                def.nameKey = "daily_modifier_shrinkingofferings";
+                def.descriptionKey = "daily_modifier_shrinkingofferings_desc";
+                break;
+
+            case RunModifier.HotStone:
+                def.autoDropSwings = 2f;
+                def.nameKey = "daily_modifier_hotstone";
+                def.descriptionKey = "daily_modifier_hotstone_desc";
+                break;
+
+            case RunModifier.FeatherFall:
+                def.gravityScale = 0.4f;
+                def.nameKey = "daily_modifier_featherfall";
+                def.descriptionKey = "daily_modifier_featherfall_desc";
+                break;
+
             case RunModifier.None:
             default:
                 def.modifier = RunModifier.None;
@@ -126,6 +172,49 @@ public struct RunModifierDefinition
         }
 
         return def;
+    }
+
+    /// <summary>
+    /// Stacks two definitions into one rule set, for rituals that run several modifiers.
+    /// Each rule combines the way a player would expect: speeds and score multiply, windows
+    /// take the stricter, "ends the run" rules OR together, and the harsher of two shrink or
+    /// auto-drop values wins. The result keeps <paramref name="a"/>'s id and keys.
+    /// </summary>
+    public static RunModifierDefinition Combine(RunModifierDefinition a, RunModifierDefinition b)
+    {
+        if (!b.IsSomething) return a;
+        if (!a.IsSomething) return b;
+
+        RunModifierDefinition c = a;
+        c.swingSpeedMultiplier = a.swingSpeedMultiplier * b.swingSpeedMultiplier;
+        c.perfectThreshold = Mathf.Max(a.perfectThreshold, b.perfectThreshold);
+        c.goodThreshold = Mathf.Max(a.goodThreshold, b.goodThreshold);
+        c.scoreMultiplier = a.scoreMultiplier * b.scoreMultiplier;
+        c.endRunOnPoorLanding = a.endRunOnPoorLanding || b.endRunOnPoorLanding;
+        c.goodHoldsCombo = a.goodHoldsCombo && b.goodHoldsCombo;
+
+        if (b.geometricCombo)
+        {
+            c.geometricComboBase = a.geometricCombo
+                ? Mathf.Max(a.geometricComboBase, b.geometricComboBase)
+                : b.geometricComboBase;
+            c.geometricCombo = true;
+        }
+        c.comboMultiplierCap = Mathf.Max(a.comboMultiplierCap, b.comboMultiplierCap);
+
+        c.widthShrinkPerStone = Mathf.Max(a.widthShrinkPerStone, b.widthShrinkPerStone);
+        c.minWidthScale = Mathf.Min(a.minWidthScale, b.minWidthScale);
+        c.autoDropSwings = ShorterPositive(a.autoDropSwings, b.autoDropSwings);
+        c.gravityScale = a.gravityScale * b.gravityScale;
+        c.randomPowerOnFill = a.randomPowerOnFill || b.randomPowerOnFill;
+        return c;
+    }
+
+    private static float ShorterPositive(float x, float y)
+    {
+        if (x <= 0f) return y;
+        if (y <= 0f) return x;
+        return Mathf.Min(x, y);
     }
 
     /// <summary>The game's untouched rules, expressed as a definition.</summary>
@@ -143,6 +232,11 @@ public struct RunModifierDefinition
             geometricCombo = false,
             geometricComboBase = 1.5f,
             comboMultiplierCap = 0f,
+            widthShrinkPerStone = 0f,
+            minWidthScale = 1f,
+            autoDropSwings = 0f,
+            gravityScale = 1f,
+            randomPowerOnFill = false,
             nameKey = string.Empty,
             descriptionKey = string.Empty
         };

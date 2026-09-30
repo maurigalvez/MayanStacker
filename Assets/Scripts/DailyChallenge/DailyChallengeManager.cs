@@ -13,7 +13,7 @@ using UnityEngine;
 /// Other systems read the cached <see cref="CurrentConfig"/> via guarded checks like
 /// <c>if (dailyMgr.IsActive &amp;&amp; dailyMgr.CurrentConfig.modifier == DailyChallengeModifier.X)</c>.
 /// </summary>
-public class DailyChallengeManager : MonoBehaviour
+public class DailyChallengeManager : MonoBehaviour, IRunRewindable
 {
     private const string TITLE_KEY_ENABLED = "DailyChallenge_Enabled";
     private const string TITLE_KEY_BLOCK_COUNT = "DailyChallenge_BlockCount";
@@ -50,8 +50,12 @@ public class DailyChallengeManager : MonoBehaviour
     [Tooltip("Maximum bonus points awarded for finishing SpeedRun instantly (scales linearly with remaining time).")]
     [SerializeField] private int speedRunMaxTimeBonus = 5000;
 
-    private DailyChallengeFallbackSettings fallbackSettings;
     private DailyChallengeConfig? cachedConfig;
+    private bool configAlreadyBriefed;
+
+    // The config the main menu briefed the player on, handed to the game scene so the run
+    // plays exactly what the briefing showed and the briefing isn't shown twice.
+    private static DailyChallengeConfig? briefedConfig;
     private bool isActive;
     private int blocksPlaced;
     private bool runCompleted;
@@ -66,21 +70,67 @@ public class DailyChallengeManager : MonoBehaviour
     public int BlockCountTarget => cachedConfig.HasValue ? cachedConfig.Value.blockCount : 0;
     public float ElapsedTime => isActive ? Time.time - runStartTime : 0f;
     public float SpeedRunTimeLimit => speedRunTimeLimitSeconds;
-    public bool IsSpeedRun => isActive && cachedConfig.HasValue && cachedConfig.Value.modifier == DailyChallengeModifier.SpeedRun;
+
+    /// <summary>Speed Run's timer and time bonus are on (a ritual can carry it among other modifiers).</summary>
+    public bool IsSpeedRun
+    {
+        get
+        {
+            if (!isActive || !cachedConfig.HasValue) return false;
+            DailyChallengeConfig cfg = cachedConfig.Value;
+            return cfg.HasRitual
+                ? cfg.ritual.HasModifier(RunModifier.SpeedRun)
+                : cfg.modifier == DailyChallengeModifier.SpeedRun;
+        }
+    }
+
+    /// <summary>Today's ritual, once the config is fetched; null for the original one-modifier Daily.</summary>
+    public DailyRitual CurrentRitual => cachedConfig.HasValue ? cachedConfig.Value.ritual : null;
+
+    /// <summary>
+    /// True when this scene's config came from the main menu's Ritual Briefing (the player
+    /// already read it and tapped PLAY), so the game scene starts the run straight away.
+    /// </summary>
+    public bool ConfigAlreadyBriefed => configAlreadyBriefed;
+
+    /// <summary>
+    /// Called by the main menu when PLAY is tapped on the Ritual Briefing, just before the game
+    /// scene loads. Consumed by the next <see cref="FetchTodaysConfig"/>.
+    /// </summary>
+    public static void HandOffBriefedConfig(DailyChallengeConfig config) => briefedConfig = config;
+
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+    private static void ResetStatics() => briefedConfig = null;
 
     private void Awake()
     {
         DependencyRegistry.Register<DailyChallengeManager>(this);
-        fallbackSettings = Resources.Load<DailyChallengeFallbackSettings>(FALLBACK_RESOURCE_PATH);
-        if (fallbackSettings == null)
-        {
-            Debug.LogWarning($"[DailyChallenge] Fallback settings not found at Resources/{FALLBACK_RESOURCE_PATH}. Using hardcoded defaults.");
-        }
+        RunRewind.Register(this);
     }
 
     private void OnDestroy()
     {
         DependencyRegistry.Unregister<DailyChallengeManager>(this);
+        RunRewind.Unregister(this);
+
+        // The ritual's rules and power die with the scene, so nothing leaks into the next mode.
+        TempleRuleContext.SetDaily(null);
+        DailyPowerGrant.Clear();
+    }
+
+    // ---- Tzolk'in Rewind ----
+    // A ritual can grant the Rewind, which takes stones back off the tower; the stone count
+    // toward the goal has to go back with them.
+
+    public object CaptureRewindState() => blocksPlaced;
+
+    public void RestoreRewindState(object state)
+    {
+        if (state is int placed)
+        {
+            blocksPlaced = placed;
+            runCompleted = false;
+        }
     }
 
     /// <summary>
@@ -93,6 +143,21 @@ public class DailyChallengeManager : MonoBehaviour
         {
             onReady?.Invoke(cachedConfig.Value);
             return;
+        }
+
+        // Briefed in the main menu: play exactly that, unless the day rolled over on the way in.
+        if (briefedConfig.HasValue)
+        {
+            DailyChallengeConfig briefed = briefedConfig.Value;
+            briefedConfig = null;
+            if (briefed.dayNumberUtc == CurrentDayNumberUtc())
+            {
+                cachedConfig = briefed;
+                configAlreadyBriefed = true;
+                onReady?.Invoke(briefed);
+                return;
+            }
+            Debug.Log("[DailyChallenge] The day rolled over after the briefing; resolving the new day.");
         }
 
 #if UNITY_EDITOR
@@ -109,6 +174,37 @@ public class DailyChallengeManager : MonoBehaviour
             cachedConfig = forced;
             Debug.Log($"[DailyChallenge] EDITOR OVERRIDE active: modifier={forced.modifier}, blockCount={forced.blockCount}");
             onReady?.Invoke(forced);
+            return;
+        }
+#endif
+
+        ResolveTodaysConfig(config =>
+        {
+            cachedConfig = config;
+            onReady?.Invoke(config);
+        });
+    }
+
+    /// <summary>
+    /// Resolves today's config without a DailyChallengeManager, so the main menu can brief the
+    /// player before the game scene loads. Server time + Title Data when PlayFab is reachable,
+    /// the local fallback otherwise. In the editor, the calendar's Editor Forced Ritual wins.
+    /// </summary>
+    public static void ResolveTodaysConfig(Action<DailyChallengeConfig> onReady)
+    {
+#if UNITY_EDITOR
+        DailyRitualCalendar editorCalendar = DailyRitualCalendar.Current;
+        if (editorCalendar != null && editorCalendar.editorForcedRitual != null)
+        {
+            DailyRitual forcedRitual = editorCalendar.editorForcedRitual;
+            Debug.Log($"[DailyChallenge] EDITOR OVERRIDE active: ritual={forcedRitual.id}");
+            onReady?.Invoke(new DailyChallengeConfig
+            {
+                modifier = DailyChallengeModifier.SpeedRun,
+                blockCount = forcedRitual.stonesToPlace,
+                dayNumberUtc = CurrentDayNumberUtc(),
+                ritual = forcedRitual
+            });
             return;
         }
 #endif
@@ -145,8 +241,7 @@ public class DailyChallengeManager : MonoBehaviour
                     titleResult =>
                     {
                         var config = ResolveConfigFromTitleData(titleResult.Data, dayNumberUtc);
-                        cachedConfig = config;
-                        Debug.Log($"[DailyChallenge] Resolved config: modifier={config.modifier}, blockCount={config.blockCount}, day={config.dayNumberUtc}");
+                        Debug.Log($"[DailyChallenge] Resolved config: ritual={(config.HasRitual ? config.ritual.id : "none")}, modifier={config.modifier}, blockCount={config.blockCount}, day={config.dayNumberUtc}");
                         onReady?.Invoke(config);
                     },
                     error =>
@@ -178,9 +273,49 @@ public class DailyChallengeManager : MonoBehaviour
         runCompleted = false;
         runStartTime = Time.time;
 
-        RunModifierService.Apply(
-            RunModifierDefinition.FromDaily(config.modifier),
-            swingSpeedMultiplierOverride: speedRunSwingMultiplier);
+        DailyRitual ritual = config.ritual;
+        if (ritual == null)
+        {
+            TempleRuleContext.SetDaily(null);
+            DailyPowerGrant.Clear();
+
+            RunModifierService.Apply(
+                RunModifierDefinition.FromDaily(config.modifier),
+                swingSpeedMultiplierOverride: speedRunSwingMultiplier);
+            return;
+        }
+
+        // Speed Run keeps the swing tuned on this prefab unless the ritual sets its own.
+        bool ritualSetsSwing = ritual.tuning != null && ritual.tuning.swingSpeedMultiplier > 0f;
+        float swingOverride = ritual.HasModifier(RunModifier.SpeedRun) && !ritualSetsSwing ? speedRunSwingMultiplier : -1f;
+        RunModifierService.Apply(ritual.modifiers, ritual.tuning, swingOverride);
+
+        // The temple rules read this exactly like a temple's own LevelData.
+        TempleRuleContext.SetDaily(ritual.HasAnyRule ? ritual.BuildRuleLevel(config.dayNumberUtc) : null);
+
+        DailyPowerGrant.Set(
+            ritual.UsesPowers,
+            ritual.grantedPower,
+            ritual.HasModifier(RunModifier.GiftOfTheGods),
+            config.dayNumberUtc);
+
+        GameAnalytics.Track("daily_ritual_started", new Dictionary<string, object>
+        {
+            { "ritual", ritual.id },
+            { "difficulty", ritual.difficulty },
+            { "day", config.dayNumberUtc }
+        });
+    }
+
+    /// <summary>
+    /// The day's headline for the result card and menu: the ritual's name, or the legacy
+    /// modifier's name when no ritual is set up.
+    /// </summary>
+    public static string DisplayNameFor(DailyChallengeConfig config)
+    {
+        if (config.HasRitual && !string.IsNullOrEmpty(config.ritual.nameKey))
+            return LocalizationManager.Get(config.ritual.nameKey);
+        return LocalizationManager.Get(GetModifierDisplayNameKey(config.modifier));
     }
 
     /// <summary>
@@ -235,6 +370,8 @@ public class DailyChallengeManager : MonoBehaviour
 
         // Clearing the modifier also undoes anything it pushed out, e.g. swing speed.
         RunModifierService.Clear();
+        TempleRuleContext.SetDaily(null);
+        DailyPowerGrant.Clear();
 
         isActive = false;
         blocksPlaced = 0;
@@ -264,8 +401,10 @@ public class DailyChallengeManager : MonoBehaviour
     // Internals
     // ─────────────────────────────────────────────────────────────────────
 
-    private DailyChallengeConfig ResolveConfigFromTitleData(Dictionary<string, string> data, int dayNumberUtc)
+    private static DailyChallengeConfig ResolveConfigFromTitleData(Dictionary<string, string> data, int dayNumberUtc)
     {
+        var fallbackSettings = Resources.Load<DailyChallengeFallbackSettings>(FALLBACK_RESOURCE_PATH);
+
         // Default values if any key is missing.
         int blockCount = fallbackSettings != null ? fallbackSettings.defaultBlockCount : 30;
         DailyChallengeModifier[] modifiers = fallbackSettings != null && fallbackSettings.defaultModifiers != null && fallbackSettings.defaultModifiers.Length > 0
@@ -273,6 +412,29 @@ public class DailyChallengeManager : MonoBehaviour
             : new[] { DailyChallengeModifier.SpeedRun, DailyChallengeModifier.FragileStack, DailyChallengeModifier.ComboChain };
 
         if (data == null) data = new Dictionary<string, string>();
+
+        // Named rituals, when set up, replace the one-modifier rotation. The override can
+        // force any ritual by id (for an event); a legacy modifier name still works below.
+        DailyRitualCalendar calendar = DailyRitualCalendar.Current;
+        if (calendar != null && calendar.HasRituals)
+        {
+            data.TryGetValue(TITLE_KEY_OVERRIDE, out string ritualOverride);
+            DailyRitual ritual = calendar.Find(ritualOverride);
+            bool legacyOverride = ritual == null && !string.IsNullOrWhiteSpace(ritualOverride)
+                                  && TryParseModifier(ritualOverride.Trim(), out _);
+            if (ritual == null && !legacyOverride) ritual = calendar.ForDay(dayNumberUtc);
+
+            if (ritual != null)
+            {
+                return new DailyChallengeConfig
+                {
+                    modifier = DailyChallengeModifier.SpeedRun, // unused with a ritual
+                    blockCount = ritual.stonesToPlace,
+                    dayNumberUtc = dayNumberUtc,
+                    ritual = ritual
+                };
+            }
+        }
 
         if (data.TryGetValue(TITLE_KEY_BLOCK_COUNT, out string blockCountStr)
             && int.TryParse(blockCountStr, out int parsedBlockCount) && parsedBlockCount > 0)
@@ -309,11 +471,10 @@ public class DailyChallengeManager : MonoBehaviour
         };
     }
 
-    private void DeliverFallback(Action<DailyChallengeConfig> onReady, int? overrideDayNumber = null)
+    private static void DeliverFallback(Action<DailyChallengeConfig> onReady, int? overrideDayNumber = null)
     {
         int dayNumberUtc = overrideDayNumber ?? ToDayNumberUtc(NowUtc());
         var config = ResolveConfigFromTitleData(null, dayNumberUtc);
-        cachedConfig = config;
         onReady?.Invoke(config);
     }
 

@@ -12,9 +12,13 @@ using UnityEngine.UI;
 /// panel. Without the prefab (or with one missing the card template or PLAY button) the screen
 /// builds this same layout in code.
 ///
-/// Cards are cloned from <see cref="cardTemplate"/>, one per unlocked power, into
-/// <see cref="cardsContainer"/> (a LayoutGroup there is honoured). Title, description and
-/// button labels are filled from localization at runtime; what the prefab says is a placeholder.
+/// Cards are cloned from <see cref="cardTemplate"/>, one per power, into
+/// <see cref="cardsContainer"/> (a LayoutGroup there is honoured). Locked powers get a card too,
+/// dimmed and not tappable, with "Beat level N" so the player knows what unlocks it.
+/// On a temple with a rule, <see cref="rulesSection"/> shows the rule's icon, name and summary
+/// (two entries side by side on a paired temple); it's hidden everywhere else.
+/// Title, description and button labels are filled from localization at runtime; what the
+/// prefab says is a placeholder.
 ///
 /// Menu: TamalStacker ▸ Powers ▸ Create Loadout Screen Prefab generates a prefab matching the
 /// code layout, as a starting point to restyle.
@@ -69,6 +73,20 @@ public class PowerLoadoutView : MonoBehaviour
     [SerializeField] private Color unselectedRingColor = new Color(0.33f, 0.27f, 0.2f, 1f);
     [SerializeField] private float unselectedScale = 0.9f;
 
+    [Header("Locked cards")]
+    [SerializeField] private Color lockedCardColor = new Color(0.1f, 0.1f, 0.1f, 1f);
+    [SerializeField] private Color lockedIconColor = new Color(0.3f, 0.3f, 0.3f, 0.8f);
+    [SerializeField] private Color lockedNameColor = new Color(0.5f, 0.47f, 0.4f, 1f);
+    [SerializeField] private Color lockedRingColor = new Color(0.22f, 0.19f, 0.15f, 1f);
+    [SerializeField] private float lockedScale = 0.9f;
+
+    [Header("Temple rules")]
+    [Tooltip("The strip that names the temple's rule(s). Hidden on Infinite and on temples without a rule. Optional.")]
+    [SerializeField] private GameObject rulesSection;
+
+    [Tooltip("Cloned once per rule (twice on a paired temple). Disabled at runtime; keep it enabled in the prefab so it stays easy to edit.")]
+    [SerializeField] private TempleRuleBriefEntry ruleEntryTemplate;
+
     [Header("Scroll hints")]
     [Tooltip("Shown while there are more cards off the left edge. Hint only, not tappable. Built in code (gold chevron) when empty.")]
     [SerializeField] private RectTransform leftArrow;
@@ -92,9 +110,16 @@ public class PowerLoadoutView : MonoBehaviour
     /// <summary>What the open/close animation scales.</summary>
     public GameObject PopupTarget => panel != null ? panel : gameObject;
 
-    /// <summary>Fills in the texts and clones one card per power in <paramref name="powers"/>.</summary>
-    public void Populate(List<PowerDefinition> powers, Action<PowerId> onCard, Action onPlay, Action onBack)
+    /// <summary>
+    /// Fills in the texts, clones one card per power in <paramref name="powers"/> (those in
+    /// <paramref name="locked"/> dimmed and not tappable) and one rule entry per rule in
+    /// <paramref name="rules"/>.
+    /// </summary>
+    public void Populate(List<PowerDefinition> powers, HashSet<PowerId> locked, List<LevelRule> rules,
+        Action<PowerId> onCard, Action onPlay, Action onBack)
     {
+        PopulateRules(rules);
+
         if (titleText != null) titleText.text = LocalizationManager.Get("power_loadout_title");
         if (playLabel != null) playLabel.text = LocalizationManager.Get("power_loadout_play");
         if (backLabel != null) backLabel.text = LocalizationManager.Get("power_loadout_back");
@@ -116,6 +141,7 @@ public class PowerLoadoutView : MonoBehaviour
             card.gameObject.SetActive(true);
             card.id = def.id;
             card.accent = def.accentColor;
+            card.locked = locked != null && locked.Contains(def.id);
 
             if (card.icon != null)
             {
@@ -124,8 +150,24 @@ public class PowerLoadoutView : MonoBehaviour
             }
             if (card.nameText != null) card.nameText.text = LocalizationManager.Get(def.nameKey);
 
-            PowerId id = def.id;
-            card.button.onClick.AddListener(() => onCard(id));
+            if (card.lockedMarker != null) card.lockedMarker.SetActive(card.locked);
+            if (card.lockText != null)
+            {
+                card.lockText.gameObject.SetActive(card.locked);
+                if (card.locked) card.lockText.text = LocalizationManager.Get("power_locked_format", def.unlockedByLevel);
+            }
+
+            if (card.locked)
+            {
+                // Seen, not picked: no press squash, no tint of its own on top of the locked colours.
+                card.button.interactable = false;
+                card.button.transition = Selectable.Transition.None;
+            }
+            else
+            {
+                PowerId id = def.id;
+                card.button.onClick.AddListener(() => onCard(id));
+            }
             cards.Add(card);
         }
     }
@@ -135,6 +177,17 @@ public class PowerLoadoutView : MonoBehaviour
     {
         foreach (PowerLoadoutCard c in cards)
         {
+            if (c.locked)
+            {
+                c.transform.localScale = Vector3.one * lockedScale;
+                if (c.background != null) c.background.color = lockedCardColor;
+                if (c.icon != null) c.icon.color = lockedIconColor;
+                if (c.ring != null) c.ring.color = lockedRingColor;
+                if (c.nameText != null) c.nameText.color = lockedNameColor;
+                if (c.selectedMarker != null) c.selectedMarker.SetActive(false);
+                continue;
+            }
+
             bool on = c.id == id;
             c.transform.localScale = Vector3.one * (on ? selectedScale : unselectedScale);
             if (c.background != null) c.background.color = on ? selectedCardColor : unselectedCardColor;
@@ -145,6 +198,25 @@ public class PowerLoadoutView : MonoBehaviour
         }
 
         if (descriptionText != null) descriptionText.text = description;
+    }
+
+    private void PopulateRules(List<LevelRule> rules)
+    {
+        bool any = rules != null && rules.Count > 0;
+        if (rulesSection != null) rulesSection.SetActive(any);
+        if (ruleEntryTemplate == null) return;
+
+        ruleEntryTemplate.gameObject.SetActive(false);
+        if (!any) return;
+
+        Transform parent = ruleEntryTemplate.transform.parent;
+        foreach (LevelRule rule in rules)
+        {
+            TempleRuleBriefEntry entry = Instantiate(ruleEntryTemplate, parent);
+            entry.name = "Rule_" + rule;
+            entry.gameObject.SetActive(true);
+            entry.Fill(rule);
+        }
     }
 
     /// <summary>Scrolls the card strip so <paramref name="id"/>'s card sits as close to the middle as it can.</summary>
@@ -410,6 +482,9 @@ public class PowerLoadoutView : MonoBehaviour
         row.childForceExpandHeight = false;
         view.cardsContainer = container;
         view.cardTemplate = BuildDefaultCard(container);
+        BuildLockParts(view.cardTemplate);
+
+        view.rulesSection = BuildRuleStrip(panel, out view.ruleEntryTemplate);
 
         view.descriptionText = RunOverlayUI.CreateLabel("Description", panel,
             "What the selected power does.", 32f, RunOverlayUI.Parchment);
@@ -488,6 +563,97 @@ public class PowerLoadoutView : MonoBehaviour
         nameRect.sizeDelta = new Vector2(-20f, 90f);
 
         return card;
+    }
+
+    /// <summary>
+    /// Adds the locked look to a card: a lock badge over the medallion and a "Beat level N"
+    /// line. Shared with the editor tool that adds them to an already-styled prefab.
+    /// </summary>
+    public static void BuildLockParts(PowerLoadoutCard card)
+    {
+        var rect = (RectTransform)card.transform;
+
+        RectTransform badge = RunOverlayUI.CreateChild("LockedMarker", rect);
+        RunOverlayUI.Place(badge, new Vector2(0.5f, 1f), new Vector2(0f, -100f), new Vector2(90f, 90f));
+        var lockImage = badge.gameObject.AddComponent<Image>();
+        lockImage.sprite = TempleRuleIcons.PowerLocked();
+        lockImage.preserveAspect = true;
+        lockImage.raycastTarget = false;
+        card.lockedMarker = badge.gameObject;
+
+        card.lockText = RunOverlayUI.CreateLabel("LockText", rect, "Beat level 4", 26f, RunOverlayUI.Gold);
+        RectTransform textRect = card.lockText.rectTransform;
+        textRect.anchorMin = new Vector2(0f, 0f);
+        textRect.anchorMax = new Vector2(1f, 0f);
+        textRect.pivot = new Vector2(0.5f, 0.5f);
+        textRect.anchoredPosition = new Vector2(0f, 18f);
+        textRect.sizeDelta = new Vector2(-16f, 36f);
+        card.lockText.raycastTarget = false;
+    }
+
+    /// <summary>
+    /// Builds the temple-rule strip as a slab sitting just above <paramref name="panel"/>'s top
+    /// edge (so it moves with the popup and needs no room inside the panel), with one entry
+    /// template in a centred row. Shared with the editor tool that adds it to a styled prefab.
+    /// </summary>
+    public static GameObject BuildRuleStrip(RectTransform panel, out TempleRuleBriefEntry template)
+    {
+        RectTransform strip = RunOverlayUI.CreateChild("RulesSection", panel);
+        strip.anchorMin = new Vector2(0f, 1f);
+        strip.anchorMax = new Vector2(1f, 1f);
+        strip.pivot = new Vector2(0.5f, 0f);
+        strip.anchoredPosition = new Vector2(0f, 50f);
+        strip.sizeDelta = new Vector2(0f, 240f);
+        var slab = strip.gameObject.AddComponent<Image>();
+        slab.color = RunOverlayUI.Backdrop;
+        slab.raycastTarget = false;
+
+        RectTransform row = RunOverlayUI.CreateChild("Entries", strip);
+        RunOverlayUI.Stretch(row);
+        var layout = row.gameObject.AddComponent<HorizontalLayoutGroup>();
+        layout.padding = new RectOffset(24, 24, 20, 20);
+        layout.spacing = 24f;
+        layout.childAlignment = TextAnchor.MiddleCenter;
+        layout.childControlWidth = true;
+        layout.childControlHeight = true;
+        layout.childForceExpandWidth = false;
+        layout.childForceExpandHeight = true;
+
+        RectTransform entryRect = RunOverlayUI.CreateChild("RuleEntryTemplate", row);
+        var element = entryRect.gameObject.AddComponent<LayoutElement>();
+        element.preferredWidth = 470f;
+        element.flexibleWidth = 1f;
+        template = entryRect.gameObject.AddComponent<TempleRuleBriefEntry>();
+
+        RectTransform iconRect = RunOverlayUI.CreateChild("Icon", entryRect);
+        iconRect.anchorMin = new Vector2(0f, 0.5f);
+        iconRect.anchorMax = new Vector2(0f, 0.5f);
+        iconRect.pivot = new Vector2(0f, 0.5f);
+        iconRect.anchoredPosition = Vector2.zero;
+        iconRect.sizeDelta = new Vector2(170f, 170f);
+        template.icon = iconRect.gameObject.AddComponent<Image>();
+        template.icon.preserveAspect = true;
+        template.icon.raycastTarget = false;
+
+        template.nameText = RunOverlayUI.CreateLabel("Name", entryRect, "Cabracán", 40f, RunOverlayUI.Gold);
+        PlaceBeside(template.nameText.rectTransform, 0.5f, 1f);
+        template.nameText.alignment = TextAlignmentOptions.BottomLeft;
+
+        template.shortText = RunOverlayUI.CreateLabel("Short", entryRect, "Hold BRACE when it shakes", 28f, RunOverlayUI.Parchment);
+        PlaceBeside(template.shortText.rectTransform, 0f, 0.5f);
+        template.shortText.alignment = TextAlignmentOptions.TopLeft;
+
+        return strip.gameObject;
+    }
+
+    /// <summary>Right of the entry's icon, between the given vertical anchors.</summary>
+    private static void PlaceBeside(RectTransform rt, float minY, float maxY)
+    {
+        rt.anchorMin = new Vector2(0f, minY);
+        rt.anchorMax = new Vector2(1f, maxY);
+        rt.pivot = new Vector2(0.5f, 0.5f);
+        rt.offsetMin = new Vector2(186f, 4f);
+        rt.offsetMax = new Vector2(0f, -4f);
     }
 
     /// <summary>A full-width row under the panel's top edge, inset by <paramref name="margin"/>.</summary>

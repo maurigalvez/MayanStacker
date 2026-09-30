@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
@@ -21,12 +22,18 @@ public static class RunModifierService
     private static RunModifier active = RunModifier.None;
     private static RunModifierDefinition definition = RunModifierDefinition.For(RunModifier.None);
 
+    // Every modifier in play. A Daily ritual can run several; other modes run one or none.
+    private static readonly List<RunModifier> activeSet = new List<RunModifier>();
+
     // Swing speed is the one rule we can't express as a passive query — it has to be
     // pushed into SpawnerHolder and pulled back out again when the run ends.
     private static float swingSpeedBeforeApply = -1f;
 
-    /// <summary>The modifier in play, or <see cref="RunModifier.None"/>.</summary>
+    /// <summary>The first modifier in play, or <see cref="RunModifier.None"/>.</summary>
     public static RunModifier Active => active;
+
+    /// <summary>Every modifier in play, in the order they were applied.</summary>
+    public static IReadOnlyList<RunModifier> ActiveSet => activeSet;
 
     /// <summary>The full rule set for the current run. Always valid, never null.</summary>
     public static RunModifierDefinition Definition => definition;
@@ -36,7 +43,7 @@ public static class RunModifierService
 
     /// <summary>Convenience test for a specific modifier.</summary>
     public static bool IsActive(RunModifier modifier) =>
-        modifier != RunModifier.None && active == modifier;
+        modifier != RunModifier.None && activeSet.Contains(modifier);
 
     // ── Rule queries ─────────────────────────────────────────────────────
     // Each returns the baseline when no modifier is applied, so callers can use them
@@ -70,6 +77,26 @@ public static class RunModifierService
         return Mathf.Min(multiplier, cap);
     }
 
+    /// <summary>
+    /// Width multiplier for a stone spawned onto a stack of <paramref name="stackCount"/>
+    /// (Shrinking Offerings). 1 when no shrink is in play.
+    /// </summary>
+    public static float WidthScaleAt(int stackCount)
+    {
+        if (definition.widthShrinkPerStone <= 0f) return 1f;
+        float scale = 1f - definition.widthShrinkPerStone * Mathf.Max(0, stackCount - 1);
+        return Mathf.Max(Mathf.Clamp01(definition.minWidthScale), scale);
+    }
+
+    /// <summary>Swings before the swinging stone drops by itself (Hot Stone). 0 = never.</summary>
+    public static float AutoDropSwings => definition.autoDropSwings;
+
+    /// <summary>Multiplier on a falling stone's gravity (Feather Fall). 1 = untouched.</summary>
+    public static float GravityScale => definition.gravityScale > 0f ? definition.gravityScale : 1f;
+
+    /// <summary>True when each full power meter grants a random power (Gift of the Gods).</summary>
+    public static bool RandomPowerOnFill => definition.randomPowerOnFill;
+
     /// <summary>Localized display name, or empty when no modifier is applied.</summary>
     public static string DisplayName =>
         definition.IsSomething ? LocalizationManager.Get(definition.nameKey) : string.Empty;
@@ -89,11 +116,36 @@ public static class RunModifierService
     /// </summary>
     public static void Apply(RunModifier modifier, float swingSpeedMultiplierOverride = -1f)
     {
+        singleModifier[0] = modifier;
+        Apply(singleModifier, null, swingSpeedMultiplierOverride);
+    }
+
+    private static readonly RunModifier[] singleModifier = new RunModifier[1];
+
+    /// <summary>
+    /// Applies several modifiers at once (a Daily ritual), combined through
+    /// <see cref="RunModifierDefinition.Combine"/>. <paramref name="tuning"/> can override
+    /// individual numbers for this run; null or zero fields keep the table's values.
+    /// </summary>
+    public static void Apply(IList<RunModifier> modifiers, RunModifierTuning tuning,
+        float swingSpeedMultiplierOverride = -1f)
+    {
         // Restore anything the previous modifier pushed out before overwriting it.
         Clear();
 
-        active = modifier;
-        definition = RunModifierDefinition.For(modifier);
+        if (modifiers != null)
+        {
+            for (int i = 0; i < modifiers.Count; i++)
+            {
+                RunModifier m = modifiers[i];
+                if (m == RunModifier.None || activeSet.Contains(m)) continue;
+                activeSet.Add(m);
+                definition = RunModifierDefinition.Combine(definition, RunModifierDefinition.For(m));
+            }
+        }
+
+        active = activeSet.Count > 0 ? activeSet[0] : RunModifier.None;
+        if (tuning != null) tuning.ApplyTo(ref definition);
 
         float swingMultiplier = swingSpeedMultiplierOverride > 0f
             ? swingSpeedMultiplierOverride
@@ -106,7 +158,7 @@ public static class RunModifierService
 
         if (definition.IsSomething)
         {
-            Debug.Log($"[RunModifier] Applied '{modifier}'.");
+            Debug.Log($"[RunModifier] Applied '{string.Join(", ", activeSet)}'.");
         }
     }
 
@@ -118,6 +170,7 @@ public static class RunModifierService
         RestoreSwingSpeed();
 
         active = RunModifier.None;
+        activeSet.Clear();
         definition = RunModifierDefinition.For(RunModifier.None);
     }
 
@@ -156,6 +209,7 @@ public static class RunModifierService
     private static void ResetStatics()
     {
         active = RunModifier.None;
+        activeSet.Clear();
         definition = RunModifierDefinition.For(RunModifier.None);
         swingSpeedBeforeApply = -1f;
     }
