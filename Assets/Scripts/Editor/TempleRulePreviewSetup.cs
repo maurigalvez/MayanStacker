@@ -21,7 +21,7 @@ using UnityEngine.UI;
 public static class TempleRulePreviewSetup
 {
     private const string DialogTitle = "Rule Previews";
-    private const string FxSheetPath = "Assets/Art/UI/MayanStacker_Effects_Icons.png";
+    internal const string FxSheetPath = "Assets/Art/UI/MayanStacker_Effects_Icons.png";
     private const string FxPrefabFolder = "Assets/Resources/UI/MapRuleFx";
     private const string LoadoutPrefabPath = "Assets/Resources/" + PowerLoadoutView.PrefabResourcePath + ".prefab";
 
@@ -71,14 +71,14 @@ public static class TempleRulePreviewSetup
     // Slices of the effects sheet, by what they are.
     private const string FxDust = "MayanStacker_Effects_Icons_12";
     private const string FxRainStreak = "MayanStacker_Effects_Icons_11";
-    private const string FxBubble = "MayanStacker_Effects_Icons_13";
+    internal const string FxBubble = "MayanStacker_Effects_Icons_13";
     private const string FxLeaf = "MayanStacker_Effects_Icons_10";
-    private const string FxWater = "MayanStacker_Effects_Icons_14";
-    private const string FxSun = "MayanStacker_Effects_Icons_15";
-    private const string FxMoon = "MayanStacker_Effects_Icons_16";
+    internal const string FxWater = "MayanStacker_Effects_Icons_14";
+    internal const string FxSun = "MayanStacker_Effects_Icons_15";
+    internal const string FxMoon = "MayanStacker_Effects_Icons_16";
     private const string FxGust = "MayanStacker_Effects_Icons_17";
 
-    private static Sprite FxSprite(string name)
+    internal static Sprite FxSprite(string name)
     {
         foreach (Object asset in AssetDatabase.LoadAllAssetRepresentationsAtPath(FxSheetPath))
         {

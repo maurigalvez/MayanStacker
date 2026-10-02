@@ -42,5 +42,5 @@ MonoBehaviour:
     warningSeconds: 1.3
     quakeSeconds: 2.4
     joltsPerSecond: 3.2
-    slidePerJolt: 0.09
-    headShake: 0.3
+    slidePerJolt: 0.1125
+    headShake: 0.375

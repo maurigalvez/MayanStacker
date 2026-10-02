@@ -9,7 +9,7 @@ using UnityEngine;
 /// and the rest of the tower stays solid as a reference.
 ///
 /// Sequence: a stone lands at a trigger height → warning (the sun in the corner darkens, the
-/// top starts to fade) → totality (<see cref="EclipseSettings.totalitySeconds"/>) → the light
+/// top starts to fade, the moon slides over the sun) → totality (<see cref="EclipseSettings.totalitySeconds"/>) → the light
 /// returns. Drops stay allowed throughout. A light sky dim stays on for the whole temple.
 ///
 /// History: a permanent dark band below the top was invisible (the camera only shows ~2.5 stones
@@ -20,11 +20,16 @@ public class Eclipse : TempleRuleBehaviour
 {
     private const int ShadeSortingOrder = 15; // above stones (4-5), water (11-12), leaves (12)
     private const int SunSortingOrder = 16;
+    private const int MoonSortingOrder = 17;
     private const int NightShadeSortingOrder = 3; // over sky/mountains/clouds/ground (-1..3), under stones (4-5)
     private const int LitStoneBoost = 20;     // lifts lit stones above the shade
     private const float FadeInSeconds = 1.4f;
     private const float LightReturnSeconds = 0.6f;
     private const float SunSize = 2.4f;
+    // Moon size and where it starts, as a share of the sun's size, matching the map preview
+    // (MapRuleFx_Eclipse: sun 60, moon 52, moon slides in from (-60, +12)).
+    private const float MoonShare = 52f / 60f;
+    private static readonly Vector2 MoonStart = new Vector2(-1f, 0.2f);
     private const float ViewMargin = 3f;
 
     private static readonly Color ShadeColor = new Color(0.02f, 0.02f, 0.05f, 1f);
@@ -38,6 +43,7 @@ public class Eclipse : TempleRuleBehaviour
     private SpriteRenderer shade;
     private SpriteRenderer nightShade;
     private SpriteRenderer sun;
+    private SpriteRenderer moon; // null when no moon art is wired
     private Camera cam;
 
     private Phase phase = Phase.Idle;
@@ -67,6 +73,10 @@ public class Eclipse : TempleRuleBehaviour
         shade = Create("EclipseShade", WhiteSprite, ShadeSortingOrder);
         nightShade = Create("EclipseNightShade", WhiteSprite, NightShadeSortingOrder);
         sun = Create("EclipseSun", art.eclipseSun != null ? art.eclipseSun : RulePlaceholderArt.EclipsedSun, SunSortingOrder);
+        // Same sun + moon slices as the map preview: the moon slides over the sun as totality
+        // comes on and back off as the light returns.
+        if (art.eclipseSun != null && art.eclipseMoon != null)
+            moon = Create("EclipseMoon", art.eclipseMoon, MoonSortingOrder);
         SetActive(false);
     }
 
@@ -320,8 +330,21 @@ public class Eclipse : TempleRuleBehaviour
         Vector2 sunSize = sun.sprite != null ? (Vector2)sun.sprite.bounds.size : Vector2.one;
         float sunScale = SunSize * (1f + 0.25f * totality) / Mathf.Max(0.001f, Mathf.Max(sunSize.x, sunSize.y));
         sun.transform.localScale = new Vector3(sunScale, sunScale, 1f);
-        sun.transform.position = new Vector3(c.x + (halfW - ViewMargin) * 0.55f, c.y + (halfH - ViewMargin) * 0.62f, 0f);
+        Vector3 sunPos = new Vector3(c.x + (halfW - ViewMargin) * 0.55f, c.y + (halfH - ViewMargin) * 0.62f, 0f);
+        sun.transform.position = sunPos;
         sun.color = new Color(1f, 1f, 1f, presence);
+
+        if (moon != null)
+        {
+            float sunWorld = SunSize * (1f + 0.25f * totality);
+            Vector2 moonSize = moon.sprite.bounds.size;
+            float moonScale = sunWorld * MoonShare / Mathf.Max(0.001f, Mathf.Max(moonSize.x, moonSize.y));
+            moon.transform.localScale = new Vector3(moonScale, moonScale, 1f);
+            float along = totality * totality * (3f - 2f * totality); // eased, like the preview
+            Vector2 off = MoonStart * sunWorld * (1f - along);
+            moon.transform.position = sunPos + new Vector3(off.x, off.y, 0f);
+            moon.color = new Color(1f, 1f, 1f, presence * along);
+        }
 
         if (presence <= 0f && targetPresence <= 0f && phase == Phase.Idle) SetActive(false);
     }
@@ -342,5 +365,6 @@ public class Eclipse : TempleRuleBehaviour
         shade.gameObject.SetActive(on);
         nightShade.gameObject.SetActive(on);
         sun.gameObject.SetActive(on);
+        if (moon != null) moon.gameObject.SetActive(on);
     }
 }

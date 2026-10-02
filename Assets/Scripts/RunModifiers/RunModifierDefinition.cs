@@ -154,7 +154,7 @@ public struct RunModifierDefinition
                 break;
 
             case RunModifier.HotStone:
-                def.autoDropSwings = 2f;
+                def.autoDropSwings = 1.5f;
                 def.nameKey = "daily_modifier_hotstone";
                 def.descriptionKey = "daily_modifier_hotstone_desc";
                 break;

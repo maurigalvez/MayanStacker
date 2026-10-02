@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using UnityEditor;
+using UnityEditor.U2D.Sprites;
 using UnityEngine;
 
 /// <summary>
@@ -14,6 +15,8 @@ using UnityEngine;
 ///  - fixes import settings (sprites as Sprite; tiled water as Repeat/FullRect; loops vs
 ///    one-shots get the right audio load type, mono);
 ///  - assigns every file it finds, and leaves fields whose file is missing untouched;
+///  - fills the Eclipse sun/moon and Cenote water/bubble, while empty, with the same slices of
+///    the effects sheet the map previews use, so the rule looks the same on the map and in-game;
 ///  - reports what it wired and what is still missing.
 ///
 /// Missing art is never an error: the game draws a code placeholder until the file exists.
@@ -43,10 +46,12 @@ public static class TempleRulesSetup
         ("quakeBraceSound",    "SFX_Quake_Brace",         Kind.OneShot),
         ("cenoteWater",        "Rule_Cenote_Water",       Kind.TiledSprite),
         ("cenoteSurface",      "Rule_Cenote_Surface",     Kind.TiledSprite),
+        ("cenoteBubble",       "Rule_Cenote_Bubble",      Kind.Sprite),
         ("cenoteLoop",         "SFX_Cenote_Loop",         Kind.Loop),
         ("cenoteWarningSound", "SFX_Cenote_Warning",      Kind.OneShot),
         ("cenoteFloodSound",   "SFX_Cenote_Flood",        Kind.OneShot),
         ("eclipseSun",         "Rule_Eclipse_Sun",        Kind.Sprite),
+        ("eclipseMoon",        "Rule_Eclipse_Moon",       Kind.Sprite),
         ("eclipseSting",       "SFX_Eclipse_Sting",       Kind.OneShot),
         ("eclipseLoop",        "SFX_Eclipse_Loop",        Kind.Loop),
     };
@@ -70,6 +75,8 @@ public static class TempleRulesSetup
         var so = new SerializedObject(art);
         var wired = new List<string>();
         var missing = new List<string>();
+
+        FillFromEffectsSheet(so, wired);
 
         foreach (var (field, file, kind) in RuleFiles)
         {
@@ -105,6 +112,79 @@ public static class TempleRulesSetup
             "\n\nMissing files keep their code placeholder (or stay silent).",
             "OK");
         Selection.activeObject = art;
+    }
+
+    // Rule art shared with the map previews (MapRuleFx prefabs): field → effects-sheet slice.
+    private static readonly (string field, string slice)[] SheetArt =
+    {
+        ("eclipseSun",   TempleRulePreviewSetup.FxSun),
+        ("eclipseMoon",  TempleRulePreviewSetup.FxMoon),
+        ("cenoteWater",  TempleRulePreviewSetup.FxWater),
+        ("cenoteBubble", TempleRulePreviewSetup.FxBubble),
+    };
+
+    // 9-slice borders (px: left, bottom, right, top) for the water slice: the top border holds
+    // the crest and its light bands, the sides and bottom hold the outline, so only the flat
+    // dark water stretches.
+    private static readonly Vector4 WaterBorder = new Vector4(10f, 10f, 10f, 60f);
+
+    /// <summary>
+    /// Fills each empty <see cref="SheetArt"/> field with its effects-sheet slice. A dedicated
+    /// Rule_* file (wired afterwards) still wins.
+    /// </summary>
+    private static void FillFromEffectsSheet(SerializedObject so, List<string> wired)
+    {
+        SetSliceBorder(TempleRulePreviewSetup.FxWater, WaterBorder);
+
+        foreach (var (field, slice) in SheetArt)
+        {
+            SerializedProperty prop = so.FindProperty(field);
+            if (prop == null || prop.objectReferenceValue != null) continue;
+            Sprite sprite = TempleRulePreviewSetup.FxSprite(slice);
+            if (sprite == null) continue;
+            prop.objectReferenceValue = sprite;
+            wired.Add(slice + " (map preview art)");
+        }
+    }
+
+    /// <summary>
+    /// Sets one slice's 9-slice border and makes the sheet Full Rect (sliced sprites need it),
+    /// through the sprite editor data so the sheet stays sliced (Multiple).
+    /// </summary>
+    private static void SetSliceBorder(string slice, Vector4 border)
+    {
+        var importer = AssetImporter.GetAtPath(TempleRulePreviewSetup.FxSheetPath) as TextureImporter;
+        if (importer == null) return;
+
+        var factory = new SpriteDataProviderFactories();
+        factory.Init();
+        ISpriteEditorDataProvider provider = factory.GetSpriteEditorDataProviderFromObject(importer);
+        provider.InitSpriteEditorDataProvider();
+
+        bool changed = false;
+        SpriteRect[] rects = provider.GetSpriteRects();
+        foreach (SpriteRect rect in rects)
+        {
+            if (rect.name != slice || rect.border == border) continue;
+            rect.border = border;
+            changed = true;
+        }
+        if (changed)
+        {
+            provider.SetSpriteRects(rects);
+            provider.Apply();
+        }
+
+        var settings = new TextureImporterSettings();
+        importer.ReadTextureSettings(settings);
+        if (settings.spriteMeshType != SpriteMeshType.FullRect)
+        {
+            settings.spriteMeshType = SpriteMeshType.FullRect;
+            importer.SetTextureSettings(settings);
+            changed = true;
+        }
+
+        if (changed) importer.SaveAndReimport();
     }
 
     /// <summary>

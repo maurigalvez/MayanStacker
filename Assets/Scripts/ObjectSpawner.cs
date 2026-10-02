@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class ObjectSpawner : MonoBehaviour
@@ -191,6 +192,30 @@ public class ObjectSpawner : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Swaps the stone on the hook for a fresh one of <paramref name="variant"/>. The Tzolk'in
+    /// Rewind uses it to hand back an Offering Stone it took off the tower: time went back to
+    /// before that stone was dropped, so it's the one that belongs on the hook.
+    /// </summary>
+    public bool ReplaceCurrentObject(BlockVariant variant)
+    {
+        if (!canSpawn || waitingForLanding || currentObject == null || variant == null) return false;
+
+        StackableObject current = currentObject.GetComponent<StackableObject>();
+        if (current == null || current.IsDropped) return false;
+
+        Destroy(currentObject);
+        currentObject = null;
+
+        forcedVariant = variant;
+        SpawnNewObject();
+        forcedVariant = null;
+        return currentObject != null;
+    }
+
+    // Set only for the spawn ReplaceCurrentObject makes.
+    private BlockVariant forcedVariant;
+
     private void SpawnNewObject()
     {
         if (!canSpawn) return;
@@ -313,7 +338,8 @@ public class ObjectSpawner : MonoBehaviour
         int stackCount = stackManager != null ? stackManager.GetStackCount() : 0;
         float widthMultiplier = variant.widthMultiplier * ActiveBoons.WidthMultiplier
                                 * RunModifierService.WidthScaleAt(stackCount + 1);
-        ActiveBoons.RegisterBlockSpawned();
+        // A replaced hook stone was already counted when it first spawned.
+        if (forcedVariant == null) ActiveBoons.RegisterBlockSpawned();
 
         Vector2 blockSize = new Vector2(objectSize.x * widthMultiplier, objectSize.y);
 
@@ -602,6 +628,8 @@ public class ObjectSpawner : MonoBehaviour
     /// </summary>
     private BlockVariant RollVariant()
     {
+        if (forcedVariant != null) return forcedVariant;
+
         if (stackManager == null)
         {
             stackManager = DependencyRegistry.Find<StackManager>();
@@ -626,6 +654,17 @@ public class ObjectSpawner : MonoBehaviour
             return BlockVariant.Standard;
         }
 
+        // The Daily deals only the specials today's ritual lists; with none listed (or the old
+        // one-modifier Daily) it's standard stones only.
+        List<BlockVariantId> allowed = null;
+        if (gameManager != null && gameManager.CurrentGameMode == GameMode.DailyChallenge)
+        {
+            var daily = DependencyRegistry.Find<DailyChallengeManager>();
+            DailyRitual ritual = daily != null ? daily.CurrentRitual : null;
+            if (ritual == null || !ritual.HasSpecialBlocks) return BlockVariant.Standard;
+            allowed = ritual.specialBlocks;
+        }
+
         int stackHeight = stackManager != null ? stackManager.GetStackCount() : 0;
         bool allowSpecial = !IsLastBlockInLevel();
 
@@ -641,7 +680,8 @@ public class ObjectSpawner : MonoBehaviour
         return varietyTable.Roll(
             stackHeight,
             allowSpecial: allowSpecial,
-            specialChanceMultiplier: AltitudeBandManager.SpecialBlockChanceMultiplier);
+            specialChanceMultiplier: AltitudeBandManager.SpecialBlockChanceMultiplier,
+            allowed: allowed);
     }
 
     /// <summary>

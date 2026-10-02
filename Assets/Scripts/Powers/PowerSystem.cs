@@ -445,9 +445,17 @@ public class PowerSystem : MonoBehaviour
         data["stones"] = stones.Count;
         data["points_undone"] = scoreBefore - gameManager.CurrentScore;
 
+        // The run is back to just before the earliest rewound stone (the last in the list) was
+        // dropped. If that was an Offering Stone it goes back on the hook when it gets there;
+        // it was spent when it spawned, so nothing else would bring it back.
+        StackableObject earliest = stones[stones.Count - 1];
+        BlockVariant returnedOffering = earliest != null && earliest.Variant.id == BlockVariantId.OfferingStone
+            ? earliest.Variant
+            : null;
+
         float stonesSeconds = RewindFx.StonesDuration(settings, stones.Count);
         if (objectSpawner != null) objectSpawner.HoldDrops(stonesSeconds);
-        StartCoroutine(RewindingFor(stonesSeconds));
+        StartCoroutine(RewindingFor(stonesSeconds, returnedOffering));
 
         var holder = DependencyRegistry.Find<SpawnerHolder>();
         Vector3 hook = holder != null
@@ -472,11 +480,20 @@ public class PowerSystem : MonoBehaviour
         return true;
     }
 
-    private IEnumerator RewindingFor(float seconds)
+    private IEnumerator RewindingFor(float seconds, BlockVariant returnedOffering)
     {
         rewinding = true;
+        // The stone on the hook now; if it's gone by the end (run restarted), so is the rewind.
+        GameObject hookStone = objectSpawner != null ? objectSpawner.CurrentObject : null;
+
         yield return new WaitForSecondsRealtime(seconds);
         rewinding = false;
+
+        if (returnedOffering != null && IsLive() && hookStone != null
+            && objectSpawner.CurrentObject == hookStone)
+        {
+            objectSpawner.ReplaceCurrentObject(returnedOffering);
+        }
     }
 
     /// <summary>

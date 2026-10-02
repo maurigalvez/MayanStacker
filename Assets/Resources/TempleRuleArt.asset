@@ -1,0 +1,35 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bdd2ba5cbd92bac44b7a3f0ba95848c5, type: 3}
+  m_Name: TempleRuleArt
+  m_EditorClassIdentifier: Assembly-CSharp::TempleRuleArt
+  ruleIntroSting: {fileID: 0}
+  windLeaf: {fileID: 0}
+  windLoop: {fileID: 0}
+  windGustSound: {fileID: 0}
+  rainStreak: {fileID: 0}
+  rainLoop: {fileID: 0}
+  rainSlideSound: {fileID: 0}
+  quakeHoldIcon: {fileID: 0}
+  quakeRumbleLoop: {fileID: 0}
+  quakeJoltSound: {fileID: 0}
+  quakeBraceSound: {fileID: 0}
+  cenoteWater: {fileID: -6862144234950711716, guid: 70a2b5ca108c87a48804ecdae3346c48, type: 3}
+  cenoteSurface: {fileID: 0}
+  cenoteBubble: {fileID: -8823745303692951550, guid: 70a2b5ca108c87a48804ecdae3346c48, type: 3}
+  cenoteLoop: {fileID: 0}
+  cenoteWarningSound: {fileID: 0}
+  cenoteFloodSound: {fileID: 0}
+  eclipseSun: {fileID: 942957644266703819, guid: 70a2b5ca108c87a48804ecdae3346c48, type: 3}
+  eclipseMoon: {fileID: 2515263703705998031, guid: 70a2b5ca108c87a48804ecdae3346c48, type: 3}
+  eclipseSting: {fileID: 0}
+  eclipseLoop: {fileID: 0}

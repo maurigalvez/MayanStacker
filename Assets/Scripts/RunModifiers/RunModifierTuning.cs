@@ -18,7 +18,7 @@ public class RunModifierTuning
     [Range(0f, 1f)]
     public float minWidthScale;
 
-    [Tooltip("Hot Stone: swings (end-to-end passes) after a stone arms before it drops by itself (table: 2). 0 = table.")]
+    [Tooltip("Hot Stone: swings (end-to-end passes) after a stone arms before it drops by itself (table: 1.5). 0 = table.")]
     [Range(0f, 4f)]
     public float hotStoneSwings;
 

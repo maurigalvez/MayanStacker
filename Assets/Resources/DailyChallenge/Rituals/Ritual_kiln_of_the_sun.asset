@@ -21,7 +21,7 @@ MonoBehaviour:
   tuning:
     shrinkPerStone: 0
     minWidthScale: 0
-    hotStoneSwings: 2
+    hotStoneSwings: 1.5
     featherGravity: 0
     swingSpeedMultiplier: 0
   grantsPower: 0

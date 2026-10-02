@@ -371,7 +371,7 @@
     },
     {
       "key": "ftue_beat_kukulkan",
-      "value": "{0} piedras perfectas seguidas invocan a Kukulkán para enderezar el templo."
+      "value": "{0} piedras perfectas seguidas te dan una Piedra de Ofrenda. Colócala a la perfección para invocar a Kukulkán."
     },
     {
       "key": "ftue_beat_power",
@@ -842,7 +842,7 @@
     { "key": "result_stat_perfects", "value": "Perfectos" },
     { "key": "result_stat_combo", "value": "Mejor combo" },
     { "key": "result_combo_value", "value": "x{0}" },
-    { "key": "result_tip_straighten", "value": "Logra {0} Perfectos seguidos para enderezar tu torre." },
+    { "key": "result_tip_straighten", "value": "Logra {0} Perfectos seguidos para ganar una Piedra de Ofrenda y colócala Perfecta para enderezar tu torre." },
     { "key": "result_tip_power", "value": "Los Perfectos llenan el medidor de tu poder. Guárdalo para cuando la torre se incline." },
     { "key": "result_tip_combo", "value": "Solo los aterrizajes perfectos mantienen tu combo." },
     { "key": "result_tip_edge", "value": "Suelta cuando destelle el borde de la Serpiente para ganar x3 puntos." },

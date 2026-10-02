@@ -20,7 +20,7 @@ public class HotStoneTimerView : MonoBehaviour
     [SerializeField] private RectTransform timer;
     [Tooltip("Radial-filled image: 1 = full time left.")]
     [SerializeField] private Image ring;
-    [Tooltip("Optional: swings left, e.g. \"2\".")]
+    [Tooltip("Optional: seconds left, e.g. \"3\".")]
     [SerializeField] private TextMeshProUGUI secondsLabel;
 
     [Header("Look")]
@@ -43,8 +43,8 @@ public class HotStoneTimerView : MonoBehaviour
 
     /// <summary>
     /// Places the ring over <paramref name="stone"/> and shows <paramref name="fraction"/> of the
-    /// fuse left. The label counts swings (what the fuse is made of); the heat reads seconds, so
-    /// the last stretch glows the same however fast the swing is.
+    /// fuse left. The label and the heat both read seconds, so the number counts down with the
+    /// ring (the fuse burns in swings, which read as a stuck "2 - 1" on a slow swing).
     /// </summary>
     public void Track(Transform stone, float fraction, float secondsLeft, float swingsLeft)
     {
@@ -75,7 +75,7 @@ public class HotStoneTimerView : MonoBehaviour
 
         if (secondsLabel != null)
         {
-            secondsLabel.text = Mathf.CeilToInt(swingsLeft).ToString();
+            secondsLabel.text = Mathf.CeilToInt(secondsLeft).ToString();
             secondsLabel.color = c;
         }
     }

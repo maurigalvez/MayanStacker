@@ -371,7 +371,7 @@
     },
     {
       "key": "ftue_beat_kukulkan",
-      "value": "連續{0}次完美落石，將喚醒庫庫爾坎扶正神廟。"
+      "value": "連續{0}次完美落石可獲得祭品石。完美落下它，即可喚醒庫庫爾坎。"
     },
     {
       "key": "ftue_beat_power",
@@ -835,7 +835,7 @@
     { "key": "result_stat_perfects", "value": "完美" },
     { "key": "result_stat_combo", "value": "最高連擊" },
     { "key": "result_combo_value", "value": "x{0}" },
-    { "key": "result_tip_straighten", "value": "連續{0}次完美落塊可以扶正高塔。" },
+    { "key": "result_tip_straighten", "value": "連續{0}次完美落塊可獲得祭品石，再完美落下它即可扶正高塔。" },
     { "key": "result_tip_power", "value": "完美落塊會填充能力的能量槽。留到高塔傾斜時再用。" },
     { "key": "result_tip_combo", "value": "只有完美落塊才能保持連擊。" },
     { "key": "result_tip_edge", "value": "蛇之鋒邊緣閃光時鬆手，獲得 x3 分數。" },

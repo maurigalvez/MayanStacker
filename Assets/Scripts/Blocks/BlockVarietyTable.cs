@@ -40,7 +40,8 @@ public class BlockVarietyTable : ScriptableObject
     [Tooltip("Special blocks in Temple Stacker, rolled and authored alike. Off since 2026-09-27 for the same reason; the temples' authored block sequences are kept so this can be switched back on.")]
     public bool enableInLevels = false;
 
-    [Tooltip("Special blocks in the Daily Challenge.")]
+    [Tooltip("Special blocks in the Daily Challenge. Even on, a ritual only rolls the specials " +
+             "it lists (DailyRitual.specialBlocks); the old one-modifier Daily rolls none.")]
     public bool enableInDaily = true;
 
     [Header("Guard rails")]
@@ -96,7 +97,12 @@ public class BlockVarietyTable : ScriptableObject
     /// Scales the odds of any special. Altitude bands raise this so the upper reaches of a
     /// long run feel wilder than the base of the temple.
     /// </param>
-    public BlockVariant Roll(int stackHeight, bool allowSpecial, float specialChanceMultiplier = 1f)
+    /// <param name="allowed">
+    /// When set, only these specials can be rolled (a Daily ritual's list). Null allows every
+    /// special in the table.
+    /// </param>
+    public BlockVariant Roll(int stackHeight, bool allowSpecial, float specialChanceMultiplier = 1f,
+        ICollection<BlockVariantId> allowed = null)
     {
         if (!enableVariants || !allowSpecial)
         {
@@ -128,7 +134,7 @@ public class BlockVarietyTable : ScriptableObject
         for (int i = 0; i < variants.Count; i++)
         {
             WeightedVariant entry = variants[i];
-            if (entry == null || entry.variant == null || entry.weight <= 0f) continue;
+            if (!IsRollable(entry, allowed)) continue;
             specialTotal += entry.weight;
         }
 
@@ -158,7 +164,7 @@ public class BlockVarietyTable : ScriptableObject
         for (int i = 0; i < variants.Count; i++)
         {
             WeightedVariant entry = variants[i];
-            if (entry == null || entry.variant == null || entry.weight <= 0f) continue;
+            if (!IsRollable(entry, allowed)) continue;
 
             cursor += entry.weight * Mathf.Max(0f, specialChanceMultiplier);
             if (roll < cursor)
@@ -169,6 +175,12 @@ public class BlockVarietyTable : ScriptableObject
         }
 
         return Standard();
+    }
+
+    private static bool IsRollable(WeightedVariant entry, ICollection<BlockVariantId> allowed)
+    {
+        if (entry == null || entry.variant == null || entry.weight <= 0f) return false;
+        return allowed == null || allowed.Contains(entry.variant.id);
     }
 
     /// <summary>

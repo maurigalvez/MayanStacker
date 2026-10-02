@@ -371,7 +371,7 @@
     },
     {
       "key": "ftue_beat_kukulkan",
-      "value": "パーフェクトを{0}回続けると、ククルカンが神殿をまっすぐに整える。"
+      "value": "パーフェクトを{0}回続けると供物の石が届く。完璧に置けばククルカンが目覚める。"
     },
     {
       "key": "ftue_beat_power",
@@ -835,7 +835,7 @@
     { "key": "result_stat_perfects", "value": "パーフェクト" },
     { "key": "result_stat_combo", "value": "最大コンボ" },
     { "key": "result_combo_value", "value": "x{0}" },
-    { "key": "result_tip_straighten", "value": "パーフェクトを{0}回連続で決めると塔がまっすぐになる。" },
+    { "key": "result_tip_straighten", "value": "パーフェクトを{0}回連続で決めると供物の石が届く。それをパーフェクトで置けば塔がまっすぐになる。" },
     { "key": "result_tip_power", "value": "パーフェクトでパワーのメーターがたまる。塔が傾いたときのために取っておこう。" },
     { "key": "result_tip_combo", "value": "コンボを保てるのはパーフェクトな着地だけ。" },
     { "key": "result_tip_edge", "value": "蛇の縁が光った瞬間に落とすとポイントx3。" },

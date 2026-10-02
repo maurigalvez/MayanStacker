@@ -121,7 +121,7 @@ public static class DailyRitualSetup
 
         yield return new RitualSpec("coals_of_xibalba", 3, 30)
             .Mods(RunModifier.HotStone)
-            .Tune(t => t.hotStoneSwings = 2.5f)
+            .Tune(t => t.hotStoneSwings = 1.875f)
             .Rules(LevelRule.RainSlick);
 
         yield return new RitualSpec("storm_serpent", 3, 30)
@@ -153,7 +153,7 @@ public static class DailyRitualSetup
 
         yield return new RitualSpec("kiln_of_the_sun", 3, 30)
             .Mods(RunModifier.HotStone, RunModifier.ComboChain)
-            .Tune(t => t.hotStoneSwings = 2f);
+            .Tune(t => t.hotStoneSwings = 1.5f);
 
         yield return new RitualSpec("chaacs_trial", 3, 30)
             .Mods(RunModifier.NarrowWindow)
@@ -199,6 +199,7 @@ public static class DailyRitualSetup
         public RitualSpec Mods(params RunModifier[] m) { modifiers = m; return this; }
         public RitualSpec Rules(LevelRule first, LevelRule second = LevelRule.None) { rule = first; secondRule = second; return this; }
         public RitualSpec Power(PowerId p) { grantsPower = true; power = p; return this; }
+        public RitualSpec Stones(params BlockVariantId[] ids) { edits.Add(r => r.specialBlocks = new List<BlockVariantId>(ids)); return this; }
         public RitualSpec Tune(System.Action<RunModifierTuning> f) { edits.Add(r => f(r.tuning)); return this; }
         public RitualSpec Wind(System.Action<JungleWindSettings> f) { edits.Add(r => f(r.windSettings)); return this; }
         public RitualSpec Quake(System.Action<EarthquakeSettings> f) { edits.Add(r => f(r.quakeSettings)); return this; }

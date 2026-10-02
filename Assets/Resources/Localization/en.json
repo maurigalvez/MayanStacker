@@ -371,7 +371,7 @@
     },
     {
       "key": "ftue_beat_kukulkan",
-      "value": "{0} perfect stones in a row summon Kukulkan to straighten the temple."
+      "value": "{0} perfect stones in a row earn an Offering Stone. Land it perfectly to summon Kukulkan."
     },
     {
       "key": "ftue_beat_power",
@@ -838,7 +838,7 @@
     { "key": "result_stat_perfects", "value": "Perfects" },
     { "key": "result_stat_combo", "value": "Best combo" },
     { "key": "result_combo_value", "value": "x{0}" },
-    { "key": "result_tip_straighten", "value": "Land {0} Perfects in a row to straighten your tower." },
+    { "key": "result_tip_straighten", "value": "Land {0} Perfects in a row for an Offering Stone, then land it Perfect to straighten your tower." },
     { "key": "result_tip_power", "value": "Perfect landings fill your power's meter. Save it for when the tower leans." },
     { "key": "result_tip_combo", "value": "Only Perfect landings keep your combo alive." },
     { "key": "result_tip_edge", "value": "Release as the Serpent's Edge rim flashes for x3 points." },

@@ -42,10 +42,15 @@ public class TempleRuleArt : ScriptableObject
     public AudioClip quakeBraceSound;
 
     [Header("Rising cenote")]
-    [Tooltip("Water body. Tiled horizontally, stretched vertically. Null = flat code colour.")]
+    [Tooltip("The water: a wavy crest on top of the body, drawn 9-sliced (set the sprite's borders so " +
+             "the crest sits in the top border). Drawn twice, a tinted copy behind the front one, like the " +
+             "map preview. Null = code-drawn vector water.")]
     public Sprite cenoteWater;
-    [Tooltip("Wavy surface line along the top of the water.")]
+    [Tooltip("Optional extra surface line along the top of the water, tiled. Leave empty when the " +
+             "water sprite has its own crest.")]
     public Sprite cenoteSurface;
+    [Tooltip("One bubble, rising inside the water. Null = no bubbles.")]
+    public Sprite cenoteBubble;
     public AudioClip cenoteLoop;
     [Tooltip("Played once when the water gets close to the top stone.")]
     public AudioClip cenoteWarningSound;
@@ -53,8 +58,10 @@ public class TempleRuleArt : ScriptableObject
     public AudioClip cenoteFloodSound;
 
     [Header("Eclipse")]
-    [Tooltip("The eclipsed sun (dark disc + corona), hung in the sky.")]
+    [Tooltip("The sun hung in the sky. With a moon set, draw the plain sun; without one, the already-eclipsed sun.")]
     public Sprite eclipseSun;
+    [Tooltip("The moon that slides over the sun as totality comes on. Null = the sun sprite alone.")]
+    public Sprite eclipseMoon;
     [Tooltip("Played as the light goes out at the start of the attempt.")]
     public AudioClip eclipseSting;
     [Tooltip("Optional low drone under the eclipse.")]

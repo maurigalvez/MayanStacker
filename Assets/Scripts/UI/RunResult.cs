@@ -39,7 +39,7 @@ public static class RunResult
         public int perfectLandings;
         public int maxCombo;
 
-        /// <summary>Perfects in a row that straighten the tower; 0 where Perfects charge a power instead.</summary>
+        /// <summary>Perfects in a row that earn an Offering Stone; 0 where Perfects charge a power instead (that tip wins).</summary>
         public int perfectHitsRequired;
 
         /// <summary>Infinite: the high score when the run began.</summary>

@@ -48,6 +48,12 @@ public class DailyRitual : ScriptableObject
     public bool grantsPower;
     public PowerId grantedPower = PowerId.JaguarSlam;
 
+    [Header("Special stones")]
+    [Tooltip("Special stones this ritual can deal (Jade Sliver, Heavy Stone, Cracked Stone…). " +
+             "Empty = standard stones only. The Offering Stone a Perfect streak earns doesn't " +
+             "need listing.")]
+    public List<BlockVariantId> specialBlocks = new List<BlockVariantId>();
+
     [Header("Temple rules (environment)")]
     public LevelRule rule = LevelRule.None;
     public LevelRule secondRule = LevelRule.None;
@@ -71,6 +77,9 @@ public class DailyRitual : ScriptableObject
     public bool UsesPowers => grantsPower || HasModifier(RunModifier.GiftOfTheGods);
 
     public bool HasModifier(RunModifier m) => modifiers != null && modifiers.Contains(m);
+
+    /// <summary>True when the ritual deals any special stones at all.</summary>
+    public bool HasSpecialBlocks => specialBlocks != null && specialBlocks.Count > 0;
 
     public bool HasAnyRule => rule != LevelRule.None || secondRule != LevelRule.None;
 
