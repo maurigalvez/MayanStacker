@@ -25,12 +25,12 @@ MonoBehaviour:
     is distinguished by its graceful palaces, temples, and carved panels, many of
     which record dynastic history and religious ceremonies."
   siteImage: {fileID: 21300000, guid: 73d4f5b89e2a1d043950e363d495e018, type: 3}
-  requiredStackHeight: 37
-  oneStarScore: 1900
-  twoStarScore: 3700
-  threeStarScore: 6300
-  swingSpeedMultiplier: 1.2
-  swingAmplitudeMultiplier: 1.25
+  requiredStackHeight: 25
+  oneStarScore: 1300
+  twoStarScore: 2500
+  threeStarScore: 4250
+  swingSpeedMultiplier: 1.15
+  swingAmplitudeMultiplier: 1.19
   gameMusic: {fileID: 8300000, guid: 2f71c528f7b56a64fa17bf1c9caf9823, type: 3}
   rule: 2
   secondRule: 0

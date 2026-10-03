@@ -25,12 +25,12 @@ MonoBehaviour:
     importance of water-borne trade to Maya economies.\n\nFrom forest to sea, goods
     and ideas flowed through Muyil\u2019s watery corridors."
   siteImage: {fileID: 21300000, guid: 5ef51fc46e4c4c349beaaefa8f41e946, type: 3}
-  requiredStackHeight: 22
-  oneStarScore: 1150
-  twoStarScore: 2400
-  threeStarScore: 4000
-  swingSpeedMultiplier: 1.2
-  swingAmplitudeMultiplier: 1.2
+  requiredStackHeight: 20
+  oneStarScore: 1050
+  twoStarScore: 2200
+  threeStarScore: 3650
+  swingSpeedMultiplier: 1.15
+  swingAmplitudeMultiplier: 1.15
   gameMusic: {fileID: 8300000, guid: 81c7c67fd9b57b24687ca3d54d8c683a, type: 3}
   rule: 3
   secondRule: 0

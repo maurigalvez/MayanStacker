@@ -26,20 +26,23 @@ MonoBehaviour:
     ruins let us glimpse how the Maya lived, traded, and worshipped, making it one
     of Belize\u2019s most important cultural treasures."
   siteImage: {fileID: 21300000, guid: e3b668bc52d06fd48a9ffa47b6202f68, type: 3}
-  requiredStackHeight: 30
-  oneStarScore: 1650
-  twoStarScore: 3350
-  threeStarScore: 5750
-  swingSpeedMultiplier: 1.2
-  swingAmplitudeMultiplier: 1.2
+  requiredStackHeight: 22
+  oneStarScore: 1200
+  twoStarScore: 2450
+  threeStarScore: 4200
+  swingSpeedMultiplier: 1.15
+  swingAmplitudeMultiplier: 1.15
   gameMusic: {fileID: 8300000, guid: 2f71c528f7b56a64fa17bf1c9caf9823, type: 3}
   rule: 6
   secondRule: 0
   capstonePayoff: 1
   capstoneSilhouette: {fileID: 0}
   eclipseSettings:
-    litStones: 3.5
-    fadeStones: 1.5
-    ghostAlpha: 0.3
-    totalityDim: 0.65
+    firstAtHeight: 6
+    everyNStones: 9
+    warningSeconds: 1.4
+    totalitySeconds: 1.8
+    hiddenTopStones: 1
+    ghostAlpha: 0.45
+    totalityDim: 0.55
     skyDim: 0.15

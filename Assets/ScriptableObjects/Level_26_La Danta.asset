@@ -29,12 +29,12 @@ MonoBehaviour:
     Its scale suggests the city was a major political and religious hub long before
     the Classic Period."
   siteImage: {fileID: 21300000, guid: 34f4bcda39dadb140a2901ba3158f14f, type: 3}
-  requiredStackHeight: 48
-  oneStarScore: 2550
-  twoStarScore: 4700
-  threeStarScore: 7700
-  swingSpeedMultiplier: 1.55
-  swingAmplitudeMultiplier: 1.4
+  requiredStackHeight: 33
+  oneStarScore: 1750
+  twoStarScore: 3250
+  threeStarScore: 5300
+  swingSpeedMultiplier: 1.41
+  swingAmplitudeMultiplier: 1.3
   gameMusic: {fileID: 8300000, guid: 20f2e874c2c59eb45a147d95739dbf17, type: 3}
   rule: 2
   secondRule: 6
@@ -47,8 +47,11 @@ MonoBehaviour:
     gustRampSeconds: 1.3
     firstAtHeight: 2
   eclipseSettings:
-    litStones: 2
-    fadeStones: 1.2
-    ghostAlpha: 0.15
+    firstAtHeight: 5
+    everyNStones: 7
+    warningSeconds: 1.1
+    totalitySeconds: 2.4
+    hiddenTopStones: 1
+    ghostAlpha: 0.25
     totalityDim: 0.65
     skyDim: 0.3

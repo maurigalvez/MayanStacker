@@ -28,21 +28,24 @@ MonoBehaviour:
     rainforest, connecting visitors to the grandeur and ingenuity of the ancient
     Maya.\r\n"
   siteImage: {fileID: 21300000, guid: 4d30730d713f8254c836f69b3fcdbb55, type: 3}
-  requiredStackHeight: 45
-  oneStarScore: 2650
-  twoStarScore: 5100
-  threeStarScore: 8500
-  swingSpeedMultiplier: 1.45
-  swingAmplitudeMultiplier: 1.35
+  requiredStackHeight: 31
+  oneStarScore: 1850
+  twoStarScore: 3500
+  threeStarScore: 5850
+  swingSpeedMultiplier: 1.34
+  swingAmplitudeMultiplier: 1.26
   gameMusic: {fileID: 8300000, guid: 20f2e874c2c59eb45a147d95739dbf17, type: 3}
   rule: 6
   secondRule: 3
   capstonePayoff: 1
   capstoneSilhouette: {fileID: 0}
   eclipseSettings:
-    litStones: 2.5
-    fadeStones: 1.5
-    ghostAlpha: 0.2
+    firstAtHeight: 5
+    everyNStones: 7
+    warningSeconds: 1.2
+    totalitySeconds: 2.2
+    hiddenTopStones: 1
+    ghostAlpha: 0.3
     totalityDim: 0.65
     skyDim: 0.25
   rainSettings:

@@ -25,12 +25,12 @@ MonoBehaviour:
     to understanding Classic Maya politics, alliances, and rivalries.\n\nHere, stone
     giants preserved a kingdom\u2019s defiant rise against its powerful neighbor."
   siteImage: {fileID: 21300000, guid: 6825687c7f69488439c5973cf99b9747, type: 3}
-  requiredStackHeight: 20
-  oneStarScore: 1050
-  twoStarScore: 2150
-  threeStarScore: 3700
-  swingSpeedMultiplier: 1.15
-  swingAmplitudeMultiplier: 1.15
+  requiredStackHeight: 19
+  oneStarScore: 1000
+  twoStarScore: 2050
+  threeStarScore: 3500
+  swingSpeedMultiplier: 1.11
+  swingAmplitudeMultiplier: 1.11
   gameMusic: {fileID: 8300000, guid: 81c7c67fd9b57b24687ca3d54d8c683a, type: 3}
   rule: 3
   secondRule: 0

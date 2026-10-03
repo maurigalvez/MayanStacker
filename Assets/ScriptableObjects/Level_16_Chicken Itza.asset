@@ -26,12 +26,12 @@ MonoBehaviour:
     Itz\xE1 is a UNESCO World Heritage Site and one of the New Seven Wonders of the
     World."
   siteImage: {fileID: 21300000, guid: 39c06f6a50a66774494ab644c2be46d2, type: 3}
-  requiredStackHeight: 37
-  oneStarScore: 1850
-  twoStarScore: 3750
-  threeStarScore: 6650
-  swingSpeedMultiplier: 1.25
-  swingAmplitudeMultiplier: 1.25
+  requiredStackHeight: 26
+  oneStarScore: 1300
+  twoStarScore: 2650
+  threeStarScore: 4650
+  swingSpeedMultiplier: 1.19
+  swingAmplitudeMultiplier: 1.19
   gameMusic: {fileID: 8300000, guid: 81c7c67fd9b57b24687ca3d54d8c683a, type: 3}
   rule: 2
   secondRule: 0

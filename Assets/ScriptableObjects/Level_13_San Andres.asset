@@ -33,20 +33,23 @@ MonoBehaviour:
     its pyramids, plazas, and museum exhibits that connect the Maya past with El
     Salvador\u2019s broader heritage"
   siteImage: {fileID: 21300000, guid: 4dfadb4d94e2fde4e927910b54a830d5, type: 3}
-  requiredStackHeight: 34
-  oneStarScore: 1950
-  twoStarScore: 3900
-  threeStarScore: 6750
-  swingSpeedMultiplier: 1.3
-  swingAmplitudeMultiplier: 1.25
+  requiredStackHeight: 24
+  oneStarScore: 1400
+  twoStarScore: 2750
+  threeStarScore: 4750
+  swingSpeedMultiplier: 1.23
+  swingAmplitudeMultiplier: 1.19
   gameMusic: {fileID: 8300000, guid: 2f71c528f7b56a64fa17bf1c9caf9823, type: 3}
   rule: 6
   secondRule: 0
   capstonePayoff: 1
   capstoneSilhouette: {fileID: 0}
   eclipseSettings:
-    litStones: 2.5
-    fadeStones: 1.5
-    ghostAlpha: 0.2
+    firstAtHeight: 5
+    everyNStones: 7
+    warningSeconds: 1.2
+    totalitySeconds: 2.2
+    hiddenTopStones: 1
+    ghostAlpha: 0.3
     totalityDim: 0.65
     skyDim: 0.25

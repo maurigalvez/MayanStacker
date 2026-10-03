@@ -31,12 +31,12 @@ MonoBehaviour:
     forest teeming with wildlife, a reminder of the city\u2019s grandeur and its
     enduring connection to nature."
   siteImage: {fileID: 21300000, guid: 96fe4944313d18d409facb3e4108211f, type: 3}
-  requiredStackHeight: 46
-  oneStarScore: 2250
-  twoStarScore: 4300
-  threeStarScore: 7250
-  swingSpeedMultiplier: 1.5
-  swingAmplitudeMultiplier: 1.35
+  requiredStackHeight: 31
+  oneStarScore: 1500
+  twoStarScore: 2900
+  threeStarScore: 4900
+  swingSpeedMultiplier: 1.38
+  swingAmplitudeMultiplier: 1.26
   gameMusic: {fileID: 8300000, guid: 20f2e874c2c59eb45a147d95739dbf17, type: 3}
   rule: 2
   secondRule: 4

@@ -25,12 +25,12 @@ MonoBehaviour:
     like Xunantunich and Caracol.\n\nFrom this high ridge, generations of nobles
     watched their world become a civilization."
   siteImage: {fileID: 21300000, guid: c9558bd1e258309408f5972f516e7d79, type: 3}
-  requiredStackHeight: 25
-  oneStarScore: 1300
-  twoStarScore: 2700
-  threeStarScore: 4650
-  swingSpeedMultiplier: 1.25
-  swingAmplitudeMultiplier: 1.2
+  requiredStackHeight: 21
+  oneStarScore: 1100
+  twoStarScore: 2250
+  threeStarScore: 3900
+  swingSpeedMultiplier: 1.19
+  swingAmplitudeMultiplier: 1.15
   gameMusic: {fileID: 8300000, guid: 81c7c67fd9b57b24687ca3d54d8c683a, type: 3}
   rule: 3
   secondRule: 0

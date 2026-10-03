@@ -31,20 +31,23 @@ MonoBehaviour:
     the Chalchuapa Archaeological Zone alongside other nearby sites like Casa Blanca
     and El Trapiche"
   siteImage: {fileID: 21300000, guid: 8ee1d3ccfcb2f7a4184cc3cc8421a9ce, type: 3}
-  requiredStackHeight: 35
-  oneStarScore: 2000
-  twoStarScore: 3950
-  threeStarScore: 6750
-  swingSpeedMultiplier: 1.35
-  swingAmplitudeMultiplier: 1.25
+  requiredStackHeight: 25
+  oneStarScore: 1450
+  twoStarScore: 2800
+  threeStarScore: 4800
+  swingSpeedMultiplier: 1.26
+  swingAmplitudeMultiplier: 1.19
   gameMusic: {fileID: 8300000, guid: 2f71c528f7b56a64fa17bf1c9caf9823, type: 3}
   rule: 6
   secondRule: 0
   capstonePayoff: 1
   capstoneSilhouette: {fileID: 0}
   eclipseSettings:
-    litStones: 2
-    fadeStones: 1.2
-    ghostAlpha: 0.15
+    firstAtHeight: 5
+    everyNStones: 7
+    warningSeconds: 1.1
+    totalitySeconds: 2.4
+    hiddenTopStones: 1
+    ghostAlpha: 0.25
     totalityDim: 0.65
     skyDim: 0.3
