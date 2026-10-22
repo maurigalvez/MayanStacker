@@ -1071,6 +1071,9 @@ public class UIManager : MonoBehaviour
 
     private void OnGameRestart()
     {
+        // The next title card is a quick one: the player already knows where they are.
+        quickTitleNext = TempoSettings.FastRetry != null;
+
         // Hide game over panel
         if (gameOverPanel != null)
             gameOverPanel.SetActive(false);
@@ -1332,12 +1335,19 @@ public class UIManager : MonoBehaviour
     /// </summary>
     public bool IsTitleShowing => isTitleShowing;
 
+    // Set by a restart so the title that follows plays its short form.
+    private bool quickTitleNext;
+
     /// <summary>
     /// Coroutine that shows the game title with animation, then hides it
     /// </summary>
     private IEnumerator GameTitleRoutine()
     {
         if (gameTitleText == null) yield break;
+
+        // A retry gets a short card so the swing is back within a second or so of Try Again.
+        var fastRetry = quickTitleNext ? TempoSettings.FastRetry : null;
+        quickTitleNext = false;
 
         // Ensure the UIManager GameObject is active (required for coroutines on Android)
         if (!gameObject.activeInHierarchy)
@@ -1350,7 +1360,7 @@ public class UIManager : MonoBehaviour
         yield return null;
 
         // Wait before showing the title (reduced from 0.25s to ensure better Android compatibility)
-        yield return new WaitForSeconds(0.1f);
+        if (fastRetry == null) yield return new WaitForSeconds(0.1f);
 
         // Show the title
         if (gameTitleText == null) yield break;
@@ -1373,6 +1383,12 @@ public class UIManager : MonoBehaviour
 
         // Animation settings
         float animationDuration = 0.5f;
+        float displayDuration = gameTitleDisplayDuration;
+        if (fastRetry != null)
+        {
+            displayDuration = fastRetry.retryTitleSeconds;
+            animationDuration = Mathf.Min(animationDuration, displayDuration * 0.4f);
+        }
         float elapsedTime = 0f;
 
         // Appear animation: scale from large and fade in
@@ -1410,7 +1426,7 @@ public class UIManager : MonoBehaviour
         canvasGroup.alpha = 1f;
 
         // Hold for display duration (subtract animation time)
-        float holdDuration = gameTitleDisplayDuration - (animationDuration * 2);
+        float holdDuration = displayDuration - (animationDuration * 2);
         if (holdDuration > 0)
         {
             yield return new WaitForSeconds(holdDuration);

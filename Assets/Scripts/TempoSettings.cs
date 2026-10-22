@@ -71,6 +71,35 @@ public class TempoSettings : ScriptableObject
     [Range(1f, 3f)]
     public float infiniteCurveExponent = 1.4f;
 
+    [Header("Fast retry")]
+    [Tooltip("Tapping Try Again gets the stone swinging again quickly: a short pause before the run restarts and a quick title card instead of the full intro. First runs keep the full intro.")]
+    public bool enableFastRetry = true;
+
+    [Tooltip("Seconds between the result card closing and the run restarting (the old value was 0.5).")]
+    [Range(0.05f, 0.5f)]
+    public float retryRestartDelay = 0.15f;
+
+    [Tooltip("Seconds the title card takes on a retry, fade in and out included (a first run shows it for 2.5).")]
+    [Range(0.2f, 1.5f)]
+    public float retryTitleSeconds = 0.5f;
+
+    private static TempoSettings cached;
+    private static bool cacheLoaded;
+
+    /// <summary>The loaded asset, or null when it is missing or fast retry is switched off.</summary>
+    public static TempoSettings FastRetry
+    {
+        get
+        {
+            if (!cacheLoaded)
+            {
+                cacheLoaded = true;
+                cached = Resources.Load<TempoSettings>(ResourcePath);
+            }
+            return cached != null && cached.enableFastRetry ? cached : null;
+        }
+    }
+
     /// <summary>Which of the four temple tiers a level number falls into.</summary>
     public static int TierOf(int levelNumber)
     {

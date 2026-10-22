@@ -853,7 +853,8 @@ public class GameManager : MonoBehaviour, IRunRewindable
         OnHighScoreChanged?.Invoke(highScore); // Refresh high score UI with current value
 
         // Restart the game after a brief delay
-        Invoke(nameof(StartGame), 0.5f);
+        var fastRetry = TempoSettings.FastRetry;
+        Invoke(nameof(StartGame), fastRetry != null ? fastRetry.retryRestartDelay : 0.5f);
     }
 
     public void SetGameMode(GameMode newMode, bool startGameNow = true, int levelNumber = -1)
