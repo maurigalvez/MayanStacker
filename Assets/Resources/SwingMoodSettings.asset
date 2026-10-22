@@ -1,0 +1,41 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 53f39e49ad4d6504ebb9577b60020033, type: 3}
+  m_Name: SwingMoodSettings
+  m_EditorClassIdentifier: Assembly-CSharp::SwingMoodSettings
+  enableMoods: 1
+  firstMoodStone: 3
+  templeMinLevel: 3
+  enableInTemples: 1
+  enableInDaily: 1
+  enableInInfinite: 1
+  moodChance: 0.35
+  quickeningWeight: 3
+  lurchWeight: 2
+  driftWeight: 2
+  echoWeight: 2
+  cueSeconds: 0.6
+  rampSeconds: 0.5
+  cueGlowAlpha: 0.7
+  activeGlowAlpha: 0.3
+  quickeningGain: 0.35
+  quickeningSeconds: 3
+  lurchEdgeSpeed: 0.45
+  lurchSharpness: 6
+  driftAmplitude: 0.5
+  driftRate: 0.9
+  echoDelay: 0.4
+  echoAlpha: 0.35
+  quickeningColor: {r: 0.95, g: 0.55, b: 0.18, a: 1}
+  lurchColor: {r: 0.72, g: 0.36, b: 0.22, a: 1}
+  driftColor: {r: 0.3, g: 0.74, b: 0.62, a: 1}
+  echoColor: {r: 0.85, g: 0.78, b: 0.55, a: 1}

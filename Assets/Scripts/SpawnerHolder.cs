@@ -74,6 +74,7 @@ public class SpawnerHolder : MonoBehaviour
     private bool tempoLoaded;
     private float tempoScale = 1f; // Learner-stone / ramp multiplier on top of the swing speed (TempoSettings)
     private DailyChallengeManager tempoDaily;
+    private readonly SwingMoodDirector moods = new SwingMoodDirector(); // Per-stone swing twists (SwingMoodSettings)
 
     private float levelSwingSpeedMultiplier = 1f; // Level-specific swing speed multiplier (from LevelData)
     private float levelSwingAmplitudeMultiplier = 1f; // Level-specific swing amplitude multiplier (from LevelData)
@@ -431,10 +432,21 @@ public class SpawnerHolder : MonoBehaviour
     {
         // Reset the recoil effect when a new object spawns
         ResetRecoilEffect();
+
+        // Roll this stone's swing mood (the first stone of a run also reseeds the roll stream)
+        int placed = 0;
+        var stackManager = DependencyRegistry.Find<StackManager>();
+        if (stackManager != null) placed = stackManager.GetStackCount();
+        if (placed == 0) moods.BeginRun();
+        int levelNumber = levelManager != null && levelManager.CurrentLevel != null ? levelManager.CurrentLevel.levelNumber : 0;
+        GameMode mode = gameManager != null ? gameManager.CurrentGameMode : GameMode.InfiniteStacker;
+        moods.OnStoneSpawned(spawnedObject, mode, levelNumber, placed);
     }
 
     private void OnObjectDropped(GameObject droppedObject)
     {
+        moods.EndStone();
+
         // Track the last dropped object so we can follow its position
         lastDroppedObject = droppedObject;
 
@@ -641,7 +653,8 @@ public class SpawnerHolder : MonoBehaviour
         UpdateTempo();
 
         // Increment swing time
-        swingTime += swingSpeed * SwingModifiers.SpeedScale * tempoScale * Time.deltaTime;
+        moods.Tick(Time.deltaTime, Mathf.Sin(swingTime));
+        swingTime += swingSpeed * SwingModifiers.SpeedScale * tempoScale * moods.SpeedFactor * Time.deltaTime;
     }
 
 
@@ -694,7 +707,7 @@ public class SpawnerHolder : MonoBehaviour
         // Calculate final spawner position
 
         // Jungle Wind leans the whole swing and Cabracán shakes it; zero everywhere else.
-        swingOffset.x += SwingModifiers.LateralOffset + SwingModifiers.ShakeOffset;
+        swingOffset.x += SwingModifiers.LateralOffset + SwingModifiers.ShakeOffset + moods.OffsetX;
 
         Vector3 finalSpawnerPosition = holderCenterPosition + spawnerOffset + swingOffset;
 
@@ -972,6 +985,7 @@ public class SpawnerHolder : MonoBehaviour
         recoilTimer = 0f;
         tempoScale = 1f;
         tempoDaily = null;
+        moods.EndStone();
         lastDroppedObject = null;
 
         // Re-apply level settings if in level mode, otherwise restore original values
@@ -1178,7 +1192,10 @@ public class SpawnerHolder : MonoBehaviour
     /// How fast <see cref="SwingPhase"/> advances, in radians per scaled second: π of it is one
     /// end-to-end pass. Includes level/altitude scaling and the Quetzal Feather's slow swing.
     /// </summary>
-    public float SwingRate => swingSpeed * SwingModifiers.SpeedScale * tempoScale;
+    public float SwingRate => swingSpeed * SwingModifiers.SpeedScale * tempoScale * moods.SpeedFactor;
+
+    /// <summary>The swing-mood director: which twist the hanging stone has, and how many stones rolled one.</summary>
+    public SwingMoodDirector Moods => moods;
 
     /// <summary>Horizontal world offset from <see cref="SpawnerBasePosition"/> at a given <see cref="SwingPhase"/>.</summary>
     public float GetSwingOffsetX(float phase)
