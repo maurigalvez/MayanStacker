@@ -70,6 +70,11 @@ public class SpawnerHolder : MonoBehaviour
     private float originalRotationMultiplier = 0f;
     private float currentScaledSwingSpeed = 0f; // Current base swing speed after height scaling (used by recoil)
     private float currentScaledSwingAmplitude = 0f; // Current base swing amplitude after height scaling
+    private TempoSettings tempoSettings;
+    private bool tempoLoaded;
+    private float tempoScale = 1f; // Learner-stone / ramp multiplier on top of the swing speed (TempoSettings)
+    private DailyChallengeManager tempoDaily;
+
     private float levelSwingSpeedMultiplier = 1f; // Level-specific swing speed multiplier (from LevelData)
     private float levelSwingAmplitudeMultiplier = 1f; // Level-specific swing amplitude multiplier (from LevelData)
 
@@ -340,32 +345,29 @@ public class SpawnerHolder : MonoBehaviour
         var stackManager = DependencyRegistry.Find<StackManager>();
         int currentBlockCount = stackManager != null ? stackManager.GetStackCount() : 0;
 
-        // Only apply scaling if we have enough blocks
-        if (currentBlockCount < scalingStartBlockCount)
+        // Amplitude keeps the scene's own curve. Speed can use the tempo curve instead (earlier, gentler).
+        float amplitudeMultiplier = 1f;
+        float curvedProgress = 0f;
+        if (currentBlockCount >= scalingStartBlockCount)
         {
-            // Below start block count, use original values
-            currentScaledSwingSpeed = originalSwingSpeed;
-            currentScaledSwingAmplitude = originalSwingAmplitude;
-            if (recoilTimer <= 0f)
-            {
-                swingSpeed = originalSwingSpeed;
-                swingAmplitude = originalSwingAmplitude;
-            }
-            return;
+            // Normalized progress (0 = at start block count, 1 = 50 blocks above it)
+            int blocksAboveStart = currentBlockCount - scalingStartBlockCount;
+            float normalizedProgress = Mathf.Clamp01(blocksAboveStart / 50f);
+
+            // Apply curve to the normalized progress
+            curvedProgress = Mathf.Pow(normalizedProgress, 1f / scalingCurve);
+            amplitudeMultiplier = Mathf.Lerp(1f, maxSwingAmplitudeMultiplier, curvedProgress);
         }
 
-        // Calculate normalized progress (0 = at start block count, 1 = very high stacks)
-        // Use a reasonable maximum block count for scaling calculation (e.g., 50 blocks above start)
-        int maxScalingBlockCount = scalingStartBlockCount + 50;
-        int blocksAboveStart = currentBlockCount - scalingStartBlockCount;
-        float normalizedProgress = Mathf.Clamp01((float)blocksAboveStart / (float)(maxScalingBlockCount - scalingStartBlockCount));
-
-        // Apply curve to the normalized progress
-        float curvedProgress = Mathf.Pow(normalizedProgress, 1f / scalingCurve);
+        TempoSettings tempo = ActiveTempo;
+        if (tempo != null)
+        {
+            float tempoProgress = Mathf.Clamp01((currentBlockCount - tempo.infiniteStartBlock) / (float)tempo.infiniteRampStones);
+            curvedProgress = Mathf.Pow(tempoProgress, tempo.infiniteCurveExponent);
+        }
 
         // Calculate multipliers (1.0 at start, maxMultiplier at high stacks)
         float speedMultiplier = Mathf.Lerp(1f, maxSwingSpeedMultiplier, curvedProgress);
-        float amplitudeMultiplier = Mathf.Lerp(1f, maxSwingAmplitudeMultiplier, curvedProgress);
 
         // Calculate and store scaled base values
         currentScaledSwingSpeed = originalSwingSpeed * speedMultiplier;
@@ -568,10 +570,78 @@ public class SpawnerHolder : MonoBehaviour
     }
 
 
+    /// <summary>The tempo asset, or null when it is missing or switched off.</summary>
+    private TempoSettings ActiveTempo
+    {
+        get
+        {
+            if (!tempoLoaded)
+            {
+                tempoLoaded = true;
+                tempoSettings = Resources.Load<TempoSettings>(TempoSettings.ResourcePath);
+            }
+            return tempoSettings != null && tempoSettings.enableTempo ? tempoSettings : null;
+        }
+    }
+
+    /// <summary>
+    /// Eases the swing toward the tempo for the current stack: slower learner stones, then a ramp.
+    /// Infinite's ramp lives in <see cref="UpdateHeightBasedScaling"/>; this only adds its learner stones.
+    /// </summary>
+    private void UpdateTempo()
+    {
+        float target = 1f;
+        TempoSettings tempo = ActiveTempo;
+        if (tempo != null && gameManager != null)
+        {
+            var stackManager = DependencyRegistry.Find<StackManager>();
+            int stones = stackManager != null ? stackManager.GetStackCount() : 0;
+
+            switch (gameManager.CurrentGameMode)
+            {
+                case GameMode.StackerLevels:
+                    if (levelManager != null && levelManager.CurrentLevel != null)
+                    {
+                        LevelData level = levelManager.CurrentLevel;
+                        target = tempo.TempleScale(level.levelNumber, level.swingSpeedMultiplier, stones, level.requiredStackHeight);
+                    }
+                    break;
+
+                case GameMode.DailyChallenge:
+                    if (tempoDaily == null) tempoDaily = DependencyRegistry.Find<DailyChallengeManager>();
+                    if (tempoDaily != null && tempoDaily.IsActive && !(tempo.skipPressureRituals && IsPressureRitual(tempoDaily)))
+                    {
+                        DailyRitual ritual = tempoDaily.CurrentRitual;
+                        target = tempo.DailyScale(ritual != null ? ritual.difficulty : 2, stones);
+                    }
+                    break;
+
+                case GameMode.InfiniteStacker:
+                    target = tempo.LearnerFactor(stones);
+                    break;
+            }
+        }
+
+        // Ease toward the target so a stone never lurches between speeds.
+        float rate = tempo != null ? tempo.easeRate : 3f;
+        tempoScale = Mathf.Abs(target - tempoScale) < 0.001f
+            ? target
+            : Mathf.Lerp(tempoScale, target, Mathf.Min(1f, rate * Time.deltaTime));
+    }
+
+    private static bool IsPressureRitual(DailyChallengeManager daily)
+    {
+        if (daily.IsSpeedRun) return true;
+        DailyRitual ritual = daily.CurrentRitual;
+        return ritual != null && ritual.HasModifier(RunModifier.HotStone);
+    }
+
     private void UpdateSwingMotion()
     {
+        UpdateTempo();
+
         // Increment swing time
-        swingTime += swingSpeed * SwingModifiers.SpeedScale * Time.deltaTime;
+        swingTime += swingSpeed * SwingModifiers.SpeedScale * tempoScale * Time.deltaTime;
     }
 
 
@@ -900,6 +970,8 @@ public class SpawnerHolder : MonoBehaviour
         previousRotationZ = 0f;
         spawnerAngularVelocity = 0f;
         recoilTimer = 0f;
+        tempoScale = 1f;
+        tempoDaily = null;
         lastDroppedObject = null;
 
         // Re-apply level settings if in level mode, otherwise restore original values
@@ -1106,7 +1178,7 @@ public class SpawnerHolder : MonoBehaviour
     /// How fast <see cref="SwingPhase"/> advances, in radians per scaled second: π of it is one
     /// end-to-end pass. Includes level/altitude scaling and the Quetzal Feather's slow swing.
     /// </summary>
-    public float SwingRate => swingSpeed * SwingModifiers.SpeedScale;
+    public float SwingRate => swingSpeed * SwingModifiers.SpeedScale * tempoScale;
 
     /// <summary>Horizontal world offset from <see cref="SpawnerBasePosition"/> at a given <see cref="SwingPhase"/>.</summary>
     public float GetSwingOffsetX(float phase)
