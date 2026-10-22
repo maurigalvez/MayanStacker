@@ -50,6 +50,41 @@ public class SwingMoodSettings : ScriptableObject
     public float driftWeight = 2f;
     public float echoWeight = 2f;
 
+    [Header("Pacing")]
+    [Tooltip("On: moods follow a rhythm (calm, mood, calm), get likelier with height and are guaranteed early. Off: every stone just rolls Mood Chance.")]
+    public bool enablePacing = true;
+
+    [Tooltip("Calm stones forced after a mood before another can roll.")]
+    [Min(0)]
+    public int calmStonesAfterMood = 1;
+
+    [Tooltip("The first mood is guaranteed once the tower is this many stones past First Mood Stone.")]
+    [Min(0)]
+    public int guaranteeFirstMoodWithin = 1;
+
+    [Tooltip("Longest run of calm stones before a mood is forced.")]
+    [Min(2)]
+    public int maxCalmStones = 4;
+
+    [Tooltip("Mood chance on the first stones where a mood can roll.")]
+    [Range(0f, 1f)]
+    public float chanceAtStart = 0.3f;
+
+    [Tooltip("Mood chance once the tower is Stones To Peak past First Mood Stone.")]
+    [Range(0f, 1f)]
+    public float chanceAtPeak = 0.55f;
+
+    [Min(1)]
+    public int stonesToPeak = 25;
+
+    /// <summary>Mood chance for a stone, rising with height when pacing is on.</summary>
+    public float ChanceAt(int stonesPlaced)
+    {
+        if (!enablePacing) return moodChance;
+        float t = Mathf.Clamp01((stonesPlaced - firstMoodStone) / (float)Mathf.Max(1, stonesToPeak));
+        return Mathf.Lerp(chanceAtStart, chanceAtPeak, t);
+    }
+
     [Header("Telegraph")]
     [Tooltip("Seconds the glow shows on the stone before the mood starts moving it.")]
     [Range(0.2f, 1.5f)]

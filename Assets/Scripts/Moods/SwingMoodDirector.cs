@@ -27,6 +27,7 @@ public class SwingMoodDirector
     private float age;         // seconds since the stone spawned
     private float weight;      // 0..1, how far the mood has faded in
     private int rolledCount;
+    private int calmStreak;    // stones since the last mood (or since the run began)
 
     // Where the stone has been, for the Echo ghost.
     private readonly Vector3[] posHistory = new Vector3[HistorySize];
@@ -68,6 +69,7 @@ public class SwingMoodDirector
     {
         EndStone();
         rolledCount = 0;
+        calmStreak = 0;
         rng = RunRandom.CurrentSeed != 0 ? new System.Random(RunRandom.CurrentSeed ^ 0x5A17D00D) : null;
     }
 
@@ -77,13 +79,22 @@ public class SwingMoodDirector
         EndStone();
         SwingMoodSettings s = Settings;
         if (s == null || spawned == null || !s.AllowedIn(mode, levelNumber, stonesPlaced)) return;
-        if (NextValue() >= s.moodChance) return;
+        if (!ShouldRoll(s, stonesPlaced))
+        {
+            calmStreak++;
+            return;
+        }
 
         LoadFx();
         // Echo needs the ghost prefab; without it the mood is simply never rolled.
         SwingMood rolled = s.Pick(NextValue(), ghost != null);
-        if (rolled == SwingMood.Steady) return;
+        if (rolled == SwingMood.Steady)
+        {
+            calmStreak++;
+            return;
+        }
 
+        calmStreak = 0;
         mood = rolled;
         stone = spawned.transform;
         stoneRenderer = spawned.GetComponentInChildren<SpriteRenderer>();
@@ -92,6 +103,22 @@ public class SwingMoodDirector
         rolledCount++;
         OnMoodRolled?.Invoke(mood);
         HapticFeedback.Trigger(HapticFeedback.HapticType.Light);
+    }
+
+    /// <summary>
+    /// Whether this stone gets a mood. With pacing on: a calm beat always follows a mood, the first
+    /// mood is guaranteed shortly after moods open up, a long calm spell is broken, and otherwise the
+    /// chance climbs with the height of the tower.
+    /// </summary>
+    private bool ShouldRoll(SwingMoodSettings s, int stonesPlaced)
+    {
+        float draw = NextValue(); // always drawn, so the stream stays aligned across settings
+        if (!s.enablePacing) return draw < s.moodChance;
+
+        if (rolledCount > 0 && calmStreak < s.calmStonesAfterMood) return false;
+        if (rolledCount == 0 && stonesPlaced >= s.firstMoodStone + s.guaranteeFirstMoodWithin) return true;
+        if (calmStreak >= s.maxCalmStones) return true;
+        return draw < s.ChanceAt(stonesPlaced);
     }
 
     /// <summary>The stone was dropped (or the run ended): the mood is over.</summary>
