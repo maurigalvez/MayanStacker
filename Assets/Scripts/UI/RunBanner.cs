@@ -23,6 +23,13 @@ public class RunBanner : MonoBehaviour
     /// <summary>Authored prefab that replaces the code-built banner when present.</summary>
     public const string PrefabResourcePath = "UI/RunBanner";
 
+    /// <summary>
+    /// Default height, from screen centre. Below the Kukulkan crane and the stone it holds
+    /// (which reach down to about centre) and above the tower top, so a banner never hides
+    /// where the next stone drops from.
+    /// </summary>
+    public const float DefaultY = -260f;
+
     private static RunBanner instance;
 
     private RunBannerView view;
@@ -34,7 +41,7 @@ public class RunBanner : MonoBehaviour
     /// Shows <paramref name="text"/> for a moment. Safe to call with an empty string
     /// (does nothing) and safe to call again before the previous banner has finished.
     /// </summary>
-    public static void Show(string text, Color color, float holdSeconds = 1.6f, float yOffset = 260f)
+    public static void Show(string text, Color color, float holdSeconds = 1.6f, float yOffset = DefaultY)
     {
         if (string.IsNullOrEmpty(text)) return;
 
@@ -50,7 +57,7 @@ public class RunBanner : MonoBehaviour
     /// tell them nothing.
     /// </summary>
     public static void Show(string title, string subtitleText, Color color,
-        float holdSeconds = 1.6f, float yOffset = 260f)
+        float holdSeconds = 1.6f, float yOffset = DefaultY)
     {
         if (string.IsNullOrEmpty(title)) return;
 
@@ -80,13 +87,13 @@ public class RunBanner : MonoBehaviour
         label = RunOverlayUI.CreateLabel("BannerText", transform, "", 60f, RunOverlayUI.Gold);
         RunOverlayUI.Place(label.rectTransform,
             anchor: new Vector2(0.5f, 0.5f),
-            position: new Vector2(0f, 260f),
+            position: new Vector2(0f, DefaultY),
             size: new Vector2(920f, 160f));
 
         subtitle = RunOverlayUI.CreateLabel("BannerSubtitle", transform, "", 32f, RunOverlayUI.Parchment);
         RunOverlayUI.Place(subtitle.rectTransform,
             anchor: new Vector2(0.5f, 0.5f),
-            position: new Vector2(0f, 165f),
+            position: new Vector2(0f, DefaultY - 95f),
             size: new Vector2(860f, 120f));
         subtitle.gameObject.SetActive(false);
 

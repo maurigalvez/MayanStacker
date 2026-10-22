@@ -62,7 +62,7 @@
     },
     {
       "key": "kukulkan_shift",
-      "value": "库库尔坎之变"
+      "value": "库库尔坎的召唤"
     },
     {
       "key": "leaderboard_not_available",
@@ -872,7 +872,7 @@
     { "key": "power_tzolkin_rewind_name", "value": "卓尔金历回溯" },
     { "key": "power_tzolkin_rewind_desc", "value": "点击已满的能量槽让时间倒流：撤回最后放下的{0}块石头及其得分。" },
     { "key": "power_kukulkans_call_name", "value": "库库尔坎的召唤" },
-    { "key": "power_kukulkans_call_desc", "value": "点击已满的能量槽，立即召唤库库尔坎之变，让塔恢复笔直。" },
+    { "key": "power_kukulkans_call_desc", "value": "点击已满的能量槽，立即召唤库库尔坎，让塔恢复笔直。" },
     { "key": "power_loadout_title", "value": "选择一种能力" },
     { "key": "power_loadout_play", "value": "开始" },
     { "key": "power_loadout_back", "value": "返回" },
@@ -896,6 +896,7 @@
     { "key": "quake_braced", "value": "稳住了！" },
     { "key": "quake_brace_button", "value": "按住稳住" },
     { "key": "quake_survived", "value": "大地平静了" },
+    { "key": "omen_defied", "value": "战胜凶兆！" },
     { "key": "cenote_warning", "value": "水位在上涨！" },
     { "key": "quit_confirm_title", "value": "离开神庙？" },
     { "key": "quit_confirm_body", "value": "你的进度已保存。高塔会等你回来。" },
@@ -916,7 +917,7 @@
     { "key": "ritual_wrath_of_cabracan_name", "value": "Cabracán之怒" },
     { "key": "ritual_wrath_of_cabracan_tagline", "value": "大地之神苏醒了。稳住，否则就会被掩埋。" },
     { "key": "ritual_jade_morning_name", "value": "翡翠之晨" },
-    { "key": "ritual_jade_morning_tagline", "value": "神庙平静的一天。连续完美落下，让羽毛指引你。" },
+    { "key": "ritual_jade_morning_tagline", "value": "月亮轻吻晨曦的太阳。连续完美落下，让羽毛指引你。" },
     { "key": "ritual_drifting_moon_name", "value": "漂浮之月" },
     { "key": "ritual_drifting_moon_tagline", "value": "轻盈的石块，漆黑的天空。记住你建在哪里。" },
     { "key": "ritual_kiln_of_the_sun_name", "value": "太阳熔炉" },

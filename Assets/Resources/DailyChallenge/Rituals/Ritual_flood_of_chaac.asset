@@ -31,11 +31,12 @@ MonoBehaviour:
   windSettings:
     swingPush: 0.45
     fallPush: 1
-    stonesPerGust: 4
+    stonesPerGust: 3
     gustRampSeconds: 1.4
     firstAtHeight: 3
     leadSeconds: 0.8
     steadyDirection: 0
+    announceEveryGust: 1
   rainSettings:
     slideFraction: 0.42
     maxSlideOfWidth: 0.168

@@ -97,6 +97,9 @@ public class JungleWind : TempleRuleBehaviour
             falling = null;
             fallingStone = null;
         }
+
+        // A fresh gust's omen lasts one landing: the stone it was announced for.
+        OmenWindow.Set(Rule, false);
         UpdateGust();
     }
 
@@ -132,9 +135,12 @@ public class JungleWind : TempleRuleBehaviour
         targetWind = direction * strength;
         announcedAt = Time.time;
 
-        // The first gust and every change of direction get the full announcement.
-        if (previous == 0f || Mathf.Sign(previous) != Mathf.Sign(targetWind))
+        // The first gust and every change of direction get the full announcement (every gust
+        // when the settings ask, so a steady wind still has its moments). An announced gust
+        // is an omen until the next stone lands.
+        if (previous == 0f || Mathf.Sign(previous) != Mathf.Sign(targetWind) || settings.announceEveryGust)
         {
+            OmenWindow.Set(Rule, true);
             PlayOneShot(art.windGustSound != null ? art.windGustSound : PlaceholderGust(), 0.8f);
             lines.Burst(direction);
         }

@@ -12,24 +12,25 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bdd2ba5cbd92bac44b7a3f0ba95848c5, type: 3}
   m_Name: TempleRuleArt
   m_EditorClassIdentifier: Assembly-CSharp::TempleRuleArt
-  ruleIntroSting: {fileID: 0}
+  ruleIntroSting: {fileID: 8300000, guid: 1e6868ea8915b3e47a5d332cc22cfb54, type: 3}
   windLeaf: {fileID: 0}
   windLoop: {fileID: 0}
-  windGustSound: {fileID: 0}
+  windGustSound: {fileID: 8300000, guid: e4cd3cacd1a3db747b8ba94570ce48c3, type: 3}
   rainStreak: {fileID: 0}
-  rainLoop: {fileID: 0}
+  rainLoop: {fileID: 8300000, guid: 615b10628a64609449dc8fb201b3799b, type: 3}
   rainSlideSound: {fileID: 0}
   quakeHoldIcon: {fileID: 0}
-  quakeRumbleLoop: {fileID: 0}
+  quakeRumbleLoop: {fileID: 8300000, guid: 45a71c69d02590749b5cadcaedbb23ba, type: 3}
   quakeJoltSound: {fileID: 0}
   quakeBraceSound: {fileID: 0}
   cenoteWater: {fileID: -6862144234950711716, guid: 70a2b5ca108c87a48804ecdae3346c48, type: 3}
   cenoteSurface: {fileID: 0}
   cenoteBubble: {fileID: -8823745303692951550, guid: 70a2b5ca108c87a48804ecdae3346c48, type: 3}
-  cenoteLoop: {fileID: 0}
+  cenoteLoop: {fileID: 8300000, guid: 249dbed8a84733444af29bb69f5e3ea0, type: 3}
   cenoteWarningSound: {fileID: 0}
   cenoteFloodSound: {fileID: 0}
   eclipseSun: {fileID: 942957644266703819, guid: 70a2b5ca108c87a48804ecdae3346c48, type: 3}
   eclipseMoon: {fileID: 2515263703705998031, guid: 70a2b5ca108c87a48804ecdae3346c48, type: 3}
+  eclipseRays: {fileID: 21300000, guid: cf12adeda728ce86639fc58e190f229d, type: 3}
   eclipseSting: {fileID: 0}
-  eclipseLoop: {fileID: 0}
+  eclipseLoop: {fileID: 8300000, guid: 4e72828e9c44db949bf98456c0560c5a, type: 3}

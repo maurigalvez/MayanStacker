@@ -1235,6 +1235,7 @@ MonoBehaviour:
   enableComboDecay: 0
   perfectHitsRequired: 4
   fragileStackFailThreshold: 0.7
+  omenPerfectMultiplier: 1.5
 --- !u!4 &1286817094
 Transform:
   m_ObjectHideFlags: 0
@@ -7299,6 +7300,10 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5523580983493758357, guid: 60441e2117e89ce48a769a889c2ee4ca, type: 3}
       propertyPath: m_AnchoredPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5528802458074903160, guid: 60441e2117e89ce48a769a889c2ee4ca, type: 3}
+      propertyPath: m_IsActive
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5973067631738715147, guid: 60441e2117e89ce48a769a889c2ee4ca, type: 3}

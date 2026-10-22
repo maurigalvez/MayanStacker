@@ -36,6 +36,10 @@ public class GameManager : MonoBehaviour, IRunRewindable
     [Tooltip("FragileStack modifier: landings below this accuracy (0-1) end the run. Matches the Good threshold by default.")]
     [SerializeField] private float fragileStackFailThreshold = 0.4f;
 
+    [Tooltip("A Perfect landed while a ritual omen is on (eclipse, quake, fresh gust, cenote " +
+             "closing in) pays this much more. Daily only: temple star thresholds stay as tuned.")]
+    [SerializeField] private float omenPerfectMultiplier = 1.5f;
+
     // Internal state
     private bool gameModeInitialized = false;
     private int currentLevelNumber = -1; // For StackerLevels mode
@@ -88,6 +92,16 @@ public class GameManager : MonoBehaviour, IRunRewindable
     /// popup reads this so it can't disagree with the score (Serpent's Edge, variants, boons).
     /// </summary>
     public int LastAwardedPoints { get; private set; }
+
+    /// <summary>True when the most recent landing was a Perfect during a Daily omen.</summary>
+    public bool LastLandingDefiedOmen { get; private set; }
+
+    /// <summary>Perfects landed during Daily omens this run.</summary>
+    public int OmensDefied { get; private set; }
+
+    /// <summary>A Perfect landed now would defy an omen (Daily only, never an edge landing).</summary>
+    private bool OmenBonusApplies(bool perfect) =>
+        perfect && currentGameMode == GameMode.DailyChallenge && OmenWindow.IsOpen;
 
     /// <summary>
     /// True when the most recent landing wasn't Perfect but the combo survived it (a Good
@@ -327,12 +341,22 @@ public class GameManager : MonoBehaviour, IRunRewindable
         {
             HoldComboForEdge();
             finalPoints = PointsFor(basePoints, true, currentCombo);
+            LastLandingDefiedOmen = false;
         }
         else
         {
             // Update combo based on accuracy
             UpdateCombo(accuracy);
-            finalPoints = PointsFor(basePoints, accuracy >= RunModifierService.PerfectThreshold, currentCombo);
+            bool perfect = accuracy >= RunModifierService.PerfectThreshold;
+            finalPoints = PointsFor(basePoints, perfect, currentCombo);
+
+            // A Perfect through a ritual omen pays extra, so the events are chances too.
+            LastLandingDefiedOmen = OmenBonusApplies(perfect);
+            if (LastLandingDefiedOmen)
+            {
+                finalPoints = Mathf.RoundToInt(finalPoints * omenPerfectMultiplier);
+                OmensDefied++;
+            }
         }
         LastAwardedPoints = finalPoints;
 
@@ -388,7 +412,8 @@ public class GameManager : MonoBehaviour, IRunRewindable
     {
         // A Perfect grows the combo before its multiplier is read.
         bool isPerfectHit = accuracy >= RunModifierService.PerfectThreshold;
-        return PointsFor(basePoints, isPerfectHit, isPerfectHit ? currentCombo + 1 : currentCombo);
+        int points = PointsFor(basePoints, isPerfectHit, isPerfectHit ? currentCombo + 1 : currentCombo);
+        return OmenBonusApplies(isPerfectHit) ? Mathf.RoundToInt(points * omenPerfectMultiplier) : points;
     }
 
     /// <summary>
@@ -796,6 +821,8 @@ public class GameManager : MonoBehaviour, IRunRewindable
     {
         maxCombo = 0;
         perfectLandings = 0;
+        OmensDefied = 0;
+        LastLandingDefiedOmen = false;
         highScoreAtRunStart = highScore;
     }
 

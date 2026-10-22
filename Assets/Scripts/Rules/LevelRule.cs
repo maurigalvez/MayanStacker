@@ -66,6 +66,10 @@ public class JungleWindSettings
     [Tooltip("Every gust blows the same way (only its strength changes). Used on the first wind " +
              "temple so the player learns 'aim upwind' before the wind starts turning.")]
     public bool steadyDirection;
+
+    [Tooltip("Every gust gets the full announcement (streak burst + gust sound), not only the " +
+             "first one and changes of direction. Used by the Daily rituals so wind feels eventful.")]
+    public bool announceEveryGust;
 }
 
 /// <summary>Per-level tuning for <see cref="LevelRule.RainSlick"/>. Estimates; tune on device.</summary>

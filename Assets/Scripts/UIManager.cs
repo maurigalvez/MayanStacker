@@ -1553,8 +1553,10 @@ public class UIManager : MonoBehaviour
         }
         else if (accuracy >= 0.9f)
         {
-            baseText = LocalizationManager.Get("accuracy_perfect");
-            landingAccuracyText.color = perfectAccuracyColor;
+            // A Perfect through a Daily omen names the feat; the points popup carries the bonus.
+            bool omenDefied = gameManager != null && gameManager.LastLandingDefiedOmen;
+            baseText = LocalizationManager.Get(omenDefied ? "omen_defied" : "accuracy_perfect");
+            landingAccuracyText.color = omenDefied ? RunOverlayUI.Gold : perfectAccuracyColor;
             curPeakScale = perfectPeakScale;
             curSettleScale = perfectSettleScale;
             curAppearDuration = perfectAppearDuration;
@@ -1610,11 +1612,35 @@ public class UIManager : MonoBehaviour
         // Show the text
         landingAccuracyText.gameObject.SetActive(true);
 
+        // Longer translations (e.g. Spanish "Borde de la Serpiente") would punch past the screen
+        // edges at the Perfect peak scale, so shrink the whole tier profile until the peak fits.
+        float fit = LandingAccuracyFitScale(accuracyRect);
+        curPeakScale *= fit;
+        curSettleScale *= fit;
+
         // Start coroutine to hide it after duration
         landingAccuracyCoroutine = StartCoroutine(HideLandingAccuracyAfterDelay());
 
         // Show points popup at the same location but slightly offset
         ShowPointsPopup(points, worldPosition);
+    }
+
+    // Fraction of the parent's width the landing label may fill at its peak scale.
+    private const float LandingAccuracyMaxWidthFraction = 0.92f;
+
+    /// <summary>1 when the label fits at curPeakScale, otherwise the factor that makes its widest
+    /// moment fill LandingAccuracyMaxWidthFraction of the parent.</summary>
+    private float LandingAccuracyFitScale(RectTransform accuracyRect)
+    {
+        RectTransform parent = accuracyRect != null ? accuracyRect.parent as RectTransform : null;
+        if (parent == null || curPeakScale <= 0f) return 1f;
+
+        landingAccuracyText.ForceMeshUpdate();
+        float textWidth = landingAccuracyText.textBounds.size.x;
+        if (textWidth <= 0f) return 1f;
+
+        float available = parent.rect.width * LandingAccuracyMaxWidthFraction;
+        return Mathf.Min(1f, available / (textWidth * curPeakScale));
     }
 
     private System.Collections.IEnumerator HideLandingAccuracyAfterDelay()

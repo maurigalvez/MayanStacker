@@ -103,78 +103,105 @@ public static class DailyRitualSetup
     // The set. Order = calendar order: week A Mon..Sun, then week B Mon..Sun.
     // ─────────────────────────────────────────────────────────────────────
 
+    // Every ritual has at least one event rule, and events come every 3-5 stones: the Daily is
+    // meant to feel eventful and casual, so each omen is gentler and a Perfect through one pays
+    // the omen bonus (GameManager.omenPerfectMultiplier). Wind announces every gust.
     private static IEnumerable<RitualSpec> Specs()
     {
         // ── Week A ──
         yield return new RitualSpec("feather_of_dawn", 1, 25)
             .Mods(RunModifier.FeatherFall)
-            .Tune(t => t.featherGravity = 0.45f);
+            .Tune(t => t.featherGravity = 0.45f)
+            .Rules(LevelRule.JungleWind)
+            .Wind(GentleWind);
 
         yield return new RitualSpec("spire_of_offerings", 2, 25)
             .Mods(RunModifier.ShrinkingOfferings)
-            .Tune(t => { t.shrinkPerStone = 0.025f; t.minWidthScale = 0.5f; });
+            .Tune(t => { t.shrinkPerStone = 0.025f; t.minWidthScale = 0.5f; })
+            .Rules(LevelRule.Eclipse)
+            .Eclipse(e => QuickEclipse(e, 4));
 
         yield return new RitualSpec("hunters_moon", 2, 30)
             .Mods(RunModifier.GiftOfTheGods)
             .Rules(LevelRule.Eclipse)
-            .Eclipse(e => { e.firstAtHeight = 5; e.everyNStones = 7; e.totalitySeconds = 2.0f; });
+            .Eclipse(e => QuickEclipse(e, 4));
 
         yield return new RitualSpec("coals_of_xibalba", 3, 30)
             .Mods(RunModifier.HotStone)
             .Tune(t => t.hotStoneSwings = 1.875f)
-            .Rules(LevelRule.RainSlick);
+            .Rules(LevelRule.RainSlick, LevelRule.Eclipse)
+            .Eclipse(e => QuickEclipse(e, 5));
 
         yield return new RitualSpec("storm_serpent", 3, 30)
             .Mods(RunModifier.SpeedRun, RunModifier.GiftOfTheGods)
             .Rules(LevelRule.JungleWind)
-            .Wind(w => { w.swingPush = 0.4f; w.fallPush = 0.9f; w.stonesPerGust = 4; w.firstAtHeight = 3; w.leadSeconds = 0.8f; });
+            .Wind(w => { w.swingPush = 0.4f; w.fallPush = 0.9f; w.stonesPerGust = 3; w.firstAtHeight = 3; w.leadSeconds = 0.8f; w.announceEveryGust = true; });
 
         yield return new RitualSpec("cenote_hunger", 4, 30)
             .Mods(RunModifier.ComboChain)
             .Power(PowerId.JaguarSlam)
-            .Rules(LevelRule.RisingCenote)
-            .Cenote(c => { c.stonesPerSecond = 0.18f; c.maxLagStones = 3f; });
+            .Rules(LevelRule.RisingCenote, LevelRule.Eclipse)
+            .Cenote(c => { c.stonesPerSecond = 0.18f; c.maxLagStones = 3f; })
+            .Eclipse(e => QuickEclipse(e, 5));
 
         yield return new RitualSpec("wrath_of_cabracan", 5, 35)
             .Mods(RunModifier.ShrinkingOfferings, RunModifier.GiftOfTheGods)
             .Tune(t => { t.shrinkPerStone = 0.02f; t.minWidthScale = 0.55f; })
             .Rules(LevelRule.Earthquake, LevelRule.RainSlick)
-            .Quake(q => { q.firstAtHeight = 6; q.everyNStones = 8; q.slidePerJolt = 0.085f; q.headShake = 0.3f; });
+            .Quake(q => { q.firstAtHeight = 5; q.everyNStones = 5; q.quakeSeconds = 2f; q.slidePerJolt = 0.07f; q.headShake = 0.3f; });
 
         // ── Week B ──
         yield return new RitualSpec("jade_morning", 1, 25)
             .Mods(RunModifier.ComboChain)
-            .Power(PowerId.QuetzalFeather);
+            .Power(PowerId.QuetzalFeather)
+            .Rules(LevelRule.Eclipse)
+            .Eclipse(e => QuickEclipse(e, 4));
 
         yield return new RitualSpec("drifting_moon", 2, 25)
             .Mods(RunModifier.FeatherFall)
             .Rules(LevelRule.Eclipse)
-            .Eclipse(e => { e.firstAtHeight = 5; e.everyNStones = 7; e.totalitySeconds = 2.0f; });
+            .Eclipse(e => QuickEclipse(e, 4));
 
         yield return new RitualSpec("kiln_of_the_sun", 3, 30)
             .Mods(RunModifier.HotStone, RunModifier.ComboChain)
-            .Tune(t => t.hotStoneSwings = 1.5f);
+            .Tune(t => t.hotStoneSwings = 1.5f)
+            .Rules(LevelRule.JungleWind)
+            .Wind(GentleWind);
 
         yield return new RitualSpec("chaacs_trial", 3, 30)
             .Mods(RunModifier.NarrowWindow)
             .Power(PowerId.TzolkinRewind)
-            .Rules(LevelRule.RainSlick);
+            .Rules(LevelRule.RainSlick, LevelRule.JungleWind)
+            .Wind(GentleWind);
 
         yield return new RitualSpec("needle_of_itzamna", 4, 30)
             .Mods(RunModifier.ShrinkingOfferings)
             .Rules(LevelRule.JungleWind)
-            .Wind(w => { w.swingPush = 0.35f; w.fallPush = 0.8f; w.stonesPerGust = 5; w.firstAtHeight = 4; w.leadSeconds = 0.9f; w.steadyDirection = true; });
+            .Wind(w => { w.swingPush = 0.35f; w.fallPush = 0.8f; w.stonesPerGust = 3; w.firstAtHeight = 4; w.leadSeconds = 0.9f; w.steadyDirection = true; w.announceEveryGust = true; });
 
         yield return new RitualSpec("glass_pyramid", 4, 30)
             .Mods(RunModifier.FragileStack, RunModifier.GiftOfTheGods)
             .Rules(LevelRule.Eclipse)
-            .Eclipse(e => { e.firstAtHeight = 6; e.everyNStones = 8; e.totalitySeconds = 2.0f; });
+            .Eclipse(e => QuickEclipse(e, 5));
 
         yield return new RitualSpec("flood_of_chaac", 5, 35)
             .Mods(RunModifier.SpeedRun, RunModifier.GiftOfTheGods)
             .Rules(LevelRule.RisingCenote, LevelRule.JungleWind)
             .Cenote(c => { c.stonesPerSecond = 0.2f; c.maxLagStones = 2.5f; })
-            .Wind(w => { w.swingPush = 0.45f; w.fallPush = 1.0f; w.stonesPerGust = 4; w.firstAtHeight = 3; w.leadSeconds = 0.8f; });
+            .Wind(w => { w.swingPush = 0.45f; w.fallPush = 1.0f; w.stonesPerGust = 3; w.firstAtHeight = 3; w.leadSeconds = 0.8f; w.announceEveryGust = true; });
+    }
+
+    // A light breeze that still announces every gust.
+    private static void GentleWind(JungleWindSettings w)
+    {
+        w.swingPush = 0.3f; w.fallPush = 0.65f; w.stonesPerGust = 3; w.firstAtHeight = 3;
+        w.leadSeconds = 0.9f; w.announceEveryGust = true;
+    }
+
+    // Short, frequent eclipses with the top stone still faintly visible.
+    private static void QuickEclipse(EclipseSettings e, int every)
+    {
+        e.firstAtHeight = 4; e.everyNStones = every; e.totalitySeconds = 1.8f; e.ghostAlpha = 0.3f;
     }
 
     private class RitualSpec

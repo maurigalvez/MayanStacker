@@ -52,6 +52,7 @@ public static class TempleRulesSetup
         ("cenoteFloodSound",   "SFX_Cenote_Flood",        Kind.OneShot),
         ("eclipseSun",         "Rule_Eclipse_Sun",        Kind.Sprite),
         ("eclipseMoon",        "Rule_Eclipse_Moon",       Kind.Sprite),
+        ("eclipseRays",        "Rule_Eclipse_Rays",       Kind.Sprite),
         ("eclipseSting",       "SFX_Eclipse_Sting",       Kind.OneShot),
         ("eclipseLoop",        "SFX_Eclipse_Loop",        Kind.Loop),
     };

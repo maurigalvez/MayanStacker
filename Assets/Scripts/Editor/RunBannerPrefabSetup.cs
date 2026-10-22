@@ -82,7 +82,7 @@ public static class RunBannerPrefabSetup
         // Title and subtitle move as one unit, so callers place the pair rather than the
         // headline alone — and so a frame added later travels with them.
         var content = CreateChild("Content", root.transform);
-        Place(content, new Vector2(0.5f, 0.5f), new Vector2(0f, 260f), new Vector2(920f, 300f));
+        Place(content, new Vector2(0.5f, 0.5f), new Vector2(0f, RunBanner.DefaultY), new Vector2(920f, 300f));
 
         var title = CreateLabel("Title", content, "Jade Sliver", 60f, RunOverlayUI.Gold);
         Place(title.rectTransform, new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(920f, 160f));

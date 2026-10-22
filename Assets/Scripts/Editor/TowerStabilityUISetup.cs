@@ -247,7 +247,7 @@ public static class TowerStabilityUISetup
         // 40% preview so there's something to style; overwritten at runtime.
         fill.sizeDelta = new Vector2(-2f * padding, (settings.barSize.y - 2f * padding) * 0.4f);
         var fillImage = fill.gameObject.AddComponent<Image>();
-        fillImage.color = Color.Lerp(RunOverlayUI.Jade, RunOverlayUI.Gold, 0.4f / 0.6f);
+        fillImage.color = Color.Lerp(RunOverlayUI.Gold, TowerStabilityView.TremorOrange, 0.4f / 0.6f);
         fillImage.raycastTarget = false;
 
         var preview = CreateChild("EdgePreview", bar);
@@ -273,6 +273,9 @@ public static class TowerStabilityUISetup
         so.FindProperty("previewFill").objectReferenceValue = preview;
         so.FindProperty("previewImage").objectReferenceValue = previewImage;
         so.FindProperty("fillPadding").floatValue = padding;
+        // No frame art here, so only the fade applies; wrap the Bar in a frame and assign it
+        // to Frame to get the grow/pulse-as-one behaviour.
+        so.FindProperty("group").objectReferenceValue = group;
         so.ApplyModifiedPropertiesWithoutUndo();
 
         if (temp != null) Object.DestroyImmediate(temp);

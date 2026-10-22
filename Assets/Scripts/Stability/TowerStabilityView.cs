@@ -33,14 +33,22 @@ public class TowerStabilityView : MonoBehaviour
     [Tooltip("Optional caption. Text is replaced from localization at runtime.")]
     [SerializeField] private TextMeshProUGUI label;
 
+    [Tooltip("Writes the caption one letter per line, to run down a vertical bar. Lay the " +
+             "label out tall and narrow over the track.")]
+    [SerializeField] private bool stackLabel;
+
     [Header("Fill")]
     [Tooltip("Gap between the fill and the edges of its parent track.")]
     [SerializeField] private float fillPadding = 6f;
 
     [Header("Colours")]
-    [SerializeField] private Color stillColor = RunOverlayUI.Jade;
-    [SerializeField] private Color strainColor = RunOverlayUI.Gold;
+    // Tremor is never good news, so even a calm meter starts at caution yellow, not jade.
+    [SerializeField] private Color stillColor = RunOverlayUI.Gold;
+    [SerializeField] private Color strainColor = TremorOrange;
     [SerializeField] private Color dangerColor = RunOverlayUI.Clay;
+
+    /// <summary>Midpoint of the meter's yellow → orange → red ramp.</summary>
+    public static readonly Color TremorOrange = new Color(0.92f, 0.48f, 0.12f, 1f);
     [SerializeField] private Color trembleFlashColor = RunOverlayUI.Parchment;
 
     [Tooltip("Tremor at which the fill has fully turned from still to strain colour.")]
@@ -62,7 +70,46 @@ public class TowerStabilityView : MonoBehaviour
     [SerializeField] private Image previewImage;
     [SerializeField] private Color previewColor = new Color(0.79f, 0.64f, 0.29f, 0.6f);
 
+    [Header("Attention")]
+    [Tooltip("Faded while the tower is calm, full strength once tremor matters. Optional - " +
+             "looked up on this object when unassigned.")]
+    [SerializeField] private CanvasGroup group;
+
+    [Tooltip("The whole meter art (frame, label and bar). When set, it grows as tremor rises " +
+             "and takes the pulse too, so the bar never scales out of its frame. Scales from " +
+             "its authored scale and pivot - put the pivot on the side it should grow away from.")]
+    [SerializeField] private RectTransform frame;
+
+    [Range(0f, 1f)]
+    [SerializeField] private float idleAlpha = 0.6f;
+
+    [Tooltip("Frame scale at full attention, relative to its authored scale.")]
+    [Range(1f, 1.5f)]
+    [SerializeField] private float alertScale = 1.15f;
+
+    [Tooltip("Tremor at which the meter starts waking up.")]
+    [Range(0f, 1f)]
+    [SerializeField] private float alertStart = 0.45f;
+
+    [Tooltip("Tremor at which the meter is at full attention.")]
+    [Range(0f, 1f)]
+    [SerializeField] private float alertFull = 0.75f;
+
+    [Tooltip("How fast attention eases in and out, per second.")]
+    [SerializeField] private float alertEaseSpeed = 4f;
+
     private float previewAmount;
+    private float attention;
+    private Vector3 frameBaseScale = Vector3.one;
+    private Vector3 barBaseScale = Vector3.one;
+
+    private void Awake()
+    {
+        if (group == null) group = GetComponent<CanvasGroup>();
+        if (frame != null) frameBaseScale = frame.localScale;
+        if (bar != null) barBaseScale = bar.localScale;
+        if (group != null) group.alpha = idleAlpha;
+    }
 
     /// <summary>True when this prefab can actually show the meter.</summary>
     public bool IsUsable => fill != null && fillImage != null && fill.parent is RectTransform;
@@ -70,7 +117,26 @@ public class TowerStabilityView : MonoBehaviour
     /// <summary>Sets the caption. Ignores empty text so a missing loc key can't blank it.</summary>
     public void SetLabel(string text)
     {
-        if (label != null && !string.IsNullOrEmpty(text)) label.text = text;
+        if (label != null && !string.IsNullOrEmpty(text)) label.text = stackLabel ? Stack(text) : text;
+    }
+
+    /// <summary>
+    /// One letter per line. Walks text elements rather than chars so a surrogate pair or
+    /// combining mark stays on its line; spaces are dropped. CJK captions read naturally
+    /// this way too.
+    /// </summary>
+    private static string Stack(string text)
+    {
+        var sb = new System.Text.StringBuilder(text.Length * 2);
+        var letters = System.Globalization.StringInfo.GetTextElementEnumerator(text.Trim());
+        while (letters.MoveNext())
+        {
+            string letter = letters.GetTextElement();
+            if (string.IsNullOrWhiteSpace(letter)) continue;
+            if (sb.Length > 0) sb.Append('\n');
+            sb.Append(letter);
+        }
+        return sb.ToString();
     }
 
     /// <summary>Tremor (0-1) to preview above the fill; 0 hides the preview.</summary>
@@ -118,14 +184,40 @@ public class TowerStabilityView : MonoBehaviour
             pulse = Mathf.Max(pulse, Mathf.Clamp01(highlight) * wave * 2f);
         }
 
-        if (bar != null)
+        float pulseFactor = 1f + pulseScale * pulse;
+        float eased = UpdateAttention(amount, trembling, highlight);
+
+        if (group != null) group.alpha = Mathf.Lerp(idleAlpha, 1f, eased);
+
+        if (frame != null)
         {
-            bar.localScale = Vector3.one * (1f + pulseScale * pulse);
+            // The whole meter grows and pulses as one, from the frame's pivot.
+            frame.localScale = frameBaseScale * (Mathf.Lerp(1f, alertScale, eased) * pulseFactor);
+            if (bar != null) bar.localScale = barBaseScale;
+        }
+        else if (bar != null)
+        {
+            bar.localScale = barBaseScale * pulseFactor;
         }
 
         fillImage.color = color;
 
         DrawPreview(track, innerHeight, amount);
+    }
+
+    /// <summary>
+    /// Eases the meter's attention (0 quiet - 1 full) toward what the moment calls for:
+    /// rising toward collapse, trembling, a Serpent's Edge cost on offer, or a highlight
+    /// pointing the player at it. Returns the smoothstepped value.
+    /// </summary>
+    private float UpdateAttention(float amount, bool trembling, float highlight)
+    {
+        float target = trembling || previewAmount > 0f
+            ? 1f
+            : Mathf.Max(Mathf.InverseLerp(alertStart, alertFull, amount), Mathf.Clamp01(highlight));
+
+        attention = Mathf.MoveTowards(attention, target, alertEaseSpeed * Time.unscaledDeltaTime);
+        return attention * attention * (3f - 2f * attention);
     }
 
     private void DrawPreview(RectTransform track, float innerHeight, float amount)

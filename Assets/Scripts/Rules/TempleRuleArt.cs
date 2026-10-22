@@ -62,6 +62,8 @@ public class TempleRuleArt : ScriptableObject
     public Sprite eclipseSun;
     [Tooltip("The moon that slides over the sun as totality comes on. Null = the sun sprite alone.")]
     public Sprite eclipseMoon;
+    [Tooltip("Soft sunburst drawn behind the sun, slowly turning; it flares into a corona at totality. Null = no rays.")]
+    public Sprite eclipseRays;
     [Tooltip("Played as the light goes out at the start of the attempt.")]
     public AudioClip eclipseSting;
     [Tooltip("Optional low drone under the eclipse.")]

@@ -152,13 +152,16 @@ public class RisingCenote : TempleRuleBehaviour
             {
                 warned = true;
                 PlayOneShot(art.cenoteWarningSound, 1f);
-                RunBanner.Show(LocalizationManager.Get("cenote_warning"), WarningColor, 1.1f, -180f);
+                RunBanner.Show(LocalizationManager.Get("cenote_warning"), WarningColor, 1.1f);
                 HapticFeedback.Trigger(HapticFeedback.HapticType.Medium);
             }
             else if (gap > settings.warningStones + 1f)
             {
                 warned = false; // climbed clear: the next approach warns again
             }
+
+            // The water closing on the top stone is the cenote's omen.
+            OmenWindow.Set(Rule, warned);
 
             SetLoop(art.cenoteLoop, Mathf.Lerp(0.8f, 0.3f, Mathf.Clamp01(gap / settings.maxLagStones)));
 
@@ -173,6 +176,7 @@ public class RisingCenote : TempleRuleBehaviour
     private void Flood()
     {
         rising = false;
+        OmenWindow.Set(Rule, false);
         PlayOneShot(art.cenoteFloodSound, 1f);
         if (cameraController != null) cameraController.Shake(0.3f);
         HapticFeedback.Trigger(HapticFeedback.HapticType.Heavy);

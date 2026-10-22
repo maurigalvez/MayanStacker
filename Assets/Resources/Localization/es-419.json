@@ -30,11 +30,11 @@
     },
     {
       "key": "mode_temple_stacker",
-      "value": "Apilador del Templo"
+      "value": "Templo Stacker"
     },
     {
       "key": "mode_infinite_stacker",
-      "value": "Apilador Infinito"
+      "value": "Stacker Eterno"
     },
     {
       "key": "mode_infinite",
@@ -114,12 +114,12 @@
     },
     {
       "key": "theme_sunset",
-      "value": "Tema Atardecer"
+      "value": "Tema de Atardecer"
     },
-    { "key": "theme_day", "value": "Tema Diurno" },
+    { "key": "theme_day", "value": "Tema de Día" },
     {
       "key": "theme_night",
-      "value": "Tema Nocturno"
+      "value": "Tema de Noche"
     },
     {
       "key": "theme_sunset_unlock_format",
@@ -235,7 +235,7 @@
     },
     {
       "key": "daily_modifier_fragilestack",
-      "value": "Pila Fr\u00e1gil"
+      "value": "Torre Fr\u00e1gil"
     },
     {
       "key": "daily_modifier_fragilestack_desc",
@@ -601,7 +601,7 @@
     },
     {
       "key": "band_serpent",
-      "value": "El Alcance de la Serpiente"
+      "value": "Los Dominios de la Serpiente"
     },
     {
       "key": "band_height_subtitle",
@@ -633,7 +633,7 @@
     },
     {
       "key": "boon_stone_mercy",
-      "value": "Piedad de Piedra"
+      "value": "Clemencia de Kukulkán"
     },
     {
       "key": "boon_stone_mercy_desc",
@@ -701,7 +701,7 @@
     },
     {
       "key": "update_available_body",
-      "value": "Una nueva talla del templo está lista. Descárgala ahora: puedes seguir apilando mientras llega."
+      "value": "Hay una nueva versión del templo. Descárgala ahora: puedes seguir apilando mientras llega."
     },
     {
       "key": "update_button_update",
@@ -733,7 +733,7 @@
     },
     {
       "key": "review_prompt_body",
-      "value": "Gracias a las reseñas en Play Store, nuevos apiladores encuentran este lugar. Se abre aquí mismo: no perderás tu partida."
+      "value": "Gracias a las reseñas en Play Store, nuevos stackers encuentran este lugar. Se abre aquí mismo: no perderás tu partida."
     },
     {
       "key": "review_prompt_confirm",
@@ -777,15 +777,15 @@
     },
     {
       "key": "edge_landed",
-      "value": "Filo de la Serpiente"
+      "value": "Borde de la Serpiente"
     },
     {
       "key": "edge_intro_title",
-      "value": "El Filo de la Serpiente"
+      "value": "El Borde de la Serpiente"
     },
     {
       "key": "edge_intro_body",
-      "value": "Suelta mientras la piedra esté sobre el borde dorado y destelle para ganar x{0} puntos. No suma ni rompe tu combo. Fuera del borde es una caída normal."
+      "value": "Suelta cuando la piedra esté sobre el borde dorado y este destelle para ganar x{0} puntos. No suma ni rompe tu combo. Fuera del borde, es una caída normal."
     },
     {
       "key": "edge_intro_followup_title",
@@ -801,7 +801,7 @@
     },
     {
       "key": "edge_intro_early_body",
-      "value": "Solo BIEN, y se rompió tu combo. Espera a que destelle el borde para un PERFECTO x{0}."
+      "value": "Solo fue un BIEN y se rompió tu combo. Espera a que destelle el borde para un PERFECTO x{0}."
     },
     {
       "key": "ghost_best_label",
@@ -845,12 +845,12 @@
     { "key": "result_tip_straighten", "value": "Logra {0} Perfectos seguidos para ganar una Piedra de Ofrenda y colócala Perfecta para enderezar tu torre." },
     { "key": "result_tip_power", "value": "Los Perfectos llenan el medidor de tu poder. Guárdalo para cuando la torre se incline." },
     { "key": "result_tip_combo", "value": "Solo los aterrizajes perfectos mantienen tu combo." },
-    { "key": "result_tip_edge", "value": "Suelta cuando destelle el borde de la Serpiente para ganar x3 puntos." },
+    { "key": "result_tip_edge", "value": "Suelta cuando destelle el Borde de la Serpiente para ganar x3 puntos." },
     { "key": "edge_proj_miss", "value": "Fallo" },
-    { "key": "result_edge_line", "value": "Filo de la Serpiente: {0} aciertos · +{1}" },
-    { "key": "result_edge_line_one", "value": "Filo de la Serpiente: {0} acierto · +{1}" },
-    { "key": "result_edge_line_broke", "value": "Filo de la Serpiente: {0} aciertos · +{1} · combos rotos: {2}" },
-    { "key": "result_edge_line_broke_one", "value": "Filo de la Serpiente: {0} acierto · +{1} · combos rotos: {2}" },
+    { "key": "result_edge_line", "value": "Borde de la Serpiente: {0} aciertos · +{1}" },
+    { "key": "result_edge_line_one", "value": "Borde de la Serpiente: {0} acierto · +{1}" },
+    { "key": "result_edge_line_broke", "value": "Borde de la Serpiente: {0} aciertos · +{1} · combos rotos: {2}" },
+    { "key": "result_edge_line_broke_one", "value": "Borde de la Serpiente: {0} acierto · +{1} · combos rotos: {2}" },
     { "key": "result_tip_align", "value": "Alinea cada piedra con la de abajo." },
     { "key": "player_identity_format", "value": "Jugando como {0}" },
     { "key": "player_identity_signing_in", "value": "Iniciando sesión..." },
@@ -894,8 +894,8 @@
     { "key": "rule_rain_slick_desc", "value": "Con la lluvia, todo aterrizaje que no sea perfecto se desliza un poco más." },
     { "key": "rule_rain_slick_short", "value": "Solo un Perfecto no se desliza" },
     { "key": "rule_earthquake_name", "value": "Cabracán" },
-    { "key": "rule_earthquake_desc", "value": "El suelo tiembla mientras la torre crece. Mantén SUJETAR y las piedras no se mueven; si sueltas, se deslizan. No puedes soltar piedras mientras sujetas." },
-    { "key": "rule_earthquake_short", "value": "Mantén SUJETAR cuando tiemble" },
+    { "key": "rule_earthquake_desc", "value": "El suelo tiembla mientras la torre crece. Mantén presionado SUJETAR y las piedras no se mueven; si sueltas, se deslizan. No puedes soltar piedras mientras sujetas." },
+    { "key": "rule_earthquake_short", "value": "Mantén presionado SUJETAR al temblar" },
     { "key": "rule_rising_cenote_name", "value": "Cenote Creciente" },
     { "key": "rule_rising_cenote_desc", "value": "El pozo sagrado está subiendo. Sigue construyendo antes de que el agua llegue a la cima." },
     { "key": "rule_rising_cenote_short", "value": "Mantente sobre el agua" },
@@ -905,6 +905,7 @@
     { "key": "quake_braced", "value": "¡FIRME!" },
     { "key": "quake_brace_button", "value": "MANTÉN PARA SUJETAR" },
     { "key": "quake_survived", "value": "La tierra se calma" },
+    { "key": "omen_defied", "value": "¡PRESAGIO VENCIDO!" },
     { "key": "cenote_warning", "value": "¡El agua sube!" },
     { "key": "quit_confirm_title", "value": "¿Dejar el templo?" },
     { "key": "quit_confirm_body", "value": "Tu progreso está guardado. La torre te esperará." },
@@ -925,7 +926,7 @@
     { "key": "ritual_wrath_of_cabracan_name", "value": "Ira de Cabracán" },
     { "key": "ritual_wrath_of_cabracan_tagline", "value": "El dios de la tierra despierta. Resiste o quedarás bajo las piedras." },
     { "key": "ritual_jade_morning_name", "value": "Mañana de Jade" },
-    { "key": "ritual_jade_morning_tagline", "value": "Un día tranquilo en el templo. Encadena Perfectos y deja que la pluma te guíe." },
+    { "key": "ritual_jade_morning_tagline", "value": "La luna besa el sol de la mañana. Encadena Perfectos y deja que la pluma te guíe." },
     { "key": "ritual_drifting_moon_name", "value": "Luna a la Deriva" },
     { "key": "ritual_drifting_moon_tagline", "value": "Piedras ligeras en un cielo oscuro. Recuerda dónde construiste." },
     { "key": "ritual_kiln_of_the_sun_name", "value": "Horno del Sol" },
@@ -935,7 +936,7 @@
     { "key": "ritual_needle_of_itzamna_name", "value": "Aguja de Itzamná" },
     { "key": "ritual_needle_of_itzamna_tagline", "value": "Una torre cada vez más fina bajo un viento constante. Apunta contra el viento." },
     { "key": "ritual_glass_pyramid_name", "value": "La Pirámide de Cristal" },
-    { "key": "ritual_glass_pyramid_tagline", "value": "Un solo aterrizaje MAL y se rompe. Los dioses observan." },
+    { "key": "ritual_glass_pyramid_tagline", "value": "Un solo aterrizaje malo y se rompe. Los dioses observan." },
     { "key": "ritual_flood_of_chaac_name", "value": "Diluvio de Chaac" },
     { "key": "ritual_flood_of_chaac_tagline", "value": "Tormenta arriba, inundación abajo. Solo sobrevive el templo más veloz." },
     { "key": "daily_modifier_giftofthegods", "value": "Regalo de los Dioses" },
@@ -952,7 +953,7 @@
     { "key": "daily_briefing_play", "value": "JUGAR" },
     { "key": "daily_briefing_back", "value": "Volver" },
     { "key": "daily_goal_stack", "value": "Apila {0} piedras" },
-    { "key": "daily_goal_note_fragile", "value": "Un solo aterrizaje MAL rompe el ritual." },
+    { "key": "daily_goal_note_fragile", "value": "Un solo aterrizaje malo rompe el ritual." },
     { "key": "daily_goal_note_speed", "value": "Termina rápido: el sol paga un bono por tiempo." },
     { "key": "daily_goal_note_rules", "value": "El templo se defiende. Cada Perfecto sube tu puntuación." },
     { "key": "daily_goal_note_score", "value": "Cada Perfecto sube tu puntuación." },

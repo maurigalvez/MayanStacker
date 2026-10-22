@@ -3,10 +3,19 @@ using UnityEngine;
 using UnityEngine.UI;
 
 /// <summary>
-/// The moment a power fires: its medallion slams onto the screen, a shockwave and a burst of
-/// sun rays in the power's colour break out from it, and its name stamps onto a stone plate
-/// underneath, with a glint running across. About a second and a half, then it swells and
-/// fades away.
+/// The moment a power fires: its medallion slams down onto the power button that was tapped, an
+/// inked ring and a sun burst in the power's colour break out from it, and its name unrolls on a
+/// stone plate just above the button. About a second and a half, then it shrinks back into the
+/// button and fades.
+///
+/// Drawn like the rest of the game's art: flat cel fills inside a thick ink outline, opaque, no
+/// soft glows, glints or light streaks. The burst turns in steps ("on twos") rather than a smooth
+/// spin, the way hand-drawn effects do.
+///
+/// It lives in the button's corner on purpose: the power acts on the tower top and the held
+/// stone, so nothing here may cross the middle of the screen while that happens. The stage
+/// follows the button wherever it is placed, and the plate mirrors to open toward the centre
+/// when the button sits on the right.
 ///
 /// Its own thing, not a lesson: the <see cref="GuideLane"/> is a quiet caption that teaches;
 /// this is a celebration of a choice the player just made, and it can play mid-lesson.
@@ -29,9 +38,7 @@ public class PowerShowcaseView : MonoBehaviour
     [SerializeField] private RectTransform stage;
     [SerializeField] private CanvasGroup stageGroup;
 
-    [Tooltip("Dark soft halo behind the rays, so light colours still read on the Day sky.")]
-    [SerializeField] private Image shade;
-    [SerializeField] private Image glow;
+    [Tooltip("Inked sun burst behind the medallion; its ink outline keeps it readable on every sky.")]
     [SerializeField] private Image rays;
     [SerializeField] private Image shockwave;
 
@@ -43,16 +50,10 @@ public class PowerShowcaseView : MonoBehaviour
     [SerializeField] private RectTransform plate;
     [SerializeField] private CanvasGroup plateGroup;
     [SerializeField] private TextMeshProUGUI nameLabel;
-    [SerializeField] private RectTransform shine;
-    [SerializeField] private RectTransform sparkLeft;
-    [SerializeField] private RectTransform sparkRight;
 
     [Header("Look")]
     [Tooltip("Tint the name with the power's accent. Off keeps the authored colour.")]
     [SerializeField] private bool tintNameWithAccent = true;
-    [Range(0f, 1f)] [SerializeField] private float shadeOpacity = 0.45f;
-    [Range(0f, 1f)] [SerializeField] private float raysOpacity = 0.7f;
-    [Range(0f, 1f)] [SerializeField] private float glowOpacity = 0.45f;
 
     [Header("Timing (seconds, unscaled)")]
     [Tooltip("The medallion falling onto the screen; the burst goes off when it lands.")]
@@ -60,12 +61,18 @@ public class PowerShowcaseView : MonoBehaviour
     [Tooltip("From the tap until it starts to leave.")]
     [SerializeField] private float holdSeconds = 1.25f;
     [SerializeField] private float exitSeconds = 0.3f;
-    [Tooltip("Degrees per second; the rays spin faster as it leaves.")]
+    [Tooltip("Degrees per second; the burst turns faster as it leaves.")]
     [SerializeField] private float raysSpin = 40f;
+    [Tooltip("How often the burst's turn updates. 12 = animated on twos, like hand-drawn effects; " +
+             "0 turns it smoothly.")]
+    [SerializeField] private float raysStepsPerSecond = 12f;
 
     [Header("Motion")]
-    [Tooltip("How big the medallion starts before it slams down to size.")]
-    [SerializeField] private float slamFromScale = 2.6f;
+    [Tooltip("How big the medallion starts before it slams down to size. Keep it small: a big " +
+             "start covers the tower top for the first frames.")]
+    [SerializeField] private float slamFromScale = 1.6f;
+    [Tooltip("How far the shockwave ring grows, as a multiple of its authored size.")]
+    [SerializeField] private float shockwaveScale = 2.2f;
     [Tooltip("Extra letter spacing the name starts with before it snaps tight.")]
     [SerializeField] private float nameSpacingFrom = 30f;
 
@@ -74,19 +81,19 @@ public class PowerShowcaseView : MonoBehaviour
     private const float PlateDelay = 0.04f;
     private const float PlateInSeconds = 0.28f;
     private const float NameInSeconds = 0.35f;
-    private const float ShineDelay = 0.3f;
-    private const float ShineSeconds = 0.45f;
 
     private bool playing;
     private float elapsed;
     private float raysAngle;
+    private float raysShownAngle;
+    private float raysStepTimer;
     private Color accent = Color.white;
-    private Color shadeColor;
     private float lastSpacing = float.NaN;
 
     private Vector2 stageHome;
+    private Vector2 placedHome;
     private Vector2 medallionHome;
-    private Vector2 shineHome;
+    private Vector2 plateHome, plateHomePivot;
     private bool homesRead;
 
     /// <summary>True when this view has what it needs to play.</summary>
@@ -95,7 +102,6 @@ public class PowerShowcaseView : MonoBehaviour
     private void Awake()
     {
         ReadHomes();
-        if (shade != null) shadeColor = shade.color;
         Stop();
     }
 
@@ -105,13 +111,53 @@ public class PowerShowcaseView : MonoBehaviour
         homesRead = true;
         if (stage != null) stageHome = stage.anchoredPosition;
         if (medallion != null) medallionHome = medallion.anchoredPosition;
-        if (shine != null) shineHome = shine.anchoredPosition;
+        if (plate != null) { plateHome = plate.anchoredPosition; plateHomePivot = plate.pivot; }
     }
 
-    /// <summary>Plays the showcase from the top. Firing again mid-play restarts it.</summary>
-    public void Play(string powerName, Sprite iconSprite, Color accentColor)
+    /// <summary>
+    /// Puts the stage on <paramref name="anchor"/> (the power button) and opens the plate toward
+    /// the centre of the screen: authored for a left-hand button, mirrored for a right-hand one.
+    /// Without an anchor the stage stays where the prefab put it.
+    /// </summary>
+    private void PlaceOn(RectTransform anchor)
+    {
+        Vector2 home = stageHome;
+        bool mirror = false;
+
+        if (anchor != null)
+        {
+            Canvas from = anchor.GetComponentInParent<Canvas>();
+            Camera cam = from != null && from.rootCanvas.renderMode != RenderMode.ScreenSpaceOverlay
+                ? from.rootCanvas.worldCamera
+                : null;
+            Vector2 screen = RectTransformUtility.WorldToScreenPoint(cam, anchor.TransformPoint(anchor.rect.center));
+            var root = (RectTransform)canvas.transform;
+            if (RectTransformUtility.ScreenPointToLocalPointInRectangle(root, screen, null, out Vector2 local))
+            {
+                home = local;
+                mirror = local.x > 0f;
+            }
+        }
+
+        placedHome = home;
+        Mirror(plate, plateHome, plateHomePivot, mirror);
+    }
+
+    private static void Mirror(RectTransform rt, Vector2 home, Vector2 homePivot, bool mirror)
+    {
+        if (rt == null) return;
+        rt.pivot = mirror ? new Vector2(1f - homePivot.x, homePivot.y) : homePivot;
+        rt.anchoredPosition = mirror ? new Vector2(-home.x, home.y) : home;
+    }
+
+    /// <summary>
+    /// Plays the showcase from the top on <paramref name="anchor"/> (the button that fired it).
+    /// Firing again mid-play restarts it.
+    /// </summary>
+    public void Play(string powerName, Sprite iconSprite, Color accentColor, RectTransform anchor = null)
     {
         ReadHomes();
+        PlaceOn(anchor);
 
         accent = accentColor;
         nameLabel.text = powerName;
@@ -126,6 +172,8 @@ public class PowerShowcaseView : MonoBehaviour
 
         elapsed = 0f;
         raysAngle = Random.Range(0f, 360f); // never the same burst twice in a row
+        raysShownAngle = raysAngle;
+        raysStepTimer = 0f;
         lastSpacing = float.NaN;
         playing = true;
         canvas.enabled = true;
@@ -159,10 +207,10 @@ public class PowerShowcaseView : MonoBehaviour
         float impact = slamSeconds;
         float sinceImpact = t - impact;
 
-        // Leaving: everything swells a touch, drifts up and fades together.
+        // Leaving: everything shrinks back into the button and fades together.
         float exit = exitSeconds > 0f ? Mathf.Clamp01((t - holdSeconds) / exitSeconds) : 0f;
-        stage.localScale = Vector3.one * (1f + 0.12f * EaseOutCubic(exit));
-        stage.anchoredPosition = stageHome + Vector2.up * (30f * EaseOutCubic(exit));
+        stage.localScale = Vector3.one * (1f - 0.35f * EaseInCubic(exit));
+        stage.anchoredPosition = placedHome;
         if (stageGroup != null) stageGroup.alpha = 1f - exit * exit;
 
         // Medallion: falls from huge onto the screen, then springs to size and floats.
@@ -184,15 +232,8 @@ public class PowerShowcaseView : MonoBehaviour
             if (medallionGroup != null) medallionGroup.alpha = impact > 0f ? Mathf.Clamp01(t / (impact * 0.5f)) : 1f;
         }
 
-        // Dark halo first, so the burst has something to read against.
-        if (shade != null)
-        {
-            Color c = shadeColor;
-            c.a = shadeOpacity * EaseOutCubic(Mathf.Clamp01(t / 0.2f));
-            shade.color = c;
-        }
-
-        // Shockwave: one ring out from the landing.
+        // Shockwave: one inked ring out from the landing. It thins out rather than fading to a
+        // ghost, so it stays a solid drawn shape until it is gone.
         if (shockwave != null)
         {
             float u = sinceImpact / ShockwaveSeconds;
@@ -200,36 +241,35 @@ public class PowerShowcaseView : MonoBehaviour
             shockwave.enabled = on;
             if (on)
             {
-                shockwave.rectTransform.localScale = Vector3.one * Mathf.Lerp(0.7f, 3f, EaseOutCubic(u));
-                shockwave.color = WithAlpha(accent, 0.9f * (1f - u));
+                shockwave.rectTransform.localScale = Vector3.one * Mathf.Lerp(0.7f, shockwaveScale, EaseOutCubic(u));
+                shockwave.color = WithAlpha(accent, u < 0.75f ? 1f : 1f - (u - 0.75f) / 0.25f);
             }
         }
 
-        // Rays: burst out on the landing and keep turning, faster on the way out.
+        // Burst: pops out on the landing, opaque, and turns in steps — faster on the way out.
         if (rays != null)
         {
             float u = Mathf.Clamp01(sinceImpact / RaysInSeconds);
             raysAngle -= raysSpin * (1f + 2f * exit) * dt;
-            rays.rectTransform.localRotation = Quaternion.Euler(0f, 0f, raysAngle);
+            raysStepTimer += dt;
+            float step = raysStepsPerSecond > 0f ? 1f / raysStepsPerSecond : 0f;
+            if (raysStepTimer >= step)
+            {
+                raysStepTimer = step > 0f ? raysStepTimer % step : 0f;
+                raysShownAngle = raysAngle;
+            }
+            rays.rectTransform.localRotation = Quaternion.Euler(0f, 0f, raysShownAngle);
             rays.rectTransform.localScale = Vector3.one * Mathf.LerpUnclamped(0.2f, 1f, EaseOutBack(u));
-            rays.color = WithAlpha(accent, raysOpacity * u);
+            rays.color = WithAlpha(accent, sinceImpact < 0f ? 0f : 1f);
         }
 
-        // Glow: flares on the landing, settles into a soft breathing light.
-        if (glow != null)
-        {
-            float a = sinceImpact < 0f
-                ? 0f
-                : glowOpacity * (0.8f + 1.2f * Mathf.Exp(-6f * sinceImpact)) * (0.92f + 0.08f * Mathf.Sin(sinceImpact * 6f));
-            glow.color = WithAlpha(accent, Mathf.Clamp01(a));
-        }
-
-        // Plate: unrolls sideways from the centre with a little overshoot.
+        // Plate: unrolls out of the button's side with a little overshoot, rolls back in on exit.
         float plateT = sinceImpact - PlateDelay;
         if (plate != null)
         {
             float u = Mathf.Clamp01(plateT / PlateInSeconds);
-            plate.localScale = new Vector3(Mathf.Max(0f, EaseOutBack(u)), Mathf.Lerp(0.5f, 1f, EaseOutCubic(u)), 1f);
+            float roll = 1f - EaseInCubic(exit);
+            plate.localScale = new Vector3(Mathf.Max(0f, EaseOutBack(u) * roll), Mathf.Lerp(0.5f, 1f, EaseOutCubic(u)), 1f);
             if (plateGroup != null) plateGroup.alpha = Mathf.Clamp01(u * 3f);
         }
 
@@ -244,24 +284,6 @@ public class PowerShowcaseView : MonoBehaviour
             }
             nameLabel.alpha = u;
         }
-
-        // Sparks: two light lines shoot out from the plate's ends.
-        float sparkU = EaseOutCubic(Mathf.Clamp01(plateT / 0.32f));
-        if (sparkLeft != null) sparkLeft.localScale = new Vector3(sparkU, 1f, 1f);
-        if (sparkRight != null) sparkRight.localScale = new Vector3(sparkU, 1f, 1f);
-
-        // Glint: one sweep across the plate once the name has landed.
-        if (shine != null && plate != null)
-        {
-            float u = (plateT - ShineDelay) / ShineSeconds;
-            bool on = u >= 0f && u <= 1f;
-            if (shine.gameObject.activeSelf != on) shine.gameObject.SetActive(on);
-            if (on)
-            {
-                float reach = plate.rect.width * 0.5f + shine.rect.width;
-                shine.anchoredPosition = new Vector2(Mathf.Lerp(-reach, reach, EaseInOutQuad(u)), shineHome.y);
-            }
-        }
     }
 
     private static Color WithAlpha(Color c, float a) => new Color(c.r, c.g, c.b, a);
@@ -272,7 +294,7 @@ public class PowerShowcaseView : MonoBehaviour
         return 1f - i * i * i;
     }
 
-    private static float EaseInOutQuad(float x) => x < 0.5f ? 2f * x * x : 1f - Mathf.Pow(-2f * x + 2f, 2f) * 0.5f;
+    private static float EaseInCubic(float x) => x * x * x;
 
     private static float EaseOutBack(float x)
     {
@@ -285,16 +307,13 @@ public class PowerShowcaseView : MonoBehaviour
 #if UNITY_EDITOR
     /// <summary>Editor hook: the prefab generator wires the parts it built.</summary>
     public void Bind(Canvas canvas, RectTransform stage, CanvasGroup stageGroup,
-        Image shade, Image glow, Image rays, Image shockwave,
+        Image rays, Image shockwave,
         RectTransform medallion, CanvasGroup medallionGroup, Image ring, Image icon,
-        RectTransform plate, CanvasGroup plateGroup, TextMeshProUGUI nameLabel,
-        RectTransform shine, RectTransform sparkLeft, RectTransform sparkRight)
+        RectTransform plate, CanvasGroup plateGroup, TextMeshProUGUI nameLabel)
     {
         this.canvas = canvas;
         this.stage = stage;
         this.stageGroup = stageGroup;
-        this.shade = shade;
-        this.glow = glow;
         this.rays = rays;
         this.shockwave = shockwave;
         this.medallion = medallion;
@@ -304,9 +323,6 @@ public class PowerShowcaseView : MonoBehaviour
         this.plate = plate;
         this.plateGroup = plateGroup;
         this.nameLabel = nameLabel;
-        this.shine = shine;
-        this.sparkLeft = sparkLeft;
-        this.sparkRight = sparkRight;
     }
 #endif
 }

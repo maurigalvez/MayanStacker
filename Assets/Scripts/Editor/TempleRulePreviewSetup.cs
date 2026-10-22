@@ -280,7 +280,7 @@ public static class TempleRulePreviewSetup
         sun.fadeOut = 0f;
         motes.Add(sun);
 
-        MapRuleFx.Mote moon = Mote(fx.transform, "Moon", FxMoon, new Vector2(52f, 52f), Color.white);
+        MapRuleFx.Mote moon = Mote(fx.transform, "Moon", FxMoon, new Vector2(36f, 36f), Color.white);
         moon.from = new Vector2(-60f, 92f);
         moon.to = new Vector2(0f, 80f);
         moon.period = period;

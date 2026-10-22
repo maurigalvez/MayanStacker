@@ -62,7 +62,7 @@
     },
     {
       "key": "kukulkan_shift",
-      "value": "Kukulkan's Shift"
+      "value": "Kukulkan's Call"
     },
     {
       "key": "leaderboard_not_available",
@@ -875,7 +875,7 @@
     { "key": "power_tzolkin_rewind_name", "value": "Tzolk'in Rewind" },
     { "key": "power_tzolkin_rewind_desc", "value": "Tap the full meter to turn time back: your last {0} stones, and the points they scored, are undone." },
     { "key": "power_kukulkans_call_name", "value": "Kukulkan's Call" },
-    { "key": "power_kukulkans_call_desc", "value": "Tap the full meter to call Kukulkan's Shift now and straighten the tower." },
+    { "key": "power_kukulkans_call_desc", "value": "Tap the full meter to call Kukulkan now and straighten the tower." },
     { "key": "power_loadout_title", "value": "Choose a power" },
     { "key": "power_loadout_play", "value": "PLAY" },
     { "key": "power_loadout_back", "value": "Back" },
@@ -899,6 +899,7 @@
     { "key": "quake_braced", "value": "BRACED!" },
     { "key": "quake_brace_button", "value": "HOLD TO BRACE" },
     { "key": "quake_survived", "value": "The ground is still" },
+    { "key": "omen_defied", "value": "OMEN DEFIED!" },
     { "key": "cenote_warning", "value": "The water is rising!" },
     { "key": "quit_confirm_title", "value": "Leave the Temple?" },
     { "key": "quit_confirm_body", "value": "Your progress is saved. The tower will wait for you." },
@@ -919,7 +920,7 @@
     { "key": "ritual_wrath_of_cabracan_name", "value": "Wrath of Cabracán" },
     { "key": "ritual_wrath_of_cabracan_tagline", "value": "The earth god wakes. Brace, or be buried." },
     { "key": "ritual_jade_morning_name", "value": "Jade Morning" },
-    { "key": "ritual_jade_morning_tagline", "value": "A calm day at the temple. Chain Perfects and let the feather guide you." },
+    { "key": "ritual_jade_morning_tagline", "value": "The moon kisses the morning sun. Chain Perfects and let the feather guide you." },
     { "key": "ritual_drifting_moon_name", "value": "Drifting Moon" },
     { "key": "ritual_drifting_moon_tagline", "value": "Light stones in a dark sky. Remember where you built." },
     { "key": "ritual_kiln_of_the_sun_name", "value": "Kiln of the Sun" },

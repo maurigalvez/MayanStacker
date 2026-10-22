@@ -62,7 +62,7 @@
     },
     {
       "key": "kukulkan_shift",
-      "value": "ククルカンの揺らぎ"
+      "value": "ククルカンの呼び声"
     },
     {
       "key": "leaderboard_not_available",
@@ -872,7 +872,7 @@
     { "key": "power_tzolkin_rewind_name", "value": "ツォルキンの巻き戻し" },
     { "key": "power_tzolkin_rewind_desc", "value": "満タンのメーターをタップすると時間が巻き戻り、最後に積んだ{0}個の石とその得点が取り消される。" },
     { "key": "power_kukulkans_call_name", "value": "ククルカンの呼び声" },
-    { "key": "power_kukulkans_call_desc", "value": "満タンのメーターをタップすると、今すぐククルカンの揺らぎを呼び、塔をまっすぐにする。" },
+    { "key": "power_kukulkans_call_desc", "value": "満タンのメーターをタップすると、今すぐククルカンを呼び、塔をまっすぐにする。" },
     { "key": "power_loadout_title", "value": "パワーを選ぼう" },
     { "key": "power_loadout_play", "value": "プレイ" },
     { "key": "power_loadout_back", "value": "戻る" },
@@ -896,6 +896,7 @@
     { "key": "quake_braced", "value": "耐えた！" },
     { "key": "quake_brace_button", "value": "長押しで支える" },
     { "key": "quake_survived", "value": "大地が静まった" },
+    { "key": "omen_defied", "value": "凶兆を制した！" },
     { "key": "cenote_warning", "value": "水位が上がっている！" },
     { "key": "quit_confirm_title", "value": "神殿を離れますか？" },
     { "key": "quit_confirm_body", "value": "進行状況は保存されています。塔はあなたを待っています。" },
@@ -916,7 +917,7 @@
     { "key": "ritual_wrath_of_cabracan_name", "value": "Cabracánの怒り" },
     { "key": "ritual_wrath_of_cabracan_tagline", "value": "大地の神が目覚める。踏ん張れ、さもなくば埋もれる。" },
     { "key": "ritual_jade_morning_name", "value": "翡翠の朝" },
-    { "key": "ritual_jade_morning_tagline", "value": "穏やかな神殿の一日。パーフェクトを繋ぎ、羽に導かれよ。" },
+    { "key": "ritual_jade_morning_tagline", "value": "月が朝の太陽に口づける。パーフェクトを繋ぎ、羽に導かれよ。" },
     { "key": "ritual_drifting_moon_name", "value": "漂う月" },
     { "key": "ritual_drifting_moon_tagline", "value": "暗い空に軽い石。どこに積んだか覚えておけ。" },
     { "key": "ritual_kiln_of_the_sun_name", "value": "太陽の窯" },

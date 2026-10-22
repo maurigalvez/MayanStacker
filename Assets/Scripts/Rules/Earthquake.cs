@@ -205,6 +205,7 @@ public class Earthquake : TempleRuleBehaviour
         phaseTimer = settings.warningSeconds;
         quakesThisRun++;
         bracedTime = 0f;
+        OmenWindow.Set(Rule, true);
         shakeTime = 0f;
 
         // Same temple, same quake number → same slides for every player.
@@ -233,18 +234,20 @@ public class Earthquake : TempleRuleBehaviour
     {
         phase = Phase.Ending;
         phaseTimer = EndHoldSeconds;
+        OmenWindow.Set(Rule, false);
         FadeOutLoop();
 
         var data = EventData();
         data["braced_share"] = shakeTime > 0f ? Mathf.Clamp01(bracedTime / shakeTime) : 0f;
         GameAnalytics.Track("quake_survived", data);
 
-        RunBanner.Show(LocalizationManager.Get("quake_survived"), BracedColor, 1.1f, -180f);
+        RunBanner.Show(LocalizationManager.Get("quake_survived"), BracedColor, 1.1f);
     }
 
     private void EndQuake()
     {
         phase = Phase.Idle;
+        OmenWindow.Set(Rule, false);
         if (uiRoot != null) uiRoot.SetActive(false);
         if (brace != null) brace.ResetHold();
         wasBraced = false;

@@ -26,16 +26,17 @@ MonoBehaviour:
     swingSpeedMultiplier: 0
   grantsPower: 0
   grantedPower: 0
-  rule: 0
+  rule: 2
   secondRule: 0
   windSettings:
-    swingPush: 0.7
-    fallPush: 1.6
+    swingPush: 0.3
+    fallPush: 0.65
     stonesPerGust: 3
     gustRampSeconds: 1.4
-    firstAtHeight: 2
-    leadSeconds: 0.7
+    firstAtHeight: 3
+    leadSeconds: 0.9
     steadyDirection: 0
+    announceEveryGust: 1
   rainSettings:
     slideFraction: 0.42
     maxSlideOfWidth: 0.168

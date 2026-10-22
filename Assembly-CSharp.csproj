@@ -43,7 +43,7 @@
     <UnityVersion>6000.3.10f1</UnityVersion>
   </PropertyGroup>
   <ItemGroup>
-    <Analyzer Include="C:\Users\mauri\.vscode\extensions\visualstudiotoolsforunity.vstuc-1.3.1\Analyzers\Microsoft.Unity.Analyzers.dll" />
+    <Analyzer Include="C:\Users\mauri\.vscode\extensions\visualstudiotoolsforunity.vstuc-1.3.2\Analyzers\Microsoft.Unity.Analyzers.dll" />
     <Analyzer Include="C:\Program Files\Unity\Hub\Editor\6000.3.10f1\Editor\Data\Tools\BuildPipeline\Unity.SourceGenerators\Unity.SourceGenerators.dll" />
     <Analyzer Include="C:\Program Files\Unity\Hub\Editor\6000.3.10f1\Editor\Data\Tools\BuildPipeline\Unity.SourceGenerators\Unity.Properties.SourceGenerator.dll" />
     <Analyzer Include="C:\Program Files\Unity\Hub\Editor\6000.3.10f1\Editor\Data\Tools\BuildPipeline\Unity.SourceGenerators\Unity.UIToolkit.SourceGenerator.dll" />
@@ -167,6 +167,7 @@
     <Compile Include="Assets\Scripts\Achievements\GooglePlayAchievementService.cs" />
     <Compile Include="Assets\Scripts\Boons\Boon.cs" />
     <Compile Include="Assets\Scripts\AppUpdatePrompt.cs" />
+    <Compile Include="Assets\Scripts\Rules\OmenWindow.cs" />
     <Compile Include="Assets\Scripts\Account\PlayerIdentityView.cs" />
     <Compile Include="Assets\Scripts\RunModifiers\RunModifierService.cs" />
     <Compile Include="Assets\Scripts\UI\GuideLane.cs" />

@@ -36,6 +36,7 @@ MonoBehaviour:
     firstAtHeight: 2
     leadSeconds: 0.7
     steadyDirection: 0
+    announceEveryGust: 0
   rainSettings:
     slideFraction: 0.42
     maxSlideOfWidth: 0.168
@@ -55,11 +56,11 @@ MonoBehaviour:
     maxLagStones: 2.5
     warningStones: 1.5
   eclipseSettings:
-    firstAtHeight: 6
-    everyNStones: 8
+    firstAtHeight: 4
+    everyNStones: 5
     warningSeconds: 1
-    totalitySeconds: 2
+    totalitySeconds: 1.8
     hiddenTopStones: 1
-    ghostAlpha: 0.2
+    ghostAlpha: 0.3
     totalityDim: 0.65
     skyDim: 0.25

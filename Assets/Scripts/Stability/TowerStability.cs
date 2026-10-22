@@ -499,7 +499,7 @@ public class TowerStability : MonoBehaviour, IRunRewindable
         fillRect.sizeDelta = new Vector2(-2f * BarPadding, 0f);
 
         fillImage = fillRect.gameObject.AddComponent<Image>();
-        fillImage.color = RunOverlayUI.Jade;
+        fillImage.color = RunOverlayUI.Gold;
         fillImage.raycastTarget = false;
 
         previewRect = RunOverlayUI.CreateChild("EdgePreview", barRect);
@@ -551,8 +551,8 @@ public class TowerStability : MonoBehaviour, IRunRewindable
         }
 
         Color color = displayedFill < 0.6f
-            ? Color.Lerp(RunOverlayUI.Jade, RunOverlayUI.Gold, displayedFill / 0.6f)
-            : Color.Lerp(RunOverlayUI.Gold, RunOverlayUI.Clay, (displayedFill - 0.6f) / 0.4f);
+            ? Color.Lerp(RunOverlayUI.Gold, TowerStabilityView.TremorOrange, displayedFill / 0.6f)
+            : Color.Lerp(TowerStabilityView.TremorOrange, RunOverlayUI.Clay, (displayedFill - 0.6f) / 0.4f);
 
         if (trembling)
         {

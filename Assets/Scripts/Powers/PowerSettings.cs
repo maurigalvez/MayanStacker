@@ -32,6 +32,11 @@ public class PowerSettings : ScriptableObject
     [Min(1)]
     public int perfectsToFill = 4;
 
+    [Tooltip("Perfect landings per gift on a Gift of the Gods Daily. Lower than the usual meter " +
+             "so gifts keep coming in a 25-35 stone ritual; the first gift is free at the start.")]
+    [Min(1)]
+    public int giftPerfectsToFill = 3;
+
     [Tooltip("Good and Poor landings leave the meter alone. Good already breaks the combo; " +
              "draining the meter too would punish the same landing twice.")]
     public bool nonPerfectDrains = false;

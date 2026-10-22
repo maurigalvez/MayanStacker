@@ -12,9 +12,11 @@ using UnityEngine.UI;
 /// Required: there is no code-built fallback, so without this prefab nothing is shown when a
 /// power fires (the power itself still works).
 ///
-/// Also bakes two plain white sprites it needs, once, into Resources/UI/Powers — the sun-ray
-/// burst and a soft glow — so they are ordinary assets you can repaint or swap. The medallion
-/// reuses the power meter's base and ring; the name plate and type come from the house style
+/// Also bakes two sprites it needs, once, into Resources/UI/Powers — a sun burst and a
+/// shockwave ring — so they are ordinary assets you can repaint or swap. Both are drawn like
+/// the game's icons: a flat white fill (tinted with the power's colour at runtime), one hard cel
+/// shadow and a thick dark ink outline, no soft gradients. The medallion reuses the power
+/// meter's base and ring; the name plate and type come from the house style
 /// (<see cref="UIHouseStyle"/>).
 ///
 /// Non-destructive: it refuses to overwrite an existing prefab unless you confirm, and never
@@ -26,20 +28,31 @@ public static class PowerShowcasePrefabSetup
 {
     private const string PrefabPath = "Assets/Resources/" + PowerShowcaseView.PrefabResourcePath + ".prefab";
     private const string SpriteFolder = "Assets/Resources/UI/Powers";
-    private const string RaysPath = SpriteFolder + "/PowerShowcase_Rays.png";
-    private const string GlowPath = SpriteFolder + "/PowerShowcase_Glow.png";
+    private const string BurstPath = SpriteFolder + "/PowerShowcase_Burst.png";
+    private const string ShockwavePath = SpriteFolder + "/PowerShowcase_Shockwave.png";
+
+    // Same dark brown ink as the medallion ring and the effect icons.
+    private static readonly Color32 Ink = new Color32(30, 20, 14, 255);
+    // The shadowed side of each sun point, before the accent tint multiplies it.
+    private static readonly Color32 CelShadow = new Color32(196, 196, 196, 255);
     private const string DialogTitle = "Power Showcase";
 
-    // Upper middle of the 1080x1920 canvas: clear of the power button and the Guide Lane
-    // below, and of the swinging stone at the top.
-    private static readonly Vector2 StagePosition = new Vector2(0f, 120f);
-    private static readonly Vector2 StageSize = new Vector2(900f, 640f);
+    // The stage is re-centred on the power button every time it plays (see PowerShowcaseView);
+    // this is only where it sits in the prefab view: the default bottom-left button
+    // (125,125 from the corner of the 1080x1920 canvas). Everything is sized to stay in that
+    // corner, clear of the tower top and the held stone the power is acting on.
+    private static readonly Vector2 StagePosition = new Vector2(-415f, -835f);
+    private static readonly Vector2 StageSize = new Vector2(600f, 600f);
 
-    private const float MedallionSize = 240f;
-    private const float MedallionY = 70f;
-    private static readonly Vector2 PlateSize = new Vector2(620f, 120f);
-    private const float PlateY = -140f;
-    private const float NameFontSize = 60f;
+    // A touch bigger than the 160 button, so it reads as the button leaping up.
+    private const float MedallionSize = 200f;
+    private const float MedallionY = 0f;
+    // Authored for a left-hand button: the plate sits just above the medallion and unrolls
+    // from its left edge toward the centre; the view mirrors it for a right-hand button.
+    private static readonly Vector2 PlateSize = new Vector2(440f, 96f);
+    private const float PlateLeft = -MedallionSize * 0.5f + 8f;
+    private const float PlateY = MedallionSize * 0.5f + 60f;
+    private const float NameFontSize = 48f;
 
     [MenuItem("TamalStacker/Powers/Create Power Showcase Prefab")]
     public static void CreatePrefab()
@@ -56,10 +69,10 @@ public static class PowerShowcasePrefabSetup
         EnsureFolder("Assets/Resources", "UI");
         EnsureFolder("Assets/Resources/UI", "Powers");
 
-        Sprite raysSprite = EnsureSprite(RaysPath, BakeRays);
-        Sprite glowSprite = EnsureSprite(GlowPath, BakeGlow);
+        Sprite burstSprite = EnsureSprite(BurstPath, BakeBurst);
+        Sprite shockwaveSprite = EnsureSprite(ShockwavePath, BakeShockwave);
 
-        GameObject root = BuildHierarchy(raysSprite, glowSprite);
+        GameObject root = BuildHierarchy(burstSprite, shockwaveSprite);
         PrefabUtility.SaveAsPrefabAsset(root, PrefabPath);
         Object.DestroyImmediate(root);
 
@@ -76,14 +89,15 @@ public static class PowerShowcasePrefabSetup
 
         EditorUtility.DisplayDialog(DialogTitle,
             "Created " + PrefabPath + ".\n\n" + styleNote + "\n\n" +
-            "Rays and glow sprites: " + SpriteFolder + " (white; tinted with each power's accent " +
-            "at runtime). Repaint them freely.\n\n" +
-            "Timing, opacities and the slam are on the root's PowerShowcaseView. Move 'Stage' to " +
-            "move the whole showcase.\n\n" +
+            "Burst and shockwave sprites: " + SpriteFolder + " (white fill and dark ink; the fill " +
+            "takes each power's accent at runtime). Repaint them freely.\n\n" +
+            "Timing, opacities and the slam are on the root's PowerShowcaseView. 'Stage' is " +
+            "re-centred on the power button each time it plays; lay its children out around a " +
+            "left-hand button (it mirrors for a right-hand one).\n\n" +
             "Keep this prefab: it is the only source of the showcase.", "OK");
     }
 
-    private static GameObject BuildHierarchy(Sprite raysSprite, Sprite glowSprite)
+    private static GameObject BuildHierarchy(Sprite burstSprite, Sprite shockwaveSprite)
     {
         var root = new GameObject("PowerShowcase", typeof(Canvas), typeof(CanvasScaler));
 
@@ -110,30 +124,23 @@ public static class PowerShowcasePrefabSetup
         Vector2 burstCentre = new Vector2(0f, MedallionY);
 
         Color stone = RunOverlayUI.Stone;
-        Image shade = AddImage("Shade", stage, glowSprite, new Color(stone.r, stone.g, stone.b, 1f), burstCentre, new Vector2(760f, 760f));
-        Image glow = AddImage("Glow", stage, glowSprite, RunOverlayUI.Gold, burstCentre, new Vector2(620f, 620f));
-        Image rays = AddImage("Rays", stage, raysSprite, RunOverlayUI.Gold, burstCentre, new Vector2(820f, 820f));
+        Image rays = AddImage("Burst", stage, burstSprite, RunOverlayUI.Gold, burstCentre, new Vector2(420f, 420f));
+        Image shockwave = AddImage("Shockwave", stage, shockwaveSprite, RunOverlayUI.Gold, burstCentre,
+            new Vector2(MedallionSize, MedallionSize));
 
         Sprite ringSprite = Resources.Load<Sprite>(PowerMeterView.RingSpritePath);
         Sprite baseSprite = Resources.Load<Sprite>(PowerMeterView.BaseSpritePath);
 
-        Image shockwave = AddImage("Shockwave", stage, ringSprite != null ? ringSprite : glowSprite,
-            RunOverlayUI.Gold, burstCentre, new Vector2(MedallionSize, MedallionSize));
-
-        // Light lines out of the plate's ends; pivots on the plate edge so they grow outward.
-        float plateHalf = PlateSize.x * 0.5f;
-        RectTransform sparkLeft = AddSpark("SparkLeft", stage, glowSprite, new Vector2(-plateHalf + 20f, PlateY), 1f);
-        RectTransform sparkRight = AddSpark("SparkRight", stage, glowSprite, new Vector2(plateHalf - 20f, PlateY), 0f);
-
-        // Name plate: the house slab, clipped so the glint stays on the stone.
-        Image plateImage = AddImage("Plate", stage, null, Color.white, new Vector2(0f, PlateY), PlateSize);
+        // Name plate: the house slab. Pivot on its button-side edge, so it unrolls out of the button.
+        Image plateImage = AddImage("Plate", stage, null, Color.white, Vector2.zero, PlateSize);
         UIHouseStyle.ApplyImage(plateImage, UIHouseStyle.Modal);
         plateImage.raycastTarget = false;
         RectTransform plate = plateImage.rectTransform;
+        plate.pivot = new Vector2(0f, 0.5f);
+        plate.anchoredPosition = new Vector2(PlateLeft, PlateY);
         var plateGroup = plate.gameObject.AddComponent<CanvasGroup>();
         plateGroup.interactable = false;
         plateGroup.blocksRaycasts = false;
-        plate.gameObject.AddComponent<RectMask2D>();
 
         TextMeshProUGUI nameLabel = RunOverlayUI.CreateLabel("Name", plate, "Jaguar Slam", NameFontSize, RunOverlayUI.Gold);
         RunOverlayUI.Stretch(nameLabel.rectTransform);
@@ -148,10 +155,6 @@ public static class PowerShowcasePrefabSetup
         nameLabel.textWrappingMode = TextWrappingModes.NoWrap;
         nameLabel.margin = Vector4.zero;
         nameLabel.raycastTarget = false;
-
-        // The glint runs over the name, not under it.
-        Image shineImage = AddImage("Shine", plate, glowSprite, new Color(1f, 0.97f, 0.85f, 0.55f), Vector2.zero, new Vector2(80f, 240f));
-        shineImage.rectTransform.localRotation = Quaternion.Euler(0f, 0f, -20f);
 
         // Medallion: the meter's own disc and ring, so it reads as the button leaping up.
         Image medallionImage = AddImage("Medallion", stage, baseSprite, baseSprite != null ? Color.white : stone,
@@ -176,9 +179,9 @@ public static class PowerShowcasePrefabSetup
         icon.preserveAspect = true;
 
         var view = root.AddComponent<PowerShowcaseView>();
-        view.Bind(canvas, stage, stageGroup, shade, glow, rays, shockwave,
+        view.Bind(canvas, stage, stageGroup, rays, shockwave,
             medallion, medallionGroup, ring, icon,
-            plate, plateGroup, nameLabel, shineImage.rectTransform, sparkLeft, sparkRight);
+            plate, plateGroup, nameLabel);
 
         return root;
     }
@@ -192,14 +195,6 @@ public static class PowerShowcasePrefabSetup
         image.color = color;
         image.raycastTarget = false;
         return image;
-    }
-
-    private static RectTransform AddSpark(string name, Transform parent, Sprite sprite, Vector2 position, float pivotX)
-    {
-        Image image = AddImage(name, parent, sprite, new Color(1f, 0.9f, 0.6f, 0.9f), position, new Vector2(300f, 14f));
-        RectTransform rt = image.rectTransform;
-        rt.pivot = new Vector2(pivotX, 0.5f);
-        return rt;
     }
 
     // ---- Baked sprites ----
@@ -231,10 +226,64 @@ public static class PowerShowcasePrefabSetup
         return AssetDatabase.LoadAssetAtPath<Sprite>(path);
     }
 
-    /// <summary>Sixteen tapering sun rays, long and short in turn, white on transparent.</summary>
-    private static Color32[] BakeRays(int size)
+    // ---- Burst: a carved sun, like the Eclipse sun on the effect icon sheet ----
+
+    private const int BurstPoints = 12;          // long and short in turn
+    private const float BurstLongTip = 0.97f;
+    private const float BurstShortTip = 0.76f;
+    private const float BurstValley = 0.58f;
+    private const float InkWidth = 0.042f;       // of the half-size: ~9px at 420 on screen
+
+    /// <summary>
+    /// A sun of chunky triangular points in a thick ink outline. White fill with one hard cel
+    /// shadow down one side of every point; the ink is baked dark so the accent tint leaves it
+    /// dark, which keeps the burst readable on the Day, Sunset and Night skies.
+    /// </summary>
+    private static Color32[] BakeBurst(int size)
     {
-        const int count = 16;
+        var poly = new Vector2[BurstPoints * 2];
+        for (int i = 0; i < BurstPoints; i++)
+        {
+            float tip = i * 2f * Mathf.PI / BurstPoints;
+            float valley = (i + 0.5f) * 2f * Mathf.PI / BurstPoints;
+            float reach = i % 2 == 0 ? BurstLongTip : BurstShortTip;
+            poly[i * 2] = new Vector2(Mathf.Cos(tip), Mathf.Sin(tip)) * reach;
+            poly[i * 2 + 1] = new Vector2(Mathf.Cos(valley), Mathf.Sin(valley)) * BurstValley;
+        }
+
+        float aa = 1.5f / (size * 0.5f);
+        var px = new Color32[size * size];
+        for (int y = 0; y < size; y++)
+        {
+            for (int x = 0; x < size; x++)
+            {
+                var p = new Vector2((x + 0.5f) / size * 2f - 1f, (y + 0.5f) / size * 2f - 1f);
+                float d = EdgeDistance(p, poly);
+                if (!Inside(p, poly)) d = -d;
+
+                float alpha = Mathf.Clamp01(d / aa + 0.5f);
+                if (alpha <= 0f) continue;
+
+                // The shadow side: everything clockwise of each point's spine.
+                float seg = (Mathf.Atan2(p.y, p.x) / (2f * Mathf.PI) + 1f) * BurstPoints;
+                float off = (seg - Mathf.Round(seg)) * (2f * Mathf.PI / BurstPoints) * p.magnitude;
+                float lit = Mathf.Clamp01(off / aa + 0.5f);
+                Color32 fill = Color32.Lerp(CelShadow, new Color32(255, 255, 255, 255), lit);
+
+                float ink = Mathf.Clamp01((InkWidth - d) / aa + 0.5f);
+                Color32 c = Color32.Lerp(fill, Ink, ink);
+                c.a = (byte)(alpha * 255f);
+                px[y * size + x] = c;
+            }
+        }
+        return px;
+    }
+
+    /// <summary>A flat ring with ink on both edges; the fill takes the accent.</summary>
+    private static Color32[] BakeShockwave(int size)
+    {
+        const float inner = 0.76f, outer = 0.97f, ink = 0.055f;
+        float aa = 1.5f / (size * 0.5f);
         var px = new Color32[size * size];
         for (int y = 0; y < size; y++)
         {
@@ -243,39 +292,44 @@ public static class PowerShowcasePrefabSetup
                 float nx = (x + 0.5f) / size * 2f - 1f;
                 float ny = (y + 0.5f) / size * 2f - 1f;
                 float r = Mathf.Sqrt(nx * nx + ny * ny);
+                float d = Mathf.Min(r - inner, outer - r); // distance in from the nearer edge
 
-                float seg = (Mathf.Atan2(ny, nx) / (2f * Mathf.PI) + 1f) * count;
-                int index = Mathf.RoundToInt(seg) % count;
-                float offset = Mathf.Abs(seg - Mathf.Round(seg)); // 0..0.5 from the ray's spine
+                float alpha = Mathf.Clamp01(d / aa + 0.5f);
+                if (alpha <= 0f) continue;
 
-                float length = index % 2 == 0 ? 1f : 0.7f;
-                float halfWidth = 0.2f * Mathf.Clamp01(1f - 0.75f * r / length);
-                float beam = 1f - Mathf.SmoothStep(halfWidth * 0.55f, halfWidth, offset);
-                float reach = 1f - Mathf.SmoothStep(0.3f * length, length, r);
-                float core = Mathf.SmoothStep(0.08f, 0.22f, r); // the medallion covers the middle
-
-                px[y * size + x] = new Color32(255, 255, 255, (byte)(Mathf.Clamp01(beam * reach * core) * 255f));
+                Color32 c = Color32.Lerp(new Color32(255, 255, 255, 255), Ink, Mathf.Clamp01((ink - d) / aa + 0.5f));
+                c.a = (byte)(alpha * 255f);
+                px[y * size + x] = c;
             }
         }
         return px;
     }
 
-    /// <summary>A soft round glow, white on transparent.</summary>
-    private static Color32[] BakeGlow(int size)
+    private static float EdgeDistance(Vector2 p, Vector2[] poly)
     {
-        var px = new Color32[size * size];
-        for (int y = 0; y < size; y++)
+        float best = float.MaxValue;
+        for (int i = 0; i < poly.Length; i++)
         {
-            for (int x = 0; x < size; x++)
+            Vector2 a = poly[i], b = poly[(i + 1) % poly.Length];
+            Vector2 ab = b - a;
+            float t = Mathf.Clamp01(Vector2.Dot(p - a, ab) / ab.sqrMagnitude);
+            best = Mathf.Min(best, (p - (a + ab * t)).magnitude);
+        }
+        return best;
+    }
+
+    private static bool Inside(Vector2 p, Vector2[] poly)
+    {
+        bool inside = false;
+        for (int i = 0, j = poly.Length - 1; i < poly.Length; j = i++)
+        {
+            if ((poly[i].y > p.y) != (poly[j].y > p.y) &&
+                p.x < (poly[j].x - poly[i].x) * (p.y - poly[i].y) / (poly[j].y - poly[i].y) + poly[i].x)
             {
-                float nx = (x + 0.5f) / size * 2f - 1f;
-                float ny = (y + 0.5f) / size * 2f - 1f;
-                float r = Mathf.Clamp01(Mathf.Sqrt(nx * nx + ny * ny));
-                float a = 1f - Mathf.SmoothStep(0f, 1f, r);
-                px[y * size + x] = new Color32(255, 255, 255, (byte)(a * a * 255f));
+                inside = !inside;
             }
         }
-        return px;
+        return inside;
     }
 
     private static void EnsureFolder(string parent, string child)

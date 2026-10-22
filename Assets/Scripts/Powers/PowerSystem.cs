@@ -184,6 +184,10 @@ public class PowerSystem : MonoBehaviour
     // Gift of the Gods keeps its next power hidden until the meter fills.
     private bool giftRevealed;
 
+    // Gift of the Gods starts with a full meter; its reveal waits for the first landing so the
+    // banner doesn't fire behind the briefing or the countdown.
+    private bool startGiftPending;
+
     /// <summary>Pulses the medallion for <paramref name="seconds"/>, e.g. while a lesson points at it.</summary>
     public void Highlight(float seconds)
     {
@@ -260,8 +264,13 @@ public class PowerSystem : MonoBehaviour
         // how long it has left, and slow-mo Perfects would refill it too cheaply.
         if (featherLanding) return;
 
-        // The foundation lands on the ground and has nothing to be centred on.
-        if (stackManager.GetStackCount() <= 1) return;
+        // The foundation lands on the ground and has nothing to be centred on. On a Gift of
+        // the Gods Daily it brings the free opening gift, revealed now the run is under way.
+        if (stackManager.GetStackCount() <= 1)
+        {
+            if (startGiftPending && IsReady) { startGiftPending = false; OnMeterFilled(); }
+            return;
+        }
 
         // A Serpent's Edge landing pays in points only: it neither charges nor drains the meter.
         if (block.ScoredAsEdge) return;
@@ -271,7 +280,8 @@ public class PowerSystem : MonoBehaviour
 
         if (perfect)
         {
-            charge = Mathf.Min(settings.maxStoredCharges, charge + 1f / settings.perfectsToFill);
+            int perfectsToFill = GiftMode ? settings.giftPerfectsToFill : settings.perfectsToFill;
+            charge = Mathf.Min(settings.maxStoredCharges, charge + 1f / Mathf.Max(1, perfectsToFill));
 
             // Float steps (0.25 x 4) can land a hair under 1.
             if (charge > 0.999f && charge < 1f) charge = 1f;
@@ -332,7 +342,12 @@ public class PowerSystem : MonoBehaviour
         // No score of its own and no Perfect: every stone keeps the landing it earned (the
         // rewind takes stones away with theirs, but awards nothing either).
         // Named by its own showcase, not the Guide Lane: that strip is for lessons.
-        if (showcase != null) showcase.Play(LocalizationManager.Get(def.nameKey), def.icon, def.accentColor);
+        // It plays on the button itself, so the tower top stays clear while the power acts.
+        if (showcase != null)
+        {
+            var anchor = view != null && view.Button != null ? (RectTransform)view.Button.transform : null;
+            showcase.Play(LocalizationManager.Get(def.nameKey), def.icon, def.accentColor, anchor);
+        }
 
         GameAnalytics.Track("power_used", data);
         OnPowerUsed?.Invoke(id);
@@ -710,9 +725,14 @@ public class PowerSystem : MonoBehaviour
             // The ritual decides the power, the same for every player.
             unlocked = true;
             equipped = DailyPowerGrant.RandomOnFill ? DailyPowerGrant.Gift(0) : DailyPowerGrant.Fixed;
+
+            // The gods open every Gift ritual with a gift in hand.
+            startGiftPending = DailyPowerGrant.RandomOnFill && settings != null && settings.enablePowers;
+            if (startGiftPending) charge = 1f;
         }
         else
         {
+            startGiftPending = false;
             unlocked = PowerUnlocks.HasEquippedPower;
             equipped = PowerUnlocks.Equipped;
         }

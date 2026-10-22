@@ -73,6 +73,8 @@ public abstract class TempleRuleBehaviour : MonoBehaviour
 
     protected virtual void OnDestroy()
     {
+        OmenWindow.Set(Rule, false);
+
         if (gameManager != null)
         {
             gameManager.OnGameStart -= HandleRunStart;
@@ -98,12 +100,21 @@ public abstract class TempleRuleBehaviour : MonoBehaviour
                      && level != null
                      && level.HasRule(Rule);
 
+        OmenWindow.Set(Rule, false);
         OnRunStart(level);
     }
 
-    private void HandleRunEnd() => OnRunEnd(won: false);
+    private void HandleRunEnd()
+    {
+        OmenWindow.Set(Rule, false);
+        OnRunEnd(won: false);
+    }
 
-    private void HandleLevelCompleted(int stars, int score, bool firstCompletion) => OnRunEnd(won: true);
+    private void HandleLevelCompleted(int stars, int score, bool firstCompletion)
+    {
+        OmenWindow.Set(Rule, false);
+        OnRunEnd(won: true);
+    }
 
     private void HandleStoneLanded(StackableObject stone)
     {

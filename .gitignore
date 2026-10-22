@@ -32,3 +32,6 @@ Logs/AssetImportWorker0-prev.log
 /Logs
 /Logs
 /Logs
+
+/ralph/logs/
+/ralph/STOP

@@ -26,7 +26,7 @@ MonoBehaviour:
     swingSpeedMultiplier: 0
   grantsPower: 0
   grantedPower: 0
-  rule: 0
+  rule: 6
   secondRule: 0
   windSettings:
     swingPush: 0.7
@@ -36,6 +36,7 @@ MonoBehaviour:
     firstAtHeight: 2
     leadSeconds: 0.7
     steadyDirection: 0
+    announceEveryGust: 0
   rainSettings:
     slideFraction: 0.42
     maxSlideOfWidth: 0.168
@@ -56,10 +57,10 @@ MonoBehaviour:
     warningStones: 1.5
   eclipseSettings:
     firstAtHeight: 4
-    everyNStones: 6
+    everyNStones: 4
     warningSeconds: 1
-    totalitySeconds: 2.5
+    totalitySeconds: 1.8
     hiddenTopStones: 1
-    ghostAlpha: 0.2
+    ghostAlpha: 0.3
     totalityDim: 0.65
     skyDim: 0.25
