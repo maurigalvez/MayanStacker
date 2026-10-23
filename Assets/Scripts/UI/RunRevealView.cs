@@ -26,8 +26,16 @@ public class RunRevealView : MonoBehaviour
     [SerializeField] private TextMeshProUGUI promptLabel;
     [SerializeField] private TextMeshProUGUI tierLabel;
     [SerializeField] private TextMeshProUGUI amountLabel;
+    [Tooltip("Optional: the Double jade button, shown under the opened chip. Added by Create Run Reveal Assets.")]
+    [SerializeField] private Button doubleButton;
+    [SerializeField] private TextMeshProUGUI doubleLabel;
 
     private static RunRevealView instance;
+
+    private int runJade;
+    private int doubleAmount;
+    private bool doubling;
+    private bool doubled;
 
     private Func<bool> hostAlive;
     private RunRevealSettings.Tier rolled;
@@ -46,6 +54,7 @@ public class RunRevealView : MonoBehaviour
         if (instance == null) instance = Create();
         if (instance == null) return;
 
+        instance.runJade = runJade;
         instance.Open(settings, cardAlive);
     }
 
@@ -75,6 +84,18 @@ public class RunRevealView : MonoBehaviour
         if (canvas != null) canvas.sortingOrder = SortingOrder;
 
         view.chipButton.onClick.AddListener(view.OnTapped);
+        if (view.doubleButton != null && view.doubleLabel != null)
+        {
+            view.doubleButton.onClick.AddListener(view.OnDoubleTapped);
+            view.doubleButton.gameObject.SetActive(false);
+        }
+        else
+        {
+            Debug.LogWarning($"[RunReveal] Resources/{PrefabResourcePath} has no Double jade button - run " +
+                             "TamalStacker > UI > Create Run Reveal Assets to add it. Double jade is skipped.");
+            view.doubleButton = null;
+        }
+
         view.chip.gameObject.SetActive(false);
         DontDestroyOnLoad(go);
         return view;
@@ -89,6 +110,9 @@ public class RunRevealView : MonoBehaviour
         rolled = settings.Roll(UnityEngine.Random.value);
         open = true;
         opened = false;
+        doubling = false;
+        doubled = false;
+        if (doubleButton != null) doubleButton.gameObject.SetActive(false);
 
         promptLabel.text = LocalizationManager.Get("reveal_prompt");
         promptLabel.gameObject.SetActive(true);
@@ -128,6 +152,47 @@ public class RunRevealView : MonoBehaviour
 
         HapticFeedback.Trigger(rolled.grand ? HapticFeedback.HapticType.Heavy : HapticFeedback.HapticType.Light);
         StartCoroutine(Punch(chip));
+        OfferDouble();
+    }
+
+    private void OfferDouble()
+    {
+        var settings = RunRevealSettings.Active;
+        if (doubleButton == null || settings == null || !settings.enableDoubleJade) return;
+
+        doubleAmount = settings.DoubleAmount(runJade, rolled.bonusJade);
+        if (doubleAmount <= 0 || !AdManager.CanOfferReward) return;
+
+        doubleLabel.text = LocalizationManager.Get(
+            RemoveAds.Owned ? "reveal_double_free" : "reveal_double_ad", doubleAmount);
+        doubleButton.interactable = true;
+        UIPopup.Show(doubleButton.gameObject);
+    }
+
+    private void OnDoubleTapped()
+    {
+        if (doubling || doubled) return;
+        doubling = true;
+        doubleButton.interactable = false;
+
+        // The payout lands from the callback, so it still arrives if the card closes meanwhile.
+        int amount = doubleAmount;
+        var label = doubleLabel;
+        var button = doubleButton;
+        AdManager.RequestReward("double_jade", earned =>
+        {
+            doubling = false;
+            if (!earned)
+            {
+                if (button != null) button.interactable = true;
+                return;
+            }
+
+            doubled = true;
+            JadeWallet.Earn("double_ad", amount);
+            if (label != null) label.text = LocalizationManager.Get("reveal_double_done");
+            HapticFeedback.Trigger(HapticFeedback.HapticType.Medium);
+        });
     }
 
     private IEnumerator Watch()
@@ -140,6 +205,7 @@ public class RunRevealView : MonoBehaviour
         Resolve(silent: true);
         open = false;
         UIPopup.Hide(chip.gameObject);
+        if (doubleButton != null) doubleButton.gameObject.SetActive(false);
     }
 
     private static IEnumerator Punch(RectTransform target)

@@ -50,6 +50,20 @@ public class RunRevealSettings : ScriptableObject
     [Tooltip("Runs that paid less than this much jade don't offer a reveal.")]
     [Min(1)] public int minRunJade = 1;
 
+    [Header("Double jade (opt-in rewarded ad)")]
+    [Tooltip("After opening, offer to double the run's jade. Remove Ads owners get it free; everyone else watches a rewarded ad.")]
+    public bool enableDoubleJade = true;
+    [Tooltip("Share of the run's jade (run payout + opened bonus) the double adds. 1 = doubles it.")]
+    [Range(0f, 1f)] public float doubleFraction = 1f;
+    [Tooltip("The most one double can add, so a long run's cap-sized payout can't snowball.")]
+    [Min(1)] public int maxDoubleBonus = 60;
+
+    /// <summary>Jade the double would add for a run that paid <paramref name="runJade"/> plus <paramref name="bonus"/>.</summary>
+    public int DoubleAmount(int runJade, int bonus)
+    {
+        return Mathf.Min(maxDoubleBonus, Mathf.RoundToInt((runJade + bonus) * doubleFraction));
+    }
+
     [Header("Bonus table")]
     [Tooltip("Rolled once when the offering is opened, or silently when the card is dismissed unopened.")]
     public Tier[] tiers =

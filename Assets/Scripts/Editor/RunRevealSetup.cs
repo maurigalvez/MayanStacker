@@ -47,7 +47,7 @@ public static class RunRevealSetup
 
         if (AssetDatabase.LoadAssetAtPath<GameObject>(PrefabPath) != null)
         {
-            note += $"Kept {PrefabPath}.";
+            note += $"Kept {PrefabPath}. " + EnsureDoubleButton();
         }
         else
         {
@@ -105,7 +105,52 @@ public static class RunRevealSetup
         so.FindProperty("amountLabel").objectReferenceValue = amount;
         so.ApplyModifiedPropertiesWithoutUndo();
 
+        AddDoubleButton(root.GetComponent<RunRevealView>(), chip);
         return root;
+    }
+
+    /// <summary>
+    /// Adds the Double jade button to a prefab built before it existed. Additive: nothing else on
+    /// the prefab is touched, and a prefab that already has the button is left alone.
+    /// </summary>
+    private static string EnsureDoubleButton()
+    {
+        var root = PrefabUtility.LoadPrefabContents(PrefabPath);
+        try
+        {
+            var view = root.GetComponent<RunRevealView>();
+            var chip = root.transform.Find("Chip") as RectTransform;
+            if (view == null || chip == null) return "Double jade button skipped (prefab has no view or Chip).";
+            if (chip.Find("DoubleButton") != null) return "Double jade button already present.";
+
+            AddDoubleButton(view, chip);
+            PrefabUtility.SaveAsPrefabAsset(root, PrefabPath);
+            return "Added the Double jade button.";
+        }
+        finally
+        {
+            PrefabUtility.UnloadPrefabContents(root);
+        }
+    }
+
+    private static void AddDoubleButton(RunRevealView view, RectTransform chip)
+    {
+        var rect = CreateChild("DoubleButton", chip);
+        Place(rect, new Vector2(0.5f, 0f), new Vector2(0f, -78f), new Vector2(600f, 100f));
+        var image = rect.gameObject.AddComponent<Image>();
+        UIHouseStyle.ApplyImage(image, UIHouseStyle.Secondary);
+        var button = rect.gameObject.AddComponent<Button>();
+        button.targetGraphic = image;
+        UIHouseStyle.ApplyButton(button, UIHouseStyle.Secondary);
+
+        var label = CreateLabel("Label", rect, "Watch to double: +20 jade", 34f, RunOverlayUI.Parchment);
+        Stretch(label.rectTransform);
+
+        var so = new SerializedObject(view);
+        so.FindProperty("doubleButton").objectReferenceValue = button;
+        so.FindProperty("doubleLabel").objectReferenceValue = label;
+        so.ApplyModifiedPropertiesWithoutUndo();
+        rect.gameObject.SetActive(false);
     }
 
     private static RectTransform CreateChild(string name, Transform parent)

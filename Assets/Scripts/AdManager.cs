@@ -20,6 +20,12 @@ public class AdManager : MonoBehaviour
     [Tooltip("Production Android Ad Unit ID (used when useTestAds is false)")]
     [SerializeField] private string productionAndroidAdUnitId = "";
 
+    [Header("Rewarded Ad Units (opt-in rewards)")]
+    [Tooltip("Android Rewarded Ad Unit ID (Google test unit by default)")]
+    [SerializeField] private string androidRewardedAdUnitId = "ca-app-pub-3940256099942544/5224354917"; // Test Ad Unit
+    [Tooltip("Production Android Rewarded Ad Unit ID (used when useTestAds is false). Empty = rewarded offers stay unavailable.")]
+    [SerializeField] private string productionAndroidRewardedAdUnitId = "";
+
     [Header("Ad Frequency")]
     [Tooltip("Show ad every N losses (1 = every loss, 2 = every other loss, etc.). Temple wins never count.")]
     [SerializeField] private int adFrequency = 2;
@@ -36,6 +42,11 @@ public class AdManager : MonoBehaviour
     private bool isMobileAdsInitialized = false;
     private int gameOverCount = 0;
     private string currentAdUnitId;
+
+    // Rewarded ads: player-initiated only, never counted toward the interstitial rhythm.
+    private RewardedAd rewardedAd;
+    private bool rewardedLoading;
+    private bool rewardedShowing;
 
     // The ad waits adShowDelay after a loss so the result card can land. If the player starts
     // the next run inside that window, the pending ad is cancelled (it must never open over a
@@ -108,13 +119,18 @@ public class AdManager : MonoBehaviour
                 interstitialAd = null;
             }
             isAdLoaded = false;
+            DestroyRewarded();
             StopAllCoroutines();
             pendingAdRoutine = null;
             adOwed = false;
             return;
         }
 
-        if (isMobileAdsInitialized) LoadInterstitialAd();
+        if (isMobileAdsInitialized)
+        {
+            LoadInterstitialAd();
+            LoadRewardedAd();
+        }
         else InitializeMobileAds();
     }
 
@@ -203,6 +219,7 @@ public class AdManager : MonoBehaviour
 
             // Load the first interstitial ad
             LoadInterstitialAd();
+            LoadRewardedAd();
         });
     }
 
@@ -322,6 +339,113 @@ public class AdManager : MonoBehaviour
         };
     }
 
+    // ---------------------------------------------------------------- Rewarded ads
+
+    /// <summary>
+    /// True when a reward can be offered right now. Remove Ads owners always qualify (the reward
+    /// is free for them, no ad is shown); everyone else needs a loaded rewarded ad.
+    /// </summary>
+    public static bool CanOfferReward
+    {
+        get
+        {
+            if (RemoveAds.Owned) return true;
+            var manager = DependencyRegistry.Find<AdManager>();
+            return manager != null && manager.rewardedAd != null && !manager.rewardedShowing;
+        }
+    }
+
+    /// <summary>
+    /// Runs an opt-in reward. <paramref name="onResult"/> gets true when the player earned it:
+    /// immediately for Remove Ads owners, after the ad's reward callback otherwise. False when no
+    /// ad was available or the player closed it early. Never called without a player tap.
+    /// </summary>
+    public static void RequestReward(string placement, System.Action<bool> onResult)
+    {
+        if (RemoveAds.Owned)
+        {
+            onResult?.Invoke(true);
+            return;
+        }
+
+        var manager = DependencyRegistry.Find<AdManager>();
+        if (manager == null || !manager.ShowRewarded(placement, onResult)) onResult?.Invoke(false);
+    }
+
+    private string RewardedUnitId()
+    {
+        if (useTestAds) return androidRewardedAdUnitId;
+        if (!string.IsNullOrEmpty(productionAndroidRewardedAdUnitId)) return productionAndroidRewardedAdUnitId;
+        Debug.LogWarning("AdManager: Production Rewarded Ad Unit ID is not set - rewarded offers are unavailable.");
+        return null;
+    }
+
+    private void LoadRewardedAd()
+    {
+        if (RemoveAds.Owned || !isMobileAdsInitialized || rewardedLoading || rewardedAd != null) return;
+
+        string unitId = RewardedUnitId();
+        if (string.IsNullOrEmpty(unitId)) return;
+
+        rewardedLoading = true;
+        RewardedAd.Load(unitId, new AdRequest(), (RewardedAd ad, LoadAdError error) =>
+        {
+            rewardedLoading = false;
+            if (error != null || ad == null)
+            {
+                Debug.LogWarning($"AdManager: Failed to load rewarded ad. Error: {error}");
+                if (!RemoveAds.Owned) StartCoroutine(RetryLoadRewardedAfterDelay(15f));
+                return;
+            }
+
+            DebugLog("Rewarded ad loaded.");
+            rewardedAd = ad;
+        });
+    }
+
+    private IEnumerator RetryLoadRewardedAfterDelay(float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        LoadRewardedAd();
+    }
+
+    private bool ShowRewarded(string placement, System.Action<bool> onResult)
+    {
+        if (rewardedAd == null || rewardedShowing) return false;
+
+        var ad = rewardedAd;
+        rewardedAd = null;
+        rewardedShowing = true;
+        bool earned = false;
+
+        ad.OnAdFullScreenContentClosed += () =>
+        {
+            rewardedShowing = false;
+            ad.Destroy();
+            LoadRewardedAd();
+            onResult?.Invoke(earned);
+        };
+        ad.OnAdFullScreenContentFailed += (AdError error) =>
+        {
+            Debug.LogWarning($"AdManager: Rewarded ad failed to show. Error: {error}");
+            rewardedShowing = false;
+            ad.Destroy();
+            LoadRewardedAd();
+            onResult?.Invoke(false);
+        };
+
+        GameAnalytics.AdShown(placement, FtueState.LifetimeRuns);
+        ad.Show(reward => earned = true);
+        return true;
+    }
+
+    private void DestroyRewarded()
+    {
+        if (rewardedAd == null) return;
+        rewardedAd.Destroy();
+        rewardedAd = null;
+    }
+
     /// <summary>
     /// Retry loading ad after a delay
     /// </summary>
@@ -340,6 +464,13 @@ public class AdManager : MonoBehaviour
         if (RemoveAds.Owned)
         {
             DebugLog("Remove Ads owned — not showing an interstitial.");
+            return;
+        }
+
+        // The player opted into a rewarded ad a moment ago; never stack a second one on it.
+        if (rewardedShowing)
+        {
+            adOwed = true;
             return;
         }
 
@@ -510,6 +641,8 @@ public class AdManager : MonoBehaviour
         {
             levelManager.OnLevelFailed -= OnLevelFailed;
         }
+
+        DestroyRewarded();
 
         // Clean up ad
         if (interstitialAd != null)
