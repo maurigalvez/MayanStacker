@@ -251,7 +251,7 @@ public class StackableObject : MonoBehaviour
                 Debug.Log("Game Over: Stone landed beside the top stone instead of on it!");
                 if (gameManager != null)
                 {
-                    gameManager.GameOver("missed_stack");
+                    gameManager.GameOver("missed_stack", this);
                     return;
                 }
             }
@@ -270,7 +270,7 @@ public class StackableObject : MonoBehaviour
                 Debug.Log("Game Over: Object landed on ground instead of the stack!");
                 if (gameManager != null)
                 {
-                    gameManager.GameOver("missed_stack");
+                    gameManager.GameOver("missed_stack", this);
                     return; // Don't process landing further
                 }
             }
@@ -647,7 +647,7 @@ public class StackableObject : MonoBehaviour
             if (col.bounds.min.y < below.Collider.bounds.center.y)
             {
                 Debug.Log("Game Over: Stone slipped off and settled beside the top stone!");
-                gameManager.GameOver("missed_stack");
+                gameManager.GameOver("missed_stack", this);
                 yield break;
             }
         }

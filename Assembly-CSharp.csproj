@@ -130,6 +130,7 @@
     <Compile Include="Assets\Scripts\Utilities\LevelMapScrollRect.cs" />
     <Compile Include="Assets\Scripts\LevelPathRenderer.cs" />
     <Compile Include="Assets\Scripts\EnvironmentAssetData.cs" />
+    <Compile Include="Assets\Scripts\Progression\RunRevealSettings.cs" />
     <Compile Include="Assets\GooglePlayPlugins\com.google.play.appupdate\Samples\AppUpdateDemo\Scripts\StartUpdateFlowAction.cs" />
     <Compile Include="Assets\Scripts\SpawnerHolder.cs" />
     <Compile Include="Assets\Scripts\Progression\AltitudeBandSet.cs" />
@@ -148,10 +149,12 @@
     <Compile Include="Assets\Scripts\Rules\BraceButtonView.cs" />
     <Compile Include="Assets\Scripts\FTUE\LanguageSelectScreen.cs" />
     <Compile Include="Assets\Scripts\UI\Motion\UIMotionRunner.cs" />
+    <Compile Include="Assets\Scripts\UI\SecondChanceView.cs" />
     <Compile Include="Assets\Scripts\ReviewManagerHelper.cs" />
     <Compile Include="Assets\Scripts\ObjectSpawner.cs" />
     <Compile Include="Assets\Scripts\Rules\RulePlaceholderArt.cs" />
     <Compile Include="Assets\Scripts\UI\Motion\UIPressScale.cs" />
+    <Compile Include="Assets\Scripts\UI\RunRevealView.cs" />
     <Compile Include="Assets\Scripts\Rules\TempleRuleContext.cs" />
     <Compile Include="Assets\Scripts\ReadingTime.cs" />
     <Compile Include="Assets\Scripts\UI\RunBanner.cs" />
@@ -164,6 +167,7 @@
     <Compile Include="Assets\Scripts\Progression\PersonalBestGhostLine.cs" />
     <Compile Include="Assets\Scripts\Rules\Earthquake.cs" />
     <Compile Include="Assets\Scripts\Moods\SwingMoodDirector.cs" />
+    <Compile Include="Assets\Scripts\Progression\SecondChanceSettings.cs" />
     <Compile Include="Assets\Scripts\Rules\TempleRuleIconSet.cs" />
     <Compile Include="Assets\Scripts\Progression\AltitudeBandManager.cs" />
     <Compile Include="Assets\Scripts\ThemeManager.cs" />

@@ -141,6 +141,18 @@ public class ObjectSpawner : MonoBehaviour
 
     private float dropsHeldUntil;
 
+    /// <summary>
+    /// Second Chance: the dropped stone missed the tower and has been taken back, so the wait for
+    /// its landing is over and the hook needs a fresh stone.
+    /// </summary>
+    public void ResumeAfterMiss()
+    {
+        waitingForLanding = false;
+        dropQueued = false;
+        currentObject = null;
+        SpawnNewObject();
+    }
+
     public void DropCurrentObject()
     {
         if (currentObject == null || waitingForLanding) return;

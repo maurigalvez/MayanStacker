@@ -53,6 +53,7 @@
     <Compile Include="Assets\Scripts\Editor\LanguageSelectPrefabSetup.cs" />
     <Compile Include="Assets\Scripts\Editor\JadeSetup.cs" />
     <Compile Include="Assets\Scripts\Editor\PowerShowcasePrefabSetup.cs" />
+    <Compile Include="Assets\Scripts\Editor\RunRevealSetup.cs" />
     <Compile Include="Assets\Scripts\Editor\CJKFontFallbackSetup.cs" />
     <Compile Include="Assets\Scripts\Editor\RemoveAdsOfferPrefabSetup.cs" />
     <Compile Include="Assets\Scripts\Editor\PlayerIdentityUISetup.cs" />
@@ -94,6 +95,7 @@
     <Compile Include="Assets\Scripts\Editor\ClutchMomentSetup.cs" />
     <Compile Include="Assets\Scripts\Editor\RunContentSetup.cs" />
     <Compile Include="Assets\Scripts\Editor\FtueUISetup.cs" />
+    <Compile Include="Assets\Scripts\Editor\SecondChanceSetup.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\ExternalDependencyManager\Editor\Google.VersionHandler.dll" />

@@ -251,6 +251,7 @@ public class GameManager : MonoBehaviour, IRunRewindable
         OnConsecutivePerfectHitsChanged?.Invoke(consecutivePerfectHits); // Notify of reset
         highScoreSaved = false; // Reset save flag for new game session
         ResetRunStats();
+        SecondChanceView.BeginRun();
 
         // Boons are strictly run-scoped; clear them here as well as in BoonSystem so a
         // stale boon can't survive into a new run if that system isn't present.
@@ -703,13 +704,17 @@ public class GameManager : MonoBehaviour, IRunRewindable
     /// Ends the run. <paramref name="cause"/> is a short analytics slug describing what
     /// ended it — "topple", "fell_off", "fragile", "daily_target".
     /// </summary>
-    public void GameOver(string cause = "topple")
+    public void GameOver(string cause = "topple", StackableObject missedStone = null)
     {
         if (isGameOver) return;
 
         // A brand-new player's first collapse is forgiven once, so nobody's first
         // impression of the game is an unexplained loss.
         if (TryConsumeFtueGraceRetry(cause)) return;
+
+        // A temple stone that misses the tower may be offered back (rewarded ad). While the offer
+        // is up the run is held; declining calls GameOver again and ends it as usual.
+        if (SecondChanceView.TryOffer(this, cause, missedStone)) return;
 
         isGameActive = false;
         isGameOver = true;
@@ -776,6 +781,34 @@ public class GameManager : MonoBehaviour, IRunRewindable
         OnFtueGraceRetry?.Invoke();
         RestartGame();
         return true;
+    }
+
+    /// <summary>
+    /// Takes back a stone that missed the tower: it leaves the stack (if it had joined) and the
+    /// world, and the hook gets a fresh stone. Score, combo and the tower are exactly as they were
+    /// before the miss, so nothing needs rebuilding.
+    /// </summary>
+    public void ResumeAfterSecondChance(StackableObject missedStone)
+    {
+        if (isGameOver) return;
+
+        var stackManager = DependencyRegistry.Find<StackManager>();
+        if (missedStone != null)
+        {
+            if (stackManager != null) stackManager.RemoveObjectFromStack(missedStone);
+            Destroy(missedStone.gameObject);
+        }
+
+        var spawner = DependencyRegistry.Find<ObjectSpawner>();
+        if (spawner != null) spawner.ResumeAfterMiss();
+
+        GameFeelManager.Flash(new Color(0.95f, 0.78f, 0.3f, 0.3f), 0.35f);
+        HapticFeedback.Trigger(HapticFeedback.HapticType.Medium);
+        GameAnalytics.Track("second_chance_used", new System.Collections.Generic.Dictionary<string, object>
+        {
+            { "level", currentLevelNumber },
+            { "score", currentScore }
+        });
     }
 
     // ---- Tzolk'in Rewind ----
