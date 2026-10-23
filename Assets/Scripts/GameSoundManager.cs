@@ -724,6 +724,14 @@ public class GameSoundManager : MonoBehaviour
 
         // Play with the calculated pitch
         PlaySoundWithPitch(comboSuccessSound, pitch);
+
+        // Top of the ladder: conch / feather flourish layered over the chime (clip optional).
+        PerfectLadderSettings ladder = PerfectLadderSettings.Active;
+        if (ladder != null && ladder.topFlourishClip != null && sfxSource != null
+            && currentComboCount - pitchBaseCombo == ladder.TopRung)
+        {
+            sfxSource.PlayOneShot(ladder.topFlourishClip);
+        }
     }
 
     /// <summary>
@@ -739,6 +747,14 @@ public class GameSoundManager : MonoBehaviour
 
         // Ensure relative combo is at least 0
         relativeComboCount = Mathf.Max(0, relativeComboCount);
+
+        // Perfect ladder: climb a marimba scale instead of sliding in even steps.
+        PerfectLadderSettings ladder = PerfectLadderSettings.Active;
+        if (ladder != null && relativeComboCount > 0)
+        {
+            float stepped = comboBasePitch * Mathf.Pow(2f, ladder.SemitonesFor(relativeComboCount) / 12f);
+            return Mathf.Clamp(stepped, comboBasePitch, comboMaxPitch);
+        }
 
         // Calculate pitch: base + ((relative combo count - 1) * increment), capped at max
         // Relative combo count of 1 = base pitch, relative combo count of 2 = base + increment, etc.

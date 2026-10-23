@@ -161,6 +161,7 @@
     <Compile Include="Assets\Scripts\GameFeel\HapticFeedback.cs" />
     <Compile Include="Assets\Scripts\Progression\PersonalBestGhostLine.cs" />
     <Compile Include="Assets\Scripts\Rules\Earthquake.cs" />
+    <Compile Include="Assets\Scripts\Moods\SwingMoodDirector.cs" />
     <Compile Include="Assets\Scripts\Rules\TempleRuleIconSet.cs" />
     <Compile Include="Assets\Scripts\Progression\AltitudeBandManager.cs" />
     <Compile Include="Assets\Scripts\ThemeManager.cs" />
@@ -196,10 +197,12 @@
     <Compile Include="Assets\Scripts\DailyChallenge\DailyChallengeModifier.cs" />
     <Compile Include="Assets\Scripts\Boons\BoonIntroView.cs" />
     <Compile Include="Assets\Scripts\Rules\RisingCenote.cs" />
+    <Compile Include="Assets\Scripts\GameFeel\PerfectLadderSettings.cs" />
     <Compile Include="Assets\Scripts\Achievements\AchievementNotificationUI.cs" />
     <Compile Include="Assets\Scripts\DailyChallenge\DailyRitual.cs" />
     <Compile Include="Assets\Scripts\CodexEntryUI.cs" />
     <Compile Include="Assets\Scripts\Blocks\BlockIntroPresenter.cs" />
+    <Compile Include="Assets\Scripts\Moods\SwingMoodFx.cs" />
     <Compile Include="Assets\Scripts\Utilities\ScalePulseAnimation.cs" />
     <Compile Include="Assets\Scripts\SettingsManager.cs" />
     <Compile Include="Assets\GooglePlayPlugins\com.google.play.review\Samples\ReviewDemo\Scripts\ReviewDemo.cs" />
@@ -212,6 +215,7 @@
     <Compile Include="Assets\Scripts\Localization\LocaleFontSet.cs" />
     <Compile Include="Assets\Scripts\FTUE\FtueTutorialView.cs" />
     <Compile Include="Assets\Scripts\EnvironmentSpawnerManager.cs" />
+    <Compile Include="Assets\Scripts\Moods\SwingMoodSettings.cs" />
     <Compile Include="Assets\Scripts\Boons\BoonPickerView.cs" />
     <Compile Include="Assets\Scripts\Powers\PowerLoadoutCard.cs" />
     <Compile Include="Assets\Scripts\Notifications\NotificationScheduler.cs" />

@@ -65,9 +65,11 @@
     <Compile Include="Assets\Scripts\Editor\R8OptimizeGradle.cs" />
     <Compile Include="Assets\Scripts\Editor\DailyRitualSetup.cs" />
     <Compile Include="Assets\Scripts\Editor\AppUpdatePromptPrefabSetup.cs" />
+    <Compile Include="Assets\Scripts\Editor\PerfectLadderSetup.cs" />
     <Compile Include="Assets\Scripts\Editor\UIHouseStyle.cs" />
     <Compile Include="Assets\Scripts\Editor\SettingsLayoutSetup.cs" />
     <Compile Include="Assets\Scripts\Editor\RemoveAdsSettingsSetup.cs" />
+    <Compile Include="Assets\Scripts\Editor\SwingMoodSetup.cs" />
     <Compile Include="Assets\Scripts\Editor\GameOverUISetup.cs" />
     <Compile Include="Assets\Scripts\Editor\QuitConfirmPrefabSetup.cs" />
     <Compile Include="Assets\Scripts\Editor\BraceButtonPrefabSetup.cs" />
@@ -76,6 +78,7 @@
     <Compile Include="Assets\Scripts\Editor\UnityPurchasingDefine.cs" />
     <Compile Include="Assets\Scripts\Editor\LocaleFontSetup.cs" />
     <Compile Include="Assets\Scripts\Editor\ReviewPromptPrefabSetup.cs" />
+    <Compile Include="Assets\Scripts\Editor\ThunderStoneSetup.cs" />
     <Compile Include="Assets\Scripts\Editor\PlayAppUpdateDefine.cs" />
     <Compile Include="Assets\Scripts\Editor\RemoveAdsPlacementsSetup.cs" />
     <Compile Include="Assets\Scripts\Editor\TempleUnlocksWindow.cs" />

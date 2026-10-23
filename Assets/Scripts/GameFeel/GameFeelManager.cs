@@ -77,6 +77,7 @@ public class GameFeelManager : MonoBehaviour
     private bool heatSpriteResolved;  // whether we've already tried to load it
     private float heatAlpha;          // current tint alpha
     private float targetHeatAlpha;    // combo-driven target
+    private int perfectRung;          // Perfects in a row (Perfect ladder); Good/Poor/new run reset it
 
     // Aim glyphs (world-space): centre marks on the top stone and on the hanging stone. They
     // replaced a drop-guide line that projected the landing point and made Perfects trivial.
@@ -163,14 +164,24 @@ public class GameFeelManager : MonoBehaviour
 
         if (accuracy >= perfectTier)
         {
-            ShakeCamera(PerfectShake);
-            DoHitStop(PerfectHitStopDuration);
-            HapticFeedback.Trigger(HapticFeedback.HapticType.Medium);
+            // Perfect ladder: each Perfect in a row lands a little harder. Good/Poor drop it back.
+            perfectRung++;
+            PerfectLadderSettings ladder = PerfectLadderSettings.Active;
+            int rung = Mathf.Min(perfectRung, ladder != null ? ladder.TopRung : 1);
+            ShakeCamera(PerfectShake + (ladder != null ? ladder.ExtraShake(rung) : 0f));
+            DoHitStop(PerfectHitStopDuration + (ladder != null ? ladder.ExtraHitStop(rung) : 0f));
+            bool heavy = ladder != null && perfectRung >= ladder.heavyHapticFromRung;
+            HapticFeedback.Trigger(heavy ? HapticFeedback.HapticType.Heavy : HapticFeedback.HapticType.Medium);
         }
         else if (accuracy >= goodTier)
         {
+            perfectRung = 0;
             ShakeCamera(GoodShake);
             HapticFeedback.Trigger(HapticFeedback.HapticType.Light);
+        }
+        else
+        {
+            perfectRung = 0;
         }
         // Poor landings intentionally get no juice - keeps the reward legible.
 
@@ -331,6 +342,7 @@ public class GameFeelManager : MonoBehaviour
 
     private void OnGameStart()
     {
+        perfectRung = 0;
         // Fresh run - clear any lingering heat.
         targetHeatAlpha = 0f;
     }
