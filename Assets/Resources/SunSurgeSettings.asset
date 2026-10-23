@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a2e14ae48d91eca4b9584ec6c8070da4, type: 3}
+  m_Name: SunSurgeSettings
+  m_EditorClassIdentifier: Assembly-CSharp::SunSurgeSettings
+  enableSurge: 1
+  perfectsToTrigger: 8
+  cooldownStones: 6
+  surgeStones: 4
+  scoreMultiplier: 1.5
+  igniteShake: 0.6
+  ignitePunchZoom: 0.05
+  igniteFlash: {r: 1, g: 0.82, b: 0.35, a: 0.5}
+  igniteFlashSeconds: 0.45
+  landingHitStop: 0.12
+  landingPunchZoom: 0.025
+  landingShake: 0.25
+  musicPitch: 1.05
+  bannerColor: {r: 1, g: 0.82, b: 0.35, a: 1}

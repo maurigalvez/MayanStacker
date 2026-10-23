@@ -103,6 +103,7 @@
     <Compile Include="Assets\Scripts\Achievements\AchievementDefinition.cs" />
     <Compile Include="Assets\Scripts\Rules\Eclipse.cs" />
     <Compile Include="Assets\Scripts\RunModifiers\RunModifier.cs" />
+    <Compile Include="Assets\Scripts\GameFeel\SunSurgeSettings.cs" />
     <Compile Include="Assets\Scripts\Powers\PowerUnlocks.cs" />
     <Compile Include="Assets\Scripts\GameSoundManager.cs" />
     <Compile Include="Assets\Scripts\Powers\PowerLoadoutView.cs" />
@@ -237,6 +238,7 @@
     <Compile Include="Assets\Scripts\Stability\RiskWindow.cs" />
     <Compile Include="Assets\Scripts\Powers\PowerDefinition.cs" />
     <Compile Include="Assets\Scripts\DependencyRegistry\ILevelManager.cs" />
+    <Compile Include="Assets\Scripts\GameFeel\SunSurgeDirector.cs" />
     <Compile Include="Assets\Scripts\UI\RunOverlayUI.cs" />
     <Compile Include="Assets\Scripts\PlayFabManager.cs" />
     <Compile Include="Assets\Scripts\SceneLoader.cs" />

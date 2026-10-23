@@ -435,6 +435,9 @@ public class GameManager : MonoBehaviour, IRunRewindable
         // whatever boon the player chose mid-run. Both are 1.0 when nothing is active.
         multiplier *= RunModifierService.ScoreMultiplier * ActiveBoons.ScoreMultiplier;
 
+        // A burning Sun Surge folds its bonus into the same single total.
+        multiplier *= SunSurge.ScoreMultiplier;
+
         return Mathf.RoundToInt(basePoints * multiplier);
     }
 

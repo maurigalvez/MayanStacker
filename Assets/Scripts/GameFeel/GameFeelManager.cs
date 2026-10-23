@@ -78,6 +78,7 @@ public class GameFeelManager : MonoBehaviour
     private float heatAlpha;          // current tint alpha
     private float targetHeatAlpha;    // combo-driven target
     private int perfectRung;          // Perfects in a row (Perfect ladder); Good/Poor/new run reset it
+    private readonly SunSurgeDirector surge = new SunSurgeDirector();
 
     // Aim glyphs (world-space): centre marks on the top stone and on the hanging stone. They
     // replaced a drop-guide line that projected the landing point and made Perfects trivial.
@@ -141,6 +142,15 @@ public class GameFeelManager : MonoBehaviour
             gameManager.OnComboChanged += OnComboChanged;
             gameManager.OnGameStart += OnGameStart;
         }
+
+        if (objectSpawner != null)
+        {
+            objectSpawner.OnObjectSpawned += OnStoneSpawned;
+            objectSpawner.OnObjectDropped += OnStoneDropped;
+        }
+
+        surge.OnIgnited += OnSurgeIgnited;
+        surge.OnExtinguished += OnSurgeExtinguished;
     }
 
     private void Update()
@@ -185,6 +195,15 @@ public class GameFeelManager : MonoBehaviour
         }
         // Poor landings intentionally get no juice - keeps the reward legible.
 
+        // Sun Surge: a long Perfect chain sets the sun alight; every landing inside it gets a beat.
+        SunSurgeSettings sun = SunSurgeSettings.Active;
+        if (sun != null)
+        {
+            bool burningBefore = surge.Burning;
+            surge.OnLanded(accuracy >= perfectTier, sun);
+            if (burningBefore) SurgeLandingBeat(sun);
+        }
+
         // Chaac's Thunderstone adds its clap on top of the landing juice (Good or better only).
         BlockVariant variant = stackableObject.Variant;
         if (variant.thunderOnLanding && accuracy >= goodTier)
@@ -194,6 +213,41 @@ public class GameFeelManager : MonoBehaviour
             DoHitStop(variant.thunderHitStop);
             HapticFeedback.Trigger(HapticFeedback.HapticType.Heavy);
         }
+    }
+
+    private void OnStoneSpawned(GameObject stone) => surge.OnStoneSpawned(stone);
+
+    private void OnStoneDropped(GameObject stone) => surge.OnStoneDropped();
+
+    private void OnSurgeIgnited()
+    {
+        SunSurgeSettings sun = SunSurgeSettings.Active;
+        if (sun == null) return;
+
+        ShakeCamera(sun.igniteShake);
+        FlashScreen(sun.igniteFlash, sun.igniteFlashSeconds);
+        HapticFeedback.Trigger(HapticFeedback.HapticType.Heavy);
+        if (cameraController == null) cameraController = DependencyRegistry.Find<CameraController>();
+        cameraController?.PunchZoom(sun.ignitePunchZoom, KukulkanZoomDuration);
+        DependencyRegistry.Find<GameSoundManager>()?.SetMusicPitch(sun.musicPitch);
+
+        RunBanner.Show(LocalizationManager.Get("sun_surge_banner"), LocalizationManager.Get("sun_surge_sub"),
+            sun.bannerColor, holdSeconds: 1.4f);
+    }
+
+    private void OnSurgeExtinguished()
+    {
+        DependencyRegistry.Find<GameSoundManager>()?.SetMusicPitch(1f);
+    }
+
+    /// <summary>The slow-mo beat, punch and shake on each stone that lands while the sun burns.</summary>
+    private void SurgeLandingBeat(SunSurgeSettings sun)
+    {
+        ShakeCamera(sun.landingShake);
+        DoHitStop(sun.landingHitStop);
+        HapticFeedback.Trigger(HapticFeedback.HapticType.Medium);
+        if (cameraController == null) cameraController = DependencyRegistry.Find<CameraController>();
+        cameraController?.PunchZoom(sun.landingPunchZoom, 0.25f);
     }
 
     private void OnPerfectHitStreak()
@@ -343,6 +397,8 @@ public class GameFeelManager : MonoBehaviour
     private void OnGameStart()
     {
         perfectRung = 0;
+        surge.BeginRun();
+        DependencyRegistry.Find<GameSoundManager>()?.SetMusicPitch(1f);
         // Fresh run - clear any lingering heat.
         targetHeatAlpha = 0f;
     }
@@ -514,6 +570,8 @@ public class GameFeelManager : MonoBehaviour
 
     private void OnGameOver()
     {
+        surge.BeginRun();
+        DependencyRegistry.Find<GameSoundManager>()?.SetMusicPitch(1f);
         ShakeCamera(GameOverShake);
         HapticFeedback.Trigger(HapticFeedback.HapticType.Heavy);
     }
@@ -581,6 +639,12 @@ public class GameFeelManager : MonoBehaviour
             gameManager.OnComboChanged -= OnComboChanged;
             gameManager.OnGameStart -= OnGameStart;
         }
+        if (objectSpawner != null)
+        {
+            objectSpawner.OnObjectSpawned -= OnStoneSpawned;
+            objectSpawner.OnObjectDropped -= OnStoneDropped;
+        }
+        SunSurge.Set(false, 1f);
 
         // Safety: never leave the game frozen/slowed if we're torn down mid hit-stop or slow-mo.
         if (Time.timeScale < 1f && (uiManager == null || !uiManager.IsPaused))

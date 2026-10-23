@@ -975,6 +975,12 @@ public class GameSoundManager : MonoBehaviour
         }
     }
 
+    /// <summary>Nudges the music pitch (Sun Surge intensity). 1 restores the normal pitch.</summary>
+    public void SetMusicPitch(float pitch)
+    {
+        if (musicSource != null) musicSource.pitch = Mathf.Clamp(pitch, 0.5f, 1.5f);
+    }
+
     /// <summary>
     /// Sets the SFX volume
     /// </summary>

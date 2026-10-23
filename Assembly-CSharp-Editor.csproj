@@ -81,6 +81,7 @@
     <Compile Include="Assets\Scripts\Editor\ThunderStoneSetup.cs" />
     <Compile Include="Assets\Scripts\Editor\PlayAppUpdateDefine.cs" />
     <Compile Include="Assets\Scripts\Editor\RemoveAdsPlacementsSetup.cs" />
+    <Compile Include="Assets\Scripts\Editor\SunSurgeSetup.cs" />
     <Compile Include="Assets\Scripts\Editor\TempleUnlocksWindow.cs" />
     <Compile Include="Assets\Scripts\Editor\HotStoneTimerPrefabSetup.cs" />
     <Compile Include="Assets\Scripts\Editor\LevelRegressionCli.cs" />
