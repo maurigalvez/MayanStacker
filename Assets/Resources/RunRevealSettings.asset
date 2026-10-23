@@ -1,0 +1,33 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 89f36d3899b725743936904af0a43dc5, type: 3}
+  m_Name: RunRevealSettings
+  m_EditorClassIdentifier: Assembly-CSharp::RunRevealSettings
+  enableReveal: 1
+  minRunJade: 1
+  tiers:
+  - nameKey: reveal_tier_plain
+    weight: 55
+    bonusJade: 0
+    grand: 0
+  - nameKey: reveal_tier_blessed
+    weight: 30
+    bonusJade: 3
+    grand: 0
+  - nameKey: reveal_tier_radiant
+    weight: 12
+    bonusJade: 8
+    grand: 0
+  - nameKey: reveal_tier_gift
+    weight: 3
+    bonusJade: 20
+    grand: 1
