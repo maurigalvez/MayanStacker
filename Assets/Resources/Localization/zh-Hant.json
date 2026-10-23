@@ -578,6 +578,14 @@
       "value": "完美落下，庫庫爾坎立刻甦醒。"
     },
     {
+      "key": "block_thunder_stone",
+      "value": "恰克雷霆石"
+    },
+    {
+      "key": "block_thunder_stone_desc",
+      "value": "得分加倍。穩穩落下，便能喚來恰克的雷鳴。"
+    },
+    {
       "key": "band_foundation",
       "value": "地基"
     },

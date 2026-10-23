@@ -581,6 +581,14 @@
       "value": "Land it perfectly and Kukulkan stirs at once."
     },
     {
+      "key": "block_thunder_stone",
+      "value": "Chaac's Thunderstone"
+    },
+    {
+      "key": "block_thunder_stone_desc",
+      "value": "Worth double. A clean landing calls down Chaac's thunder."
+    },
+    {
       "key": "band_foundation",
       "value": "The Foundation"
     },

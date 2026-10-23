@@ -578,6 +578,14 @@
       "value": "完璧に置けばククルカンがすぐに目覚める。"
     },
     {
+      "key": "block_thunder_stone",
+      "value": "チャックの雷石"
+    },
+    {
+      "key": "block_thunder_stone_desc",
+      "value": "得点は2倍。きれいに置けばチャックの雷が落ちる。"
+    },
+    {
       "key": "band_foundation",
       "value": "礎"
     },

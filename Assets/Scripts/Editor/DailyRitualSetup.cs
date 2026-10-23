@@ -134,6 +134,7 @@ public static class DailyRitualSetup
 
         yield return new RitualSpec("storm_serpent", 3, 30)
             .Mods(RunModifier.SpeedRun, RunModifier.GiftOfTheGods)
+            .Stones(BlockVariantId.ThunderStone)
             .Rules(LevelRule.JungleWind)
             .Wind(w => { w.swingPush = 0.4f; w.fallPush = 0.9f; w.stonesPerGust = 3; w.firstAtHeight = 3; w.leadSeconds = 0.8f; w.announceEveryGust = true; });
 
@@ -170,6 +171,7 @@ public static class DailyRitualSetup
 
         yield return new RitualSpec("chaacs_trial", 3, 30)
             .Mods(RunModifier.NarrowWindow)
+            .Stones(BlockVariantId.ThunderStone)
             .Power(PowerId.TzolkinRewind)
             .Rules(LevelRule.RainSlick, LevelRule.JungleWind)
             .Wind(GentleWind);
@@ -186,6 +188,7 @@ public static class DailyRitualSetup
 
         yield return new RitualSpec("flood_of_chaac", 5, 35)
             .Mods(RunModifier.SpeedRun, RunModifier.GiftOfTheGods)
+            .Stones(BlockVariantId.ThunderStone)
             .Rules(LevelRule.RisingCenote, LevelRule.JungleWind)
             .Cenote(c => { c.stonesPerSecond = 0.2f; c.maxLagStones = 2.5f; })
             .Wind(w => { w.swingPush = 0.45f; w.fallPush = 1.0f; w.stonesPerGust = 3; w.firstAtHeight = 3; w.leadSeconds = 0.8f; w.announceEveryGust = true; });

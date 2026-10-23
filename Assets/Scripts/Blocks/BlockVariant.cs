@@ -19,7 +19,10 @@ public enum BlockVariantId
     CrackedStone,
 
     /// <summary>Landing it perfectly summons Kukulkan immediately.</summary>
-    OfferingStone
+    OfferingStone,
+
+    /// <summary>Ritual-only. Worth double; a clean landing calls down a thunderclap.</summary>
+    ThunderStone
 }
 
 /// <summary>
@@ -61,6 +64,29 @@ public class BlockVariant
     [Tooltip("If true, landing this block perfectly triggers the Kukulkan shift immediately.")]
     public bool grantsKukulkanShiftOnPerfect = false;
 
+    [Tooltip("If true, only a Daily ritual that lists this block can deal it. Rolls with no ritual list skip it.")]
+    public bool ritualOnly = false;
+
+    [Header("Thunder (spectacle only, never a fail state)")]
+    [Tooltip("If true, a Good-or-better landing fires a thunderclap: big shake, flash, hit-stop, haptic.")]
+    public bool thunderOnLanding = false;
+
+    [Tooltip("Camera trauma 0-1 for the thunderclap.")]
+    [Range(0f, 1f)]
+    public float thunderShake = 0.7f;
+
+    [Tooltip("Hit-stop seconds on the thunderclap.")]
+    [Range(0f, 0.3f)]
+    public float thunderHitStop = 0.12f;
+
+    [Tooltip("Screen flash colour (alpha = peak) on the thunderclap.")]
+    public Color thunderFlash = new Color(0.75f, 0.92f, 1f, 0.45f);
+
+    [Tooltip("Seconds the thunder flash fades over.")]
+    [Range(0.05f, 1f)]
+    public float thunderFlashSeconds = 0.35f;
+
+    [Header("Look")]
     [Tooltip("If true, tint overrides the spawner's random colour so the block reads as special.")]
     public bool overrideTint = false;
 
@@ -142,6 +168,19 @@ public class BlockVariant
                     tint = new Color(0.85f, 0.70f, 0.32f, 1f), // gold
                     nameKey = "block_offering_stone",
                     descriptionKey = "block_offering_stone_desc"
+                };
+
+            case BlockVariantId.ThunderStone:
+                return new BlockVariant
+                {
+                    id = id,
+                    scoreMultiplier = 2f,
+                    ritualOnly = true,
+                    thunderOnLanding = true,
+                    overrideTint = true,
+                    tint = new Color(0.20f, 0.55f, 0.75f, 1f), // Chaac's rain-blue
+                    nameKey = "block_thunder_stone",
+                    descriptionKey = "block_thunder_stone_desc"
                 };
 
             case BlockVariantId.Standard:

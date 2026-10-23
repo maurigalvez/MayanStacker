@@ -13,6 +13,9 @@ MonoBehaviour:
   m_Name: BlockVarietyTable
   m_EditorClassIdentifier: Assembly-CSharp::BlockVarietyTable
   enableVariants: 1
+  enableInInfinite: 0
+  enableInLevels: 0
+  enableInDaily: 1
   minStackHeightForSpecials: 4
   minGapBetweenSpecials: 2
   suppressDuringFtue: 1
@@ -27,6 +30,12 @@ MonoBehaviour:
       scoreMultiplier: 3
       shattersOnPoorLanding: 0
       grantsKukulkanShiftOnPerfect: 0
+      ritualOnly: 0
+      thunderOnLanding: 0
+      thunderShake: 0.7
+      thunderHitStop: 0.12
+      thunderFlash: {r: 0.75, g: 0.92, b: 1, a: 0.45}
+      thunderFlashSeconds: 0.35
       overrideTint: 1
       tint: {r: 1, g: 1, b: 1, a: 1}
       nameKey: block_jade_sliver
@@ -41,6 +50,12 @@ MonoBehaviour:
       scoreMultiplier: 0.5
       shattersOnPoorLanding: 0
       grantsKukulkanShiftOnPerfect: 0
+      ritualOnly: 0
+      thunderOnLanding: 0
+      thunderShake: 0.7
+      thunderHitStop: 0.12
+      thunderFlash: {r: 0.75, g: 0.92, b: 1, a: 0.45}
+      thunderFlashSeconds: 0.35
       overrideTint: 1
       tint: {r: 1, g: 1, b: 1, a: 1}
       nameKey: block_heavy_stone
@@ -55,6 +70,12 @@ MonoBehaviour:
       scoreMultiplier: 2
       shattersOnPoorLanding: 1
       grantsKukulkanShiftOnPerfect: 0
+      ritualOnly: 0
+      thunderOnLanding: 0
+      thunderShake: 0.7
+      thunderHitStop: 0.12
+      thunderFlash: {r: 0.75, g: 0.92, b: 1, a: 0.45}
+      thunderFlashSeconds: 0.35
       overrideTint: 1
       tint: {r: 1, g: 0.753158, b: 0.6933962, a: 1}
       nameKey: block_cracked_stone
@@ -69,8 +90,34 @@ MonoBehaviour:
       scoreMultiplier: 1.5
       shattersOnPoorLanding: 0
       grantsKukulkanShiftOnPerfect: 1
+      ritualOnly: 0
+      thunderOnLanding: 0
+      thunderShake: 0.7
+      thunderHitStop: 0.12
+      thunderFlash: {r: 0.75, g: 0.92, b: 1, a: 0.45}
+      thunderFlashSeconds: 0.35
       overrideTint: 1
       tint: {r: 1, g: 0.93050313, b: 0.759434, a: 1}
       nameKey: block_offering_stone
       descriptionKey: block_offering_stone_desc
       sprite: {fileID: -693496610206729331, guid: df075a99b6b53524a8704bbc0863715c, type: 3}
+  - weight: 3
+    variant:
+      id: 5
+      widthMultiplier: 1
+      massMultiplier: 1
+      frictionMultiplier: 1
+      scoreMultiplier: 2
+      shattersOnPoorLanding: 0
+      grantsKukulkanShiftOnPerfect: 0
+      ritualOnly: 1
+      thunderOnLanding: 1
+      thunderShake: 0.7
+      thunderHitStop: 0.12
+      thunderFlash: {r: 0.75, g: 0.92, b: 1, a: 0.45}
+      thunderFlashSeconds: 0.35
+      overrideTint: 1
+      tint: {r: 0.2, g: 0.55, b: 0.75, a: 1}
+      nameKey: block_thunder_stone
+      descriptionKey: block_thunder_stone_desc
+      sprite: {fileID: 0}

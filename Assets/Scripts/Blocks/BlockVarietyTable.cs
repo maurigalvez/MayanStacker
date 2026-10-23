@@ -180,7 +180,8 @@ public class BlockVarietyTable : ScriptableObject
     private static bool IsRollable(WeightedVariant entry, ICollection<BlockVariantId> allowed)
     {
         if (entry == null || entry.variant == null || entry.weight <= 0f) return false;
-        return allowed == null || allowed.Contains(entry.variant.id);
+        if (allowed == null) return !entry.variant.ritualOnly;
+        return allowed.Contains(entry.variant.id);
     }
 
     /// <summary>
@@ -243,7 +244,39 @@ public class BlockVarietyTable : ScriptableObject
             new WeightedVariant { weight = 2.0f, variant = BlockVariant.Preset(BlockVariantId.JadeSliver) },
             new WeightedVariant { weight = 2.0f, variant = BlockVariant.Preset(BlockVariantId.HeavyStone) },
             new WeightedVariant { weight = 1.2f, variant = BlockVariant.Preset(BlockVariantId.CrackedStone) },
-            new WeightedVariant { weight = 1.0f, variant = BlockVariant.Preset(BlockVariantId.OfferingStone) }
+            new WeightedVariant { weight = 1.0f, variant = BlockVariant.Preset(BlockVariantId.OfferingStone) },
+            new WeightedVariant { weight = 3.0f, variant = BlockVariant.Preset(BlockVariantId.ThunderStone) }
         };
+    }
+
+    /// <summary>
+    /// Adds any stock variant an older table asset doesn't have yet. Existing entries and
+    /// their tuning are left alone. Returns true when the table changed.
+    /// </summary>
+    public bool AddMissingDefaults()
+    {
+        if (variants == null) variants = new List<WeightedVariant>();
+
+        bool changed = false;
+        foreach (BlockVariantId id in System.Enum.GetValues(typeof(BlockVariantId)))
+        {
+            if (id == BlockVariantId.Standard) continue;
+
+            bool present = false;
+            for (int i = 0; i < variants.Count; i++)
+            {
+                if (variants[i] != null && variants[i].variant != null && variants[i].variant.id == id)
+                {
+                    present = true;
+                    break;
+                }
+            }
+            if (present) continue;
+
+            float weight = id == BlockVariantId.ThunderStone ? 3f : 1f;
+            variants.Add(new WeightedVariant { weight = weight, variant = BlockVariant.Preset(id) });
+            changed = true;
+        }
+        return changed;
     }
 }

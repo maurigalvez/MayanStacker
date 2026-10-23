@@ -584,6 +584,14 @@
       "value": "Colócala a la perfección y Kukulkán despierta al instante."
     },
     {
+      "key": "block_thunder_stone",
+      "value": "Piedra Trueno de Chaac"
+    },
+    {
+      "key": "block_thunder_stone_desc",
+      "value": "Vale el doble. Un buen aterrizaje invoca el trueno de Chaac."
+    },
+    {
       "key": "band_foundation",
       "value": "Los Cimientos"
     },

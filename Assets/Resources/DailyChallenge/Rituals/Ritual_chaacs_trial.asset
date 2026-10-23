@@ -26,6 +26,7 @@ MonoBehaviour:
     swingSpeedMultiplier: 0
   grantsPower: 1
   grantedPower: 2
+  specialBlocks: 05000000
   rule: 3
   secondRule: 2
   windSettings:

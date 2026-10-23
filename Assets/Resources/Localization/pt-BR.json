@@ -584,6 +584,14 @@
       "value": "Encaixe-a com perfeição e Kukulkan desperta na hora."
     },
     {
+      "key": "block_thunder_stone",
+      "value": "Pedra-Trovão de Chaac"
+    },
+    {
+      "key": "block_thunder_stone_desc",
+      "value": "Vale o dobro. Um bom encaixe invoca o trovão de Chaac."
+    },
+    {
       "key": "band_foundation",
       "value": "A Fundação"
     },

@@ -173,6 +173,16 @@ public class GameFeelManager : MonoBehaviour
             HapticFeedback.Trigger(HapticFeedback.HapticType.Light);
         }
         // Poor landings intentionally get no juice - keeps the reward legible.
+
+        // Chaac's Thunderstone adds its clap on top of the landing juice (Good or better only).
+        BlockVariant variant = stackableObject.Variant;
+        if (variant.thunderOnLanding && accuracy >= goodTier)
+        {
+            ShakeCamera(variant.thunderShake);
+            FlashScreen(variant.thunderFlash, variant.thunderFlashSeconds);
+            DoHitStop(variant.thunderHitStop);
+            HapticFeedback.Trigger(HapticFeedback.HapticType.Heavy);
+        }
     }
 
     private void OnPerfectHitStreak()
