@@ -41,6 +41,9 @@ public class RunResultCard : MonoBehaviour
     [Tooltip("Optional Serpent's Edge receipt under the stats. Left empty, it rides above the goal line.")]
     [SerializeField] private TextMeshProUGUI edgeText;
 
+    [Tooltip("Optional jade earned line under the stats. Left empty, it rides above the goal line.")]
+    [SerializeField] private TextMeshProUGUI jadeText;
+
     [Header("Colours")]
     [SerializeField] private Color celebrateColor = new Color(0.79f, 0.64f, 0.29f, 1f); // gold
     [SerializeField] private Color honoredColor = new Color(0.09f, 0.57f, 0.44f, 1f);   // jade
@@ -147,16 +150,28 @@ public class RunResultCard : MonoBehaviour
             if (hasEdge) SetText(edgeText, current.edgeLine, celebrateColor);
         }
 
+        bool hasJade = !string.IsNullOrEmpty(current.jadeLine);
+        if (jadeText != null)
+        {
+            jadeText.gameObject.SetActive(hasJade);
+            if (hasJade) SetText(jadeText, current.jadeLine, honoredColor);
+        }
+
         if (goalText != null)
         {
             goalText.gameObject.SetActive(true);
             goalText.text = current.goal;
 
-            // No dedicated edge label wired yet: carry the edge receipt as a gold line above the goal.
+            // No dedicated labels wired yet: carry the receipts as coloured lines above the goal.
+            if (hasJade && jadeText == null)
+            {
+                goalText.text = "<color=#" + ColorUtility.ToHtmlStringRGB(honoredColor) + ">" +
+                                current.jadeLine + "</color>\n" + goalText.text;
+            }
             if (hasEdge && edgeText == null)
             {
                 goalText.text = "<color=#" + ColorUtility.ToHtmlStringRGB(celebrateColor) + ">" +
-                                current.edgeLine + "</color>\n" + current.goal;
+                                current.edgeLine + "</color>\n" + goalText.text;
             }
         }
     }
@@ -277,6 +292,7 @@ public class RunResultCard : MonoBehaviour
             bestLineText != null ? bestLineText.rectTransform : null,
             statsRow,
             edgeText != null ? edgeText.rectTransform : null,
+            jadeText != null ? jadeText.rectTransform : null,
             goalText != null ? goalText.rectTransform : null
         };
     }

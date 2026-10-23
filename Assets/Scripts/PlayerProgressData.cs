@@ -69,6 +69,13 @@ public class PlayerProgressData
     public List<string> unlockedPowers = new List<string>();
 
     /// <summary>
+    /// Lifetime jade earned and spent (see JadeWallet). Two totals so a merge can take the larger
+    /// of each. Not part of the leaderboard season reset.
+    /// </summary>
+    public int jadeEarned = 0;
+    public int jadeSpent = 0;
+
+    /// <summary>
     /// Creates a new empty PlayerProgressData
     /// </summary>
     public PlayerProgressData()
@@ -106,7 +113,9 @@ public class PlayerProgressData
             achievementProgressJson = this.achievementProgressJson,
             sunsetThemeUnlocked = this.sunsetThemeUnlocked,
             nightThemeUnlocked = this.nightThemeUnlocked,
-            unlockedPowers = new List<string>(unlockedPowers ?? new List<string>())
+            unlockedPowers = new List<string>(unlockedPowers ?? new List<string>()),
+            jadeEarned = this.jadeEarned,
+            jadeSpent = this.jadeSpent
         };
 
         return JsonUtility.ToJson(wrapper);
@@ -140,7 +149,9 @@ public class PlayerProgressData
                 sunsetThemeUnlocked = wrapper.sunsetThemeUnlocked,
                 nightThemeUnlocked = wrapper.nightThemeUnlocked,
                 // Saves from before powers existed have no list.
-                unlockedPowers = wrapper.unlockedPowers ?? new List<string>()
+                unlockedPowers = wrapper.unlockedPowers ?? new List<string>(),
+                jadeEarned = wrapper.jadeEarned,
+                jadeSpent = wrapper.jadeSpent
             };
 
             // Reconstruct dictionaries
@@ -205,6 +216,9 @@ public class PlayerProgressData
         sunsetThemeUnlocked |= other.sunsetThemeUnlocked;
         nightThemeUnlocked |= other.nightThemeUnlocked;
 
+        jadeEarned = Math.Max(jadeEarned, other.jadeEarned);
+        jadeSpent = Math.Max(jadeSpent, other.jadeSpent);
+
         if (other.unlockedPowers != null)
         {
             unlockedPowers ??= new List<string>();
@@ -242,6 +256,8 @@ public class PlayerProgressData
         public bool sunsetThemeUnlocked = false;
         public bool nightThemeUnlocked = false;
         public List<string> unlockedPowers = new List<string>();
+        public int jadeEarned = 0;
+        public int jadeSpent = 0;
     }
 }
 

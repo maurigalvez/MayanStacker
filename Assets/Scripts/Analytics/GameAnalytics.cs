@@ -236,6 +236,24 @@ public static class GameAnalytics
             "source", source));
     }
 
+    /// <summary>Jade entered the wallet. <paramref name="source"/> is run, stars, daily or daily_complete.</summary>
+    public static void JadeEarned(string source, int amount, int balance)
+    {
+        Track("jade_earned", Data(
+            "source", source,
+            "amount", amount,
+            "balance", balance));
+    }
+
+    /// <summary>Jade left the wallet for a cosmetic.</summary>
+    public static void JadeSpent(string item, int cost, int balance)
+    {
+        Track("jade_spent", Data(
+            "item", item,
+            "cost", cost,
+            "balance", balance));
+    }
+
     /// <summary>An interstitial was suppressed by the FTUE grace period.</summary>
     public static void AdSuppressed(string reason, int lifetimeRuns)
     {

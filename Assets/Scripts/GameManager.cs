@@ -733,6 +733,20 @@ public class GameManager : MonoBehaviour, IRunRewindable
         int blocks = stackManager != null ? stackManager.GetStackCount() : 0;
         GameAnalytics.RunEnd(currentGameMode, currentLevelNumber, blocks, currentScore, cause);
 
+        // Jade is paid before OnGameOver so the result card can show it. Nothing here touches
+        // the score; it only reads what the run already did.
+        JadeRunPayout.AwardRun(new JadeRunPayout.Tally
+        {
+            blocks = blocks,
+            perfects = perfectLandings,
+            edgeLandings = RiskWindow.Instance != null ? RiskWindow.Instance.RunEdgeLanded : 0,
+            surges = SunSurge.RunIgnitions
+        });
+        if (currentGameMode == GameMode.DailyChallenge)
+        {
+            JadeRunPayout.AwardDaily(cause == "daily_target");
+        }
+
         // Close the seeded stream so nothing drawn between runs — a menu flourish, an idle
         // animation — eats draws that belong to the next attempt's sequence.
         RunRandom.EndRun();
@@ -827,6 +841,7 @@ public class GameManager : MonoBehaviour, IRunRewindable
         OmensDefied = 0;
         LastLandingDefiedOmen = false;
         highScoreAtRunStart = highScore;
+        JadeWallet.BeginRun();
     }
 
     /// <summary>

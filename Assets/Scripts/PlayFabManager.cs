@@ -1948,6 +1948,7 @@ public class PlayFabManager : MonoBehaviour
                 // scene, and login usually happens before one is loaded.
                 InfiniteBest.MergeFromCloud(data);
                 PowerUnlocks.MergeFromCloud(data);
+                JadeWallet.MergeFromCloud(data);
 
                 OnProgressSynced?.Invoke(data);
 
@@ -2149,6 +2150,9 @@ public class PlayFabManager : MonoBehaviour
 
         // Earned powers. Local flags only ever grow, so this never drops a cloud unlock.
         PowerUnlocks.WriteTo(data);
+
+        // Jade totals. Local totals only grow, so this never drops cloud jade.
+        JadeWallet.WriteTo(data);
 
         // Get achievement progress from AchievementManager
         // Fallback to PlayerPrefs if manager isn't available or initialized

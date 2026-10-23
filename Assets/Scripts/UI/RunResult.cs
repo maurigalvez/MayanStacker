@@ -94,6 +94,9 @@ public static class RunResult
 
         /// <summary>What the Serpent's Edge earned (and broke) this run. Null when it wasn't taken.</summary>
         public string edgeLine;
+
+        /// <summary>Jade this run earned ("+12 jade"). Null when none, or when jade is switched off.</summary>
+        public string jadeLine;
     }
 
     /// <summary>A fall at or below this many stones reads as an early one.</summary>
@@ -131,6 +134,12 @@ public static class RunResult
             card.edgeLine = input.edgeCombosBroken > 0
                 ? LocalizationManager.GetPlural("result_edge_line_broke", input.edgeLanded, input.edgeLanded, input.edgeBonusPoints, input.edgeCombosBroken)
                 : LocalizationManager.GetPlural("result_edge_line", input.edgeLanded, input.edgeLanded, input.edgeBonusPoints);
+        }
+
+        // GameManager pays the run before the card is built, so the wallet's run tally is final.
+        if (JadeWallet.RunEarned > 0)
+        {
+            card.jadeLine = LocalizationManager.Get("result_jade_line", JadeWallet.RunEarned);
         }
         return card;
     }

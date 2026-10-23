@@ -51,6 +51,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Assets\Scripts\Editor\LanguageSelectPrefabSetup.cs" />
+    <Compile Include="Assets\Scripts\Editor\JadeSetup.cs" />
     <Compile Include="Assets\Scripts\Editor\PowerShowcasePrefabSetup.cs" />
     <Compile Include="Assets\Scripts\Editor\CJKFontFallbackSetup.cs" />
     <Compile Include="Assets\Scripts\Editor\RemoveAdsOfferPrefabSetup.cs" />

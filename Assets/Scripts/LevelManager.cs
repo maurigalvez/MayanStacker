@@ -469,6 +469,8 @@ public class LevelManager : MonoBehaviour, ILevelManager, IRunRewindable
         // Update stars in-memory and PlayerPrefs
         if (!levelStars.ContainsKey(levelNumber) || stars > levelStars[levelNumber])
         {
+            // Only stars the temple has never given before pay jade, so replays can't farm it.
+            JadeRunPayout.AwardStars(stars - (levelStars.TryGetValue(levelNumber, out int before) ? before : 0));
             levelStars[levelNumber] = stars;
             PlayerPrefs.SetInt($"Level_{levelNumber}_Stars", stars);
         }

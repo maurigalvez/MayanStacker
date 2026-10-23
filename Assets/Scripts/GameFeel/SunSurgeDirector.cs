@@ -33,6 +33,7 @@ public class SunSurgeDirector
         cooldownLeft = 0;
         stonesLeft = 0;
         IgnitedCount = 0;
+        SunSurge.RunIgnitions = 0;
         DropTrail(detach: false);
         SunSurge.Set(false, 1f);
     }
@@ -71,6 +72,7 @@ public class SunSurgeDirector
         chain = 0;
         stonesLeft = Mathf.Max(1, s.surgeStones);
         IgnitedCount++;
+        SunSurge.RunIgnitions++;
         SunSurge.Set(true, s.scoreMultiplier);
         OnIgnited?.Invoke();
         return true;
@@ -131,6 +133,9 @@ public static class SunSurge
 
     public static bool Active { get; private set; }
     public static float ScoreMultiplier { get; private set; } = 1f;
+
+    /// <summary>Surges ignited this run, for the jade payout. Reset by <see cref="SunSurgeDirector.BeginRun"/>.</summary>
+    public static int RunIgnitions { get; set; }
 
     public static void Set(bool active, float multiplier)
     {

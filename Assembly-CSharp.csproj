@@ -224,11 +224,13 @@
     <Compile Include="Assets\Scripts\Notifications\NotificationScheduler.cs" />
     <Compile Include="Assets\Scripts\LevelData.cs" />
     <Compile Include="Assets\ThemeMapSprite.cs" />
+    <Compile Include="Assets\Scripts\Progression\JadeSettings.cs" />
     <Compile Include="Assets\Scripts\Boons\BoonSettings.cs" />
     <Compile Include="Assets\Scripts\Stability\TowerStability.cs" />
     <Compile Include="Assets\Scripts\Achievements\AchievementEntryUI.cs" />
     <Compile Include="Assets\Scripts\EnvironmentSpawner.cs" />
     <Compile Include="Assets\Scripts\LevelManager.cs" />
+    <Compile Include="Assets\Scripts\Progression\JadeWallet.cs" />
     <Compile Include="Assets\Scripts\UI\RunResult.cs" />
     <Compile Include="Assets\Scripts\Rules\TempleRuleBriefEntry.cs" />
     <Compile Include="Assets\Scripts\UI\GuideLaneView.cs" />
