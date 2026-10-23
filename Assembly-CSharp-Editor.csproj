@@ -80,6 +80,7 @@
     <Compile Include="Assets\Scripts\Editor\PowersSetup.cs" />
     <Compile Include="Assets\Scripts\Editor\UnityPurchasingDefine.cs" />
     <Compile Include="Assets\Scripts\Editor\LocaleFontSetup.cs" />
+    <Compile Include="Assets\Scripts\Editor\JadeMarketSetup.cs" />
     <Compile Include="Assets\Scripts\Editor\ReviewPromptPrefabSetup.cs" />
     <Compile Include="Assets\Scripts\Editor\ThunderStoneSetup.cs" />
     <Compile Include="Assets\Scripts\Editor\PlayAppUpdateDefine.cs" />

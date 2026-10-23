@@ -63,6 +63,7 @@
     <Compile Include="Assets\Scripts\OfflineScoreQueue.cs" />
     <Compile Include="Assets\Scripts\DailyChallenge\RitualBriefingView.cs" />
     <Compile Include="Assets\Scripts\UI\Motion\UIPopup.cs" />
+    <Compile Include="Assets\Scripts\UI\JadeMarketView.cs" />
     <Compile Include="Assets\Scripts\UI\RunResultCard.cs" />
     <Compile Include="Assets\Scripts\Powers\PowerSettings.cs" />
     <Compile Include="Assets\Scripts\Powers\PowerShowcaseView.cs" />
@@ -104,6 +105,7 @@
     <Compile Include="Assets\Scripts\UIManager.cs" />
     <Compile Include="Assets\Scripts\Achievements\AchievementDefinition.cs" />
     <Compile Include="Assets\Scripts\Rules\Eclipse.cs" />
+    <Compile Include="Assets\Scripts\UI\JadeMarketMenuChip.cs" />
     <Compile Include="Assets\Scripts\RunModifiers\RunModifier.cs" />
     <Compile Include="Assets\Scripts\GameFeel\SunSurgeSettings.cs" />
     <Compile Include="Assets\Scripts\Powers\PowerUnlocks.cs" />
