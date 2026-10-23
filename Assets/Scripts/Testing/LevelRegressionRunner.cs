@@ -49,6 +49,7 @@ public class LevelRegressionRunner : MonoBehaviour
         public List<string> powerLog = new List<string>(); // "Power@height" per use
         public int quakesBraced;
         public int moodsRolled; // Swing Moods rolled this attempt
+        public int surges; // Sun Surges ignited this attempt
         public float seconds;
         public string endCause; // first "Game Over: ..." line the game logged
         public string note;
@@ -423,8 +424,9 @@ public class LevelRegressionRunner : MonoBehaviour
         result.seconds = Mathf.Round((Time.realtimeSinceStartup - started) * 10f) / 10f;
         var moodHolder = DependencyRegistry.Find<SpawnerHolder>();
         result.moodsRolled = moodHolder != null && moodHolder.Moods != null ? moodHolder.Moods.RolledCount : 0;
+        result.surges = SunSurge.RunIgnitions;
         Debug.Log($"[Regression] Temple {levelNumber} attempt {attempt}: {result.outcome} " +
-                  $"h={result.heightReached} score={result.score} stars={result.stars} moods={result.moodsRolled}/{result.drops} drops ({result.seconds}s)");
+                  $"h={result.heightReached} score={result.score} stars={result.stars} moods={result.moodsRolled}/{result.drops} drops surges={result.surges} ({result.seconds}s)");
     }
 
     #endregion
@@ -779,17 +781,21 @@ public class LevelRegressionRunner : MonoBehaviour
         sb.AppendLine($"Run {report.startedAt}, Unity {report.unityVersion}. Verdict: **{(report.passed ? "PASS" : "FAIL")}**");
         if (!string.IsNullOrEmpty(report.abortReason)) sb.AppendLine($"\n> {report.abortReason}");
         sb.AppendLine();
-        sb.AppendLine("| # | Temple | Rules | Power | Result | Tries | Height | Score (2★/3★) | ★ | P/G/Poor | Powers | Quakes | Exc | Err | Time |");
-        sb.AppendLine("|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|");
+        sb.AppendLine("| # | Temple | Rules | Power | Result | Tries | Height | Score (2★/3★) | ★ | P/G/Poor | Powers | Quakes | Moods | Surges | s/stone | Exc | Err | Time |");
+        sb.AppendLine("|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|");
         foreach (var l in report.levels)
         {
             AttemptResult last = l.attempts.Count > 0 ? l.attempts[l.attempts.Count - 1] : new AttemptResult();
-            int powers = 0, quakes = 0; float secs = 0;
-            foreach (var a in l.attempts) { powers += a.powersFired; quakes += a.quakesBraced; secs += a.seconds; }
+            int powers = 0, quakes = 0, moods = 0, surges = 0, drops = 0; float secs = 0;
+            foreach (var a in l.attempts)
+            {
+                powers += a.powersFired; quakes += a.quakesBraced; moods += a.moodsRolled;
+                surges += a.surges; drops += a.drops; secs += a.seconds;
+            }
             sb.AppendLine($"| {l.levelNumber} | {l.levelName} | {l.rules} | {l.equippedPower} | " +
                           $"{(l.Passed ? "pass" : "**FAIL**")} ({last.outcome}) | {l.attempts.Count} | " +
                           $"{last.heightReached}/{l.requiredHeight} | {last.score} ({l.twoStar}/{l.threeStar}) | {last.stars} | " +
-                          $"{last.perfect}/{last.good}/{last.poor} | {powers} | {quakes} | {l.exceptions.Count} | {l.errors.Count} | {secs:0}s |");
+                          $"{last.perfect}/{last.good}/{last.poor} | {powers} | {quakes} | {moods} | {surges} | {(drops > 0 ? (secs / drops).ToString("0.0") : "-")} | {l.exceptions.Count} | {l.errors.Count} | {secs:0}s |");
         }
 
         sb.AppendLine();
