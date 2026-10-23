@@ -87,6 +87,7 @@
     <Compile Include="Assets\Scripts\Editor\JadeMarketSetup.cs" />
     <Compile Include="Assets\Scripts\Editor\ReviewPromptPrefabSetup.cs" />
     <Compile Include="Assets\Scripts\Editor\ThunderStoneSetup.cs" />
+    <Compile Include="Assets\Scripts\Editor\PathUISetup.cs" />
     <Compile Include="Assets\Scripts\Editor\PlayAppUpdateDefine.cs" />
     <Compile Include="Assets\Scripts\Editor\RemoveAdsPlacementsSetup.cs" />
     <Compile Include="Assets\Scripts\Editor\SunSurgeSetup.cs" />

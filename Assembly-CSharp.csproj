@@ -145,6 +145,7 @@
     <Compile Include="Assets\Scripts\MainMenuSoundManager.cs" />
     <Compile Include="Assets\Scripts\ThemeSelectionUI.cs" />
     <Compile Include="Assets\Scripts\DependencyRegistry\DependencyRegistry.cs" />
+    <Compile Include="Assets\Scripts\UI\PathView.cs" />
     <Compile Include="Assets\Scripts\UI\BackButton.cs" />
     <Compile Include="Assets\Scripts\Powers\PowerSystem.cs" />
     <Compile Include="Assets\Scripts\DailyChallenge\DailyChallengeConfig.cs" />
@@ -158,6 +159,7 @@
     <Compile Include="Assets\Scripts\FTUE\LanguageSelectScreen.cs" />
     <Compile Include="Assets\Scripts\UI\Motion\UIMotionRunner.cs" />
     <Compile Include="Assets\Scripts\UI\SecondChanceView.cs" />
+    <Compile Include="Assets\Scripts\UI\PathMenuChip.cs" />
     <Compile Include="Assets\Scripts\ReviewManagerHelper.cs" />
     <Compile Include="Assets\Scripts\ObjectSpawner.cs" />
     <Compile Include="Assets\Scripts\Rules\RulePlaceholderArt.cs" />
@@ -270,6 +272,7 @@
     <Compile Include="Assets\Scripts\Boons\BoonSystem.cs" />
     <Compile Include="Assets\Scripts\Analytics\GameAnalytics.cs" />
     <Compile Include="Assets\Scripts\UI\RemoveAdsNudgeView.cs" />
+    <Compile Include="Assets\Scripts\UI\PathRow.cs" />
     <Compile Include="Assets\Scripts\ThemeUITint.cs" />
     <Compile Include="Assets\Scripts\Rules\LevelRule.cs" />
     <Compile Include="Assets\Scripts\LeaderboardPanel.cs" />
