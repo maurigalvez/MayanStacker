@@ -79,6 +79,7 @@ public class GameFeelManager : MonoBehaviour
     private float targetHeatAlpha;    // combo-driven target
     private int perfectRung;          // Perfects in a row (Perfect ladder); Good/Poor/new run reset it
     private readonly SunSurgeDirector surge = new SunSurgeDirector();
+    private int highestTerrace;       // highest terrace announced this run
 
     // Aim glyphs (world-space): centre marks on the top stone and on the hanging stone. They
     // replaced a drop-guide line that projected the landing point and made Perfects trivial.
@@ -204,6 +205,8 @@ public class GameFeelManager : MonoBehaviour
             if (burningBefore) SurgeLandingBeat(sun);
         }
 
+        CheckTerrace();
+
         // Chaac's Thunderstone adds its clap on top of the landing juice (Good or better only).
         BlockVariant variant = stackableObject.Variant;
         if (variant.thunderOnLanding && accuracy >= goodTier)
@@ -213,6 +216,38 @@ public class GameFeelManager : MonoBehaviour
             DoHitStop(variant.thunderHitStop);
             HapticFeedback.Trigger(HapticFeedback.HapticType.Heavy);
         }
+    }
+
+    /// <summary>
+    /// Terrace milestone: the tower has risen another terrace. Only moving up counts, so a Rewind
+    /// that drops the tower never replays a landmark the player already passed. Short and
+    /// non-blocking; during a Sun Surge the landing already has its own beat, so only the banner shows.
+    /// </summary>
+    private void CheckTerrace()
+    {
+        TerraceSettings t = TerraceSettings.Active;
+        if (t == null || stackManager == null) return;
+
+        int terrace = stackManager.GetStackCount() / t.stonesPerTerrace;
+        if (terrace <= highestTerrace) return;
+        highestTerrace = terrace;
+
+        bool grand = terrace % t.grandEvery == 0;
+        if (!surge.Burning)
+        {
+            ShakeCamera(grand ? t.grandShake : t.shake);
+            FlashScreen(grand ? t.grandFlash : t.flash, grand ? t.grandFlashSeconds : t.flashSeconds);
+            if (grand) DoHitStop(t.grandHitStop);
+            if (cameraController == null) cameraController = DependencyRegistry.Find<CameraController>();
+            cameraController?.PunchZoom(grand ? t.grandPunchZoom : t.punchZoom, 0.3f);
+        }
+        HapticFeedback.Trigger(grand ? HapticFeedback.HapticType.Heavy : HapticFeedback.HapticType.Medium);
+
+        int height = terrace * t.stonesPerTerrace;
+        string title = LocalizationManager.Get(grand ? "terrace_grand_banner" : "terrace_banner", terrace);
+        string sub = grand ? LocalizationManager.Get("terrace_grand_sub")
+                           : LocalizationManager.Get("band_height_subtitle", height);
+        RunBanner.Show(title, sub, grand ? t.grandBannerColor : t.bannerColor, holdSeconds: t.bannerSeconds);
     }
 
     private void OnStoneSpawned(GameObject stone) => surge.OnStoneSpawned(stone);
@@ -397,6 +432,7 @@ public class GameFeelManager : MonoBehaviour
     private void OnGameStart()
     {
         perfectRung = 0;
+        highestTerrace = 0;
         surge.BeginRun();
         DependencyRegistry.Find<GameSoundManager>()?.SetMusicPitch(1f);
         // Fresh run - clear any lingering heat.

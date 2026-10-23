@@ -160,6 +160,7 @@
     <Compile Include="Assets\Scripts\Rules\MapRuleFx.cs" />
     <Compile Include="Assets\Scripts\CodexManager.cs" />
     <Compile Include="Assets\Scripts\GameFeel\HapticFeedback.cs" />
+    <Compile Include="Assets\Scripts\GameFeel\TerraceSettings.cs" />
     <Compile Include="Assets\Scripts\Progression\PersonalBestGhostLine.cs" />
     <Compile Include="Assets\Scripts\Rules\Earthquake.cs" />
     <Compile Include="Assets\Scripts\Moods\SwingMoodDirector.cs" />
