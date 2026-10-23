@@ -94,6 +94,7 @@
     <Compile Include="Assets\Scripts\Editor\RemoveAdsPlacementsSetup.cs" />
     <Compile Include="Assets\Scripts\Editor\SunSurgeSetup.cs" />
     <Compile Include="Assets\Scripts\Editor\TempleUnlocksWindow.cs" />
+    <Compile Include="Assets\Scripts\Editor\SpinsDebugWindow.cs" />
     <Compile Include="Assets\Scripts\Editor\HotStoneTimerPrefabSetup.cs" />
     <Compile Include="Assets\Scripts\Editor\LevelRegressionCli.cs" />
     <Compile Include="Assets\Scripts\Editor\TerraceSetup.cs" />
