@@ -62,6 +62,7 @@
     <Compile Include="Assets\Scripts\Editor\RunBannerPrefabSetup.cs" />
     <Compile Include="Assets\Scripts\Editor\DailyUIBuilder.cs" />
     <Compile Include="Assets\Scripts\Editor\MissionSetup.cs" />
+    <Compile Include="Assets\Scripts\Editor\ExpeditionUISetup.cs" />
     <Compile Include="Assets\Scripts\Editor\RitualBriefingPrefabSetup.cs" />
     <Compile Include="Assets\Scripts\Editor\BoonUISetup.cs" />
     <Compile Include="Assets\Scripts\Editor\PathSetup.cs" />

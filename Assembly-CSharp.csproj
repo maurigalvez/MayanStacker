@@ -104,6 +104,7 @@
     <Compile Include="Assets\GooglePlayPlugins\com.google.play.appupdate\Samples\AppUpdateDemo\Scripts\UpdateDownloader.cs" />
     <Compile Include="Assets\Scripts\ThemeMainMenuBackground.cs" />
     <Compile Include="Assets\Scripts\Rules\EffectOutline.cs" />
+    <Compile Include="Assets\Scripts\UI\ExpeditionRow.cs" />
     <Compile Include="Assets\Scripts\UIManager.cs" />
     <Compile Include="Assets\Scripts\Achievements\AchievementDefinition.cs" />
     <Compile Include="Assets\Scripts\Rules\Eclipse.cs" />
@@ -129,6 +130,7 @@
     <Compile Include="Assets\Scripts\UI\Motion\NoPressScale.cs" />
     <Compile Include="Assets\Scripts\UI\Motion\UIPressScaleAutoAttach.cs" />
     <Compile Include="Assets\Scripts\Progression\LeaderboardSeason.cs" />
+    <Compile Include="Assets\Scripts\UI\ExpeditionView.cs" />
     <Compile Include="Assets\Scripts\UI\AppUpdatePromptView.cs" />
     <Compile Include="Assets\Scripts\Stability\RiskWindowView.cs" />
     <Compile Include="Assets\Scripts\Ground.cs" />
@@ -155,6 +157,7 @@
     <Compile Include="Assets\Scripts\Account\MayanNameGenerator.cs" />
     <Compile Include="Assets\Scripts\Progression\MissionSettings.cs" />
     <Compile Include="Assets\Scripts\LevelObjective.cs" />
+    <Compile Include="Assets\Scripts\UI\ExpeditionMenuChip.cs" />
     <Compile Include="Assets\Scripts\GameFeel\GameFeelManager.cs" />
     <Compile Include="Assets\GooglePlayPlugins\com.google.play.integrity\Samples\IntegrityTestApp\Scripts\RequestIntegrityTokenAction.cs" />
     <Compile Include="Assets\Scripts\UI\Motion\UIEase.cs" />
