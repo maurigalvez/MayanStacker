@@ -56,10 +56,12 @@
     <Compile Include="Assets\Scripts\Editor\RunRevealSetup.cs" />
     <Compile Include="Assets\Scripts\Editor\CJKFontFallbackSetup.cs" />
     <Compile Include="Assets\Scripts\Editor\RemoveAdsOfferPrefabSetup.cs" />
+    <Compile Include="Assets\Scripts\Editor\MissionsSetup.cs" />
     <Compile Include="Assets\Scripts\Editor\PlayerIdentityUISetup.cs" />
     <Compile Include="Assets\Scripts\Editor\DailyChallengeUISetup.cs" />
     <Compile Include="Assets\Scripts\Editor\RunBannerPrefabSetup.cs" />
     <Compile Include="Assets\Scripts\Editor\DailyUIBuilder.cs" />
+    <Compile Include="Assets\Scripts\Editor\MissionSetup.cs" />
     <Compile Include="Assets\Scripts\Editor\RitualBriefingPrefabSetup.cs" />
     <Compile Include="Assets\Scripts\Editor\BoonUISetup.cs" />
     <Compile Include="Assets\Scripts\Editor\GuideLanePrefabSetup.cs" />

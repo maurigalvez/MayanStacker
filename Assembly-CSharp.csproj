@@ -85,6 +85,7 @@
     <Compile Include="Assets\Scripts\DependencyRegistry\ISaveSystem.cs" />
     <Compile Include="Assets\Scripts\Achievements\AchievementPanelUI.cs" />
     <Compile Include="Assets\Scripts\DailyChallenge\DailyStreak.cs" />
+    <Compile Include="Assets\Scripts\UI\MissionsMenuChip.cs" />
     <Compile Include="Assets\Scripts\Analytics\AnalyticsSession.cs" />
     <Compile Include="Assets\Scripts\UI\Motion\UIMotionSettings.cs" />
     <Compile Include="Assets\Scripts\Powers\SwingModifiers.cs" />
@@ -146,6 +147,7 @@
     <Compile Include="Assets\Scripts\Powers\PowerSystem.cs" />
     <Compile Include="Assets\Scripts\DailyChallenge\DailyChallengeConfig.cs" />
     <Compile Include="Assets\Scripts\Account\MayanNameGenerator.cs" />
+    <Compile Include="Assets\Scripts\Progression\MissionSettings.cs" />
     <Compile Include="Assets\Scripts\LevelObjective.cs" />
     <Compile Include="Assets\Scripts\GameFeel\GameFeelManager.cs" />
     <Compile Include="Assets\GooglePlayPlugins\com.google.play.integrity\Samples\IntegrityTestApp\Scripts\RequestIntegrityTokenAction.cs" />
@@ -206,6 +208,7 @@
     <Compile Include="Assets\Scripts\Blocks\LevelBlockSequence.cs" />
     <Compile Include="Assets\Scripts\GameFeel\ClutchMomentSettings.cs" />
     <Compile Include="Assets\Scripts\DailyChallenge\DailyChallengeModifier.cs" />
+    <Compile Include="Assets\Scripts\Progression\DailyMissions.cs" />
     <Compile Include="Assets\Scripts\Boons\BoonIntroView.cs" />
     <Compile Include="Assets\Scripts\Rules\RisingCenote.cs" />
     <Compile Include="Assets\Scripts\GameFeel\PerfectLadderSettings.cs" />
@@ -247,6 +250,7 @@
     <Compile Include="Assets\Scripts\GameManager.cs" />
     <Compile Include="Assets\Scripts\LevelProgressUI.cs" />
     <Compile Include="Assets\Scripts\ThemeTextTint.cs" />
+    <Compile Include="Assets\Scripts\UI\MissionsView.cs" />
     <Compile Include="Assets\Scripts\Stability\RiskWindow.cs" />
     <Compile Include="Assets\Scripts\Powers\PowerDefinition.cs" />
     <Compile Include="Assets\Scripts\DependencyRegistry\ILevelManager.cs" />
