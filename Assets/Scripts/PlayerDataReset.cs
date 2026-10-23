@@ -131,6 +131,7 @@ public class PlayerDataReset : MonoBehaviour
         // can be tested again rather than only ever firing on a fresh install.
         BlockCodex.ResetAll();
         TowerStability.ResetIntro();
+        SpinLessons.ResetAll();
         PowerUnlocks.ResetAll();
         JadeWallet.ResetAll();
         DailyMissions.ResetAll();

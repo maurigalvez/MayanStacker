@@ -326,6 +326,7 @@ public class GameFeelManager : MonoBehaviour
 
         RunBanner.Show(LocalizationManager.Get("sun_surge_banner"), LocalizationManager.Get("sun_surge_sub"),
             sun.bannerColor, holdSeconds: 1.4f);
+        SpinLessons.OnSurgeIgnited();
     }
 
     private void OnSurgeExtinguished()

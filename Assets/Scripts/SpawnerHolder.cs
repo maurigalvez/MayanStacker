@@ -441,6 +441,7 @@ public class SpawnerHolder : MonoBehaviour
         int levelNumber = levelManager != null && levelManager.CurrentLevel != null ? levelManager.CurrentLevel.levelNumber : 0;
         GameMode mode = gameManager != null ? gameManager.CurrentGameMode : GameMode.InfiniteStacker;
         moods.OnStoneSpawned(spawnedObject, mode, levelNumber, placed);
+        if (moods.Current != SwingMood.Steady) SpinLessons.OnMoodRolled();
     }
 
     private void OnObjectDropped(GameObject droppedObject)
