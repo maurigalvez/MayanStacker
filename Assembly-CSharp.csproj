@@ -124,6 +124,7 @@
     <Compile Include="Assets\Scripts\Boons\ActiveBoons.cs" />
     <Compile Include="Assets\Scripts\UI\ReviewPromptView.cs" />
     <Compile Include="Assets\Scripts\Blocks\BlockVarietyTable.cs" />
+    <Compile Include="Assets\Scripts\UI\ShareResultView.cs" />
     <Compile Include="Assets\Scripts\RunModifiers\HotStoneTimerView.cs" />
     <Compile Include="Assets\Scripts\UI\Motion\NoPressScale.cs" />
     <Compile Include="Assets\Scripts\UI\Motion\UIPressScaleAutoAttach.cs" />
@@ -136,6 +137,7 @@
     <Compile Include="Assets\GooglePlayPlugins\com.google.play.integrity\Samples\IntegrityTestApp\Scripts\FakeIntegrityVerifierServer.cs" />
     <Compile Include="Assets\Scripts\Utilities\LevelMapScrollRect.cs" />
     <Compile Include="Assets\Scripts\LevelPathRenderer.cs" />
+    <Compile Include="Assets\Scripts\Progression\ExpeditionSettings.cs" />
     <Compile Include="Assets\Scripts\EnvironmentAssetData.cs" />
     <Compile Include="Assets\Scripts\Progression\RunRevealSettings.cs" />
     <Compile Include="Assets\GooglePlayPlugins\com.google.play.appupdate\Samples\AppUpdateDemo\Scripts\StartUpdateFlowAction.cs" />
@@ -144,6 +146,7 @@
     <Compile Include="Assets\Scripts\InputManager.cs" />
     <Compile Include="Assets\Scripts\MainMenuSoundManager.cs" />
     <Compile Include="Assets\Scripts\ThemeSelectionUI.cs" />
+    <Compile Include="Assets\Scripts\UI\RunHighlight.cs" />
     <Compile Include="Assets\Scripts\DependencyRegistry\DependencyRegistry.cs" />
     <Compile Include="Assets\Scripts\UI\PathView.cs" />
     <Compile Include="Assets\Scripts\UI\BackButton.cs" />
@@ -195,6 +198,7 @@
     <Compile Include="Assets\GooglePlayPlugins\com.google.play.appupdate\Samples\AppUpdateDemo\Scripts\GetAppUpdateInfoAction.cs" />
     <Compile Include="Assets\Scripts\Monetization\RemoveAds.cs" />
     <Compile Include="Assets\GooglePlayPlugins\com.google.play.appupdate\Samples\AppUpdateDemo\Scripts\CompleteUpdateAction.cs" />
+    <Compile Include="Assets\Scripts\Progression\WeeklyExpedition.cs" />
     <Compile Include="Assets\Scripts\Stability\StabilitySettings.cs" />
     <Compile Include="Assets\Scripts\Localization\LocaleFontSwitcher.cs" />
     <Compile Include="Assets\Scripts\Stability\TowerStabilityView.cs" />
@@ -235,6 +239,7 @@
     <Compile Include="Assets\Scripts\Localization\LocalizationManager.cs" />
     <Compile Include="Assets\Scripts\FTUE\FtueTutorial.cs" />
     <Compile Include="Assets\Scripts\Testing\LevelRegressionRunner.cs" />
+    <Compile Include="Assets\Scripts\Progression\ShareSettings.cs" />
     <Compile Include="Assets\Scripts\Localization\LocaleFontSet.cs" />
     <Compile Include="Assets\Scripts\FTUE\FtueTutorialView.cs" />
     <Compile Include="Assets\Scripts\EnvironmentSpawnerManager.cs" />

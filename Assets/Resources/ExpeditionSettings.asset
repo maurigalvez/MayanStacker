@@ -1,0 +1,43 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4d57f34d6bbc345459d335aa026a130f, type: 3}
+  m_Name: ExpeditionSettings
+  m_EditorClassIdentifier: Assembly-CSharp::ExpeditionSettings
+  enableExpedition: 1
+  minStonesToCount: 3
+  finaleReward: 50
+  stages:
+  - id: first_steps
+    kind: 0
+    mode: 0
+    target: 4
+    reward: 15
+  - id: perfect_hands
+    kind: 3
+    mode: 0
+    target: 30
+    reward: 20
+  - id: tall_tower
+    kind: 1
+    mode: 1
+    target: 25
+    reward: 25
+  - id: sun_calls
+    kind: 5
+    mode: 0
+    target: 2
+    reward: 30
+  - id: daily_rite
+    kind: 0
+    mode: 3
+    target: 1
+    reward: 40

@@ -82,6 +82,7 @@
     <Compile Include="Assets\Scripts\Editor\TempleRulePreviewSetup.cs" />
     <Compile Include="Assets\Scripts\Editor\PowersSetup.cs" />
     <Compile Include="Assets\Scripts\Editor\UnityPurchasingDefine.cs" />
+    <Compile Include="Assets\Scripts\Editor\ExpeditionSetup.cs" />
     <Compile Include="Assets\Scripts\Editor\LoginChestSetup.cs" />
     <Compile Include="Assets\Scripts\Editor\LocaleFontSetup.cs" />
     <Compile Include="Assets\Scripts\Editor\JadeMarketSetup.cs" />
@@ -99,6 +100,7 @@
     <Compile Include="Assets\Scripts\Editor\TowerStabilityUISetup.cs" />
     <Compile Include="Assets\Scripts\Editor\TempoSetup.cs" />
     <Compile Include="Assets\Scripts\Editor\TempleRulesSetup.cs" />
+    <Compile Include="Assets\Scripts\Editor\ShareSetup.cs" />
     <Compile Include="Assets\Scripts\Editor\ClutchMomentSetup.cs" />
     <Compile Include="Assets\Scripts\Editor\RunContentSetup.cs" />
     <Compile Include="Assets\Scripts\Editor\FtueUISetup.cs" />

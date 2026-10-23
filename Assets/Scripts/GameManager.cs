@@ -779,6 +779,16 @@ public class GameManager : MonoBehaviour, IRunRewindable
             edgeLandings = RiskWindow.Instance != null ? RiskWindow.Instance.RunEdgeLanded : 0,
             surges = SunSurge.RunIgnitions
         });
+
+        WeeklyExpedition.RecordRun(new WeeklyExpedition.RunStats
+        {
+            mode = currentGameMode,
+            blocks = blocks,
+            perfects = perfectLandings,
+            maxCombo = maxCombo,
+            edgeLandings = RiskWindow.Instance != null ? RiskWindow.Instance.RunEdgeLanded : 0,
+            surges = SunSurge.RunIgnitions
+        });
     }
 
     /// <summary>
