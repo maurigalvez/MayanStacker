@@ -8,6 +8,8 @@ public enum CosmeticKind
     KukulkanShift = 0,
     /// <summary>Colour of the dust burst when a stone lands.</summary>
     LandingBurst = 1,
+    /// <summary>Sky theme (Day / Sunset / Night). Buying unlocks it early; temples still unlock it too.</summary>
+    Theme = 2,
 }
 
 [Serializable]
@@ -24,6 +26,8 @@ public class CosmeticItem
     public Color color = Color.white;
     [Tooltip("Landing burst only: second colour; each puff picks between the two.")]
     public Color color2 = Color.white;
+    [Tooltip("Theme items only: which sky theme this item unlocks and selects.")]
+    public GameTheme theme;
     [Tooltip("The game's own look (free default). Equipping it applies no override, so themes keep their tint.")]
     public bool keepGameLook;
     [Tooltip("Optional picture for the market card. Empty until art exists.")]

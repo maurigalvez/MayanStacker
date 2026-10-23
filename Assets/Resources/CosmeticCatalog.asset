@@ -20,6 +20,7 @@ MonoBehaviour:
     price: 0
     color: {r: 1, g: 0.85, b: 0.45, a: 1}
     color2: {r: 1, g: 0.85, b: 0.45, a: 1}
+    theme: 0
     keepGameLook: 1
     icon: {fileID: 0}
   - id: shift_jade
@@ -28,6 +29,7 @@ MonoBehaviour:
     price: 60
     color: {r: 0.3, g: 0.85, b: 0.55, a: 1}
     color2: {r: 0.3, g: 0.85, b: 0.55, a: 1}
+    theme: 0
     keepGameLook: 0
     icon: {fileID: 0}
   - id: shift_turquoise
@@ -36,6 +38,7 @@ MonoBehaviour:
     price: 90
     color: {r: 0.25, g: 0.8, b: 0.85, a: 1}
     color2: {r: 0.25, g: 0.8, b: 0.85, a: 1}
+    theme: 0
     keepGameLook: 0
     icon: {fileID: 0}
   - id: shift_ember
@@ -44,6 +47,7 @@ MonoBehaviour:
     price: 120
     color: {r: 1, g: 0.45, b: 0.25, a: 1}
     color2: {r: 1, g: 0.45, b: 0.25, a: 1}
+    theme: 0
     keepGameLook: 0
     icon: {fileID: 0}
   - id: shift_obsidian
@@ -52,6 +56,7 @@ MonoBehaviour:
     price: 150
     color: {r: 0.62, g: 0.4, b: 0.95, a: 1}
     color2: {r: 0.62, g: 0.4, b: 0.95, a: 1}
+    theme: 0
     keepGameLook: 0
     icon: {fileID: 0}
   - id: burst_theme
@@ -60,6 +65,7 @@ MonoBehaviour:
     price: 0
     color: {r: 1, g: 1, b: 1, a: 1}
     color2: {r: 1, g: 1, b: 1, a: 1}
+    theme: 0
     keepGameLook: 1
     icon: {fileID: 0}
   - id: burst_jade
@@ -68,6 +74,7 @@ MonoBehaviour:
     price: 40
     color: {r: 0.25, g: 0.8, b: 0.5, a: 1}
     color2: {r: 0.65, g: 0.95, b: 0.7, a: 1}
+    theme: 0
     keepGameLook: 0
     icon: {fileID: 0}
   - id: burst_gold
@@ -76,6 +83,7 @@ MonoBehaviour:
     price: 70
     color: {r: 1, g: 0.8, b: 0.3, a: 1}
     color2: {r: 1, g: 0.95, b: 0.65, a: 1}
+    theme: 0
     keepGameLook: 0
     icon: {fileID: 0}
   - id: burst_clay
@@ -84,6 +92,7 @@ MonoBehaviour:
     price: 90
     color: {r: 0.85, g: 0.4, b: 0.25, a: 1}
     color2: {r: 0.95, g: 0.65, b: 0.4, a: 1}
+    theme: 0
     keepGameLook: 0
     icon: {fileID: 0}
   - id: burst_quetzal
@@ -92,5 +101,33 @@ MonoBehaviour:
     price: 120
     color: {r: 0.2, g: 0.85, b: 0.75, a: 1}
     color2: {r: 0.4, g: 0.6, b: 1, a: 1}
+    theme: 0
+    keepGameLook: 0
+    icon: {fileID: 0}
+  - id: theme_day
+    kind: 2
+    nameKey: theme_day
+    price: 0
+    color: {r: 0.55, g: 0.8, b: 1, a: 1}
+    color2: {r: 0.55, g: 0.8, b: 1, a: 1}
+    theme: 0
+    keepGameLook: 1
+    icon: {fileID: 0}
+  - id: theme_sunset
+    kind: 2
+    nameKey: theme_sunset
+    price: 150
+    color: {r: 1, g: 0.55, b: 0.3, a: 1}
+    color2: {r: 1, g: 0.55, b: 0.3, a: 1}
+    theme: 1
+    keepGameLook: 0
+    icon: {fileID: 0}
+  - id: theme_night
+    kind: 2
+    nameKey: theme_night
+    price: 250
+    color: {r: 0.25, g: 0.28, b: 0.6, a: 1}
+    color2: {r: 0.25, g: 0.28, b: 0.6, a: 1}
+    theme: 2
     keepGameLook: 0
     icon: {fileID: 0}

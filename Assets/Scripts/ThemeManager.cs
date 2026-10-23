@@ -223,6 +223,15 @@ public class ThemeManager : MonoBehaviour
     }
 
     /// <summary>
+    /// Unlocks a theme bought in the Jade Market. Same flag as a temple unlock, so it saves and
+    /// syncs the existing way.
+    /// </summary>
+    public void UnlockByPurchase(GameTheme theme)
+    {
+        UnlockTheme(theme);
+    }
+
+    /// <summary>
     /// Set the unlock status for themes (used when syncing from cloud)
     /// </summary>
     public void SetThemeUnlockStatus(bool sunsetUnlocked, bool nightUnlocked)

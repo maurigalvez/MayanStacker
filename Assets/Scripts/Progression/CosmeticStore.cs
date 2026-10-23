@@ -21,8 +21,13 @@ public static class CosmeticStore
     public static bool IsOwned(CosmeticItem item)
     {
         if (item == null) return false;
-        return item.price <= 0 || PlayerPrefs.GetInt(OwnedPrefix + item.id, 0) == 1;
+        if (item.price <= 0 || PlayerPrefs.GetInt(OwnedPrefix + item.id, 0) == 1) return true;
+        // A theme earned from temples counts as owned too, so the market never sells it back.
+        return item.kind == CosmeticKind.Theme && ThemeUnlocked(item.theme);
     }
+
+    private static bool ThemeUnlocked(GameTheme theme) =>
+        DependencyRegistry.TryFind<ThemeManager>(out var themes) && themes.IsThemeUnlocked(theme);
 
     /// <summary>Spends the jade and marks the item owned. False when it can't be afforded.</summary>
     public static bool TryBuy(CosmeticItem item)
@@ -33,6 +38,8 @@ public static class CosmeticStore
 
         PlayerPrefs.SetInt(OwnedPrefix + item.id, 1);
         PlayerPrefs.Save();
+        if (item.kind == CosmeticKind.Theme && DependencyRegistry.TryFind<ThemeManager>(out var themes))
+            themes.UnlockByPurchase(item.theme);
         OnChanged?.Invoke();
         return true;
     }
@@ -41,6 +48,17 @@ public static class CosmeticStore
     public static void Equip(CosmeticItem item)
     {
         if (item == null || !IsOwned(item)) return;
+        if (item.kind == CosmeticKind.Theme)
+        {
+            // The theme system keeps its own selection; a purchase synced from another device unlocks here first.
+            if (DependencyRegistry.TryFind<ThemeManager>(out var themes))
+            {
+                themes.UnlockByPurchase(item.theme);
+                themes.SetSelectedTheme(item.theme);
+            }
+            OnChanged?.Invoke();
+            return;
+        }
         PlayerPrefs.SetString(EquippedPrefix + item.kind, item.id);
         PlayerPrefs.Save();
         OnChanged?.Invoke();
@@ -54,6 +72,16 @@ public static class CosmeticStore
     {
         CosmeticCatalog catalog = CosmeticCatalog.Active;
         if (catalog == null) return null;
+
+        if (kind == CosmeticKind.Theme)
+        {
+            if (!DependencyRegistry.TryFind<ThemeManager>(out var themes)) return null;
+            foreach (CosmeticItem item in catalog.items)
+            {
+                if (item != null && item.kind == kind && item.theme == themes.SelectedTheme) return item;
+            }
+            return null;
+        }
 
         CosmeticItem picked = catalog.Find(PlayerPrefs.GetString(EquippedPrefix + kind, ""));
         if (picked != null && picked.kind == kind && IsOwned(picked)) return picked;

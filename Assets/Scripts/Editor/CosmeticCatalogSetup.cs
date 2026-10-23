@@ -25,9 +25,25 @@ public static class CosmeticCatalogSetup
 
     private static string EnsureCatalog()
     {
-        if (AssetDatabase.LoadAssetAtPath<CosmeticCatalog>(CatalogPath) != null)
+        var existing = AssetDatabase.LoadAssetAtPath<CosmeticCatalog>(CatalogPath);
+        if (existing != null)
         {
-            string kept = $"CosmeticCatalog already exists - kept as tuned ({CatalogPath}).";
+            // Additive top-up: items added by later releases appear, tuned items are never touched.
+            var list = new System.Collections.Generic.List<CosmeticItem>(existing.items ?? new CosmeticItem[0]);
+            int added = 0;
+            foreach (CosmeticItem item in DefaultItems())
+            {
+                if (existing.Find(item.id) != null) continue;
+                list.Add(item);
+                added++;
+            }
+            if (added > 0)
+            {
+                existing.items = list.ToArray();
+                EditorUtility.SetDirty(existing);
+                AssetDatabase.SaveAssets();
+            }
+            string kept = $"CosmeticCatalog already exists - kept as tuned, {added} new item(s) added ({CatalogPath}).";
             Debug.Log($"[CosmeticCatalogSetup] {kept}");
             return kept;
         }
@@ -36,7 +52,19 @@ public static class CosmeticCatalogSetup
             AssetDatabase.CreateFolder("Assets", "Resources");
 
         var catalog = ScriptableObject.CreateInstance<CosmeticCatalog>();
-        catalog.items = new[]
+        catalog.items = DefaultItems();
+
+        AssetDatabase.CreateAsset(catalog, CatalogPath);
+        AssetDatabase.SaveAssets();
+        string created = $"Created {CatalogPath} with {catalog.items.Length} items. Clear 'Enable Cosmetics' to switch them off.";
+        Debug.Log($"[CosmeticCatalogSetup] {created}");
+        return created;
+    }
+
+    // Prices are proposals (Q1). Sunset/Night also unlock from temples (7 / 15 cleared), so jade is the shortcut.
+    private static CosmeticItem[] DefaultItems()
+    {
+        return new[]
         {
             Shift("shift_gold", "cosmetic_shift_gold", 0, new Color(1f, 0.85f, 0.45f), keep: true),
             Shift("shift_jade", "cosmetic_shift_jade", 60, new Color(0.30f, 0.85f, 0.55f)),
@@ -49,14 +77,15 @@ public static class CosmeticCatalogSetup
             Burst("burst_gold", "cosmetic_burst_gold", 70, new Color(1f, 0.80f, 0.30f), new Color(1f, 0.95f, 0.65f)),
             Burst("burst_clay", "cosmetic_burst_clay", 90, new Color(0.85f, 0.40f, 0.25f), new Color(0.95f, 0.65f, 0.40f)),
             Burst("burst_quetzal", "cosmetic_burst_quetzal", 120, new Color(0.20f, 0.85f, 0.75f), new Color(0.40f, 0.60f, 1f)),
-        };
 
-        AssetDatabase.CreateAsset(catalog, CatalogPath);
-        AssetDatabase.SaveAssets();
-        string created = $"Created {CatalogPath} with {catalog.items.Length} items. Clear 'Enable Cosmetics' to switch them off.";
-        Debug.Log($"[CosmeticCatalogSetup] {created}");
-        return created;
+            Theme("theme_day", "theme_day", 0, GameTheme.Day, new Color(0.55f, 0.80f, 1f), keep: true),
+            Theme("theme_sunset", "theme_sunset", 150, GameTheme.Sunset, new Color(1f, 0.55f, 0.30f)),
+            Theme("theme_night", "theme_night", 250, GameTheme.Night, new Color(0.25f, 0.28f, 0.60f)),
+        };
     }
+
+    private static CosmeticItem Theme(string id, string nameKey, int price, GameTheme theme, Color color, bool keep = false) =>
+        new CosmeticItem { id = id, kind = CosmeticKind.Theme, nameKey = nameKey, price = price, theme = theme, color = color, color2 = color, keepGameLook = keep };
 
     private static CosmeticItem Shift(string id, string nameKey, int price, Color color, bool keep = false) =>
         new CosmeticItem { id = id, kind = CosmeticKind.KukulkanShift, nameKey = nameKey, price = price, color = color, color2 = color, keepGameLook = keep };
