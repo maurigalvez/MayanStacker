@@ -76,6 +76,13 @@ public class PlayerProgressData
     public int jadeSpent = 0;
 
     /// <summary>
+    /// Cosmetic ids the player bought (see CosmeticStore) and the per-kind picks as "Kind:id".
+    /// Owned merges as a union; the equipped picks are only adopted when none is set locally.
+    /// </summary>
+    public List<string> ownedCosmetics = new List<string>();
+    public List<string> equippedCosmetics = new List<string>();
+
+    /// <summary>
     /// Creates a new empty PlayerProgressData
     /// </summary>
     public PlayerProgressData()
@@ -115,7 +122,9 @@ public class PlayerProgressData
             nightThemeUnlocked = this.nightThemeUnlocked,
             unlockedPowers = new List<string>(unlockedPowers ?? new List<string>()),
             jadeEarned = this.jadeEarned,
-            jadeSpent = this.jadeSpent
+            jadeSpent = this.jadeSpent,
+            ownedCosmetics = new List<string>(ownedCosmetics ?? new List<string>()),
+            equippedCosmetics = new List<string>(equippedCosmetics ?? new List<string>())
         };
 
         return JsonUtility.ToJson(wrapper);
@@ -151,7 +160,9 @@ public class PlayerProgressData
                 // Saves from before powers existed have no list.
                 unlockedPowers = wrapper.unlockedPowers ?? new List<string>(),
                 jadeEarned = wrapper.jadeEarned,
-                jadeSpent = wrapper.jadeSpent
+                jadeSpent = wrapper.jadeSpent,
+                ownedCosmetics = wrapper.ownedCosmetics ?? new List<string>(),
+                equippedCosmetics = wrapper.equippedCosmetics ?? new List<string>()
             };
 
             // Reconstruct dictionaries
@@ -219,6 +230,17 @@ public class PlayerProgressData
         jadeEarned = Math.Max(jadeEarned, other.jadeEarned);
         jadeSpent = Math.Max(jadeSpent, other.jadeSpent);
 
+        ownedCosmetics ??= new List<string>();
+        if (other.ownedCosmetics != null)
+        {
+            foreach (string id in other.ownedCosmetics)
+            {
+                if (!ownedCosmetics.Contains(id)) ownedCosmetics.Add(id);
+            }
+        }
+        if ((equippedCosmetics == null || equippedCosmetics.Count == 0) && other.equippedCosmetics != null)
+            equippedCosmetics = new List<string>(other.equippedCosmetics);
+
         if (other.unlockedPowers != null)
         {
             unlockedPowers ??= new List<string>();
@@ -258,6 +280,8 @@ public class PlayerProgressData
         public List<string> unlockedPowers = new List<string>();
         public int jadeEarned = 0;
         public int jadeSpent = 0;
+        public List<string> ownedCosmetics = new List<string>();
+        public List<string> equippedCosmetics = new List<string>();
     }
 }
 

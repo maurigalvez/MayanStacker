@@ -1,0 +1,96 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8d02e80a3f74a4844b63cf5ac708745c, type: 3}
+  m_Name: CosmeticCatalog
+  m_EditorClassIdentifier: Assembly-CSharp::CosmeticCatalog
+  enableCosmetics: 1
+  items:
+  - id: shift_gold
+    kind: 0
+    nameKey: cosmetic_shift_gold
+    price: 0
+    color: {r: 1, g: 0.85, b: 0.45, a: 1}
+    color2: {r: 1, g: 0.85, b: 0.45, a: 1}
+    keepGameLook: 1
+    icon: {fileID: 0}
+  - id: shift_jade
+    kind: 0
+    nameKey: cosmetic_shift_jade
+    price: 60
+    color: {r: 0.3, g: 0.85, b: 0.55, a: 1}
+    color2: {r: 0.3, g: 0.85, b: 0.55, a: 1}
+    keepGameLook: 0
+    icon: {fileID: 0}
+  - id: shift_turquoise
+    kind: 0
+    nameKey: cosmetic_shift_turquoise
+    price: 90
+    color: {r: 0.25, g: 0.8, b: 0.85, a: 1}
+    color2: {r: 0.25, g: 0.8, b: 0.85, a: 1}
+    keepGameLook: 0
+    icon: {fileID: 0}
+  - id: shift_ember
+    kind: 0
+    nameKey: cosmetic_shift_ember
+    price: 120
+    color: {r: 1, g: 0.45, b: 0.25, a: 1}
+    color2: {r: 1, g: 0.45, b: 0.25, a: 1}
+    keepGameLook: 0
+    icon: {fileID: 0}
+  - id: shift_obsidian
+    kind: 0
+    nameKey: cosmetic_shift_obsidian
+    price: 150
+    color: {r: 0.62, g: 0.4, b: 0.95, a: 1}
+    color2: {r: 0.62, g: 0.4, b: 0.95, a: 1}
+    keepGameLook: 0
+    icon: {fileID: 0}
+  - id: burst_theme
+    kind: 1
+    nameKey: cosmetic_burst_theme
+    price: 0
+    color: {r: 1, g: 1, b: 1, a: 1}
+    color2: {r: 1, g: 1, b: 1, a: 1}
+    keepGameLook: 1
+    icon: {fileID: 0}
+  - id: burst_jade
+    kind: 1
+    nameKey: cosmetic_burst_jade
+    price: 40
+    color: {r: 0.25, g: 0.8, b: 0.5, a: 1}
+    color2: {r: 0.65, g: 0.95, b: 0.7, a: 1}
+    keepGameLook: 0
+    icon: {fileID: 0}
+  - id: burst_gold
+    kind: 1
+    nameKey: cosmetic_burst_gold
+    price: 70
+    color: {r: 1, g: 0.8, b: 0.3, a: 1}
+    color2: {r: 1, g: 0.95, b: 0.65, a: 1}
+    keepGameLook: 0
+    icon: {fileID: 0}
+  - id: burst_clay
+    kind: 1
+    nameKey: cosmetic_burst_clay
+    price: 90
+    color: {r: 0.85, g: 0.4, b: 0.25, a: 1}
+    color2: {r: 0.95, g: 0.65, b: 0.4, a: 1}
+    keepGameLook: 0
+    icon: {fileID: 0}
+  - id: burst_quetzal
+    kind: 1
+    nameKey: cosmetic_burst_quetzal
+    price: 120
+    color: {r: 0.2, g: 0.85, b: 0.75, a: 1}
+    color2: {r: 0.4, g: 0.6, b: 1, a: 1}
+    keepGameLook: 0
+    icon: {fileID: 0}

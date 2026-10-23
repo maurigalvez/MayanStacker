@@ -66,6 +66,7 @@
     <Compile Include="Assets\Scripts\Editor\FtueTutorialPrefabSetup.cs" />
     <Compile Include="Assets\Scripts\Editor\R8OptimizeGradle.cs" />
     <Compile Include="Assets\Scripts\Editor\DailyRitualSetup.cs" />
+    <Compile Include="Assets\Scripts\Editor\CosmeticCatalogSetup.cs" />
     <Compile Include="Assets\Scripts\Editor\AppUpdatePromptPrefabSetup.cs" />
     <Compile Include="Assets\Scripts\Editor\PerfectLadderSetup.cs" />
     <Compile Include="Assets\Scripts\Editor\UIHouseStyle.cs" />

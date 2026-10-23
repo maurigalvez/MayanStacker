@@ -1949,6 +1949,7 @@ public class PlayFabManager : MonoBehaviour
                 InfiniteBest.MergeFromCloud(data);
                 PowerUnlocks.MergeFromCloud(data);
                 JadeWallet.MergeFromCloud(data);
+                CosmeticStore.MergeFromCloud(data);
 
                 OnProgressSynced?.Invoke(data);
 
@@ -2153,6 +2154,7 @@ public class PlayFabManager : MonoBehaviour
 
         // Jade totals. Local totals only grow, so this never drops cloud jade.
         JadeWallet.WriteTo(data);
+        CosmeticStore.WriteTo(data);
 
         // Get achievement progress from AchievementManager
         // Fallback to PlayerPrefs if manager isn't available or initialized

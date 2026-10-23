@@ -133,6 +133,7 @@ public class PlayerDataReset : MonoBehaviour
         TowerStability.ResetIntro();
         PowerUnlocks.ResetAll();
         JadeWallet.ResetAll();
+        CosmeticStore.ResetAll();
 
         // Cancels the reminders AND forgets that permission was ever asked for, so the
         // first-launch dialog can be tested from the editor rather than only by uninstalling.

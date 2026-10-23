@@ -371,7 +371,11 @@ public class GameFeelManager : MonoBehaviour
         // Visual punch (both self-gate on the reduce-motion / screen-shake setting).
         if (cameraController == null) cameraController = DependencyRegistry.Find<CameraController>();
         cameraController?.PunchZoom(KukulkanZoomFraction, KukulkanZoomDuration);
-        FlashScreen(KukulkanFlashColor, KukulkanFlashDuration);
+        // The equipped Kukulkan colour recolours the flash; the peak alpha stays the tuned one.
+        Color shiftFlash = KukulkanFlashColor;
+        CosmeticItem shiftSkin = CosmeticStore.Equipped(CosmeticKind.KukulkanShift);
+        if (shiftSkin != null && !shiftSkin.keepGameLook) shiftFlash = new Color(shiftSkin.color.r, shiftSkin.color.g, shiftSkin.color.b, KukulkanFlashColor.a);
+        FlashScreen(shiftFlash, KukulkanFlashDuration);
 
         // Slow-mo - skip if paused or the run just ended.
         bool canSlowMo = (uiManager == null || !uiManager.IsPaused)

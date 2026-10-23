@@ -524,6 +524,16 @@ public class StackableObject : MonoBehaviour
         GameTheme theme = themeManager != null ? themeManager.GetSelectedTheme() : GameTheme.Day;
 
         var main = landingParticleEffect.main;
+
+        // An equipped landing-burst colour replaces the theme tint (cosmetic, any mode).
+        CosmeticItem burstSkin = CosmeticStore.Equipped(CosmeticKind.LandingBurst);
+        if (burstSkin != null && !burstSkin.keepGameLook)
+        {
+            main.startColor = new ParticleSystem.MinMaxGradient(burstSkin.color, burstSkin.color2);
+            landingParticleEffect.Play();
+            return;
+        }
+
         switch (theme)
         {
             case GameTheme.Sunset:
