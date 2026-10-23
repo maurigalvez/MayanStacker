@@ -135,6 +135,7 @@ public class PlayerDataReset : MonoBehaviour
         JadeWallet.ResetAll();
         DailyMissions.ResetAll();
         LoginChest.ResetAll();
+        PathOfKukulkan.ResetAll();
         CosmeticStore.ResetAll();
 
         // Cancels the reminders AND forgets that permission was ever asked for, so the

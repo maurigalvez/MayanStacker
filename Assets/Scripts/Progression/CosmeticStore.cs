@@ -44,6 +44,20 @@ public static class CosmeticStore
         return true;
     }
 
+    /// <summary>Marks an item owned without spending jade (a Path reward). Unknown ids are ignored.</summary>
+    public static void Grant(string id)
+    {
+        CosmeticCatalog catalog = CosmeticCatalog.Active;
+        CosmeticItem item = catalog != null ? catalog.Find(id) : null;
+        if (item == null || IsOwned(item)) return;
+
+        PlayerPrefs.SetInt(OwnedPrefix + item.id, 1);
+        PlayerPrefs.Save();
+        if (item.kind == CosmeticKind.Theme && DependencyRegistry.TryFind<ThemeManager>(out var themes))
+            themes.UnlockByPurchase(item.theme);
+        OnChanged?.Invoke();
+    }
+
     /// <summary>Wears an owned item. Ignored for an item that isn't owned.</summary>
     public static void Equip(CosmeticItem item)
     {

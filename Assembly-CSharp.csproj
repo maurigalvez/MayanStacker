@@ -96,6 +96,7 @@
     <Compile Include="Assets\Scripts\GameSettings.cs" />
     <Compile Include="Assets\Scripts\Powers\PowerLoadoutScreen.cs" />
     <Compile Include="Assets\Scripts\Run\RunRandom.cs" />
+    <Compile Include="Assets\Scripts\Progression\PathSettings.cs" />
     <Compile Include="Assets\Scripts\Localization\LocalizedText.cs" />
     <Compile Include="Assets\Scripts\GameFeel\AimGlyphSettings.cs" />
     <Compile Include="Assets\Scripts\ObjectSpawnerAnimator.cs" />
@@ -116,6 +117,7 @@
     <Compile Include="Assets\Scripts\DependencyRegistry\IGameDataManager.cs" />
     <Compile Include="Assets\Scripts\GameMode.cs" />
     <Compile Include="Assets\Scripts\DailyChallenge\RitualOmenRow.cs" />
+    <Compile Include="Assets\Scripts\UI\LoginChestMenuChip.cs" />
     <Compile Include="Assets\Scripts\Achievements\AchievementTestingUtility.cs" />
     <Compile Include="Assets\Scripts\Rules\CapstonePayoff.cs" />
     <Compile Include="Assets\Scripts\Progression\InfiniteBest.cs" />
@@ -198,8 +200,10 @@
     <Compile Include="Assets\Scripts\StyleManager.cs" />
     <Compile Include="Assets\Scripts\EnvironmentAsset.cs" />
     <Compile Include="Assets\Scripts\PlayerDataReset.cs" />
+    <Compile Include="Assets\Scripts\Progression\LoginChest.cs" />
     <Compile Include="Assets\Scripts\Rules\TempleRuleBehaviour.cs" />
     <Compile Include="Assets\Scripts\StackManager.cs" />
+    <Compile Include="Assets\Scripts\UI\LoginChestView.cs" />
     <Compile Include="Assets\Scripts\Monetization\RemoveAdsOffer.cs" />
     <Compile Include="Assets\Scripts\MainMenuManager.cs" />
     <Compile Include="Assets\Scripts\UI\RunBannerView.cs" />
@@ -210,6 +214,7 @@
     <Compile Include="Assets\Scripts\UI\JadeMarketRow.cs" />
     <Compile Include="Assets\Scripts\DailyChallenge\DailyChallengeModifier.cs" />
     <Compile Include="Assets\Scripts\Progression\DailyMissions.cs" />
+    <Compile Include="Assets\Scripts\Progression\LoginChestSettings.cs" />
     <Compile Include="Assets\Scripts\Boons\BoonIntroView.cs" />
     <Compile Include="Assets\Scripts\Rules\RisingCenote.cs" />
     <Compile Include="Assets\Scripts\GameFeel\PerfectLadderSettings.cs" />
@@ -239,6 +244,7 @@
     <Compile Include="Assets\ThemeMapSprite.cs" />
     <Compile Include="Assets\Scripts\Progression\JadeSettings.cs" />
     <Compile Include="Assets\Scripts\Boons\BoonSettings.cs" />
+    <Compile Include="Assets\Scripts\Progression\PathOfKukulkan.cs" />
     <Compile Include="Assets\Scripts\Stability\TowerStability.cs" />
     <Compile Include="Assets\Scripts\Achievements\AchievementEntryUI.cs" />
     <Compile Include="Assets\Scripts\EnvironmentSpawner.cs" />

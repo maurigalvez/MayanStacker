@@ -64,6 +64,7 @@
     <Compile Include="Assets\Scripts\Editor\MissionSetup.cs" />
     <Compile Include="Assets\Scripts\Editor\RitualBriefingPrefabSetup.cs" />
     <Compile Include="Assets\Scripts\Editor\BoonUISetup.cs" />
+    <Compile Include="Assets\Scripts\Editor\PathSetup.cs" />
     <Compile Include="Assets\Scripts\Editor\GuideLanePrefabSetup.cs" />
     <Compile Include="Assets\Scripts\Editor\FtueTutorialPrefabSetup.cs" />
     <Compile Include="Assets\Scripts\Editor\R8OptimizeGradle.cs" />
@@ -81,6 +82,7 @@
     <Compile Include="Assets\Scripts\Editor\TempleRulePreviewSetup.cs" />
     <Compile Include="Assets\Scripts\Editor\PowersSetup.cs" />
     <Compile Include="Assets\Scripts\Editor\UnityPurchasingDefine.cs" />
+    <Compile Include="Assets\Scripts\Editor\LoginChestSetup.cs" />
     <Compile Include="Assets\Scripts\Editor\LocaleFontSetup.cs" />
     <Compile Include="Assets\Scripts\Editor\JadeMarketSetup.cs" />
     <Compile Include="Assets\Scripts\Editor\ReviewPromptPrefabSetup.cs" />
