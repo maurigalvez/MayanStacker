@@ -757,6 +757,18 @@ public class GameManager : MonoBehaviour, IRunRewindable
         RunRandom.EndRun();
 
         OnGameOver?.Invoke();
+
+        // Missions are counted after the card has read the run's jade, so a mission payout lands in
+        // the wallet on its own and isn't doubled or capped with the run's earnings.
+        DailyMissions.RecordRun(new DailyMissions.RunStats
+        {
+            mode = currentGameMode,
+            blocks = blocks,
+            perfects = perfectLandings,
+            maxCombo = maxCombo,
+            edgeLandings = RiskWindow.Instance != null ? RiskWindow.Instance.RunEdgeLanded : 0,
+            surges = SunSurge.RunIgnitions
+        });
     }
 
     /// <summary>
