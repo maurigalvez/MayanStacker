@@ -41,6 +41,9 @@ public class TowerStability : MonoBehaviour, IRunRewindable
     public event System.Action<float> OnTremorChanged;
     public event System.Action<bool> OnTremblingChanged;
 
+    /// <summary>Raised when a Perfect landing steadies a trembling tower (a Clutch Save). Never raised by a Rewind.</summary>
+    public event System.Action OnTremorSaved;
+
     private StabilitySettings settings;
     private GameManager gameManager;
     private StackManager stackManager;
@@ -300,6 +303,7 @@ public class TowerStability : MonoBehaviour, IRunRewindable
         HapticFeedback.Trigger(HapticFeedback.HapticType.Medium);
 
         GameAnalytics.Track("tremor_saved", RunEventData());
+        OnTremorSaved?.Invoke();
     }
 
     /// <summary>

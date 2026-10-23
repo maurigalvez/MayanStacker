@@ -90,6 +90,7 @@
     <Compile Include="Assets\Scripts\Editor\TowerStabilityUISetup.cs" />
     <Compile Include="Assets\Scripts\Editor\TempoSetup.cs" />
     <Compile Include="Assets\Scripts\Editor\TempleRulesSetup.cs" />
+    <Compile Include="Assets\Scripts\Editor\ClutchMomentSetup.cs" />
     <Compile Include="Assets\Scripts\Editor\RunContentSetup.cs" />
     <Compile Include="Assets\Scripts\Editor\FtueUISetup.cs" />
   </ItemGroup>

@@ -196,6 +196,7 @@
     <Compile Include="Assets\Scripts\UI\RemoveAdsMenuChip.cs" />
     <Compile Include="Assets\Scripts\PointsPopup.cs" />
     <Compile Include="Assets\Scripts\Blocks\LevelBlockSequence.cs" />
+    <Compile Include="Assets\Scripts\GameFeel\ClutchMomentSettings.cs" />
     <Compile Include="Assets\Scripts\DailyChallenge\DailyChallengeModifier.cs" />
     <Compile Include="Assets\Scripts\Boons\BoonIntroView.cs" />
     <Compile Include="Assets\Scripts\Rules\RisingCenote.cs" />

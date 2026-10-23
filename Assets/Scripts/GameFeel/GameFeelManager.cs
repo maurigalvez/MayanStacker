@@ -80,6 +80,14 @@ public class GameFeelManager : MonoBehaviour
     private int perfectRung;          // Perfects in a row (Perfect ladder); Good/Poor/new run reset it
     private readonly SunSurgeDirector surge = new SunSurgeDirector();
     private int highestTerrace;       // highest terrace announced this run
+    private int stonesSinceRazor = 99; // stones landed since the last Razor Edge stinger
+    private TowerStability hookedStability; // instance whose OnTremorSaved we listen to
+
+    /// <summary>Clutch Saves this run (a Perfect steadied a trembling tower). Read by the result card.</summary>
+    public static int ClutchSavesThisRun { get; private set; }
+
+    /// <summary>Razor Edges this run (a Poor landed a hair from Good, run alive).</summary>
+    public static int RazorEdgesThisRun { get; private set; }
 
     // Aim glyphs (world-space): centre marks on the top stone and on the hanging stone. They
     // replaced a drop-guide line that projected the landing point and made Perfects trivial.
@@ -206,6 +214,7 @@ public class GameFeelManager : MonoBehaviour
         }
 
         CheckTerrace();
+        CheckRazorEdge(accuracy, goodTier);
 
         // Chaac's Thunderstone adds its clap on top of the landing juice (Good or better only).
         BlockVariant variant = stackableObject.Variant;
@@ -248,6 +257,55 @@ public class GameFeelManager : MonoBehaviour
         string sub = grand ? LocalizationManager.Get("terrace_grand_sub")
                            : LocalizationManager.Get("band_height_subtitle", height);
         RunBanner.Show(title, sub, grand ? t.grandBannerColor : t.bannerColor, holdSeconds: t.bannerSeconds);
+    }
+
+    /// <summary>
+    /// Razor Edge: a Poor landing a hair under the Good cutoff, with the run still alive (a Poor on a
+    /// trembling tower ends it, so no stinger there). Feedback only; cooled down so it stays special.
+    /// </summary>
+    private void CheckRazorEdge(float accuracy, float goodTier)
+    {
+        stonesSinceRazor++;
+        ClutchMomentSettings c = ClutchMomentSettings.Active;
+        if (c == null || accuracy >= goodTier || accuracy < goodTier - c.razorMargin) return;
+        if (stonesSinceRazor <= c.razorCooldownStones) return;
+        if (gameManager != null && gameManager.IsGameOver) return;
+        TowerStability stability = TowerStability.Instance;
+        if (stability != null && stability.IsTrembling) return;
+
+        stonesSinceRazor = 0;
+        RazorEdgesThisRun++;
+        ShakeCamera(c.razorShake);
+        DoHitStop(c.razorHitStop);
+        if (cameraController == null) cameraController = DependencyRegistry.Find<CameraController>();
+        cameraController?.PunchZoom(c.razorPunchZoom, 0.25f);
+        HapticFeedback.Trigger(HapticFeedback.HapticType.Medium);
+        RunBanner.Show(LocalizationManager.Get("razor_edge_banner"), LocalizationManager.Get("razor_edge_sub"),
+            c.razorBannerColor, holdSeconds: c.razorBannerSeconds);
+    }
+
+    /// <summary>Clutch Save: the "Steady" banner is already up; this adds the stinger on top of it.</summary>
+    private void OnClutchSave()
+    {
+        ClutchMomentSettings c = ClutchMomentSettings.Active;
+        if (c == null) return;
+
+        ClutchSavesThisRun++;
+        ShakeCamera(c.clutchShake);
+        FlashScreen(c.clutchFlash, c.clutchFlashSeconds);
+        DoHitStop(c.clutchHitStop);
+        if (cameraController == null) cameraController = DependencyRegistry.Find<CameraController>();
+        cameraController?.PunchZoom(c.clutchPunchZoom, 0.3f);
+        HapticFeedback.Trigger(HapticFeedback.HapticType.Heavy);
+    }
+
+    private void HookStability()
+    {
+        TowerStability stability = TowerStability.Instance;
+        if (stability == null || stability == hookedStability) return;
+        if (hookedStability != null) hookedStability.OnTremorSaved -= OnClutchSave;
+        hookedStability = stability;
+        hookedStability.OnTremorSaved += OnClutchSave;
     }
 
     private void OnStoneSpawned(GameObject stone) => surge.OnStoneSpawned(stone);
@@ -433,6 +491,10 @@ public class GameFeelManager : MonoBehaviour
     {
         perfectRung = 0;
         highestTerrace = 0;
+        stonesSinceRazor = 99;
+        ClutchSavesThisRun = 0;
+        RazorEdgesThisRun = 0;
+        HookStability();
         surge.BeginRun();
         DependencyRegistry.Find<GameSoundManager>()?.SetMusicPitch(1f);
         // Fresh run - clear any lingering heat.
@@ -680,6 +742,7 @@ public class GameFeelManager : MonoBehaviour
             objectSpawner.OnObjectSpawned -= OnStoneSpawned;
             objectSpawner.OnObjectDropped -= OnStoneDropped;
         }
+        if (hookedStability != null) hookedStability.OnTremorSaved -= OnClutchSave;
         SunSurge.Set(false, 1f);
 
         // Safety: never leave the game frozen/slowed if we're torn down mid hit-stop or slow-mo.
