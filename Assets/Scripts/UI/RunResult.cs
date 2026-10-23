@@ -88,6 +88,8 @@ public static class RunResult
         public string height;
         public string perfects;
         public string combo;
+        /// <summary>The run's longest Perfect chain, for the share message.</summary>
+        public int maxCombo;
 
         /// <summary>Always set - falls back to a skill tip.</summary>
         public string goal;
@@ -110,7 +112,8 @@ public static class RunResult
             scoreValue = Mathf.Max(0, input.score),
             height = input.blocks.ToString(),
             perfects = input.perfectLandings.ToString(),
-            combo = LocalizationManager.Get("result_combo_value", input.maxCombo)
+            combo = LocalizationManager.Get("result_combo_value", input.maxCombo),
+            maxCombo = input.maxCombo
         };
 
         switch (input.mode)

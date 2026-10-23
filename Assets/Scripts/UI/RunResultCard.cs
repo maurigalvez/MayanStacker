@@ -119,6 +119,7 @@ public class RunResultCard : MonoBehaviour
         }
 
         StartCoroutine(Reveal());
+        ShareResultView.Offer(result, result.maxCombo, () => this != null && isActiveAndEnabled);
     }
 
     private void Populate()
