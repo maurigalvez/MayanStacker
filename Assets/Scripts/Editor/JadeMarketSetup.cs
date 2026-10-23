@@ -47,7 +47,17 @@ public static class JadeMarketSetup
         if (!AssetDatabase.IsValidFolder("Assets/Resources/UI")) AssetDatabase.CreateFolder("Assets/Resources", "UI");
 
         string note;
-        if (AssetDatabase.LoadAssetAtPath<GameObject>(PrefabPath) != null)
+        var existing = AssetDatabase.LoadAssetAtPath<GameObject>(PrefabPath);
+        bool broken = false;
+        if (existing != null)
+        {
+            // Checked in an edit session: a prefab saved while the row class sat in a differently
+            // named file stores a script-less reference that only an edit session fails to resolve.
+            GameObject probe = PrefabUtility.LoadPrefabContents(PrefabPath);
+            try { broken = probe.GetComponentInChildren<JadeMarketRow>(true) == null; }
+            finally { PrefabUtility.UnloadPrefabContents(probe); }
+        }
+        if (existing != null && !broken)
         {
             note = $"Kept {PrefabPath}.";
         }
@@ -56,7 +66,9 @@ public static class JadeMarketSetup
             GameObject root = BuildMarket();
             PrefabUtility.SaveAsPrefabAsset(root, PrefabPath);
             Object.DestroyImmediate(root);
-            note = $"Created {PrefabPath}.";
+            // A prefab whose row lost its script (the class once lived in the wrong file) is rebuilt
+            // in place; the asset keeps its GUID.
+            note = broken ? $"Rebuilt {PrefabPath} (its row script was missing)." : $"Created {PrefabPath}.";
         }
 
         AssetDatabase.SaveAssets();

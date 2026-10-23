@@ -48,16 +48,20 @@ public static class MissionsSetup
         if (!AssetDatabase.IsValidFolder("Assets/Resources/UI")) AssetDatabase.CreateFolder("Assets/Resources", "UI");
 
         string note;
-        if (AssetDatabase.LoadAssetAtPath<GameObject>(PrefabPath) != null)
+        var existing = AssetDatabase.LoadAssetAtPath<GameObject>(PrefabPath);
+        bool broken = existing != null && !RowResolves();
+        if (existing != null && !broken)
         {
-            note = $"Kept {PrefabPath}.";
+            note = $"Kept {PrefabPath}." + EnsureRerollButton();
         }
         else
         {
             GameObject root = BuildPanel();
             PrefabUtility.SaveAsPrefabAsset(root, PrefabPath);
             Object.DestroyImmediate(root);
-            note = $"Created {PrefabPath}.";
+            // A prefab whose row lost its MissionRow script (the class once lived in the wrong file) is
+            // unusable, so it is rebuilt in place; the asset keeps its GUID.
+            note = broken ? $"Rebuilt {PrefabPath} (its row script was missing)." : $"Created {PrefabPath}.";
         }
 
         AssetDatabase.SaveAssets();
@@ -207,7 +211,76 @@ public static class MissionsSetup
         so.FindProperty("barFill").objectReferenceValue = fill;
         so.FindProperty("doneMarker").objectReferenceValue = marker.gameObject;
         so.ApplyModifiedPropertiesWithoutUndo();
+        AddRerollButton(row);
         return row;
+    }
+
+    /// <summary>
+    /// Adds the swap button to a row template and wires it. It sits left of the reward text, so the
+    /// description gives up that width. Skipped if the row already has one.
+    /// </summary>
+    private static void AddRerollButton(MissionRow row)
+    {
+        var so = new SerializedObject(row);
+        if (so.FindProperty("rerollButton").objectReferenceValue != null) return;
+
+        var rect = (RectTransform)row.transform;
+        var swap = RunOverlayUI.CreateChild("RerollButton", rect);
+        swap.anchorMin = swap.anchorMax = new Vector2(1f, 1f);
+        swap.pivot = new Vector2(1f, 1f);
+        swap.anchoredPosition = new Vector2(-250f, -14f);
+        swap.sizeDelta = new Vector2(220f, 70f);
+        var image = swap.gameObject.AddComponent<Image>();
+        UIHouseStyle.ApplyImage(image, UIHouseStyle.Secondary);
+        var button = swap.gameObject.AddComponent<Button>();
+        button.targetGraphic = image;
+        UIHouseStyle.ApplyButton(button, UIHouseStyle.Secondary);
+        var label = Label("Label", swap, "Swap", 28f, RunOverlayUI.Gold, UIHouseStyle.Body);
+        label.enableAutoSizing = true;
+        label.fontSizeMin = 16f;
+        label.fontSizeMax = 28f;
+        label.enableWordWrapping = false;
+        RunOverlayUI.Stretch(label.rectTransform);
+        swap.gameObject.SetActive(false);
+
+        var description = so.FindProperty("descriptionLabel").objectReferenceValue as TextMeshProUGUI;
+        if (description != null) description.rectTransform.offsetMax = new Vector2(-490f, -16f);
+
+        so.FindProperty("rerollButton").objectReferenceValue = button;
+        so.FindProperty("rerollLabel").objectReferenceValue = label;
+        so.ApplyModifiedPropertiesWithoutUndo();
+    }
+
+    /// <summary>
+    /// False when the prefab's row template has no resolvable MissionRow when opened for editing. A
+    /// prefab saved while the class sat in a differently named file stores a script-less reference
+    /// that the asset view tolerates but an edit session does not.
+    /// </summary>
+    private static bool RowResolves()
+    {
+        GameObject root = PrefabUtility.LoadPrefabContents(PrefabPath);
+        try { return root.GetComponentInChildren<MissionRow>(true) != null; }
+        finally { PrefabUtility.UnloadPrefabContents(root); }
+    }
+
+    /// <summary>Adds the swap button to an existing Missions prefab without touching its other styling.</summary>
+    private static string EnsureRerollButton()
+    {        GameObject root = PrefabUtility.LoadPrefabContents(PrefabPath);
+        try
+        {
+            var row = root.GetComponentInChildren<MissionRow>(true);
+            if (row == null) return " No row template to add the swap button to.";
+            if (new SerializedObject(row).FindProperty("rerollButton").objectReferenceValue != null)
+                return " Swap button already present.";
+
+            AddRerollButton(row);
+            PrefabUtility.SaveAsPrefabAsset(root, PrefabPath);
+            return " Added the swap button to the row template.";
+        }
+        finally
+        {
+            PrefabUtility.UnloadPrefabContents(root);
+        }
     }
 
     private static TextMeshProUGUI Label(string name, Transform parent, string text, float size, Color color, string role)

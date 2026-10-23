@@ -207,6 +207,7 @@
     <Compile Include="Assets\Scripts\PointsPopup.cs" />
     <Compile Include="Assets\Scripts\Blocks\LevelBlockSequence.cs" />
     <Compile Include="Assets\Scripts\GameFeel\ClutchMomentSettings.cs" />
+    <Compile Include="Assets\Scripts\UI\JadeMarketRow.cs" />
     <Compile Include="Assets\Scripts\DailyChallenge\DailyChallengeModifier.cs" />
     <Compile Include="Assets\Scripts\Progression\DailyMissions.cs" />
     <Compile Include="Assets\Scripts\Boons\BoonIntroView.cs" />
@@ -222,6 +223,7 @@
     <Compile Include="Assets\GooglePlayPlugins\com.google.play.review\Samples\ReviewDemo\Scripts\ReviewDemo.cs" />
     <Compile Include="Assets\Scripts\Achievements\AchievementProgressData.cs" />
     <Compile Include="Assets\Scripts\Testing\DebugTempleUnlocks.cs" />
+    <Compile Include="Assets\Scripts\UI\MissionRow.cs" />
     <Compile Include="Assets\Scripts\Rules\MapRulePreview.cs" />
     <Compile Include="Assets\Scripts\Localization\LocalizationManager.cs" />
     <Compile Include="Assets\Scripts\FTUE\FtueTutorial.cs" />

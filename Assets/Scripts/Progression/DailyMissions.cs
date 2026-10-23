@@ -16,6 +16,8 @@ public static class DailyMissions
     private const string DayKey = "Missions_Day";
     private const string ProgressKey = "Missions_Progress";
     private const string DoneKey = "Missions_Done";
+    private const string SwapKey = "Missions_Swaps";
+    private const string SwapDayKey = "Missions_SwapDay";
 
     /// <summary>What a finished run did. Gathered by GameManager at game over.</summary>
     public struct RunStats
@@ -114,8 +116,53 @@ public static class DailyMissions
         }
     }
 
+    /// <summary>True while today's swap is unused and rerolling is switched on.</summary>
+    public static bool CanReroll
+    {
+        get
+        {
+            var s = MissionSettings.Active;
+            if (s == null || !s.enableReroll) return false;
+            Roll(s);
+            return PlayerPrefs.GetInt(SwapDayKey, -1) != CurrentDay;
+        }
+    }
+
+    /// <summary>
+    /// Replaces the unfinished mission in <paramref name="slot"/> with another from its tier and
+    /// clears its progress. Once per day; the caller has already earned the right (rewarded ad).
+    /// </summary>
+    public static bool Reroll(int slot)
+    {
+        if (!CanReroll || slot < 0 || slot >= today.Length) return false;
+
+        var s = MissionSettings.Active;
+        int[] done = ReadInts(DoneKey, today.Length);
+        if (done[slot] != 0) return false;
+
+        // Slots are tiers in order, but a tier with an empty pool is skipped, so map back to the tier.
+        int tierIndex = (int)today[slot].tier;
+        int[] swapped = ReadInts(SwapKey, Enum.GetValues(typeof(MissionSettings.Tier)).Length);
+        swapped[tierIndex] += 1;
+        WriteInts(SwapKey, swapped);
+
+        int[] progress = ReadInts(ProgressKey, today.Length);
+        progress[slot] = 0;
+        WriteInts(ProgressKey, progress);
+
+        PlayerPrefs.SetInt(SwapDayKey, CurrentDay);
+        PlayerPrefs.Save();
+        cachedDay = -1;
+        Roll(s);
+
+        GameAnalytics.Track("mission_reroll", new Dictionary<string, object> { { "id", today[slot].id } });
+        return true;
+    }
+
     public static void ResetAll()
     {
+        PlayerPrefs.DeleteKey(SwapKey);
+        PlayerPrefs.DeleteKey(SwapDayKey);
         PlayerPrefs.DeleteKey(DayKey);
         PlayerPrefs.DeleteKey(ProgressKey);
         PlayerPrefs.DeleteKey(DoneKey);
@@ -139,6 +186,16 @@ public static class DailyMissions
         int day = CurrentDay;
         if (cachedDay == day && today.Length > 0) return;
 
+        if (PlayerPrefs.GetInt(DayKey, -1) != day)
+        {
+            PlayerPrefs.SetInt(DayKey, day);
+            PlayerPrefs.DeleteKey(ProgressKey);
+            PlayerPrefs.DeleteKey(DoneKey);
+            PlayerPrefs.DeleteKey(SwapKey);
+            PlayerPrefs.Save();
+        }
+
+        int[] swapped = ReadInts(SwapKey, Enum.GetValues(typeof(MissionSettings.Tier)).Length);
         var picks = new List<MissionSettings.Template>();
         foreach (MissionSettings.Tier tier in Enum.GetValues(typeof(MissionSettings.Tier)))
         {
@@ -151,19 +208,20 @@ public static class DailyMissions
 
             // A fixed per-tier salt keeps the tiers from always landing on the same index.
             var rng = new System.Random(day * 31 + (int)tier * 7919 + 17);
-            picks.Add(candidates[rng.Next(candidates.Count)]);
+            int index = rng.Next(candidates.Count);
+
+            // A swapped slot moves to a different template than the day's original pick.
+            int swaps = swapped[(int)tier];
+            if (swaps > 0 && candidates.Count > 1)
+            {
+                var swapRng = new System.Random(day * 31 + (int)tier * 7919 + swaps * 104729);
+                index = (index + 1 + swapRng.Next(candidates.Count - 1)) % candidates.Count;
+            }
+            picks.Add(candidates[index]);
         }
 
         today = picks.ToArray();
         cachedDay = day;
-
-        if (PlayerPrefs.GetInt(DayKey, -1) != day)
-        {
-            PlayerPrefs.SetInt(DayKey, day);
-            PlayerPrefs.DeleteKey(ProgressKey);
-            PlayerPrefs.DeleteKey(DoneKey);
-            PlayerPrefs.Save();
-        }
     }
 
     private static int[] ReadInts(string key, int length)

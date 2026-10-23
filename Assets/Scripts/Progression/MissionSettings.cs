@@ -71,6 +71,9 @@ public class MissionSettings : ScriptableObject
     [Tooltip("A run that falls before this many stones counts for nothing, so instant restarts can't tick missions.")]
     [Min(0)] public int minStonesToCount = 3;
 
+    [Tooltip("One swap per day: replaces a mission that isn't done with another from its tier, behind a rewarded ad (free for Remove Ads owners).")]
+    public bool enableReroll = true;
+
     [Header("Pool (one is rolled per tier each UTC day)")]
     public Template[] pool = new Template[0];
 }

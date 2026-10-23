@@ -3,34 +3,6 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-/// <summary>One mission line: its goal, a progress bar, the jade it pays and a done marker.</summary>
-public class MissionRow : MonoBehaviour
-{
-    [SerializeField] private TextMeshProUGUI descriptionLabel;
-    [SerializeField] private TextMeshProUGUI progressLabel;
-    [SerializeField] private TextMeshProUGUI rewardLabel;
-    [Tooltip("Stretched child of the bar track; its right anchor is moved to show progress.")]
-    [SerializeField] private RectTransform barFill;
-    [Tooltip("Shown when the mission is complete.")]
-    [SerializeField] private GameObject doneMarker;
-
-    public bool IsComplete => descriptionLabel != null && progressLabel != null && rewardLabel != null && barFill != null;
-
-    public void Bind(DailyMissions.Entry entry)
-    {
-        var t = entry.template;
-        descriptionLabel.text = LocalizationManager.Get("mission_" + t.id, t.target);
-        rewardLabel.text = LocalizationManager.Get("missions_reward", t.reward);
-
-        float fraction = t.target > 0 ? Mathf.Clamp01(entry.progress / (float)t.target) : 1f;
-        barFill.anchorMax = new Vector2(entry.done ? 1f : fraction, 1f);
-        progressLabel.text = entry.done
-            ? LocalizationManager.Get("missions_done")
-            : entry.progress + "/" + t.target;
-        if (doneMarker != null) doneMarker.SetActive(entry.done);
-    }
-}
-
 /// <summary>
 /// Today's three missions: goal, progress and jade reward. Read-only; progress is counted by
 /// <see cref="DailyMissions"/> when a run ends.
@@ -139,6 +111,16 @@ public class MissionsView : MonoBehaviour
 
     private void OnCompleted(MissionSettings.Template _) => Rebuild();
 
+    private void OnRerollTapped(int slot)
+    {
+        AdManager.RequestReward("mission_reroll", earned =>
+        {
+            // An ad closed early owes nothing; the rows rebuild so the button re-arms.
+            if (earned && DailyMissions.Reroll(slot)) HapticFeedback.Trigger(HapticFeedback.HapticType.Medium);
+            if (this != null && showing) Rebuild();
+        });
+    }
+
     private void Rebuild()
     {
         foreach (MissionRow old in rows)
@@ -149,11 +131,15 @@ public class MissionsView : MonoBehaviour
 
         var today = DailyMissions.GetToday();
         int done = 0;
-        foreach (var entry in today)
+        bool swapOffered = DailyMissions.CanReroll && AdManager.CanOfferReward;
+        for (int i = 0; i < today.Count; i++)
         {
+            var entry = today[i];
             var row = Instantiate(rowTemplate, content);
             row.gameObject.SetActive(true);
             row.Bind(entry);
+            int slot = i;
+            row.BindReroll(swapOffered && !entry.done, () => OnRerollTapped(slot));
             rows.Add(row);
             if (entry.done) done++;
         }
