@@ -169,6 +169,12 @@ public class RunResultCard : MonoBehaviour
                 goalText.text = "<color=#" + ColorUtility.ToHtmlStringRGB(honoredColor) + ">" +
                                 current.jadeLine + "</color>\n" + goalText.text;
             }
+            // The Path line has no label of its own: it rides above the goal in the jade colour.
+            if (!string.IsNullOrEmpty(current.pathLine))
+            {
+                goalText.text = "<color=#" + ColorUtility.ToHtmlStringRGB(honoredColor) + ">" +
+                                current.pathLine + "</color>\n" + goalText.text;
+            }
             if (hasEdge && edgeText == null)
             {
                 goalText.text = "<color=#" + ColorUtility.ToHtmlStringRGB(celebrateColor) + ">" +

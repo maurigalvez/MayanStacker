@@ -99,6 +99,9 @@ public static class RunResult
 
         /// <summary>Jade this run earned ("+12 jade"). Null when none, or when jade is switched off.</summary>
         public string jadeLine;
+
+        /// <summary>What the run did for the Path of Kukulkan ("Path +46 XP"). Null when it earned none or the Path is off.</summary>
+        public string pathLine;
     }
 
     /// <summary>A fall at or below this many stones reads as an early one.</summary>
@@ -143,6 +146,14 @@ public static class RunResult
         if (JadeWallet.RunEarned > 0)
         {
             card.jadeLine = LocalizationManager.Get("result_jade_line", JadeWallet.RunEarned);
+        }
+
+        // Tied to the run so the Path never feels like it fills by itself.
+        if (PathOfKukulkan.LastRunXp > 0)
+        {
+            card.pathLine = PathOfKukulkan.LastRunXpToNext > 0
+                ? LocalizationManager.Get("result_path_line_next", PathOfKukulkan.LastRunXp, PathOfKukulkan.LastRunXpToNext, PathOfKukulkan.LastRunNextTier)
+                : LocalizationManager.Get("result_path_line", PathOfKukulkan.LastRunXp);
         }
         return card;
     }

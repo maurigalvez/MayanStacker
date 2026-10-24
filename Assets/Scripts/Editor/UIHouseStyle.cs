@@ -29,10 +29,19 @@ public static class UIHouseStyle
 
     public const string Backdrop = "Backdrop";
     public const string Modal = "Modal";
+
+    /// <summary>Slab border thickness divisor: 2 draws the carved frame half as thick, so content gets top and bottom room.</summary>
+    public const float ModalSliceScale = 2f;
     public const string Title = "Title";
     public const string Body = "Body";
     public const string Primary = "Primary";
     public const string Secondary = "Secondary";
+
+    /// <summary>
+    /// Smallest text size any new or updated UI may show, auto-size floor included. Text that
+    /// doesn't fit at this size needs a bigger box or shorter copy, not a smaller font.
+    /// </summary>
+    public const float MinFontSize = 35f;
 
     private const string SheetPath = "Assets/Art/UI/MayaStacker_MainMenu_UI.png";
     private const string FallbackSlabSprite = "MayaStacker_MainMenu_UI_22";
@@ -65,6 +74,7 @@ public static class UIHouseStyle
             bool raycast = target.raycastTarget;
             EditorUtility.CopySerialized(source, target);
             target.raycastTarget = raycast;
+            if (role == Modal) target.pixelsPerUnitMultiplier = ModalSliceScale;
             return;
         }
 
@@ -73,6 +83,7 @@ public static class UIHouseStyle
             case Modal:
                 target.sprite = LoadSheetSprite(FallbackSlabSprite);
                 target.type = Image.Type.Sliced;
+                target.pixelsPerUnitMultiplier = ModalSliceScale;
                 target.color = Color.white;
                 break;
             case Primary:
@@ -100,6 +111,19 @@ public static class UIHouseStyle
         EditorUtility.CopySerialized(source, target);
         target.text = text;
         target.raycastTarget = false;
+        EnforceMinFontSize(target);
+    }
+
+    /// <summary>
+    /// Raises a label's size and auto-size floor to <see cref="MinFontSize"/>. Call it last,
+    /// after a generator sets its own sizes, so nothing it builds renders smaller.
+    /// </summary>
+    public static void EnforceMinFontSize(TMP_Text target)
+    {
+        if (target == null) return;
+        target.fontSizeMin = Mathf.Max(target.fontSizeMin, MinFontSize);
+        target.fontSizeMax = Mathf.Max(target.fontSizeMax, target.fontSizeMin);
+        target.fontSize = Mathf.Max(target.fontSize, MinFontSize);
     }
 
     /// <summary>

@@ -178,6 +178,9 @@ public class MainMenuManager : MonoBehaviour
         // Perform app startup integrity check
         PerformStartupIntegrityCheck();
 
+        // Marks a brand-new install as already up to date, before anything routes it away.
+        ReleaseAnnouncement.Evaluate();
+
         // Next Level on the result card comes back here: open that temple's pre-play screen
         // over the map straight away.
         if (TryOpenPendingPrePlay()) return;
@@ -186,6 +189,9 @@ public class MainMenuManager : MonoBehaviour
         // tell apart. Skip the menu entirely and put them in the first temple; the menu
         // earns its complexity on the second launch.
         TryRouteFirstLaunchIntoFirstTemple();
+
+        // The release card for returning players: one prompt, after the menu has settled.
+        StartCoroutine(ReleaseAnnouncementView.ShowWhenSettled());
     }
 
     /// <summary>

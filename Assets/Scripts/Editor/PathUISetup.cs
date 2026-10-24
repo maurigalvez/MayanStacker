@@ -178,6 +178,7 @@ public static class PathUISetup
         so.FindProperty("content").objectReferenceValue = content;
         so.FindProperty("rowTemplate").objectReferenceValue = row;
         so.ApplyModifiedPropertiesWithoutUndo();
+        SpinsPanelStyle.Dress(root);
         return root;
     }
 

@@ -21,6 +21,8 @@ public class JadeMarketView : MonoBehaviour
     [SerializeField] private RectTransform panel;
     [SerializeField] private TextMeshProUGUI titleLabel;
     [SerializeField] private TextMeshProUGUI balanceLabel;
+    [Tooltip("The jade emblem and count. When set it replaces the plain balance label and plays every spend.")]
+    [SerializeField] private JadeBalanceBar balanceBar;
     [SerializeField] private Button closeButton;
     [SerializeField] private TextMeshProUGUI closeLabel;
     [Tooltip("Parent of the cloned rows (the scroll content).")]
@@ -75,6 +77,7 @@ public class JadeMarketView : MonoBehaviour
         if (canvas != null) canvas.sortingOrder = SortingOrder;
 
         view.rowTemplate.gameObject.SetActive(false);
+        if (view.balanceBar != null) view.balanceLabel.gameObject.SetActive(false);
         view.headerTemplate.gameObject.SetActive(false);
         view.closeButton.onClick.AddListener(view.Close);
         view.panel.gameObject.SetActive(false);
@@ -111,7 +114,9 @@ public class JadeMarketView : MonoBehaviour
         CosmeticCatalog catalog = CosmeticCatalog.Active;
         if (catalog == null) return;
 
-        foreach (CosmeticKind kind in System.Enum.GetValues(typeof(CosmeticKind)))
+        // Sky themes lead: they are what the temple map used to hold, and the biggest change to buy.
+        var order = new[] { CosmeticKind.Theme, CosmeticKind.KukulkanShift, CosmeticKind.LandingBurst };
+        foreach (CosmeticKind kind in order)
         {
             var header = Instantiate(headerTemplate, content);
             header.gameObject.SetActive(true);
@@ -128,17 +133,42 @@ public class JadeMarketView : MonoBehaviour
         }
     }
 
-    private void OnRowPressed(CosmeticItem item)
+    private void OnRowPressed(JadeMarketRow row, CosmeticItem item)
     {
-        if (!CosmeticStore.IsOwned(item) && !CosmeticStore.TryBuy(item))
+        DependencyRegistry.TryFind<MainMenuSoundManager>(out var sound);
+
+        // Already owned: just wear it.
+        if (CosmeticStore.IsOwned(item))
         {
+            CosmeticStore.Equip(item);
+            row.PlayWorn();
+            HapticFeedback.Trigger(HapticFeedback.HapticType.Medium);
+            if (sound != null) sound.PlayButtonClick();
+            return;
+        }
+
+        // Can't afford it: say what is missing instead of doing nothing.
+        if (JadeWallet.Balance < item.price)
+        {
+            row.PlayRefused();
+            JadeBalanceBar.Nudge(LocalizationManager.Get("market_need_more", item.price - JadeWallet.Balance));
+            HapticFeedback.Trigger(HapticFeedback.HapticType.Light);
+            return;
+        }
+
+        // Pay, then let the jade visibly leave the balance and land on the purchase. The bar holds its
+        // number across the payment so the count ticks down with the pieces instead of snapping.
+        JadeBalanceBar.HoldCount();
+        if (!CosmeticStore.TryBuy(item))
+        {
+            JadeBalanceBar.ReleaseHold();
             HapticFeedback.Trigger(HapticFeedback.HapticType.Light);
             return;
         }
 
         CosmeticStore.Equip(item);
-        HapticFeedback.Trigger(HapticFeedback.HapticType.Medium);
-        if (DependencyRegistry.TryFind<MainMenuSoundManager>(out var sound)) sound.PlayButtonClick();
+        if (sound != null) sound.PlayButtonClick();
+        JadeBalanceBar.SpendTo(row.PriceAnchor, item.price, row.PlayPurchased);
     }
 
     private void OnBalance(int _) => RefreshAll();

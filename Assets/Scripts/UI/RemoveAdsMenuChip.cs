@@ -55,9 +55,7 @@ public class RemoveAdsMenuChip : MonoBehaviour
     {
         if (show == visible) return;
         visible = show;
-        group.alpha = show ? 1f : 0f;
-        group.interactable = show;
-        group.blocksRaycasts = show;
+        MenuRailItem.SetShown(group, show);
     }
 
     private void OnPressed()

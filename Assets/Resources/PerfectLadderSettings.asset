@@ -19,4 +19,4 @@ MonoBehaviour:
   hitStopPerRung: 0.008
   maxExtraHitStop: 0.04
   heavyHapticFromRung: 5
-  topFlourishClip: {fileID: 0}
+  topFlourishClip: {fileID: 8300000, guid: 5983c199c4b5b9546917bbe23d03e028, type: 3}

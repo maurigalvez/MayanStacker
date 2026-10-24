@@ -15,6 +15,9 @@ public static class PathOfKukulkan
     private const string XpKey = "Path_Xp";
     private const string PaidKey = "Path_PaidTier";
 
+    /// <summary>Set once the player has opened the Path and been shown how it works.</summary>
+    public const string IntroSeenKey = "Path_IntroSeen";
+
     /// <summary>What a finished run did. Gathered by GameManager at game over.</summary>
     public struct RunStats
     {
@@ -85,6 +88,44 @@ public static class PathOfKukulkan
         return Mathf.Max(0, xp);
     }
 
+    /// <summary>XP the run that just ended is worth, for the result card. 0 when it earned none.</summary>
+    public static int LastRunXp { get; private set; }
+
+    /// <summary>XP still missing for the next tier after that run, or 0 when it crossed one (or none is left).</summary>
+    public static int LastRunXpToNext { get; private set; }
+
+    /// <summary>The tier that run was heading for.</summary>
+    public static int LastRunNextTier { get; private set; }
+
+    /// <summary>
+    /// Notes what a finished run is worth without recording it, so the result card can say "Path +46 XP"
+    /// before <see cref="RecordRun"/> applies it. Call it before the card is built.
+    /// </summary>
+    public static void NoteRun(RunStats run)
+    {
+        LastRunXp = Available ? XpFor(run) : 0;
+        LastRunXpToNext = 0;
+        LastRunNextTier = Tier + 1;
+        if (LastRunXp <= 0) return;
+
+        Progress(out int into, out int needed);
+        if (needed > 0) LastRunXpToNext = Mathf.Max(0, needed - into - LastRunXp);
+    }
+
+    /// <summary>The next tier to reach and what it pays, or false once the Path is finished.</summary>
+    public static bool NextReward(out int tier, out int jade, out int xpToGo)
+    {
+        tier = jade = xpToGo = 0;
+        var s = PathSettings.Active;
+        if (s == null || Tier >= s.TierCount) return false;
+
+        Progress(out int into, out int needed);
+        tier = Tier + 1;
+        jade = s.tiers[tier - 1].jade;
+        xpToGo = Mathf.Max(0, needed - into);
+        return true;
+    }
+
     /// <summary>Adds the run's XP and pays any tiers it crosses. Returns the XP added.</summary>
     public static int RecordRun(RunStats run)
     {
@@ -136,6 +177,7 @@ public static class PathOfKukulkan
     {
         PlayerPrefs.DeleteKey(XpKey);
         PlayerPrefs.DeleteKey(PaidKey);
+        PlayerPrefs.DeleteKey(IntroSeenKey);
         PlayerPrefs.Save();
     }
 }

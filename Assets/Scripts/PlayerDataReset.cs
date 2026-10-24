@@ -137,6 +137,8 @@ public class PlayerDataReset : MonoBehaviour
         DailyMissions.ResetAll();
         LoginChest.ResetAll();
         PathOfKukulkan.ResetAll();
+        MenuRailPacing.ResetAll();
+        ReleaseAnnouncement.ResetAll();
         WeeklyExpedition.ResetAll();
         CosmeticStore.ResetAll();
 

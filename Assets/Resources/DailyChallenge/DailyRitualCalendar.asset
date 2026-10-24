@@ -27,3 +27,4 @@ MonoBehaviour:
   - {fileID: 11400000, guid: f1e12a10f51333a42a4a771df67a1ca9, type: 2}
   - {fileID: 11400000, guid: 0e97619e513fea6489edd9c84289b88c, type: 2}
   - {fileID: 11400000, guid: 6c94cb86b4d74784cb589617edfe736f, type: 2}
+  editorForcedRitual: {fileID: 11400000, guid: b4fa466b07b6d8b4887731ae049f669a, type: 2}

@@ -174,6 +174,7 @@ public static class JadeMarketSetup
         so.FindProperty("rowTemplate").objectReferenceValue = row;
         so.FindProperty("headerTemplate").objectReferenceValue = header;
         so.ApplyModifiedPropertiesWithoutUndo();
+        SpinsPanelStyle.Dress(root);
         return root;
     }
 

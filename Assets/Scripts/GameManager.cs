@@ -756,17 +756,21 @@ public class GameManager : MonoBehaviour, IRunRewindable
         // animation — eats draws that belong to the next attempt's sequence.
         RunRandom.EndRun();
 
-        OnGameOver?.Invoke();
-
-        // The Path of Kukulkan pays its tiers after the card has read the run's jade, like missions.
-        PathOfKukulkan.RecordRun(new PathOfKukulkan.RunStats
+        var pathRun = new PathOfKukulkan.RunStats
         {
             blocks = blocks,
             perfects = perfectLandings,
             edgeLandings = RiskWindow.Instance != null ? RiskWindow.Instance.RunEdgeLanded : 0,
             surges = SunSurge.RunIgnitions,
             dailyComplete = currentGameMode == GameMode.DailyChallenge && cause == "daily_target"
-        });
+        };
+        // The result card reads this to tell the player what the run did for their Path.
+        PathOfKukulkan.NoteRun(pathRun);
+
+        OnGameOver?.Invoke();
+
+        // The Path of Kukulkan pays its tiers after the card has read the run's jade, like missions.
+        PathOfKukulkan.RecordRun(pathRun);
 
         // Missions are counted after the card has read the run's jade, so a mission payout lands in
         // the wallet on its own and isn't doubled or capped with the run's earnings.

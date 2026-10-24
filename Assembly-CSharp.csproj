@@ -89,6 +89,7 @@
     <Compile Include="Assets\Scripts\Analytics\AnalyticsSession.cs" />
     <Compile Include="Assets\Scripts\UI\Motion\UIMotionSettings.cs" />
     <Compile Include="Assets\Scripts\Powers\SwingModifiers.cs" />
+    <Compile Include="Assets\Scripts\UI\MenuRailPacing.cs" />
     <Compile Include="Assets\Scripts\Progression\CosmeticCatalog.cs" />
     <Compile Include="Assets\Scripts\StackableObject.cs" />
     <Compile Include="Assets\Scripts\PlayerProgressData.cs" />
@@ -107,8 +108,8 @@
     <Compile Include="Assets\Scripts\UI\ExpeditionRow.cs" />
     <Compile Include="Assets\Scripts\UIManager.cs" />
     <Compile Include="Assets\Scripts\Achievements\AchievementDefinition.cs" />
-    <Compile Include="Assets\Scripts\Rules\Eclipse.cs" />
     <Compile Include="Assets\Scripts\UI\JadeMarketMenuChip.cs" />
+    <Compile Include="Assets\Scripts\Rules\Eclipse.cs" />
     <Compile Include="Assets\Scripts\RunModifiers\RunModifier.cs" />
     <Compile Include="Assets\Scripts\GameFeel\SunSurgeSettings.cs" />
     <Compile Include="Assets\Scripts\Powers\PowerUnlocks.cs" />
@@ -121,6 +122,7 @@
     <Compile Include="Assets\Scripts\UI\LoginChestMenuChip.cs" />
     <Compile Include="Assets\Scripts\Achievements\AchievementTestingUtility.cs" />
     <Compile Include="Assets\Scripts\Rules\CapstonePayoff.cs" />
+    <Compile Include="Assets\Scripts\UI\ModalFit.cs" />
     <Compile Include="Assets\Scripts\Progression\InfiniteBest.cs" />
     <Compile Include="Assets\Scripts\Boons\ActiveBoons.cs" />
     <Compile Include="Assets\Scripts\UI\ReviewPromptView.cs" />
@@ -156,6 +158,8 @@
     <Compile Include="Assets\Scripts\DailyChallenge\DailyChallengeConfig.cs" />
     <Compile Include="Assets\Scripts\Account\MayanNameGenerator.cs" />
     <Compile Include="Assets\Scripts\Progression\MissionSettings.cs" />
+    <Compile Include="Assets\Scripts\UI\PanelHowTo.cs" />
+    <Compile Include="Assets\Scripts\UI\JadeBalanceBar.cs" />
     <Compile Include="Assets\Scripts\LevelObjective.cs" />
     <Compile Include="Assets\Scripts\UI\ExpeditionMenuChip.cs" />
     <Compile Include="Assets\Scripts\GameFeel\GameFeelManager.cs" />
@@ -207,6 +211,7 @@
     <Compile Include="Assets\Scripts\Stability\TowerStabilityView.cs" />
     <Compile Include="Assets\Scripts\LevelButtonUI.cs" />
     <Compile Include="Assets\Scripts\StyleManager.cs" />
+    <Compile Include="Assets\Scripts\UI\MenuRailItem.cs" />
     <Compile Include="Assets\Scripts\EnvironmentAsset.cs" />
     <Compile Include="Assets\Scripts\PlayerDataReset.cs" />
     <Compile Include="Assets\Scripts\Progression\LoginChest.cs" />
@@ -215,6 +220,7 @@
     <Compile Include="Assets\Scripts\UI\LoginChestView.cs" />
     <Compile Include="Assets\Scripts\Monetization\RemoveAdsOffer.cs" />
     <Compile Include="Assets\Scripts\MainMenuManager.cs" />
+    <Compile Include="Assets\Scripts\UI\ReleaseAnnouncementView.cs" />
     <Compile Include="Assets\Scripts\UI\RunBannerView.cs" />
     <Compile Include="Assets\Scripts\UI\RemoveAdsMenuChip.cs" />
     <Compile Include="Assets\Scripts\PointsPopup.cs" />
@@ -275,15 +281,18 @@
     <Compile Include="Assets\Scripts\GameFeel\SunSurgeDirector.cs" />
     <Compile Include="Assets\Scripts\UI\RunOverlayUI.cs" />
     <Compile Include="Assets\Scripts\PlayFabManager.cs" />
+    <Compile Include="Assets\Scripts\UI\SpinLessons.cs" />
     <Compile Include="Assets\Scripts\SceneLoader.cs" />
     <Compile Include="Assets\Scripts\Rules\CenoteWater.cs" />
     <Compile Include="Assets\Scripts\Boons\BoonSystem.cs" />
     <Compile Include="Assets\Scripts\Analytics\GameAnalytics.cs" />
     <Compile Include="Assets\Scripts\UI\RemoveAdsNudgeView.cs" />
     <Compile Include="Assets\Scripts\UI\PathRow.cs" />
+    <Compile Include="Assets\Scripts\UI\MenuRailCue.cs" />
     <Compile Include="Assets\Scripts\ThemeUITint.cs" />
     <Compile Include="Assets\Scripts\Rules\LevelRule.cs" />
     <Compile Include="Assets\Scripts\LeaderboardPanel.cs" />
+    <Compile Include="Assets\Scripts\Progression\ReleaseAnnouncement.cs" />
     <Compile Include="Assets\Scripts\RunModifiers\RunModifierEffects.cs" />
     <Compile Include="Assets\Scripts\IntegritySettings.cs" />
     <Compile Include="Assets\Scripts\CameraController.cs" />

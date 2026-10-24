@@ -56,6 +56,7 @@ public class MainMenuSoundManager : MonoBehaviour
     // State
     private bool isInitialized = false;
     private Coroutine musicFadeRoutine;
+    private AudioSource pitchedAudioSource;
 
     private void Awake()
     {
@@ -375,6 +376,28 @@ public class MainMenuSoundManager : MonoBehaviour
         }
 
         sfxAudioSource.PlayOneShot(clip, volumeScale);
+    }
+
+    /// <summary>
+    /// Plays a one-shot at a pitch (PlayOneShot can't pitch), for sounds that climb as they repeat.
+    /// Uses a second source that mirrors the SFX source's volume and mixer routing, so the SFX
+    /// setting still applies.
+    /// </summary>
+    public void PlaySound(AudioClip clip, float volumeScale, float pitch)
+    {
+        if (!isInitialized || clip == null || sfxAudioSource == null) return;
+
+        if (pitchedAudioSource == null)
+        {
+            pitchedAudioSource = gameObject.AddComponent<AudioSource>();
+            pitchedAudioSource.playOnAwake = false;
+            pitchedAudioSource.spatialBlend = 0f;
+        }
+        pitchedAudioSource.outputAudioMixerGroup = sfxAudioSource.outputAudioMixerGroup;
+        pitchedAudioSource.volume = sfxAudioSource.volume;
+        pitchedAudioSource.mute = sfxAudioSource.mute;
+        pitchedAudioSource.pitch = pitch;
+        pitchedAudioSource.PlayOneShot(clip, volumeScale);
     }
 
     /// <summary>

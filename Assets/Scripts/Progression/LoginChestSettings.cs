@@ -44,6 +44,12 @@ public class LoginChestSettings : ScriptableObject
     [Tooltip("Days between forgiven misses. One missed day inside this window keeps the cycle going.")]
     public int forgiveCooldownDays = 7;
 
+    [Tooltip("Welcome-back bonus for players who were here before the release: chest jade is multiplied by this. 1 = off.")]
+    public int returningBonusMultiplier = 2;
+
+    [Tooltip("How many days the welcome-back bonus runs, counted from the day the release card appears.")]
+    public int returningBonusDays = 7;
+
     public int RewardForDay(int cycleDay)
     {
         if (cycleRewards == null || cycleRewards.Length == 0) return 0;

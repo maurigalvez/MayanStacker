@@ -21,6 +21,8 @@ public class LoginChestView : MonoBehaviour
     [SerializeField] private TextMeshProUGUI dayLabel;
     [SerializeField] private TextMeshProUGUI rewardLabel;
     [SerializeField] private TextMeshProUGUI nextLabel;
+    [Tooltip("Optional. The welcome-back bonus line; hidden while the bonus is not running.")]
+    [SerializeField] private TextMeshProUGUI bonusLabel;
     [SerializeField] private Button claimButton;
     [SerializeField] private TextMeshProUGUI claimLabel;
     [SerializeField] private Button closeButton;
@@ -102,7 +104,20 @@ public class LoginChestView : MonoBehaviour
         rewardLabel.text = canClaim
             ? LocalizationManager.Get("login_chest_reward", LoginChest.RewardFor(streak))
             : LocalizationManager.Get("login_chest_opened");
-        nextLabel.text = LocalizationManager.Get("login_chest_next", LoginChest.RewardFor(next + (canClaim ? 1 : 0)));
+        nextLabel.text = LocalizationManager.Get("login_chest_next", LoginChest.RewardFor(next + (canClaim ? 1 : 0), 1));
+
+        // The release's welcome-back bonus, with the days it has left, while it runs.
+        if (bonusLabel != null)
+        {
+            int daysLeft = ReleaseAnnouncement.BonusDaysLeft;
+            bonusLabel.gameObject.SetActive(daysLeft > 0);
+            if (daysLeft > 0)
+            {
+                bonusLabel.text = daysLeft == 1
+                    ? LocalizationManager.Get("login_chest_bonus_last", ReleaseAnnouncement.ChestMultiplier())
+                    : LocalizationManager.Get("login_chest_bonus", ReleaseAnnouncement.ChestMultiplier(), daysLeft);
+            }
+        }
 
         claimButton.interactable = canClaim;
         claimLabel.text = LocalizationManager.Get(canClaim ? "login_chest_open" : "login_chest_back");
@@ -110,10 +125,18 @@ public class LoginChestView : MonoBehaviour
 
     private void OnClaim()
     {
-        if (LoginChest.Claim() > 0)
+        // The balance bar holds its number so the jade can fly out of the chest and count up as it lands.
+        JadeBalanceBar.HoldCount();
+        int claimed = LoginChest.Claim();
+        JadeBalanceBar.FlyFrom(claimed > 0 ? rewardLabel.rectTransform : null, claimed);
+        if (claimed > 0)
         {
             HapticFeedback.Trigger(HapticFeedback.HapticType.Medium);
             if (DependencyRegistry.TryFind<MainMenuSoundManager>(out var sound)) sound.PlayButtonClick();
+            // Close so the pieces are seen landing in the emblem at the top of the menu.
+            Refresh();
+            Close();
+            return;
         }
         Refresh();
     }

@@ -112,7 +112,7 @@ MonoBehaviour:
     color2: {r: 0.55, g: 0.8, b: 1, a: 1}
     theme: 0
     keepGameLook: 1
-    icon: {fileID: 0}
+    icon: {fileID: -146719763076375116, guid: e1eb7ce4f93afa947baeb3ea1d974ef8, type: 3}
   - id: theme_sunset
     kind: 2
     nameKey: theme_sunset
@@ -121,7 +121,7 @@ MonoBehaviour:
     color2: {r: 1, g: 0.55, b: 0.3, a: 1}
     theme: 1
     keepGameLook: 0
-    icon: {fileID: 0}
+    icon: {fileID: 1341807766854714772, guid: e1eb7ce4f93afa947baeb3ea1d974ef8, type: 3}
   - id: theme_night
     kind: 2
     nameKey: theme_night
@@ -130,4 +130,4 @@ MonoBehaviour:
     color2: {r: 0.25, g: 0.28, b: 0.6, a: 1}
     theme: 2
     keepGameLook: 0
-    icon: {fileID: 0}
+    icon: {fileID: -9157336055843013002, guid: e1eb7ce4f93afa947baeb3ea1d974ef8, type: 3}

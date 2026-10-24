@@ -15,12 +15,16 @@ public class MissionsMenuChip : MonoBehaviour
     [SerializeField] private TextMeshProUGUI countLabel;
 
     private Button button;
+    private const string SeenKey = "missions";
+
     private CanvasGroup group;
+    private MenuRailCue cue;
 
     private void Awake()
     {
         button = GetComponent<Button>();
         group = GetComponent<CanvasGroup>();
+        cue = GetComponent<MenuRailCue>();
         button.onClick.AddListener(OnPressed);
     }
 
@@ -28,6 +32,20 @@ public class MissionsMenuChip : MonoBehaviour
     {
         DailyMissions.OnMissionCompleted += OnCompleted;
         Refresh();
+    }
+
+    // OnEnable can run before LocalizationManager.Awake on a fresh scene load, which leaves the raw
+    // key on the label; Start runs after every Awake, and the language hook keeps it current.
+    private void Start()
+    {
+        Refresh();
+        if (LocalizationManager.Instance != null) LocalizationManager.Instance.OnLanguageChanged += Refresh;
+        StartCoroutine(MenuRailPacing.AnnounceLater(MenuRailPacing.Feature.Missions));
+    }
+
+    private void OnDestroy()
+    {
+        if (LocalizationManager.Instance != null) LocalizationManager.Instance.OnLanguageChanged -= Refresh;
     }
 
     private void OnDisable()
@@ -39,18 +57,24 @@ public class MissionsMenuChip : MonoBehaviour
 
     private void Refresh()
     {
-        bool show = MissionsView.Available;
-        group.alpha = show ? 1f : 0f;
-        group.interactable = show;
-        group.blocksRaycasts = show;
-        if (!show || countLabel == null) return;
+        bool show = MissionsView.Available && MenuRailPacing.IsRevealed(MenuRailPacing.Feature.Missions);
+        MenuRailItem.SetShown(group, show);
+        if (!show) return;
 
         MissionsView.Count(out int done, out int total);
+        if (cue != null) cue.Set((done > 0 && Stamp(done) != MenuRailCue.Seen(SeenKey)) || MenuRailPacing.IsFresh(MenuRailPacing.Feature.Missions));
+        if (countLabel == null) return;
         countLabel.text = LocalizationManager.Get("missions_count", done, total);
     }
 
+    private static int Stamp(int done) => DailyMissions.CurrentDay * 100 + done;
+
     private void OnPressed()
     {
+        MissionsView.Count(out int done, out _);
+        MenuRailCue.MarkSeen(SeenKey, Stamp(done));
+        MenuRailPacing.Introduced(MenuRailPacing.Feature.Missions);
+        if (cue != null) cue.Set(false);
         if (DependencyRegistry.TryFind<MainMenuSoundManager>(out var sound)) sound.PlayButtonClick();
         MissionsView.Show();
     }

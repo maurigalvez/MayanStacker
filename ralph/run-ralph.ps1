@@ -9,6 +9,9 @@ You decide the limits, every time:
   -MaxBudgetUsd   Optional per-iteration API spend cap passed to claude.
   -Model          Optional model alias.
 
+NOTE: iterations run Unity (setup menus, prefab generation, bot playtests) through the Unity CLI. With your Editor
+open on this project they drive it live (com.unity.pipeline is in the manifest); if it is closed they launch a headless one.
+
 Stop at any time: create ralph\STOP (or press Ctrl+C).
 If claude reports a usage/rate limit the runner STOPS. It does not sleep until the limit resets.
 
@@ -37,7 +40,7 @@ $limitPattern = '(?i)usage limit|rate limit|limit reached|limit will reset|out o
 $allowed = @(
     'Read', 'Write', 'Edit', 'Glob', 'Grep',
     'Bash(git status:*)', 'Bash(git diff:*)', 'Bash(git log:*)', 'Bash(git add:*)', 'Bash(git commit:*)', 'Bash(git show:*)', 'Bash(git check-ignore:*)',
-    'Bash(powershell:*)', 'Bash(dotnet:*)', 'Bash(ls:*)', 'Bash(cat:*)', 'Bash(sed:*)', 'Bash(node:*)',
+    'Bash(powershell:*)', 'Bash(unity:*)', 'PowerShell(unity:*)', 'PowerShell(powershell:*)', 'Bash(dotnet:*)', 'Bash(ls:*)', 'Bash(cat:*)', 'Bash(sed:*)', 'Bash(node:*)',
     'PowerShell(git status:*)', 'PowerShell(git diff:*)', 'PowerShell(git log:*)', 'PowerShell(git add:*)', 'PowerShell(git commit:*)', 'PowerShell(dotnet:*)'
 )
 $denied = @(
@@ -61,12 +64,15 @@ while ($true) {
     $err = Join-Path $logDir "iter-$i-$stamp.err.txt"
     Write-Host "[$i/$MaxIterations] starting, timeout $timeoutMin min, $([Math]::Round($left.TotalMinutes)) min of budget left."
 
-    $args = @('-p', '--permission-mode', 'acceptEdits', '--allowedTools', ($allowed -join ','), '--disallowedTools', ($denied -join ','))
-    if ($Model)          { $args += @('--model', $Model) }
-    if ($MaxBudgetUsd -gt 0) { $args += @('--max-budget-usd', "$MaxBudgetUsd") }
+    # One string with the tool lists quoted: an array would be joined on spaces and split rules like 'Bash(git status:*)'.
+    $argLine = '-p --permission-mode acceptEdits --allowedTools "' + ($allowed -join ',') + '" --disallowedTools "' + ($denied -join ',') + '"'
+    if ($Model) { $argLine += ' --model "' + $Model + '"' }
+    if ($MaxBudgetUsd -gt 0) { $argLine += ' --max-budget-usd ' + $MaxBudgetUsd }
 
-    $proc = Start-Process -FilePath 'claude' -ArgumentList $args -WorkingDirectory $root -NoNewWindow -PassThru `
+    $proc = Start-Process -FilePath 'claude' -ArgumentList $argLine -WorkingDirectory $root -NoNewWindow -PassThru `
         -RedirectStandardInput $prompt -RedirectStandardOutput $out -RedirectStandardError $err
+    # PS 5.1: ExitCode stays $null after exit unless the handle is held while the process runs.
+    $null = $proc.Handle
     if (-not $proc.WaitForExit($timeoutMin * 60 * 1000)) {
         Write-Host "Iteration $i hit its time cap. Killing it."
         Stop-Process -Id $proc.Id -Force
@@ -75,14 +81,15 @@ while ($true) {
         continue
     }
 
+    $proc.WaitForExit()
     $text = (Get-Content $out -Raw -ErrorAction SilentlyContinue) + (Get-Content $err -Raw -ErrorAction SilentlyContinue)
     if ($text -match 'ROADMAP COMPLETE')  { Write-Host 'Completion promise seen. Ending.'; break }
-    if ($proc.ExitCode -ne 0 -and $text -match $limitPattern) {
+    if ($proc.ExitCode -ne $null -and $proc.ExitCode -ne 0 -and $text -match $limitPattern) {
         Write-Host 'Usage/rate limit reported. Stopping, not waiting for reset.'
         Add-Content (Join-Path $PSScriptRoot 'PROGRESS.md') "`n- $(Get-Date -Format s) runner stopped: usage limit reported."
         break
     }
-    if ($proc.ExitCode -ne 0) { Write-Host "Iteration $i exited $($proc.ExitCode); see $err. Ending to be safe."; break }
+    if ($proc.ExitCode -ne $null -and $proc.ExitCode -ne 0) { Write-Host "Iteration $i exited $($proc.ExitCode); see $err. Ending to be safe."; break }
     Write-Host "[$i] done."
 }
 Write-Host "Ralph finished after $([Math]::Round(((Get-Date) - $deadline.AddHours(-$MaxHours)).TotalMinutes)) min."

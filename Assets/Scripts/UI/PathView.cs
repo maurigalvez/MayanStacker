@@ -29,6 +29,8 @@ public class PathView : MonoBehaviour
     [Tooltip("Parent of the cloned rows.")]
     [SerializeField] private RectTransform content;
     [SerializeField] private PathRow rowTemplate;
+    [Tooltip("The explanation card at the top of the list; also carries the next reward to earn.")]
+    [SerializeField] private PanelHowTo howTo;
 
     private static PathView instance;
 
@@ -88,6 +90,15 @@ public class PathView : MonoBehaviour
         if (closeLabel != null) closeLabel.text = LocalizationManager.Get("path_close");
         Rebuild();
 
+        // The first time, stay on the explanation instead of jumping down to the next reward, so the
+        // player reads what the Path is and how they take part before anything else.
+        if (PlayerPrefs.GetInt(PathOfKukulkan.IntroSeenKey, 0) == 0)
+        {
+            PlayerPrefs.SetInt(PathOfKukulkan.IntroSeenKey, 1);
+            PlayerPrefs.Save();
+            if (scroll != null) scroll.verticalNormalizedPosition = 1f;
+        }
+
         PathOfKukulkan.OnTierReached += OnTier;
         showing = true;
         UIPopup.Show(panel.gameObject);
@@ -124,6 +135,12 @@ public class PathView : MonoBehaviour
         }
 
         tierLabel.text = LocalizationManager.Get("path_tier_count", reached, settings.TierCount);
+        if (howTo != null)
+        {
+            howTo.SetExtra(PathOfKukulkan.NextReward(out int nextTier, out int nextJade, out int xpToGo)
+                ? LocalizationManager.Get("path_howto_next", nextTier, nextJade, xpToGo)
+                : LocalizationManager.Get("path_howto_maxed"));
+        }
         PathOfKukulkan.Progress(out int into, out int needed);
         if (needed <= 0)
         {
@@ -137,7 +154,7 @@ public class PathView : MonoBehaviour
         }
 
         // Open on the next reward to earn: the tier after the last reached, kept near the top.
-        if (scroll != null)
+        if (scroll != null && PlayerPrefs.GetInt(PathOfKukulkan.IntroSeenKey, 0) == 1)
         {
             Canvas.ForceUpdateCanvases();
             LayoutRebuilder.ForceRebuildLayoutImmediate(content);

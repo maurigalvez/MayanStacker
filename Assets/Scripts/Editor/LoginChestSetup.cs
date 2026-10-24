@@ -38,6 +38,12 @@ public static class LoginChestSetup
         EditorUtility.DisplayDialog("Login chest", EnsurePrefab(), "OK");
     }
 
+    [MenuItem("TamalStacker/UI/Add Login Chest Bonus Line")]
+    public static void AddBonusLine()
+    {
+        EditorUtility.DisplayDialog("Login chest", EnsureBonusLine(), "OK");
+    }
+
     [MenuItem("TamalStacker/Economy/Add Login Chest Menu Chip")]
     public static void AddMenuChip()
     {
@@ -49,6 +55,7 @@ public static class LoginChestSetup
     {
         EnsureSettings();
         EnsurePrefab();
+        EnsureBonusLine();
         EnsureChip();
     }
 
@@ -141,6 +148,8 @@ public static class LoginChestSetup
         next.fontSizeMax = 36f;
         RunOverlayUI.Place(next.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0f, -40f), new Vector2(780f, 70f));
 
+        var bonus = BonusLabel(modal);
+
         var claim = RunOverlayUI.CreateChild("ClaimButton", modal);
         RunOverlayUI.Place(claim, new Vector2(0.5f, 0f), new Vector2(0f, 270f), new Vector2(560f, 130f));
         var claimImage = claim.gameObject.AddComponent<Image>();
@@ -167,12 +176,64 @@ public static class LoginChestSetup
         so.FindProperty("dayLabel").objectReferenceValue = day;
         so.FindProperty("rewardLabel").objectReferenceValue = reward;
         so.FindProperty("nextLabel").objectReferenceValue = next;
+        so.FindProperty("bonusLabel").objectReferenceValue = bonus;
         so.FindProperty("claimButton").objectReferenceValue = claimButton;
         so.FindProperty("claimLabel").objectReferenceValue = claimLabel;
         so.FindProperty("closeButton").objectReferenceValue = closeButton;
         so.FindProperty("closeLabel").objectReferenceValue = closeLabel;
         so.ApplyModifiedPropertiesWithoutUndo();
+        SpinsPanelStyle.Dress(root);
         return root;
+    }
+
+    /// <summary>The welcome-back bonus line between the day and the reward; the view hides it when no bonus runs.</summary>
+    private static TextMeshProUGUI BonusLabel(Transform modal)
+    {
+        var bonus = Label("Bonus", modal, "Double jade! 7 days left", 40f, RunOverlayUI.Gold, UIHouseStyle.Title);
+        bonus.enableAutoSizing = true;
+        bonus.fontSizeMin = UIHouseStyle.MinFontSize;
+        bonus.fontSizeMax = 40f;
+        bonus.enableWordWrapping = false;
+        bonus.overflowMode = TextOverflowModes.Ellipsis;
+        RunOverlayUI.Place(bonus.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0f, 200f),
+            new Vector2(900f - PanelContentFit.SideInset * 2f, 70f));
+        UIHouseStyle.EnforceMinFontSize(bonus);
+        return bonus;
+    }
+
+    /// <summary>Adds the bonus line to a chest prefab built before the welcome-back bonus existed.</summary>
+    private static string EnsureBonusLine()
+    {
+        if (AssetDatabase.LoadAssetAtPath<GameObject>(PrefabPath) == null)
+            return PrefabPath + " was not found - create the chest prefab first.";
+
+        string note;
+        GameObject root = PrefabUtility.LoadPrefabContents(PrefabPath);
+        try
+        {
+            var modal = root.transform.Find("Panel/Modal");
+            var view = root.GetComponent<LoginChestView>();
+            if (modal == null || view == null) return "The chest prefab has no Panel/Modal or LoginChestView.";
+            if (modal.Find("Bonus") != null)
+            {
+                note = "Kept the existing bonus line.";
+            }
+            else
+            {
+                var bonus = BonusLabel(modal);
+                var so = new SerializedObject(view);
+                so.FindProperty("bonusLabel").objectReferenceValue = bonus;
+                so.ApplyModifiedPropertiesWithoutUndo();
+                PrefabUtility.SaveAsPrefabAsset(root, PrefabPath);
+                note = "Added the bonus line to " + PrefabPath + ".";
+            }
+        }
+        finally
+        {
+            PrefabUtility.UnloadPrefabContents(root);
+        }
+        Debug.Log($"[LoginChestSetup] {note}");
+        return note;
     }
 
     private static TextMeshProUGUI Label(string name, Transform parent, string text, float size, Color color, string role)

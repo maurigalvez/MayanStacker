@@ -24,7 +24,7 @@ public class AdManager : MonoBehaviour
     [Tooltip("Android Rewarded Ad Unit ID (Google test unit by default)")]
     [SerializeField] private string androidRewardedAdUnitId = "ca-app-pub-3940256099942544/5224354917"; // Test Ad Unit
     [Tooltip("Production Android Rewarded Ad Unit ID (used when useTestAds is false). Empty = rewarded offers stay unavailable.")]
-    [SerializeField] private string productionAndroidRewardedAdUnitId = "";
+    [SerializeField] private string productionAndroidRewardedAdUnitId = "ca-app-pub-1704761488845475/8414317185";
 
     [Header("Ad Frequency")]
     [Tooltip("Show ad every N losses (1 = every loss, 2 = every other loss, etc.). Temple wins never count.")]

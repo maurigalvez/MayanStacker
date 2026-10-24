@@ -660,6 +660,10 @@ public class UIManager : MonoBehaviour
         {
             if (gameUI != null) gameUI.SetActive(false);
         });
+
+        // The Offering reveal rides over the card and pays out on its own when the card closes.
+        var card = runResultCard;
+        RunRevealView.Offer(JadeWallet.RunEarned, () => card != null && card.isActiveAndEnabled);
     }
 
     /// <summary>
@@ -3151,7 +3155,8 @@ public class UIManager : MonoBehaviour
         {
             if (kukulkanShiftText == null || textRect == null) yield break;
 
-            elapsedTime += Time.deltaTime;
+            // Unscaled: the shift's slow-mo would otherwise freeze this at alpha 0.
+            elapsedTime += Time.unscaledDeltaTime;
             float progress = elapsedTime / kukulkanShiftAnimationDuration;
             float smoothProgress = progress * progress * (3f - 2f * progress); // Smooth step
 
@@ -3170,7 +3175,7 @@ public class UIManager : MonoBehaviour
         float holdDuration = kukulkanShiftDisplayDuration - (kukulkanShiftAnimationDuration * 2);
         if (holdDuration > 0)
         {
-            yield return new WaitForSeconds(holdDuration);
+            yield return new WaitForSecondsRealtime(holdDuration);
         }
 
         // Disappear animation: fade out and scale down
@@ -3182,7 +3187,7 @@ public class UIManager : MonoBehaviour
         {
             if (kukulkanShiftText == null || textRect == null) yield break;
 
-            elapsedTime += Time.deltaTime;
+            elapsedTime += Time.unscaledDeltaTime;
             float progress = elapsedTime / kukulkanShiftAnimationDuration;
             float smoothProgress = progress * progress * (3f - 2f * progress); // Smooth step
 

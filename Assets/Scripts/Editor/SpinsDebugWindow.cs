@@ -72,6 +72,11 @@ public class SpinsDebugWindow : EditorWindow
         if (GUILayout.Button("Reset missions")) DailyMissions.ResetAll();
         if (GUILayout.Button("Reset expedition")) WeeklyExpedition.ResetAll();
         EditorGUILayout.EndHorizontal();
+        EditorGUILayout.BeginHorizontal();
+        if (GUILayout.Button("Reveal whole rail")) MenuRailPacing.RevealAll();
+        if (GUILayout.Button("Restart rail pacing")) MenuRailPacing.ResetAll();
+        EditorGUILayout.EndHorizontal();
+        EditorGUILayout.LabelField("Rail features revealed: " + MenuRailPacing.RevealedCount + "/5");
         EditorGUILayout.LabelField("Balance: " + JadeWallet.Balance);
         EditorGUILayout.EndScrollView();
     }

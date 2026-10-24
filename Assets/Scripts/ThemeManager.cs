@@ -22,6 +22,17 @@ public class ThemeManager : MonoBehaviour
     private const int SUNSET_UNLOCK_LEVELS = 7;
     private const int NIGHT_UNLOCK_LEVELS = 15;
 
+    /// <summary>Temples that must be cleared to earn a theme for free (0 for Day). The market shows it as the free route.</summary>
+    public static int TemplesToUnlock(GameTheme theme)
+    {
+        switch (theme)
+        {
+            case GameTheme.Sunset: return SUNSET_UNLOCK_LEVELS;
+            case GameTheme.Night: return NIGHT_UNLOCK_LEVELS;
+            default: return 0;
+        }
+    }
+
     // PlayerPrefs keys
     private const string SELECTED_THEME_KEY = "SelectedTheme";
     private const string SUNSET_UNLOCKED_KEY = "SunsetThemeUnlocked";

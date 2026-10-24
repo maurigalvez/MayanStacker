@@ -57,13 +57,16 @@ public static class LoginChest
         return len == 0 ? 1 : (Mathf.Max(1, streak) - 1) % len + 1;
     }
 
-    /// <summary>Jade the chest pays for a given streak count, Ritual streak bonus included.</summary>
-    public static int RewardFor(int streak)
+    /// <summary>
+    /// Jade the chest pays for a given streak count, Ritual streak bonus and the release's welcome-back
+    /// multiplier included. <paramref name="dayOffset"/> asks about a chest opened that many days from today.
+    /// </summary>
+    public static int RewardFor(int streak, int dayOffset = 0)
     {
         var s = LoginChestSettings.Active;
         if (s == null) return 0;
         int bonus = Mathf.Min(DailyStreak.Current * Mathf.Max(0, s.bonusPerRitualStreakDay), Mathf.Max(0, s.ritualBonusCap));
-        return s.RewardForDay(CycleDay(streak)) + bonus;
+        return (s.RewardForDay(CycleDay(streak)) + bonus) * ReleaseAnnouncement.ChestMultiplier(dayOffset);
     }
 
     private static bool ForgiveReady
