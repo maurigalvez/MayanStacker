@@ -853,6 +853,7 @@
     { "key": "edge_proj_miss", "value": "Miss" },
     { "key": "result_edge_line", "value": "Serpent's Edge: {0} landed · +{1}" },
     { "key": "result_jade_line", "value": "+{0} jade" },
+    { "key": "jade_from_runs", "value": "+{0} jade from your runs" },
     { "key": "reveal_prompt", "value": "Tap to open the Offering" },
     { "key": "share_text", "value": "I stacked {0} stones in Mayan Stacker - {1}! Can you beat me?" },
     { "key": "share_moment_best", "value": "a new best" },

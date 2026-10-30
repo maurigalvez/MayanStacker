@@ -850,6 +850,7 @@
     { "key": "edge_proj_miss", "value": "落空" },
     { "key": "result_edge_line", "value": "蛇之鋒：成功{0}次 · +{1}" },
     { "key": "result_jade_line", "value": "+{0} 翡翠" },
+    { "key": "jade_from_runs", "value": "對局獲得 +{0} 翡翠" },
     { "key": "reveal_prompt", "value": "點擊開啟祭品" },
     { "key": "share_text", "value": "我在 Mayan Stacker 裡堆了 {0} 塊石頭 - {1}！你能超越我嗎？" },
     { "key": "share_moment_best", "value": "新紀錄" },

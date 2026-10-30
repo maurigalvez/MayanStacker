@@ -47,7 +47,7 @@ public static class RunRevealSetup
 
         if (AssetDatabase.LoadAssetAtPath<GameObject>(PrefabPath) != null)
         {
-            note += $"Kept {PrefabPath}. " + EnsureDoubleButton();
+            note += $"Kept {PrefabPath}. " + EnsureDoubleButton() + " " + EnsureReadableText();
         }
         else
         {
@@ -92,10 +92,8 @@ public static class RunRevealSetup
         Stretch(prompt.rectTransform);
 
         var tier = CreateLabel("Tier", chip, "Blessed", 40f, RunOverlayUI.Gold);
-        Place(tier.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0f, 36f), new Vector2(600f, 60f));
-
-        var amount = CreateLabel("Amount", chip, "+3 jade", 44f, RunOverlayUI.Parchment);
-        Place(amount.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0f, -30f), new Vector2(600f, 60f));
+        var amount = CreateLabel("Amount", chip, "+3 jade", AmountSize, RunOverlayUI.Parchment);
+        LayOutReadable(chip);
 
         var so = new SerializedObject(root.GetComponent<RunRevealView>());
         so.FindProperty("chip").objectReferenceValue = chip;
@@ -133,6 +131,54 @@ public static class RunRevealSetup
         }
     }
 
+    /// <summary>The "+N jade" the Offering pays: the biggest thing on the chip, so the reward reads first.</summary>
+    private const float AmountSize = 60f;
+
+    /// <summary>
+    /// Brings an existing chip's text up to the readable layout: a large jade amount and nothing
+    /// under the minimum size. Only sizes and positions change; colours and art are kept.
+    /// </summary>
+    private static string EnsureReadableText()
+    {
+        var root = PrefabUtility.LoadPrefabContents(PrefabPath);
+        try
+        {
+            var chip = root.transform.Find("Chip") as RectTransform;
+            if (chip == null) return "Text sizes skipped (prefab has no Chip).";
+            LayOutReadable(chip);
+            PrefabUtility.SaveAsPrefabAsset(root, PrefabPath);
+            return "Enlarged the jade amount and raised all text to " + UIHouseStyle.MinFontSize + "+.";
+        }
+        finally
+        {
+            PrefabUtility.UnloadPrefabContents(root);
+        }
+    }
+
+    /// <summary>Tier name on top, the jade amount large beneath it; every label at least the minimum size.</summary>
+    private static void LayOutReadable(RectTransform chip)
+    {
+        var tier = chip.Find("Tier")?.GetComponent<TextMeshProUGUI>();
+        if (tier != null)
+        {
+            Place(tier.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0f, 46f), new Vector2(600f, 56f));
+            tier.fontSize = 40f;
+        }
+
+        var amount = chip.Find("Amount")?.GetComponent<TextMeshProUGUI>();
+        if (amount != null)
+        {
+            Place(amount.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0f, -30f), new Vector2(620f, 84f));
+            amount.fontSize = AmountSize;
+            amount.enableAutoSizing = true;
+            amount.fontSizeMax = AmountSize;
+            amount.fontSizeMin = UIHouseStyle.MinFontSize;
+        }
+
+        foreach (var label in chip.GetComponentsInChildren<TextMeshProUGUI>(true))
+            UIHouseStyle.EnforceMinFontSize(label);
+    }
+
     private static void AddDoubleButton(RunRevealView view, RectTransform chip)
     {
         var rect = CreateChild("DoubleButton", chip);
@@ -143,7 +189,7 @@ public static class RunRevealSetup
         button.targetGraphic = image;
         UIHouseStyle.ApplyButton(button, UIHouseStyle.Secondary);
 
-        var label = CreateLabel("Label", rect, "Watch to double: +20 jade", 34f, RunOverlayUI.Parchment);
+        var label = CreateLabel("Label", rect, "Watch to double: +20 jade", UIHouseStyle.MinFontSize, RunOverlayUI.Parchment);
         Stretch(label.rectTransform);
 
         var so = new SerializedObject(view);

@@ -857,6 +857,7 @@
     { "key": "edge_proj_miss", "value": "Fallo" },
     { "key": "result_edge_line", "value": "Borde de la Serpiente: {0} aciertos · +{1}" },
     { "key": "result_jade_line", "value": "+{0} de jade" },
+    { "key": "jade_from_runs", "value": "+{0} de jade de tus partidas" },
     { "key": "reveal_prompt", "value": "Toca para abrir la Ofrenda" },
     { "key": "share_text", "value": "Apilé {0} piedras en Mayan Stacker - ¡{1}! ¿Puedes superarme?" },
     { "key": "share_moment_best", "value": "un nuevo récord" },

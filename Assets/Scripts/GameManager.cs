@@ -49,6 +49,9 @@ public class GameManager : MonoBehaviour, IRunRewindable
     private AccuracyLevel lastAccuracyLevel = AccuracyLevel.None; // Track last accuracy level for consistency check
     private int consecutivePerfectHits = 0; // Track consecutive perfect hits for stack straightening
     private int perfectLandings = 0; // Perfect landings this run, streak or not - shown on the result card
+    private bool runJadePaid; // A won temple pays before its panel; a later topple must not pay again
+    private PathOfKukulkan.RunStats? pendingPathRun; // Noted for the result surface, not yet recorded
+    private bool runProgressRecorded; // Path, missions and expedition count each run once
     private int highScoreAtRunStart = 0; // highScore climbs live during a run, so the best being chased is kept here
 
     // Accuracy level enum for combo consistency
@@ -738,23 +741,29 @@ public class GameManager : MonoBehaviour, IRunRewindable
         int blocks = stackManager != null ? stackManager.GetStackCount() : 0;
         GameAnalytics.RunEnd(currentGameMode, currentLevelNumber, blocks, currentScore, cause);
 
-        // Jade is paid before OnGameOver so the result card can show it. Nothing here touches
-        // the score; it only reads what the run already did.
-        JadeRunPayout.AwardRun(new JadeRunPayout.Tally
-        {
-            blocks = blocks,
-            perfects = perfectLandings,
-            edgeLandings = RiskWindow.Instance != null ? RiskWindow.Instance.RunEdgeLanded : 0,
-            surges = SunSurge.RunIgnitions
-        });
-        if (currentGameMode == GameMode.DailyChallenge)
-        {
-            JadeRunPayout.AwardDaily(cause == "daily_target");
-        }
+        // Jade is paid before OnGameOver so the result card can show it.
+        PayRunJade(blocks, cause == "daily_target");
 
         // Close the seeded stream so nothing drawn between runs — a menu flourish, an idle
         // animation — eats draws that belong to the next attempt's sequence.
         RunRandom.EndRun();
+
+        // The result card reads this to tell the player what the run did for their Path.
+        NoteRunProgress(blocks, cause == "daily_target");
+
+        OnGameOver?.Invoke();
+
+        RecordRunProgress();
+    }
+
+    /// <summary>
+    /// Works out what the run did for the Path of Kukulkan so a result surface can say it, before
+    /// anything is recorded. Once per run, like <see cref="PayRunJade"/>: a loss calls it from
+    /// <see cref="GameOver"/>, a temple win from LevelManager before the level-complete panel.
+    /// </summary>
+    public void NoteRunProgress(int blocks, bool dailyCompleted = false)
+    {
+        if (pendingPathRun.HasValue || runProgressRecorded) return;
 
         var pathRun = new PathOfKukulkan.RunStats
         {
@@ -762,36 +771,45 @@ public class GameManager : MonoBehaviour, IRunRewindable
             perfects = perfectLandings,
             edgeLandings = RiskWindow.Instance != null ? RiskWindow.Instance.RunEdgeLanded : 0,
             surges = SunSurge.RunIgnitions,
-            dailyComplete = currentGameMode == GameMode.DailyChallenge && cause == "daily_target"
+            dailyComplete = currentGameMode == GameMode.DailyChallenge && dailyCompleted
         };
-        // The result card reads this to tell the player what the run did for their Path.
         PathOfKukulkan.NoteRun(pathRun);
+        pendingPathRun = pathRun;
+    }
 
-        OnGameOver?.Invoke();
+    /// <summary>
+    /// Counts the run toward the Path, missions and the Weekly Expedition, once per run. Called
+    /// after the result surface has read the run's jade, so their payouts land in the wallet on
+    /// their own (not doubled or capped with the run's earnings) and show live on that surface.
+    /// </summary>
+    public void RecordRunProgress()
+    {
+        if (runProgressRecorded || !pendingPathRun.HasValue) return;
+        runProgressRecorded = true;
 
-        // The Path of Kukulkan pays its tiers after the card has read the run's jade, like missions.
+        var pathRun = pendingPathRun.Value;
+        pendingPathRun = null;
+
         PathOfKukulkan.RecordRun(pathRun);
 
-        // Missions are counted after the card has read the run's jade, so a mission payout lands in
-        // the wallet on its own and isn't doubled or capped with the run's earnings.
         DailyMissions.RecordRun(new DailyMissions.RunStats
         {
             mode = currentGameMode,
-            blocks = blocks,
+            blocks = pathRun.blocks,
             perfects = perfectLandings,
             maxCombo = maxCombo,
-            edgeLandings = RiskWindow.Instance != null ? RiskWindow.Instance.RunEdgeLanded : 0,
-            surges = SunSurge.RunIgnitions
+            edgeLandings = pathRun.edgeLandings,
+            surges = pathRun.surges
         });
 
         WeeklyExpedition.RecordRun(new WeeklyExpedition.RunStats
         {
             mode = currentGameMode,
-            blocks = blocks,
+            blocks = pathRun.blocks,
             perfects = perfectLandings,
             maxCombo = maxCombo,
-            edgeLandings = RiskWindow.Instance != null ? RiskWindow.Instance.RunEdgeLanded : 0,
-            surges = SunSurge.RunIgnitions
+            edgeLandings = pathRun.edgeLandings,
+            surges = pathRun.surges
         });
     }
 
@@ -900,6 +918,29 @@ public class GameManager : MonoBehaviour, IRunRewindable
     }
 
     /// <summary>
+    /// Pays what the run earned, once per run. A loss pays it from <see cref="GameOver"/>; a
+    /// temple win pays it from LevelManager before the level-complete panel, which never goes
+    /// through GameOver. Nothing here touches the score; it only reads what the run already did.
+    /// </summary>
+    public void PayRunJade(int blocks, bool dailyCompleted = false)
+    {
+        if (runJadePaid) return;
+        runJadePaid = true;
+
+        JadeRunPayout.AwardRun(new JadeRunPayout.Tally
+        {
+            blocks = blocks,
+            perfects = perfectLandings,
+            edgeLandings = RiskWindow.Instance != null ? RiskWindow.Instance.RunEdgeLanded : 0,
+            surges = SunSurge.RunIgnitions
+        });
+        if (currentGameMode == GameMode.DailyChallenge)
+        {
+            JadeRunPayout.AwardDaily(dailyCompleted);
+        }
+    }
+
+    /// <summary>
     /// Clears the stats the result card reports. maxCombo used to survive between runs, so a
     /// run's "best combo" could be one from an earlier attempt.
     /// </summary>
@@ -910,6 +951,9 @@ public class GameManager : MonoBehaviour, IRunRewindable
         OmensDefied = 0;
         LastLandingDefiedOmen = false;
         highScoreAtRunStart = highScore;
+        runJadePaid = false;
+        pendingPathRun = null;
+        runProgressRecorded = false;
         JadeWallet.BeginRun();
     }
 

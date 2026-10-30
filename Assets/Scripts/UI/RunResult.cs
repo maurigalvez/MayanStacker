@@ -99,6 +99,8 @@ public static class RunResult
 
         /// <summary>Jade this run earned ("+12 jade"). Null when none, or when jade is switched off.</summary>
         public string jadeLine;
+        /// <summary>The jade amount behind <see cref="jadeLine"/>, so the card can count it up.</summary>
+        public int jadeValue;
 
         /// <summary>What the run did for the Path of Kukulkan ("Path +46 XP"). Null when it earned none or the Path is off.</summary>
         public string pathLine;
@@ -145,17 +147,25 @@ public static class RunResult
         // GameManager pays the run before the card is built, so the wallet's run tally is final.
         if (JadeWallet.RunEarned > 0)
         {
-            card.jadeLine = LocalizationManager.Get("result_jade_line", JadeWallet.RunEarned);
+            card.jadeValue = JadeWallet.RunEarned;
+            card.jadeLine = LocalizationManager.Get("result_jade_line", card.jadeValue);
         }
 
         // Tied to the run so the Path never feels like it fills by itself.
-        if (PathOfKukulkan.LastRunXp > 0)
-        {
-            card.pathLine = PathOfKukulkan.LastRunXpToNext > 0
-                ? LocalizationManager.Get("result_path_line_next", PathOfKukulkan.LastRunXp, PathOfKukulkan.LastRunXpToNext, PathOfKukulkan.LastRunNextTier)
-                : LocalizationManager.Get("result_path_line", PathOfKukulkan.LastRunXp);
-        }
+        card.pathLine = PathLine();
         return card;
+    }
+
+    /// <summary>
+    /// What the run just noted did for the Path ("Path +46 XP · 20 to tier 4"). Null when it earned
+    /// none or the Path is off. Shared by the Try Again card and the level-complete panel.
+    /// </summary>
+    public static string PathLine()
+    {
+        if (PathOfKukulkan.LastRunXp <= 0) return null;
+        return PathOfKukulkan.LastRunXpToNext > 0
+            ? LocalizationManager.Get("result_path_line_next", PathOfKukulkan.LastRunXp, PathOfKukulkan.LastRunXpToNext, PathOfKukulkan.LastRunNextTier)
+            : LocalizationManager.Get("result_path_line", PathOfKukulkan.LastRunXp);
     }
 
     private static void BuildInfinite(ref Card card, Input input, System.Random random)

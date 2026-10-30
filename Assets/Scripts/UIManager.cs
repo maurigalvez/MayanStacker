@@ -57,6 +57,8 @@ public class UIManager : MonoBehaviour
     [SerializeField] private GameObject levelCompletePanel;
     [SerializeField] private TextMeshProUGUI levelNameText;
     [SerializeField] private TextMeshProUGUI levelScoreText;
+    [Tooltip("Jade the win paid, counted up after the score. Built by TamalStacker ▸ UI ▸ Set Up Level Complete Jade.")]
+    [SerializeField] private LevelCompleteJade levelCompleteJade;
     [SerializeField] private Image[] stars; // Array of 3 star UI Images
     [SerializeField] private GameObject levelProgressDisplay; // Container for level progress UI (shown only in Level Mode)
     [SerializeField] private TextMeshProUGUI levelProgressText; // Shows "Height: X/Y"
@@ -2414,6 +2416,8 @@ public class UIManager : MonoBehaviour
             if (levelScoreText != null)
                 levelScoreText.text = LocalizationManager.Get("level_score_format", 0);
             ResetLevelCompleteStars();
+            if (levelCompleteJade != null)
+                levelCompleteJade.Clear();
 
             poppedIn = UIPopup.Show(levelCompletePanel);
         }
@@ -2430,6 +2434,10 @@ public class UIManager : MonoBehaviour
 
         // Animate the score counting up; stars light up progressively as the count climbs
         yield return StartCoroutine(AnimateLevelScoreCountUp(score, stars));
+
+        // Then what the win paid: the run's jade and any stars won for the first time.
+        if (levelCompleteJade != null)
+            yield return StartCoroutine(levelCompleteJade.Play(gameSoundManager));
 
         // Show/hide next level button based on availability
         if (nextLevelButton != null && levelManager != null)

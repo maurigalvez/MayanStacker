@@ -400,8 +400,20 @@ public class LevelManager : MonoBehaviour, ILevelManager, IRunRewindable
         bool isFirstCompletion = !IsLevelCompletedBefore(levelNumber);
         bool codexNotShown = !IsCodexUnlocked(levelNumber);
 
-        // Save progress
+        // Save progress (pays jade for stars won for the first time)
         SaveLevelProgress(levelNumber, earnedStars, finalScore);
+
+        // A win never reaches GameManager.GameOver, so the run's own jade is paid here, before
+        // the level-complete panel reads the run's total. Paid once, so a topple after the win
+        // can't pay it again.
+        // Same for the Path: noted now so the panel can say "Path +N XP".
+        var stackManager = DependencyRegistry.Find<StackManager>();
+        int blocks = stackManager != null ? stackManager.GetStackCount() : 0;
+        if (gameManager != null)
+        {
+            gameManager.PayRunJade(blocks);
+            gameManager.NoteRunProgress(blocks);
+        }
 
         // The first temple completed is the FTUE's exit condition — it gates the ad grace
         // period and the returning-player surfaces.
@@ -414,6 +426,11 @@ public class LevelManager : MonoBehaviour, ILevelManager, IRunRewindable
 
         // Notify listeners with first completion flag
         OnLevelCompleted?.Invoke(earnedStars, finalScore, isFirstCompletion && codexNotShown && earnedStars > 0);
+
+        // The win counts toward the Path, missions and the Weekly Expedition like any run. Their
+        // jade lands before the panel's jade row counts, so it is counted up with the rest.
+        if (gameManager != null)
+            gameManager.RecordRunProgress();
 
         Debug.Log($"Level Complete! Stars: {earnedStars}/3, Score: {finalScore}");
     }

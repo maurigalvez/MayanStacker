@@ -857,6 +857,7 @@
     { "key": "edge_proj_miss", "value": "Erro" },
     { "key": "result_edge_line", "value": "Fio da Serpente: {0} acertos · +{1}" },
     { "key": "result_jade_line", "value": "+{0} de jade" },
+    { "key": "jade_from_runs", "value": "+{0} de jade das suas partidas" },
     { "key": "reveal_prompt", "value": "Toque para abrir a Oferenda" },
     { "key": "share_text", "value": "Empilhei {0} pedras no Mayan Stacker - {1}! Consegue me superar?" },
     { "key": "share_moment_best", "value": "um novo recorde" },

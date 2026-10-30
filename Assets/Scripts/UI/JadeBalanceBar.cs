@@ -55,6 +55,10 @@ public class JadeBalanceBar : MonoBehaviour
     [SerializeField] private float flightDuration = 0.5f;
     [SerializeField] private float stagger = 0.07f;
     [SerializeField] private float rollDuration = 0.35f;
+    [Tooltip("Beat after the menu appears before jade earned in runs flies into the bar.")]
+    [SerializeField] private float welcomeDelay = 0.7f;
+    [Tooltip("Where that jade bursts from, relative to the emblem (down toward the logo).")]
+    [SerializeField] private Vector2 welcomeOffset = new Vector2(0f, -520f);
 
     [Header("Landing")]
     [SerializeField] private float emblemPunch = 0.16f;
@@ -75,6 +79,11 @@ public class JadeBalanceBar : MonoBehaviour
 
     private static readonly List<JadeBalanceBar> bars = new List<JadeBalanceBar>();
     private static bool held;
+
+    // The balance last shown on any bar this session; -1 until one has been on screen. Jade earned
+    // while no bar was up (a run, the Offering, missions and the Path paying after it) is the
+    // difference, and the next bar to appear flies it in instead of starting at the new total.
+    private static int seenBalance = -1;
 
     private readonly List<RectTransform> livePieces = new List<RectTransform>();
     private int shown;
@@ -165,7 +174,38 @@ public class JadeBalanceBar : MonoBehaviour
         bars.Remove(this);
         bars.Add(this);
         JadeWallet.OnBalanceChanged += OnBalance;
-        SetShown(JadeWallet.Balance);
+
+        int balance = JadeWallet.Balance;
+        if (seenBalance >= 0 && balance > seenBalance && !held)
+        {
+            // Back from a run: start at what the player last saw, then fly the rest in.
+            int gained = balance - seenBalance;
+            SetShown(seenBalance);
+            flight = StartCoroutine(WelcomeBack(gained));
+            return;
+        }
+        SetShown(balance);
+    }
+
+    /// <summary>
+    /// After a beat, the jade earned away from the menu bursts up from below the bar and flies into
+    /// the emblem, floating "+N jade from your runs", so returning players see what playing paid.
+    /// </summary>
+    private IEnumerator WelcomeBack(int gained)
+    {
+        float wait = 0f;
+        while (wait < welcomeDelay) { wait += Time.unscaledDeltaTime; yield return null; }
+
+        flight = null;
+        if (Top != this || flightLayer == null || emblem == null || !HasTemplate())
+        {
+            // Another bar is on top, or this one can't fly pieces: still roll and say it.
+            roll = StartCoroutine(Roll(shown, JadeWallet.Balance));
+            ShowDelta(LocalizationManager.Get("jade_from_runs", gained), earnColor);
+            yield break;
+        }
+        flight = StartCoroutine(Flight(ToFlightLocal(emblem) + welcomeOffset, gained,
+            LocalizationManager.Get("jade_from_runs", gained)));
     }
 
     private void OnDisable()
@@ -208,6 +248,7 @@ public class JadeBalanceBar : MonoBehaviour
     private void SetShown(int value)
     {
         shown = value;
+        seenBalance = value;
         if (countLabel != null) countLabel.text = value.ToString();
     }
 
@@ -220,7 +261,7 @@ public class JadeBalanceBar : MonoBehaviour
             roll = StartCoroutine(Roll(shown, JadeWallet.Balance));
             return;
         }
-        flight = StartCoroutine(Flight(source, amount));
+        flight = StartCoroutine(Flight(ToFlightLocal(source), amount, "+" + amount));
     }
 
     private bool HasTemplate()
@@ -229,16 +270,15 @@ public class JadeBalanceBar : MonoBehaviour
         return false;
     }
 
-    private IEnumerator Flight(RectTransform source, int amount)
+    private IEnumerator Flight(Vector2 start, int amount, string delta)
     {
         int from = shown;
         int to = JadeWallet.Balance;
         int pieces = Mathf.Clamp(Mathf.CeilToInt(amount / (float)Mathf.Max(1, jadePerPiece)), minPieces, maxPieces);
 
-        Vector2 start = ToFlightLocal(source);
         Vector2 target = ToFlightLocal(emblem);
         int landed = 0;
-        ShowDelta("+" + amount, earnColor);
+        ShowDelta(delta, earnColor);
 
         for (int i = 0; i < pieces; i++)
         {

@@ -850,6 +850,7 @@
     { "key": "edge_proj_miss", "value": "落下" },
     { "key": "result_edge_line", "value": "蛇の縁：{0}回成功 · +{1}" },
     { "key": "result_jade_line", "value": "+{0} 翡翠" },
+    { "key": "jade_from_runs", "value": "プレイで +{0} 翡翠" },
     { "key": "reveal_prompt", "value": "タップして供物を開く" },
     { "key": "share_text", "value": "Mayan Stackerで石を{0}個積んだ - {1}！超えられる？" },
     { "key": "share_moment_best", "value": "新記録" },
