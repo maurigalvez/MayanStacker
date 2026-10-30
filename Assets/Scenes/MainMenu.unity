@@ -254,10 +254,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4ddb0ef695c55044db9e5036f0a3e433, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AdManager
-  useTestAds: 1
+  useTestAds: 0
   admobAppId: ca-app-pub-1704761488845475~2158600956
-  androidAdUnitId: ca-app-pub-1704761488845475/6676430466
-  productionAndroidAdUnitId: 
+  androidAdUnitId: ca-app-pub-3940256099942544/1033173712
+  productionAndroidAdUnitId: ca-app-pub-1704761488845475/6676430466
+  androidRewardedAdUnitId: ca-app-pub-3940256099942544/5224354917
+  productionAndroidRewardedAdUnitId: ca-app-pub-1704761488845475/8414317185
   adFrequency: 2
   adShowDelay: 1
   enableDebugLogs: 1
