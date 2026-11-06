@@ -206,9 +206,9 @@ public class RiskWindow : MonoBehaviour, IRunRewindable
 
     // ---- Rules ----
 
-    /// <summary>True once this player has the window at all: past the tutorial run.</summary>
+    /// <summary>True once this player has the window at all: its paced run has come.</summary>
     private bool IsUnlockedForPlayer =>
-        !FtueState.NeedsTutorial &&
+        FtueState.IsSystemOpen(FtueState.PacedSystem.SerpentsEdge) &&
         (FtueState.HasCompletedFirstTemple || FtueState.LifetimeRuns >= settings.edgeUnlockRuns);
 
     private bool ComputeAvailable()

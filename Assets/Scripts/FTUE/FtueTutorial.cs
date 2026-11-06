@@ -6,18 +6,20 @@ using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 /// <summary>
-/// The first-run tutorial: four beats, each gated on something the player actually does
-/// rather than on a timer.
+/// The first-run tutorial teaches three things and nothing else: the tap, the Perfect, and
+/// Kukulkan. Each beat is gated on something the player actually does rather than on a timer.
 ///
 ///   Beat 1 — "Tap to drop": holds until the player drops their first stone.
 ///   Beat 2 — names the accuracy tier they just earned and what it's worth.
-///   Beat 3 — on the next landing, points at the Tremor meter (the cost of sloppy stones).
-///            Skipped in modes where the meter isn't running.
-///   Beat 4 — at their first 2-combo once the Tremor line is read, reveals the power medallion
-///            that Perfects charge (or, in a mode without powers, teases the Kukulkan shift).
+///   Beat 3 — on the next landing, promises that Kukulkan answers at the top of the temple.
+///            <see cref="CapstonePayoff"/> keeps the promise on the first temple win.
 ///
-/// The Serpent's Edge risk window is deliberately NOT a beat: it stays shut for the tutorial
-/// run and introduces itself later (RiskWindow), once the tap and the meter are understood.
+/// An Offering Stone earned on this run gets its one line when it is earned. Everything else
+/// waits: Tremor, powers, the Serpent's Edge and boons stay dormant through this run, then go
+/// live one per run (<see cref="FtueState.PacedSystem"/>), each taught by its own lesson.
+///
+/// In a temple the tutorial runs to the end of the run, so the win resolves it. Anywhere else
+/// there is no win to wait for, so it resolves after a few landings.
 ///
 /// Each line holds for as long as its own copy takes to read rather than for a flat couple
 /// of seconds, and a beat that arrives while the previous line is still being read waits its
@@ -38,12 +40,8 @@ public class FtueTutorial : MonoBehaviour
     /// <summary>Authored prefab that replaces the code-built presentation when present.</summary>
     public const string PrefabResourcePath = "UI/FtueTutorial";
 
-    // How many landings to wait for a 2-combo before finishing anyway, so a player who
-    // keeps landing Poor doesn't get stuck in a tutorial that never ends.
-    private const int MaxLandingsAwaitingCombo = 6;
-
-    // How long the Tremor meter pulses while its beat is on screen.
-    private const float TremorHighlightSeconds = 4f;
+    // How many landings end the tutorial in a mode with no temple to win.
+    private const int MaxLandingsOutsideTemples = 6;
 
     // Beat lines hold for as long as their own copy needs to be read (see ReadingTime) —
     // these are the floor for that, not the whole hold. A flat 2s was short enough to miss
@@ -60,12 +58,13 @@ public class FtueTutorial : MonoBehaviour
     private GameManager gameManager;
     private StackManager stackManager;
     private ObjectSpawner objectSpawner;
+    private LevelManager levelManager;
 
     private int currentBeat;
     private int landingsSeen;
     private bool resolved;
     private bool droppedThisTutorial;
-    private bool tremorBeatRead;
+    private bool offeringTaught;
     private GameObject skipButton;
     private FtueTutorialView view;
 
@@ -122,6 +121,7 @@ public class FtueTutorial : MonoBehaviour
         gameManager = DependencyRegistry.Find<GameManager>();
         stackManager = DependencyRegistry.Find<StackManager>();
         objectSpawner = DependencyRegistry.Find<ObjectSpawner>();
+        levelManager = DependencyRegistry.Find<LevelManager>();
 
         if (gameManager == null || uiManager == null)
         {
@@ -136,7 +136,9 @@ public class FtueTutorial : MonoBehaviour
         if (stackManager != null) stackManager.OnObjectAddedToStack += OnBlockLanded;
         if (objectSpawner != null) objectSpawner.OnObjectDropped += OnBlockDropped;
 
-        gameManager.OnComboChanged += OnComboChanged;
+        if (levelManager != null) levelManager.OnLevelCompleted += OnLevelCompleted;
+
+        gameManager.OnConsecutivePerfectHitsChanged += OnPerfectStreakChanged;
         gameManager.OnGameOver += OnGameOver;
 
         // The title animation owns the screen first; start once it clears.
@@ -158,7 +160,6 @@ public class FtueTutorial : MonoBehaviour
         if (resolved || currentBeat >= 1) return;
 
         currentBeat = 1;
-        PowerRevealed = false; // a retried tutorial run hides the medallion again until beat 4
         FtueState.Tutorial = FtueState.TutorialState.InProgress;
         GameAnalytics.TutorialStep(1);
 
@@ -197,12 +198,11 @@ public class FtueTutorial : MonoBehaviour
 
         if (currentBeat == 2)
         {
-            BeginTremorBeat();
+            BeginFinaleBeat();
             return;
         }
 
-        // Don't strand the player in beat 3 forever if they never chain two Perfects.
-        if (currentBeat == 3 && tremorBeatRead && landingsSeen >= MaxLandingsAwaitingCombo)
+        if (gameManager.CurrentGameMode != GameMode.StackerLevels && landingsSeen >= MaxLandingsOutsideTemples)
         {
             CompleteTutorial();
         }
@@ -221,76 +221,31 @@ public class FtueTutorial : MonoBehaviour
     }
 
     /// <summary>
-    /// Beat 3: the stone they just placed moved the Tremor meter (or a Perfect kept it still),
-    /// so this is the moment the meter means something. The meter pulses while the line is up.
+    /// Beat 3: gives the run its goal and sets up the payoff. In a temple the promise is kept on
+    /// the first win; elsewhere nothing would keep it, so this beat stays quiet.
     /// </summary>
-    private void BeginTremorBeat()
+    private void BeginFinaleBeat()
     {
         currentBeat = 3;
-
-        TowerStability stability = TowerStability.Instance;
-        if (stability == null || !stability.IsRunLive)
-        {
-            // No meter in this mode - nothing to point at. Go straight to waiting for a combo.
-            tremorBeatRead = true;
-            return;
-        }
+        if (gameManager.CurrentGameMode != GameMode.StackerLevels) return;
 
         GameAnalytics.TutorialStep(3);
-
-        // The meter's own one-time banner would repeat this line moments later.
-        TowerStability.MarkIntroSeen();
-
-        Say(LocalizationManager.Get("ftue_beat_tremor"),
-            onRead: () =>
-            {
-                tremorBeatRead = true;
-
-                // A player who chained Perfects while reading has already earned the next beat.
-                if (gameManager != null && gameManager.CurrentCombo >= 2) BeginKukulkanBeat();
-            },
-            onShown: () =>
-            {
-                if (TowerStability.Instance != null) TowerStability.Instance.Highlight(TremorHighlightSeconds);
-            });
-    }
-
-    private void OnComboChanged(int combo, float multiplier)
-    {
-        if (resolved || currentBeat != 3 || !tremorBeatRead || combo < 2) return;
-        BeginKukulkanBeat();
-    }
-
-    private void BeginKukulkanBeat()
-    {
-        if (resolved || currentBeat != 3) return;
-
-        currentBeat = 4;
-        GameAnalytics.TutorialStep(4);
-
-        // The tutorial ends when this last line has been read, not on a fixed timer.
-        if (gameManager == null || gameManager.StreakShiftActive)
-        {
-            int required = gameManager != null ? gameManager.PerfectHitsRequired : 4;
-            Say(LocalizationManager.Get("ftue_beat_kukulkan", required), CompleteTutorial);
-            return;
-        }
-
-        // Where powers run, Perfects charge the power medallion: reveal it with this line
-        // and pulse it, the way the Tremor beat points at its meter.
-        PowerRevealed = true;
-        Say(LocalizationManager.Get("ftue_beat_power", PowerSettings.Current.perfectsToFill), CompleteTutorial,
-            onShown: () =>
-            {
-                if (PowerSystem.Instance != null) PowerSystem.Instance.Highlight(TremorHighlightSeconds);
-            });
+        Say(LocalizationManager.Get("ftue_beat_finale"));
     }
 
     /// <summary>
-    /// True once the last beat has introduced the power medallion, so the meter can show
-    /// before the tutorial is formally over. Resets with the app.
+    /// A player good enough to chain the streak on run one has earned an Offering Stone, and the
+    /// stone needs its line now: its own lesson can't speak during the tutorial.
     /// </summary>
-    public static bool PowerRevealed { get; private set; }
+    private void OnPerfectStreakChanged(int streak)
+    {
+        if (resolved || offeringTaught || !gameManager.OfferingEarned) return;
+
+        offeringTaught = true;
+        Say(LocalizationManager.Get("ftue_beat_kukulkan", gameManager.PerfectHitsRequired));
+    }
+
+    private void OnLevelCompleted(int stars, int score, bool showCodexPopup) => CompleteTutorial();
 
     private void CompleteTutorial()
     {
@@ -504,10 +459,11 @@ public class FtueTutorial : MonoBehaviour
     {
         if (stackManager != null) stackManager.OnObjectAddedToStack -= OnBlockLanded;
         if (objectSpawner != null) objectSpawner.OnObjectDropped -= OnBlockDropped;
+        if (levelManager != null) levelManager.OnLevelCompleted -= OnLevelCompleted;
 
         if (gameManager != null)
         {
-            gameManager.OnComboChanged -= OnComboChanged;
+            gameManager.OnConsecutivePerfectHitsChanged -= OnPerfectStreakChanged;
             gameManager.OnGameOver -= OnGameOver;
         }
 

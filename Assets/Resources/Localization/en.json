@@ -374,6 +374,10 @@
       "value": "{0} perfect stones in a row earn an Offering Stone. Land it perfectly to summon Kukulkan."
     },
     {
+      "key": "ftue_beat_finale",
+      "value": "Reach the top of the temple and Kukulkan will answer."
+    },
+    {
       "key": "ftue_beat_power",
       "value": "{0} perfect stones fill your power's meter. Tap it when it glows."
     },

@@ -38,7 +38,7 @@ MonoBehaviour:
   rule: 6
   secondRule: 4
   capstonePayoff: 1
-  capstoneSilhouette: {fileID: 0}
+  capstoneSilhouette: {fileID: 21300000, guid: 6eb0149e509bcbf42b4c6e6cb5b8a5fa, type: 3}
   eclipseSettings:
     firstAtHeight: 5
     everyNStones: 7

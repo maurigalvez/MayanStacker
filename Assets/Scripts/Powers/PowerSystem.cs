@@ -170,7 +170,7 @@ public class PowerSystem : MonoBehaviour
         // A Daily ritual that grants a power runs the meter for everyone, owned or not.
         bool ritualGrant = settings.enablePowers && DailyPowerGrant.AppliesTo(gameManager.CurrentGameMode);
         if (!ritualGrant && !settings.AppliesTo(gameManager.CurrentGameMode)) return false;
-        if (settings.suppressDuringTutorial && FtueState.NeedsTutorial && !FtueTutorial.PowerRevealed) return false;
+        if (settings.suppressDuringTutorial && !FtueState.IsSystemOpen(FtueState.PacedSystem.Powers)) return false;
         return ritualGrant || unlocked;
     }
 

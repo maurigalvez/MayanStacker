@@ -374,6 +374,10 @@
       "value": "{0} piedras perfectas seguidas te dan una Piedra de Ofrenda. Colócala a la perfección para invocar a Kukulkán."
     },
     {
+      "key": "ftue_beat_finale",
+      "value": "Llega a la cima del templo y Kukulkán responderá."
+    },
+    {
       "key": "ftue_beat_power",
       "value": "{0} piedras perfectas llenan el medidor de tu poder. Tócalo cuando brille."
     },

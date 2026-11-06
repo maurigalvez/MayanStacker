@@ -185,6 +185,7 @@ public class LevelRegressionRunner : MonoBehaviour
         // this pass covers.
         FtueState.MarkLanguageChosen();
         FtueState.Tutorial = FtueState.TutorialState.Completed;
+        FtueState.ClearSystemPacing();
         PlayerPrefs.Save();
     }
 

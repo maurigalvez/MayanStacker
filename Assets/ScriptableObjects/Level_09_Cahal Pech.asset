@@ -35,7 +35,7 @@ MonoBehaviour:
   rule: 3
   secondRule: 0
   capstonePayoff: 1
-  capstoneSilhouette: {fileID: 0}
+  capstoneSilhouette: {fileID: 21300000, guid: 6eb0149e509bcbf42b4c6e6cb5b8a5fa, type: 3}
   rainSettings:
     slideFraction: 0.42
     maxSlideOfWidth: 0.168

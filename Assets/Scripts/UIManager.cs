@@ -2359,14 +2359,16 @@ public class UIManager : MonoBehaviour
         // Stop combo timer update to prevent sound effects after level completion
         isUpdatingComboTimer = false;
 
-        // Hide game UI
-        if (gameUI != null)
-            gameUI.SetActive(false);
-
         // The temple's capstone beat plays first; the popup and panel wait it out. Progress
         // and the codex unlock are already saved - only their presentation is held.
         LevelData completedLevel = levelManager != null ? levelManager.CurrentLevel : null;
-        float capstoneHold = CapstonePayoff.HoldSecondsFor(completedLevel);
+        bool firstTempleWin = levelManager != null && levelManager.IsFirstTempleWin;
+        float capstoneHold = CapstonePayoff.HoldSecondsFor(completedLevel, firstTempleWin);
+
+        // Hide game UI. The Kukulkan label lives inside it, so the first temple's finale keeps
+        // it up until the hold ends.
+        if (gameUI != null && !firstTempleWin)
+            gameUI.SetActive(false);
 
         // Show codex unlock popup if this is the first completion
         if (showCodexPopup && completedLevel != null)
@@ -2393,6 +2395,9 @@ public class UIManager : MonoBehaviour
     {
         if (capstoneHold > 0f)
             yield return new WaitForSecondsRealtime(capstoneHold);
+
+        if (gameUI != null)
+            gameUI.SetActive(false);
 
         // Show codex unlock popup if this is the first completion
         if (codexLevel != null)

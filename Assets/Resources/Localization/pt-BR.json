@@ -374,6 +374,10 @@
       "value": "{0} pedras perfeitas seguidas rendem uma Pedra de Oferenda. Encaixe-a com perfeição para invocar Kukulkan."
     },
     {
+      "key": "ftue_beat_finale",
+      "value": "Chegue ao topo do templo e Kukulkan responderá."
+    },
+    {
       "key": "ftue_beat_power",
       "value": "{0} pedras perfeitas enchem o medidor do seu poder. Toque nele quando brilhar."
     },

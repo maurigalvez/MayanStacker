@@ -19,6 +19,7 @@ public static class FtueState
     private const string PP_LANGUAGE_CHOSEN = "Ftue_LanguageChosen";
     private const string PP_BOON_INTRO_SEEN = "Ftue_BoonIntroSeen";
     private const string PP_EDGE_INTRO_SEEN = "Ftue_EdgeIntroSeen";
+    private const string PP_PACING_START_RUN = "Ftue_PacingStartRun";
 
     /// <summary>Legacy key from the old 3-second instruction overlay, cleared on migration.</summary>
     private const string PP_LEGACY_INSTRUCTIONS_SEEN = "HasSeenInstructions";
@@ -29,6 +30,19 @@ public static class FtueState
         InProgress = 1,
         Completed = 2,
         Skipped = 3
+    }
+
+    /// <summary>
+    /// The run systems a new player meets after the tutorial, in order. Each value is how many
+    /// runs after the tutorial run that system goes live, so a player meets one new thing per
+    /// run, on the same run the guide lane teaches it, instead of all of them at once.
+    /// </summary>
+    public enum PacedSystem
+    {
+        Tremor = 1,
+        Powers = 2,
+        SerpentsEdge = 3,
+        Boons = 4
     }
 
     /// <summary>How many blocks the tutorial forgives before topple rules apply normally.</summary>
@@ -190,9 +204,33 @@ public static class FtueState
         get => (TutorialState)PlayerPrefs.GetInt(PP_TUTORIAL_STATE, (int)TutorialState.NotStarted);
         set
         {
+            // The run the tutorial resolves on is the zero point for the paced systems.
+            bool resolving = NeedsTutorial && value != TutorialState.NotStarted && value != TutorialState.InProgress;
+            if (resolving) PlayerPrefs.SetInt(PP_PACING_START_RUN, LifetimeRuns);
+
             PlayerPrefs.SetInt(PP_TUTORIAL_STATE, (int)value);
             PlayerPrefs.Save();
         }
+    }
+
+    /// <summary>
+    /// True when <paramref name="system"/> has reached its run for this player. Never during the
+    /// tutorial. A player who resolved the tutorial before pacing existed has no zero point
+    /// stored, and keeps everything they already had.
+    /// </summary>
+    public static bool IsSystemOpen(PacedSystem system)
+    {
+        if (NeedsTutorial) return false;
+
+        int startRun = PlayerPrefs.GetInt(PP_PACING_START_RUN, -1);
+        return startRun < 0 || LifetimeRuns - startRun >= (int)system;
+    }
+
+    /// <summary>Opens every paced system at once, for test profiles that skip the first-run flow.</summary>
+    public static void ClearSystemPacing()
+    {
+        PlayerPrefs.DeleteKey(PP_PACING_START_RUN);
+        PlayerPrefs.Save();
     }
 
     /// <summary>True when the tutorial still needs to run.</summary>
@@ -263,6 +301,7 @@ public static class FtueState
         PlayerPrefs.DeleteKey(PP_LANGUAGE_CHOSEN);
         PlayerPrefs.DeleteKey(PP_BOON_INTRO_SEEN);
         PlayerPrefs.DeleteKey(PP_EDGE_INTRO_SEEN);
+        PlayerPrefs.DeleteKey(PP_PACING_START_RUN);
         PlayerPrefs.DeleteKey(PP_LEGACY_INSTRUCTIONS_SEEN);
         PlayerPrefs.Save();
 

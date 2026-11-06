@@ -205,7 +205,14 @@ public class TowerStability : MonoBehaviour, IRunRewindable
     {
         if (gameManager == null || !gameManager.IsGameActive || gameManager.IsGameOver) return false;
         if (levelManager != null && levelManager.IsLevelComplete) return false;
-        return AppliesToCurrentMode();
+        return RunsForPlayer();
+    }
+
+    /// <summary>The meter belongs to this mode, and this player has reached its run.</summary>
+    private bool RunsForPlayer()
+    {
+        if (!AppliesToCurrentMode()) return false;
+        return !settings.suppressDuringTutorial || FtueState.IsSystemOpen(FtueState.PacedSystem.Tremor);
     }
 
     private bool IsSuppressed => settings.suppressDuringTutorial && FtueState.NeedsTutorial;
@@ -430,7 +437,7 @@ public class TowerStability : MonoBehaviour, IRunRewindable
         highlightUntil = 0f;
         OnTremorChanged?.Invoke(tremor);
 
-        if (uiRoot != null) uiRoot.SetActive(AppliesToCurrentMode());
+        if (uiRoot != null) uiRoot.SetActive(RunsForPlayer());
     }
 
     // ---- Presentation ----

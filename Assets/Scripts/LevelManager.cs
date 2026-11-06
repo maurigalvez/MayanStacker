@@ -42,6 +42,9 @@ public class LevelManager : MonoBehaviour, ILevelManager, IRunRewindable
     // Events
     public System.Action<LevelData> OnLevelLoaded;
     public System.Action<int, int, bool> OnLevelCompleted; // stars, score, isFirstCompletion
+
+    /// <summary>True when the latest completion was the first temple this player ever won.</summary>
+    public bool IsFirstTempleWin { get; private set; }
     public System.Action OnLevelFailed;
     public System.Action<int> OnStackHeightUpdated; // current height
 
@@ -414,6 +417,9 @@ public class LevelManager : MonoBehaviour, ILevelManager, IRunRewindable
             gameManager.PayRunJade(blocks);
             gameManager.NoteRunProgress(blocks);
         }
+
+        // Read before it is marked below: this win is the one that gets the Kukulkan finale.
+        IsFirstTempleWin = earnedStars > 0 && !FtueState.HasCompletedFirstTemple;
 
         // The first temple completed is the FTUE's exit condition — it gates the ad grace
         // period and the returning-player surfaces.

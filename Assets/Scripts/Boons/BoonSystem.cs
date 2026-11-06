@@ -198,7 +198,7 @@ public class BoonSystem : MonoBehaviour
         // temple is completed, and only LevelManager can mark that - so a player who opens
         // Infinite Stacker and stays there would never leave the FTUE window and would
         // never be offered a boon, let alone the explainer that introduces them.
-        if (settings.suppressDuringTutorial && FtueState.NeedsTutorial) return false;
+        if (settings.suppressDuringTutorial && !FtueState.IsSystemOpen(FtueState.PacedSystem.Boons)) return false;
 
         // Never interrupt a level that's already been completed.
         var levelManager = DependencyRegistry.Find<LevelManager>();

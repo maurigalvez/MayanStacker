@@ -61,7 +61,7 @@ public class PowerLoadoutScreen : MonoBehaviour
     {
         PowerSettings settings = PowerSettings.Current;
         if (settings == null || !settings.AppliesTo(mode)) return false;
-        return !(settings.suppressDuringTutorial && FtueState.NeedsTutorial);
+        return !settings.suppressDuringTutorial || FtueState.IsSystemOpen(FtueState.PacedSystem.Powers);
     }
 
     private void OnDestroy()
