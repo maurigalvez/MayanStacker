@@ -117,12 +117,17 @@ public class UIManager : MonoBehaviour
     [SerializeField] private Image comboTimerBar; // Circular radial fill timer
 
     [Header("Kukulkan's Shift UI")]
+    // The label's rect is a band 20-29% up the screen: under the points popup, the accuracy
+    // label and RunBanner, above GuideLane. It is anchored as a fraction of the height because
+    // this canvas scales by width and those overlays by height, so a fixed offset can't clear
+    // them on every aspect ratio. The text auto-sizes to the band, so keep the final scale at 1:
+    // any larger and it leaves the band (and, for long translations, the screen).
     [SerializeField] private TextMeshProUGUI kukulkanShiftText; // TextMeshProUGUI component for the message
     [SerializeField] private Color kukulkanShiftColor = Color.yellow;
     [SerializeField] private float kukulkanShiftDisplayDuration = 3f;
     [SerializeField] private float kukulkanShiftAnimationDuration = 0.5f;
-    [SerializeField] private float kukulkanShiftAppearScale = 2f;
-    [SerializeField] private float kukulkanShiftFinalScale = 1.5f;
+    [SerializeField] private float kukulkanShiftAppearScale = 1.25f;
+    [SerializeField] private float kukulkanShiftFinalScale = 1f;
 
     [Header("Kukulkan's Wrath Meter")]
     [SerializeField] private GameObject kukulkanWrathMeter; // Container for the meter (always visible)
