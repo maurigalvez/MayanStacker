@@ -25,8 +25,17 @@ public static class GameAnalytics
     private static readonly Queue<PendingEvent> pending = new Queue<PendingEvent>();
     private static PlayFabManager playFabManager;
 
-    /// <summary>Set false to mute analytics entirely (e.g. from a privacy setting).</summary>
+    /// <summary>
+    /// Set false to mute analytics entirely (e.g. from a privacy setting). Off in the Editor and
+    /// in development builds, so our own testing never lands in the player funnel. Release builds
+    /// are unaffected. This covers only these events: PlayFab still counts logins and screen time
+    /// on its dashboard for any session on this title.
+    /// </summary>
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+    public static bool Enabled = false;
+#else
     public static bool Enabled = true;
+#endif
 
     /// <summary>Number of events waiting on a login. Exposed for debugging.</summary>
     public static int PendingCount => pending.Count;
