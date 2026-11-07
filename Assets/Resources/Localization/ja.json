@@ -1028,7 +1028,7 @@
     { "key": "expedition_close", "value": "閉じる" },
     { "key": "expedition_row_stage", "value": "ステージ {0}" },
     { "key": "expedition_row_progress", "value": "{0}/{1}" },
-    { "key": "expedition_summary", "value": "達成した週: {0}  |  全5ステージ達成で翡翠 +{1}" },
+    { "key": "expedition_summary", "value": "達成した週: {0}\n全5ステージ達成で翡翠 +{1}" },
     { "key": "expedition_week_done", "value": "5ステージすべて達成！ 達成した週: {0}" },
     { "key": "expedition_resets", "value": "リセットまで {0}日 {1}時間" },
     { "key": "mission_runs_3", "value": "{0}回プレイする" },

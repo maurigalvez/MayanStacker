@@ -1028,7 +1028,7 @@
     { "key": "expedition_close", "value": "关闭" },
     { "key": "expedition_row_stage", "value": "第 {0} 阶段" },
     { "key": "expedition_row_progress", "value": "{0}/{1}" },
-    { "key": "expedition_summary", "value": "已完成周数: {0}  |  完成全部五阶段: +{1} 翡翠" },
+    { "key": "expedition_summary", "value": "已完成周数: {0}\n完成全部五阶段: +{1} 翡翠" },
     { "key": "expedition_week_done", "value": "五个阶段全部完成！已完成周数: {0}" },
     { "key": "expedition_resets", "value": "{0}天 {1}小时后重置" },
     { "key": "mission_runs_3", "value": "完成 {0} 局" },

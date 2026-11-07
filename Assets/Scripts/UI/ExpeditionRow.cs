@@ -8,7 +8,7 @@ using UnityEngine;
 public class ExpeditionRow : MonoBehaviour
 {
     [SerializeField] private TextMeshProUGUI stageLabel;
-    [Tooltip("Goal text, with the progress under it on the stage in play.")]
+    [Tooltip("Goal text, followed by the progress on the stage in play.")]
     [SerializeField] private TextMeshProUGUI goalLabel;
     [SerializeField] private TextMeshProUGUI rewardLabel;
     [Tooltip("Shown once the stage is cleared.")]
@@ -24,7 +24,7 @@ public class ExpeditionRow : MonoBehaviour
         stageLabel.text = LocalizationManager.Get("expedition_row_stage", number);
 
         string goal = LocalizationManager.Get("expedition_" + stage.id, stage.target);
-        if (state == 0) goal += "\n" + LocalizationManager.Get("expedition_row_progress", progress, stage.target);
+        if (state == 0) goal += "  " + LocalizationManager.Get("expedition_row_progress", progress, stage.target);
         goalLabel.text = goal;
         rewardLabel.text = LocalizationManager.Get("expedition_reward", stage.reward);
 

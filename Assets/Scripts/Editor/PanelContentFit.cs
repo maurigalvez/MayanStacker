@@ -30,8 +30,20 @@ public static class PanelContentFit
     private const float MarketTop = 290f;           // below the title and the jade balance bar
     private const float MarketBarTop = 145f;
     private const int MarketFlightSorting = 4400;   // over the market panel (4300)
-    // These two lists don't scroll, so the card has to hold every row plus the how-to card.
-    private const float FixedListModalHeight = 1640f;
+    // Tall enough to hold every Missions and Expedition row plus the how-to card (those lists don't
+    // scroll), and short of the 1920 canvas so the card still has a margin top and bottom.
+    private const float ListModalHeight = 1780f;
+    private const float ListBottom = 180f;          // just above the close button
+
+    // Reading sizes for these cards. 35 is the floor, not the target: the Maya fonts are narrow and
+    // ModalFit shrinks the card on tall phones, so copy at the floor reads tiny.
+    private const float RowTextSize = 44f;
+    private const float RowHeadingSize = 46f;
+    private const float RewardTextSize = 48f;
+    private const float StatusTextSize = 44f;
+    private const float HowToHeadlineSize = 48f;
+    private const float HowToBodySize = 42f;
+    private const float HowToExtraSize = 40f;
 
     private static readonly Color FlashTint = new Color(1f, 0.85f, 0.4f, 0f);
 
@@ -45,11 +57,15 @@ public static class PanelContentFit
         var path = root.GetComponent<PathView>();
         var expedition = root.GetComponent<ExpeditionView>();
 
-        if ((missions != null || expedition != null) && modal.sizeDelta.y < FixedListModalHeight)
-            modal.sizeDelta = new Vector2(modal.sizeDelta.x, FixedListModalHeight);
+        if ((missions != null || expedition != null || path != null) && modal.sizeDelta.y < ListModalHeight)
+            modal.sizeDelta = new Vector2(modal.sizeDelta.x, ListModalHeight);
 
         float inner = modal.sizeDelta.x - SideInset * 2f;
         InsetChildren(modal, inner, market != null);
+
+        if (missions != null) FitMissionsHeader(modal);
+        if (path != null) FitPathHeader(modal);
+        if (expedition != null) FitExpeditionHeader(modal, inner);
 
         if (market != null)
         {
@@ -253,6 +269,47 @@ public static class PanelContentFit
         so.ApplyModifiedPropertiesWithoutUndo();
     }
 
+    // ── Headers ──
+
+    private static void FitMissionsHeader(RectTransform modal)
+    {
+        FitLine(modal.Find("Count") as RectTransform, StatusTextSize);
+        FitListBounds(modal.Find("Content") as RectTransform, -230f);
+    }
+
+    private static void FitPathHeader(RectTransform modal)
+    {
+        FitLine(modal.Find("Tier") as RectTransform, StatusTextSize);
+        FitListBounds(modal.Find("Scroll") as RectTransform, -300f);
+    }
+
+    private static void FitExpeditionHeader(RectTransform modal, float inner)
+    {
+        // The summary runs past one line at a readable size in every language, so it gets two.
+        var summary = modal.Find("Summary") as RectTransform;
+        if (summary != null)
+        {
+            summary.anchoredPosition = new Vector2(0f, -195f);
+            summary.sizeDelta = new Vector2(inner, 110f);
+            FitLabel(summary, 42f);
+        }
+        var reset = modal.Find("Reset") as RectTransform;
+        if (reset != null)
+        {
+            reset.anchoredPosition = new Vector2(0f, -280f);
+            reset.sizeDelta = new Vector2(inner, 56f);
+            FitLine(reset, 42f);
+        }
+        FitListBounds(modal.Find("Content") as RectTransform, -325f);
+    }
+
+    private static void FitListBounds(RectTransform list, float top)
+    {
+        if (list == null) return;
+        list.offsetMin = new Vector2(list.offsetMin.x, ListBottom);
+        list.offsetMax = new Vector2(list.offsetMax.x, top);
+    }
+
     // ── Other rows ──
 
     private static void FitMissionsRow(GameObject root, float inner)
@@ -260,7 +317,7 @@ public static class PanelContentFit
         var row = FindRow<MissionRow>(root);
         if (row == null) return;
 
-        SetHeight(row, inner, 270f);
+        SetHeight(row, inner, 280f);
 
         var description = FindChild(row, "Description");
         if (description != null)
@@ -268,12 +325,9 @@ public static class PanelContentFit
             description.anchorMin = Vector2.zero;
             description.anchorMax = Vector2.one;
             description.offsetMin = new Vector2(40f, 100f);
-            description.offsetMax = new Vector2(-250f, -16f);
-            var label = description.GetComponent<TextMeshProUGUI>();
-            label.enableAutoSizing = true;
-            label.fontSizeMin = UIHouseStyle.MinFontSize;
-            label.fontSizeMax = 38f;
-            label.alignment = TextAlignmentOptions.Left;
+            description.offsetMax = new Vector2(-300f, -16f);
+            FitLabel(description, RowTextSize);
+            description.GetComponent<TextMeshProUGUI>().alignment = TextAlignmentOptions.Left;
         }
 
         var reward = FindChild(row, "Reward");
@@ -282,12 +336,8 @@ public static class PanelContentFit
             reward.anchorMin = reward.anchorMax = new Vector2(1f, 1f);
             reward.pivot = new Vector2(1f, 1f);
             reward.anchoredPosition = new Vector2(-30f, -16f);
-            reward.sizeDelta = new Vector2(210f, 60f);
-            var label = reward.GetComponent<TextMeshProUGUI>();
-            label.enableAutoSizing = true;
-            label.fontSizeMin = UIHouseStyle.MinFontSize;
-            label.fontSizeMax = 40f;
-            label.enableWordWrapping = false;
+            reward.sizeDelta = new Vector2(260f, 66f);
+            FitLine(reward, RewardTextSize);
         }
 
         // The swap button sits under the reward, so the description keeps the whole left side.
@@ -296,17 +346,18 @@ public static class PanelContentFit
         {
             swap.anchorMin = swap.anchorMax = new Vector2(1f, 1f);
             swap.pivot = new Vector2(1f, 1f);
-            swap.anchoredPosition = new Vector2(-30f, -84f);
-            swap.sizeDelta = new Vector2(230f, 70f);
+            swap.anchoredPosition = new Vector2(-30f, -88f);
+            swap.sizeDelta = new Vector2(260f, 80f);
             var label = swap.GetComponentInChildren<TextMeshProUGUI>(true);
             if (label != null)
             {
-                label.enableAutoSizing = true;
-                label.fontSizeMin = UIHouseStyle.MinFontSize;
-                label.fontSizeMax = 38f;
-                label.enableWordWrapping = false;
+                FitLine((RectTransform)label.transform, 40f);
+                label.rectTransform.offsetMin = new Vector2(14f, label.rectTransform.offsetMin.y);
+                label.rectTransform.offsetMax = new Vector2(-14f, label.rectTransform.offsetMax.y);
             }
         }
+
+        FitLine(FindChild(row, "Progress"), 40f);
     }
 
     private static void FitPathRow(GameObject root, float inner)
@@ -323,7 +374,7 @@ public static class PanelContentFit
             tier.anchorMax = new Vector2(0.34f, 1f);
             tier.offsetMin = new Vector2(40f, 0f);
             tier.offsetMax = Vector2.zero;
-            FitLabel(tier, 40f);
+            FitLine(tier, RowHeadingSize);
         }
         var reward = FindChild(row, "Reward");
         if (reward != null)
@@ -332,43 +383,44 @@ public static class PanelContentFit
             reward.anchorMax = Vector2.one;
             reward.offsetMin = new Vector2(0f, 8f);
             reward.offsetMax = new Vector2(-30f, -8f);
-            FitLabel(reward, 38f);
+            FitLine(reward, RewardTextSize);
         }
     }
 
+    /// <summary>Stage and reward share the top line, so the goal gets the row's whole width below them.</summary>
     private static void FitExpeditionRow(GameObject root, float inner)
     {
         var row = FindRow<ExpeditionRow>(root);
         if (row == null) return;
 
-        SetHeight(row, inner, 150f);
+        SetHeight(row, inner, 146f);
 
         var stage = FindChild(row, "Stage");
         if (stage != null)
         {
-            stage.anchorMin = Vector2.zero;
-            stage.anchorMax = new Vector2(0.24f, 1f);
-            stage.offsetMin = new Vector2(24f, 0f);
-            stage.offsetMax = Vector2.zero;
-            FitLabel(stage, 38f);
-        }
-        var goal = FindChild(row, "Goal");
-        if (goal != null)
-        {
-            goal.anchorMin = new Vector2(0.24f, 0f);
-            goal.anchorMax = new Vector2(0.74f, 1f);
-            goal.offsetMin = new Vector2(10f, 8f);
-            goal.offsetMax = new Vector2(0f, -8f);
-            FitLabel(goal, 36f);
+            stage.anchorMin = new Vector2(0f, 0.5f);
+            stage.anchorMax = new Vector2(0.45f, 1f);
+            stage.offsetMin = new Vector2(30f, 0f);
+            stage.offsetMax = new Vector2(0f, -10f);
+            FitLine(stage, RowHeadingSize);
         }
         var reward = FindChild(row, "Reward");
         if (reward != null)
         {
-            reward.anchorMin = new Vector2(0.74f, 0f);
+            reward.anchorMin = new Vector2(0.45f, 0.5f);
             reward.anchorMax = Vector2.one;
-            reward.offsetMin = new Vector2(0f, 8f);
-            reward.offsetMax = new Vector2(-20f, -8f);
-            FitLabel(reward, 38f);
+            reward.offsetMin = Vector2.zero;
+            reward.offsetMax = new Vector2(-30f, -10f);
+            FitLine(reward, RewardTextSize);
+        }
+        var goal = FindChild(row, "Goal");
+        if (goal != null)
+        {
+            goal.anchorMin = Vector2.zero;
+            goal.anchorMax = new Vector2(1f, 0.5f);
+            goal.offsetMin = new Vector2(30f, 10f);
+            goal.offsetMax = new Vector2(-30f, 0f);
+            FitLine(goal, RowTextSize);
         }
     }
 
@@ -395,9 +447,9 @@ public static class PanelContentFit
             layout.childForceExpandWidth = true;
             layout.childForceExpandHeight = false;
 
-            var headline = HowToLabel("Headline", card, UIHouseStyle.Title, 42f, RunOverlayUI.Gold);
-            var body = HowToLabel("Body", card, UIHouseStyle.Body, UIHouseStyle.MinFontSize, RunOverlayUI.Parchment);
-            var extra = HowToLabel("Extra", card, UIHouseStyle.Title, UIHouseStyle.MinFontSize, RunOverlayUI.Gold);
+            var headline = HowToLabel("Headline", card, UIHouseStyle.Title, HowToHeadlineSize, RunOverlayUI.Gold);
+            var body = HowToLabel("Body", card, UIHouseStyle.Body, HowToBodySize, RunOverlayUI.Parchment);
+            var extra = HowToLabel("Extra", card, UIHouseStyle.Title, HowToExtraSize, RunOverlayUI.Gold);
             extra.gameObject.SetActive(false);
 
             howTo = card.gameObject.AddComponent<PanelHowTo>();
@@ -416,6 +468,13 @@ public static class PanelContentFit
         keys.FindProperty("headlineKey").stringValue = headlineKey;
         keys.FindProperty("bodyKey").stringValue = bodyKey;
         keys.ApplyModifiedPropertiesWithoutUndo();
+
+        // Clears the slab's carved rim on the left, where the art is heaviest.
+        card.GetComponent<VerticalLayoutGroup>().padding = new RectOffset(42, 22, 26, 26);
+
+        SetHowToSize(card, "Headline", HowToHeadlineSize);
+        SetHowToSize(card, "Body", HowToBodySize);
+        SetHowToSize(card, "Extra", HowToExtraSize);
 
         // The same inset slab the rows sit on, lit: reads as a plate above the list.
         SpinsPanelStyle.Slice(card.GetComponent<Image>(),
@@ -436,6 +495,13 @@ public static class PanelContentFit
         label.enableAutoSizing = false;
         UIHouseStyle.EnforceMinFontSize(label);
         return label;
+    }
+
+    private static void SetHowToSize(RectTransform card, string name, float size)
+    {
+        var part = card.Find(name);
+        var label = part != null ? part.GetComponent<TextMeshProUGUI>() : null;
+        if (label != null) label.fontSize = size;
     }
 
     // ── Helpers ──
@@ -467,7 +533,20 @@ public static class PanelContentFit
         label.enableAutoSizing = true;
         label.fontSizeMin = UIHouseStyle.MinFontSize;
         label.fontSizeMax = Mathf.Max(max, UIHouseStyle.MinFontSize);
+        label.fontSize = label.fontSizeMax;
         label.enableWordWrapping = true;
+        label.overflowMode = TextOverflowModes.Overflow;
+    }
+
+    /// <summary>A label that stays on one line: long copy shrinks towards the floor instead of wrapping.</summary>
+    private static void FitLine(RectTransform rect, float max)
+    {
+        if (rect == null) return;
+        FitLabel(rect, max);
+        var label = rect.GetComponent<TextMeshProUGUI>();
+        if (label == null) return;
+        label.enableWordWrapping = false;
+        label.overflowMode = TextOverflowModes.Ellipsis;
     }
 }
 #endif

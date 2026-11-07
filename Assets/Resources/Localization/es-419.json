@@ -1037,7 +1037,7 @@
     { "key": "expedition_close", "value": "Cerrar" },
     { "key": "expedition_row_stage", "value": "Etapa {0}" },
     { "key": "expedition_row_progress", "value": "{0}/{1}" },
-    { "key": "expedition_summary", "value": "Semanas completadas: {0}  |  Termina las cinco: +{1} de jade" },
+    { "key": "expedition_summary", "value": "Semanas completadas: {0}\nTermina las cinco: +{1} de jade" },
     { "key": "expedition_week_done", "value": "¡Cinco etapas completas! Semanas completadas: {0}" },
     { "key": "expedition_resets", "value": "Se reinicia en {0}d {1}h" },
     { "key": "mission_runs_3", "value": "Termina {0} partidas" },

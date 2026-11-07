@@ -1031,7 +1031,7 @@
     { "key": "expedition_close", "value": "Close" },
     { "key": "expedition_row_stage", "value": "Stage {0}" },
     { "key": "expedition_row_progress", "value": "{0}/{1}" },
-    { "key": "expedition_summary", "value": "Weeks completed: {0}  |  Finish all five: +{1} jade" },
+    { "key": "expedition_summary", "value": "Weeks completed: {0}\nFinish all five: +{1} jade" },
     { "key": "expedition_week_done", "value": "All five stages cleared! Weeks completed: {0}" },
     { "key": "expedition_resets", "value": "Resets in {0}d {1}h" },
     { "key": "mission_runs_3", "value": "Finish {0} runs" },
