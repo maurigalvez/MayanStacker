@@ -94,6 +94,7 @@
     <Compile Include="Assets\Scripts\StackableObject.cs" />
     <Compile Include="Assets\Scripts\PlayerProgressData.cs" />
     <Compile Include="Assets\Scripts\LeaderboardEntryUI.cs" />
+    <Compile Include="Assets\Scripts\UI\LevelCompleteJade.cs" />
     <Compile Include="Assets\Scripts\GameSettings.cs" />
     <Compile Include="Assets\Scripts\Powers\PowerLoadoutScreen.cs" />
     <Compile Include="Assets\Scripts\Run\RunRandom.cs" />

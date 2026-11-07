@@ -68,6 +68,7 @@
     <Compile Include="Assets\Scripts\Editor\ExpeditionUISetup.cs" />
     <Compile Include="Assets\Scripts\Editor\ThemesToMarketSetup.cs" />
     <Compile Include="Assets\Scripts\Editor\RitualBriefingPrefabSetup.cs" />
+    <Compile Include="Assets\Scripts\Editor\LevelCompleteJadeSetup.cs" />
     <Compile Include="Assets\Scripts\Editor\BoonUISetup.cs" />
     <Compile Include="Assets\Scripts\Editor\PathSetup.cs" />
     <Compile Include="Assets\Scripts\Editor\GuideLanePrefabSetup.cs" />
