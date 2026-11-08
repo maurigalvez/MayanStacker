@@ -846,15 +846,17 @@ public class GameManager : MonoBehaviour, IRunRewindable
     {
         if (isGameOver) return;
 
+        // The spawner compares the missed stone with the one on its hook, so it goes first,
+        // while the stone still exists.
+        var spawner = DependencyRegistry.Find<ObjectSpawner>();
+        if (spawner != null) spawner.ResumeAfterMiss(missedStone);
+
         var stackManager = DependencyRegistry.Find<StackManager>();
         if (missedStone != null)
         {
             if (stackManager != null) stackManager.RemoveObjectFromStack(missedStone);
             Destroy(missedStone.gameObject);
         }
-
-        var spawner = DependencyRegistry.Find<ObjectSpawner>();
-        if (spawner != null) spawner.ResumeAfterMiss();
 
         GameFeelManager.Flash(new Color(0.95f, 0.78f, 0.3f, 0.3f), 0.35f);
         HapticFeedback.Trigger(HapticFeedback.HapticType.Medium);

@@ -144,9 +144,18 @@ public class ObjectSpawner : MonoBehaviour
     /// <summary>
     /// Second Chance: the dropped stone missed the tower and has been taken back, so the wait for
     /// its landing is over and the hook needs a fresh stone.
+    ///
+    /// A stone can also be judged a miss after it landed (it slid off the top stone and settled
+    /// beside it). By then its landing already put the next stone on the hook - or that stone is
+    /// already falling - so the hook has moved on and must be left alone: abandoning that stone
+    /// and spawning another left a dead stone on the hook and doubled the next spawn.
     /// </summary>
-    public void ResumeAfterMiss()
+    public void ResumeAfterMiss(StackableObject missedStone)
     {
+        bool hookMovedOn = missedStone != null && currentObject != null
+                           && currentObject != missedStone.gameObject;
+        if (hookMovedOn) return;
+
         waitingForLanding = false;
         dropQueued = false;
         currentObject = null;
